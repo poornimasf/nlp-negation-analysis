@@ -5,7 +5,8 @@ applications:
         preBuild:
           commands:
             - cd negation-analyzer
-            - npm install
+            - rm -rf node_modules package-lock.json
+            - npm install --no-package-lock
         build:
           commands:
             - npm run build
