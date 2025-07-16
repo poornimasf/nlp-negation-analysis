@@ -4,31 +4,29 @@
   "private": true,
   "dependencies": {
     "@aws-amplify/ui-react": "^6.11.2",
-    "@radix-ui/react-select": "^2.2.5",
-    "@radix-ui/react-slot": "^1.2.3",
-    "@testing-library/dom": "^10.4.0",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
-    "autoprefixer": "^10.4.21",
-    "aws-amplify": "^6.15.3",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
-    "lucide-react": "^0.525.0",
-    "postcss": "^8.5.6",
+    "aws-amplify": "^6.0.16",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-scripts": "5.0.1",
-    "tailwindcss": "^4.1.11",
-    "tailwindcss-animate": "^1.0.7",
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!@aws-amplify)/\"",
     "eject": "react-scripts eject"
+  },
+  "jest": {
+    "moduleNameMapper": {
+      "\\.(css|less|scss|sass)$": "<rootDir>/src/__mocks__/styleMock.js"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!@aws-amplify)/"
+    ]
   },
   "eslintConfig": {
     "extends": [
@@ -49,8 +47,6 @@
     ]
   },
   "devDependencies": {
-    "eslint": "^8.57.1",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^5.2.0"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
   }
 }

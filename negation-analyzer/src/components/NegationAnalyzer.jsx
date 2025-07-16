@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 
 export default function NegationAnalyzer() {
@@ -216,34 +216,29 @@ export default function NegationAnalyzer() {
     setBatchResults(results);
   };
 
-  const handleFileUpload = useCallback((event) => {
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     setUploadError(null);
 
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const data = new Uint8Array(e.target.result);
-        const workbook = await import('xlsx').then(XLSX => XLSX.read(data, { type: 'array' }));
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = await import('xlsx').then(XLSX => XLSX.utils.sheet_to_json(worksheet));
+    try {
+      const data = new Uint8Array(await file.arrayBuffer());
+      const workbook = await import('xlsx').then(XLSX => XLSX.read(data, { type: 'array' }));
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = await import('xlsx').then(XLSX => XLSX.utils.sheet_to_json(worksheet));
 
-        if (!validateTrainingData(jsonData)) {
-          setUploadError("Invalid file format. Please ensure the file has at least two columns.");
-          return;
-        }
-
-        processTrainingData(jsonData);
-      } catch (error) {
-        setUploadError(`Error processing file: ${error.message}`);
+      if (!validateTrainingData(jsonData)) {
+        setUploadError("Invalid file format. Please ensure the file has at least two columns.");
+        return;
       }
-    };
 
-    reader.readAsArrayBuffer(file);
-  }, []);
+      processTrainingData(jsonData);
+    } catch (error) {
+      setUploadError(`Error processing file: ${error.message}`);
+    }
+  };
 
   // Training data processing
   const validateTrainingData = (data) => {
@@ -251,7 +246,7 @@ export default function NegationAnalyzer() {
     return Object.keys(data[0]).length >= 2;
   };
 
-  const processTrainingData = useCallback((data) => {
+  const processTrainingData = (data) => {
     const newPatterns = {
       french: {
         withoutNe: { patterns: [], statistics: {} },
@@ -310,7 +305,7 @@ export default function NegationAnalyzer() {
 
     setTrainingStats(stats);
     setTrainingData(prevData => [...prevData, ...data]);
-  }, []);
+  };
 
   const updateStatistics = (stats, patterns, type) => {
     patterns.subjects.forEach(subject => {
@@ -345,8 +340,9 @@ export default function NegationAnalyzer() {
         <h2 className="title">Multilingual Expletive Negation Analyzer</h2>
 
         <div className="form-group">
-          <label>Select Language</label>
+          <label htmlFor="language-select">Select Language</label>
           <select 
+            id="language-select"
             value={language} 
             onChange={(e) => setLanguage(e.target.value)}
             className="select"
@@ -358,9 +354,10 @@ export default function NegationAnalyzer() {
         </div>
 
         <div className="form-group">
-          <label>Enter Sentence:</label>
+          <label htmlFor="sentence-input">Enter Sentence:</label>
           <div className="input-group">
             <input
+              id="sentence-input"
               type="text"
               placeholder="Type a sentence with a negation..."
               value={inputText}
@@ -386,8 +383,9 @@ export default function NegationAnalyzer() {
       <div className="card">
         <h3 className="title">Batch Evaluation</h3>
         <div className="form-group">
-          <label>Enter Sentences (one per line)</label>
+          <label htmlFor="batch-input">Enter Sentences (one per line)</label>
           <textarea
+            id="batch-input"
             rows={6}
             placeholder="One sentence per line..."
             value={batchInput}
@@ -424,8 +422,9 @@ export default function NegationAnalyzer() {
       <div className="card">
         <h3 className="title">Training Data Management</h3>
         <div className="form-group">
-          <label>Upload Training Data (Excel)</label>
+          <label htmlFor="file-upload">Upload Training Data (Excel)</label>
           <input
+            id="file-upload"
             type="file"
             accept=".xlsx,.xls"
             onChange={handleFileUpload}
