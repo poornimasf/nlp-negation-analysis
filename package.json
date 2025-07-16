@@ -1,0 +1,22 @@
+{
+  "name": "negation-analyzer",
+  "version": "1.0.0",
+  "description": "Multilingual Expletive Negation Analyzer",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "@testing-library/jest-dom/extend-expect"
+    ],
+    "moduleNameMapper": {
+      "^@/components/(.*)$": "<rootDir>/src/components/$1"
+    }
+  },
+  "devDependencies": {
+    "jest-environment-jsdom": "^30.0.4"
+  }
+}
