@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import * as XLSX from 'xlsx';
 
 export default function NegationAnalyzer() {
   const [inputText, setInputText] = useState("");
@@ -18,20 +19,176 @@ export default function NegationAnalyzer() {
   const [result, setResult] = useState(null);
   const [highlightedText, setHighlightedText] = useState("");
   const [batchResults, setBatchResults] = useState([]);
+  
+  // New state for training data
+  const [trainingData, setTrainingData] = useState([]);
+  const [trainingStats, setTrainingStats] = useState({
+    totalExamples: 0,
+    byLanguage: {},
+    lastUpdated: null
+  });
+  const [uploadError, setUploadError] = useState(null);
 
-  const TRIGGERS = {
-    french: {
-      en: ["craindre", "avoir peur que", "peur que", "redouter", "avant que", "regretter"],
-      nonEn: ["commencer", "arrêter", "cesser", "décider", "oublier"],
-    },
-    english: {
-      en: ["afraid", "fear", "regret", "prevent", "before"],
-      nonEn: ["start", "stop", "decide", "quit"],
-    },
-    mandarin: {
-      en: ["怕", "抱歉", "避免", "前"],
-      nonEn: ["开始", "停止", "决定"],
-    },
+  // Custom patterns learned from training data
+  const [learnedPatterns, setLearnedPatterns] = useState({
+    french: { logical: [], expletive: [] },
+    english: { logical: [], expletive: [] },
+    mandarin: { logical: [], expletive: [] }
+  });
+
+  // Add after the TRIGGERS constant
+  
+  // Function to handle Excel file upload
+  const handleFileUpload = useCallback((event) => {
+    const file = event.target.files[0];
+    setUploadError(null);
+
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        // Validate data structure
+        if (!validateTrainingData(jsonData)) {
+          setUploadError("Invalid file format. Please ensure the file has 'language', 'logical negation', and 'expletive negation' columns.");
+          return;
+        }
+
+        processTrainingData(jsonData);
+      } catch (error) {
+        setUploadError(`Error processing file: ${error.message}`);
+      }
+    };
+
+    reader.readAsArrayBuffer(file);
+  }, []);
+
+  // Validate training data structure
+  const validateTrainingData = (data) => {
+    if (!Array.isArray(data) || data.length === 0) return false;
+    
+    const requiredColumns = ['language', 'logical negation', 'expletive negation'];
+    const firstRow = data[0];
+    
+    return requiredColumns.every(col => 
+      Object.keys(firstRow).some(key => key.toLowerCase().includes(col.toLowerCase()))
+    );
+  };
+
+  // Process and learn from training data
+  const processTrainingData = useCallback((data) => {
+    const newPatterns = {
+      french: { logical: [], expletive: [] },
+      english: { logical: [], expletive: [] },
+      mandarin: { logical: [], expletive: [] }
+    };
+
+    const stats = {
+      totalExamples: data.length,
+      byLanguage: {},
+      lastUpdated: new Date().toISOString()
+    };
+
+    // Process each training example
+    data.forEach(row => {
+      const lang = row.language.toLowerCase();
+      const logical = row['logical negation'];
+      const expletive = row['expletive negation'];
+
+      // Update statistics
+      stats.byLanguage[lang] = (stats.byLanguage[lang] || 0) + 1;
+
+      // Extract patterns
+      if (logical && typeof logical === 'string') {
+        const patterns = extractNegationPatterns(logical);
+        newPatterns[lang].logical.push(...patterns);
+      }
+
+      if (expletive && typeof expletive === 'string') {
+        const patterns = extractNegationPatterns(expletive);
+        newPatterns[lang].expletive.push(...patterns);
+      }
+    });
+
+    // Remove duplicates and update state
+    Object.keys(newPatterns).forEach(lang => {
+      newPatterns[lang].logical = [...new Set(newPatterns[lang].logical)];
+      newPatterns[lang].expletive = [...new Set(newPatterns[lang].expletive)];
+    });
+
+    setLearnedPatterns(prevPatterns => ({
+      french: {
+        logical: [...new Set([...prevPatterns.french.logical, ...newPatterns.french.logical])],
+        expletive: [...new Set([...prevPatterns.french.expletive, ...newPatterns.french.expletive])]
+      },
+      english: {
+        logical: [...new Set([...prevPatterns.english.logical, ...newPatterns.english.logical])],
+        expletive: [...new Set([...prevPatterns.english.expletive, ...newPatterns.english.expletive])]
+      },
+      mandarin: {
+        logical: [...new Set([...prevPatterns.mandarin.logical, ...newPatterns.mandarin.logical])],
+        expletive: [...new Set([...prevPatterns.mandarin.expletive, ...newPatterns.mandarin.expletive])]
+      }
+    }));
+
+    setTrainingStats(stats);
+    setTrainingData(prevData => [...prevData, ...data]);
+  }, []);
+
+  // Extract negation patterns from text
+  const extractNegationPatterns = (text) => {
+    const patterns = [];
+    
+    // Extract common negation patterns using regex
+    const negationRegex = {
+      french: /\b(ne\s+\w+|ne\s+\w+\s+pas|ne\s+pas\s+\w+)\b/gi,
+      english: /\b(not|never|no|none|nothing|nowhere|nobody|neither|nor)\b/gi,
+      mandarin: /(不|没|别)/g
+    };
+
+    Object.keys(negationRegex).forEach(lang => {
+      let match;
+      while ((match = negationRegex[lang].exec(text)) !== null) {
+        patterns.push(match[0]);
+      }
+    });
+
+    return patterns;
+  };
+
+  // Enhanced classification using learned patterns
+  const enhancedClassifyNegation = (text, lang) => {
+    const basicClassification = classifyNegation(text, lang);
+    
+    // If we have learned patterns, enhance the classification
+    if (learnedPatterns[lang]) {
+      const textLower = text.toLowerCase();
+      
+      // Check against learned patterns
+      const matchesLogical = learnedPatterns[lang].logical.some(pattern => 
+        textLower.includes(pattern.toLowerCase())
+      );
+      
+      const matchesExpletive = learnedPatterns[lang].expletive.some(pattern => 
+        textLower.includes(pattern.toLowerCase())
+      );
+
+      if (matchesExpletive && basicClassification.includes("logically consistent")) {
+        return "Potential expletive negation (based on training data)";
+      }
+      
+      if (matchesLogical && basicClassification.includes("expletive")) {
+        return "Likely logical negation (based on training data)";
+      }
+    }
+
+    return basicClassification;
   };
 
   function hasNegation(text, lang) {
@@ -96,7 +253,7 @@ export default function NegationAnalyzer() {
   }
 
   const handleAnalyze = () => {
-    const classification = classifyNegation(inputText, language);
+    const classification = enhancedClassifyNegation(inputText, language);
     setResult(classification);
     setHighlightedText(highlight(inputText, language));
   };
@@ -106,7 +263,7 @@ export default function NegationAnalyzer() {
     const results = sentences.map((sentence, index) => ({
       id: index + 1,
       text: sentence,
-      label: classifyNegation(sentence, language),
+      label: enhancedClassifyNegation(sentence, language),
     }));
     setBatchResults(results);
   };
@@ -162,6 +319,52 @@ export default function NegationAnalyzer() {
           </CardContent>
         </Card>
       )}
+
+      <Card className="shadow-lg">
+        <CardContent className="p-6 space-y-4">
+          <h3 className="text-xl font-semibold text-blue-800">Training Data Management</h3>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Upload Training Data (Excel)</label>
+              <Input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileUpload}
+                className="w-full"
+              />
+              {uploadError && (
+                <p className="text-red-500 text-sm mt-1">{uploadError}</p>
+              )}
+            </div>
+
+            {trainingStats.totalExamples > 0 && (
+              <div className="bg-gray-50 p-4 rounded-md">
+                <h4 className="font-medium mb-2">Training Data Statistics</h4>
+                <ul className="space-y-1 text-sm">
+                  <li>Total examples: {trainingStats.totalExamples}</li>
+                  {Object.entries(trainingStats.byLanguage).map(([lang, count]) => (
+                    <li key={lang}>{lang}: {count} examples</li>
+                  ))}
+                  <li>Last updated: {new Date(trainingStats.lastUpdated).toLocaleString()}</li>
+                </ul>
+              </div>
+            )}
+
+            {Object.keys(learnedPatterns).map(lang => (
+              learnedPatterns[lang].logical.length > 0 || learnedPatterns[lang].expletive.length > 0 ? (
+                <div key={lang} className="bg-gray-50 p-4 rounded-md">
+                  <h4 className="font-medium mb-2">Learned Patterns - {lang}</h4>
+                  <div className="space-y-2 text-sm">
+                    <p>Logical negation patterns: {learnedPatterns[lang].logical.length}</p>
+                    <p>Expletive negation patterns: {learnedPatterns[lang].expletive.length}</p>
+                  </div>
+                </div>
+              ) : null
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="shadow-lg">
         <CardContent className="p-6 space-y-4">
