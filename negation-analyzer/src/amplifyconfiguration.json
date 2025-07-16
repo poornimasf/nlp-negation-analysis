@@ -2,10 +2,13 @@
     "aws_project_region": "us-east-2",
     "aws_cognito_region": "us-east-2",
     "aws_cognito_identity_pool_id": "us-east-2:42bdd4f3-fce3-4fc8-97cb-1b5932af4e48",
-    "aws_cognito_username_attributes": ["EMAIL"],
+    "aws_user_pools_id": "us-east-2_T2ieumS4H",
+    "aws_user_pools_web_client_id": "4abfm828kv9v6el1acfkfq74t0",
+    "aws_cognito_username_attributes": ["email"],
     "aws_cognito_social_providers": [],
-    "aws_cognito_signup_attributes": ["EMAIL"],
+    "aws_cognito_signup_attributes": ["email"],
     "aws_cognito_mfa_configuration": "OFF",
+    "aws_cognito_mfa_types": ["SMS"],
     "aws_cognito_password_protection_settings": {
         "passwordPolicyMinLength": 8,
         "passwordPolicyCharacters": [
@@ -15,12 +18,5 @@
             "REQUIRES_SYMBOLS"
         ]
     },
-    "aws_cognito_verification_mechanisms": ["EMAIL"],
-    "oauth": {
-        "domain": "main.d1gx30ivteuneq.amplifyapp.com",
-        "scope": ["email", "openid"],
-        "redirectSignIn": "https://main.d1gx30ivteuneq.amplifyapp.com/",
-        "redirectSignOut": "https://main.d1gx30ivteuneq.amplifyapp.com/",
-        "responseType": "code"
-    }
+    "aws_cognito_verification_mechanisms": ["EMAIL"]
 }
