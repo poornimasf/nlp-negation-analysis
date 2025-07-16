@@ -15,6 +15,7 @@
     "xlsx": "^0.18.5"
   },
   "scripts": {
+    "preinstall": "rm -rf node_modules package-lock.json",
     "start": "react-scripts start",
     "build": "CI=false react-scripts build",
     "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!@aws-amplify)/\"",
