@@ -2,10 +2,17 @@ import React, { useState, useEffect } from 'react';
 import './NegationAnalyzer.css';
 
 const EnhancedNegationAnalyzer = () => {
+  // Original functionality state
   const [inputText, setInputText] = useState('');
+  const [batchInput, setBatchInput] = useState('');
   const [results, setResults] = useState(null);
+  const [batchResults, setBatchResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('french');
+  const [highlightedText, setHighlightedText] = useState('');
+  const [activeTab, setActiveTab] = useState('single');
+  
+  // Enhanced functionality state
   const [systemStats, setSystemStats] = useState(null);
   const [feedbackMode, setFeedbackMode] = useState(false);
   const [userFeedback, setUserFeedback] = useState({
@@ -13,11 +20,56 @@ const EnhancedNegationAnalyzer = () => {
     confidence_score: null,
     comments: ''
   });
+  
+  // Training data state
+  const [trainingData, setTrainingData] = useState([]);
+  const [trainingStats, setTrainingStats] = useState({
+    totalExamples: 0,
+    withoutNe: 0,
+    withNe: 0,
+    lastUpdated: null
+  });
+
+  // Constants from original component
+  const TRIGGERS = {
+    french: {
+      en: ["craindre", "avoir peur que", "peur que", "redouter", "avant que", "regretter"],
+      nonEn: ["commencer", "arrêter", "cesser", "décider", "oublier"],
+    },
+    english: {
+      en: ["afraid", "fear", "regret", "prevent", "before"],
+      nonEn: ["start", "stop", "decide", "quit"],
+    },
+    mandarin: {
+      en: ["怕", "抱歉", "避免", "前"],
+      nonEn: ["开始", "停止", "决定"],
+    },
+  };
 
   // Load system statistics on component mount
   useEffect(() => {
     loadSystemStats();
   }, []);
+
+  // Helper functions from original component
+  const hasNegation = (text, lang) => {
+    const patterns = {
+      french: /\bne\b([^a-zA-Z]|\s|$)/i,
+      english: /\bnot\b|\bnever\b|\bno\b|\bnobody\b/i,
+      mandarin: /不|没|别/,
+    };
+    return patterns[lang].test(text);
+  };
+
+  const highlightNegation = (text, lang) => {
+    const patterns = {
+      french: /(\bne\b)/gi,
+      english: /(\bnot\b|\bnever\b|\bno\b|\bnobody\b)/gi,
+      mandarin: /(不|没|别)/g,
+    };
+    
+    return text.replace(patterns[lang], '<mark>$1</mark>');
+  };
 
   const loadSystemStats = async () => {
     try {
@@ -44,10 +96,10 @@ const EnhancedNegationAnalyzer = () => {
     setFeedbackMode(false);
 
     try {
-      // Simulate API call to enhanced negation system
-      // In production, this would call your Lambda function or API Gateway
+      // Enhanced analysis with original highlighting
       const mockAnalysis = await simulateEnhancedAnalysis(inputText, language);
       setResults(mockAnalysis);
+      setHighlightedText(highlightNegation(inputText, language));
     } catch (error) {
       console.error('Analysis error:', error);
       setResults({
@@ -60,19 +112,57 @@ const EnhancedNegationAnalyzer = () => {
     }
   };
 
+  const analyzeBatch = async () => {
+    if (!batchInput.trim()) return;
+
+    setLoading(true);
+    setBatchResults([]);
+
+    try {
+      const lines = batchInput.split('\n').filter(line => line.trim());
+      const results = [];
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line) {
+          const analysis = await simulateEnhancedAnalysis(line, language);
+          results.push({
+            id: i + 1,
+            text: line,
+            ...analysis,
+            highlighted: highlightNegation(line, language)
+          });
+        }
+      }
+
+      setBatchResults(results);
+    } catch (error) {
+      console.error('Batch analysis error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const simulateEnhancedAnalysis = async (text, lang) => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Enhanced analysis simulation with knowledge base features
-    const negationWords = ['not', 'no', 'never', 'nothing', 'nobody', 'don\'t', 'doesn\'t', 'won\'t', 'can\'t'];
-    const textLower = text.toLowerCase();
+    // Use original negation detection logic
+    const negationDetected = hasNegation(text, lang);
     
+    // Enhanced analysis simulation with knowledge base features
+    const negationWords = {
+      french: ['ne', 'pas', 'jamais', 'rien', 'personne'],
+      english: ['not', 'no', 'never', 'nothing', 'nobody', "don't", "doesn't", "won't", "can't"],
+      mandarin: ['不', '没', '别']
+    };
+    
+    const textLower = text.toLowerCase();
     let matches = [];
     let baseConfidence = 0;
     
-    negationWords.forEach(word => {
-      if (textLower.includes(word)) {
+    negationWords[lang]?.forEach(word => {
+      if (textLower.includes(word.toLowerCase())) {
         matches.push(word);
         baseConfidence += 0.3;
       }
@@ -85,7 +175,7 @@ const EnhancedNegationAnalyzer = () => {
     const finalConfidence = Math.min(baseConfidence + kbConfidenceBoost, 1.0);
 
     return {
-      negation_detected: matches.length > 0,
+      negation_detected: negationDetected,
       confidence_score: finalConfidence,
       matches: matches,
       language: lang,
@@ -166,171 +256,279 @@ const EnhancedNegationAnalyzer = () => {
         )}
       </div>
 
-      <div className="input-section">
-        <div className="language-selector">
-          <label htmlFor="language">Language:</label>
-          <select 
-            id="language" 
-            value={language} 
-            onChange={(e) => setLanguage(e.target.value)}
-          >
-            <option value="en">English</option>
-            <option value="es">Spanish</option>
-            <option value="fr">French</option>
-          </select>
-        </div>
-
-        <textarea
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder="Enter text to analyze for negation patterns..."
-          rows={4}
-          className="text-input"
-        />
-
+      {/* Tab Navigation */}
+      <div className="tab-navigation">
         <button 
-          onClick={analyzeText} 
-          disabled={loading || !inputText.trim()}
-          className="analyze-button"
+          className={`tab-button ${activeTab === 'single' ? 'active' : ''}`}
+          onClick={() => setActiveTab('single')}
         >
-          {loading ? 'Analyzing...' : 'Analyze Text'}
+          Single Text Analysis
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'batch' ? 'active' : ''}`}
+          onClick={() => setActiveTab('batch')}
+        >
+          Batch Analysis
         </button>
       </div>
 
-      {results && (
-        <div className="results-section">
-          <h3>Analysis Results</h3>
-          
-          <div className="result-card">
-            <div className="result-header">
-              <span className={`negation-status ${results.negation_detected ? 'detected' : 'not-detected'}`}>
-                {results.negation_detected ? '✓ Negation Detected' : '✗ No Negation Detected'}
-              </span>
-              
-              <div className="confidence-badge">
-                <span 
-                  className="confidence-score"
-                  style={{ color: getConfidenceColor(results.confidence_score) }}
-                >
-                  {(results.confidence_score * 100).toFixed(1)}% ({getConfidenceLabel(results.confidence_score)})
-                </span>
-              </div>
-            </div>
+      {/* Language Selector */}
+      <div className="language-selector">
+        <label htmlFor="language">Language:</label>
+        <select 
+          id="language" 
+          value={language} 
+          onChange={(e) => setLanguage(e.target.value)}
+        >
+          <option value="french">French</option>
+          <option value="english">English</option>
+          <option value="mandarin">Mandarin</option>
+        </select>
+      </div>
 
-            {results.matches && results.matches.length > 0 && (
-              <div className="matches-section">
-                <h4>Detected Patterns:</h4>
-                <div className="matches-list">
-                  {results.matches.map((match, index) => (
-                    <span key={index} className="match-tag">{match}</span>
-                  ))}
-                </div>
-              </div>
-            )}
+      {/* Single Text Analysis Tab */}
+      {activeTab === 'single' && (
+        <div className="input-section">
+          <textarea
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="Enter text to analyze for negation patterns..."
+            rows={4}
+            className="text-input"
+          />
 
-            <div className="analysis-details">
-              <div className="detail-item">
-                <span className="detail-label">Pattern Type:</span>
-                <span className="detail-value">{results.pattern_type || 'N/A'}</span>
-              </div>
-              
-              <div className="detail-item">
-                <span className="detail-label">Language:</span>
-                <span className="detail-value">{results.language?.toUpperCase()}</span>
-              </div>
-              
-              <div className="detail-item">
-                <span className="detail-label">Processing Time:</span>
-                <span className="detail-value">{results.processing_time_ms}ms</span>
-              </div>
+          <button 
+            onClick={analyzeText} 
+            disabled={loading || !inputText.trim()}
+            className="analyze-button"
+          >
+            {loading ? 'Analyzing...' : 'Analyze Text'}
+          </button>
 
-              {results.kb_enhanced && (
-                <div className="kb-enhancement">
-                  <span className="enhancement-badge">🧠 Knowledge Base Enhanced</span>
-                  <span className="similar-patterns">
-                    {results.similar_patterns_count} similar patterns found
+          {/* Single Analysis Results */}
+          {results && (
+            <div className="results-section">
+              <h3>Analysis Results</h3>
+              
+              <div className="result-card">
+                <div className="result-header">
+                  <span className={`negation-status ${results.negation_detected ? 'detected' : 'not-detected'}`}>
+                    {results.negation_detected ? '✓ Negation Detected' : '✗ No Negation Detected'}
                   </span>
-                </div>
-              )}
-            </div>
-
-            <div className="feedback-section">
-              <button 
-                onClick={() => setFeedbackMode(!feedbackMode)}
-                className="feedback-toggle"
-              >
-                {feedbackMode ? 'Cancel Feedback' : 'Provide Feedback'}
-              </button>
-
-              {feedbackMode && (
-                <div className="feedback-form">
-                  <h4>Help Improve Our System</h4>
                   
-                  <div className="feedback-field">
-                    <label>Was negation correctly detected?</label>
-                    <div className="radio-group">
-                      <label>
-                        <input
-                          type="radio"
-                          name="negation_feedback"
-                          value="true"
-                          onChange={(e) => setUserFeedback({
-                            ...userFeedback,
-                            negation_detected: e.target.value === 'true'
-                          })}
-                        />
-                        Yes
-                      </label>
-                      <label>
-                        <input
-                          type="radio"
-                          name="negation_feedback"
-                          value="false"
-                          onChange={(e) => setUserFeedback({
-                            ...userFeedback,
-                            negation_detected: e.target.value === 'true'
-                          })}
-                        />
-                        No
-                      </label>
+                  <div className="confidence-badge">
+                    <span 
+                      className="confidence-score"
+                      style={{ color: getConfidenceColor(results.confidence_score) }}
+                    >
+                      {(results.confidence_score * 100).toFixed(1)}% ({getConfidenceLabel(results.confidence_score)})
+                    </span>
+                  </div>
+                </div>
+
+                {/* Highlighted Text */}
+                {highlightedText && (
+                  <div className="highlighted-text">
+                    <h4>Highlighted Text:</h4>
+                    <div 
+                      className="text-highlight" 
+                      dangerouslySetInnerHTML={{ __html: highlightedText }}
+                    />
+                  </div>
+                )}
+
+                {results.matches && results.matches.length > 0 && (
+                  <div className="matches-section">
+                    <h4>Detected Patterns:</h4>
+                    <div className="matches-list">
+                      {results.matches.map((match, index) => (
+                        <span key={index} className="match-tag">{match}</span>
+                      ))}
                     </div>
                   </div>
+                )}
 
-                  <div className="feedback-field">
-                    <label>Confidence Rating (0-100%):</label>
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={userFeedback.confidence_score || 50}
-                      onChange={(e) => setUserFeedback({
-                        ...userFeedback,
-                        confidence_score: parseInt(e.target.value) / 100
-                      })}
-                    />
-                    <span>{Math.round((userFeedback.confidence_score || 0.5) * 100)}%</span>
+                <div className="analysis-details">
+                  <div className="detail-item">
+                    <span className="detail-label">Pattern Type:</span>
+                    <span className="detail-value">{results.pattern_type || 'N/A'}</span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <span className="detail-label">Language:</span>
+                    <span className="detail-value">{results.language?.toUpperCase()}</span>
+                  </div>
+                  
+                  <div className="detail-item">
+                    <span className="detail-label">Processing Time:</span>
+                    <span className="detail-value">{results.processing_time_ms}ms</span>
                   </div>
 
-                  <div className="feedback-field">
-                    <label>Additional Comments:</label>
-                    <textarea
-                      value={userFeedback.comments}
-                      onChange={(e) => setUserFeedback({
-                        ...userFeedback,
-                        comments: e.target.value
-                      })}
-                      placeholder="Any additional feedback or corrections..."
-                      rows={3}
-                    />
-                  </div>
-
-                  <button onClick={submitFeedback} className="submit-feedback">
-                    Submit Feedback
-                  </button>
+                  {results.kb_enhanced && (
+                    <div className="kb-enhancement">
+                      <span className="enhancement-badge">🧠 Knowledge Base Enhanced</span>
+                      <span className="similar-patterns">
+                        {results.similar_patterns_count} similar patterns found
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
+
+                {/* Feedback Section */}
+                <div className="feedback-section">
+                  <button 
+                    onClick={() => setFeedbackMode(!feedbackMode)}
+                    className="feedback-toggle"
+                  >
+                    {feedbackMode ? 'Cancel Feedback' : 'Provide Feedback'}
+                  </button>
+
+                  {feedbackMode && (
+                    <div className="feedback-form">
+                      <h4>Help Improve Our System</h4>
+                      
+                      <div className="feedback-field">
+                        <label>Was negation correctly detected?</label>
+                        <div className="radio-group">
+                          <label>
+                            <input
+                              type="radio"
+                              name="negation_feedback"
+                              value="true"
+                              onChange={(e) => setUserFeedback({
+                                ...userFeedback,
+                                negation_detected: e.target.value === 'true'
+                              })}
+                            />
+                            Yes
+                          </label>
+                          <label>
+                            <input
+                              type="radio"
+                              name="negation_feedback"
+                              value="false"
+                              onChange={(e) => setUserFeedback({
+                                ...userFeedback,
+                                negation_detected: e.target.value === 'true'
+                              })}
+                            />
+                            No
+                          </label>
+                        </div>
+                      </div>
+
+                      <div className="feedback-field">
+                        <label>Confidence Rating (0-100%):</label>
+                        <input
+                          type="range"
+                          min="0"
+                          max="100"
+                          value={userFeedback.confidence_score || 50}
+                          onChange={(e) => setUserFeedback({
+                            ...userFeedback,
+                            confidence_score: parseInt(e.target.value) / 100
+                          })}
+                        />
+                        <span>{Math.round((userFeedback.confidence_score || 0.5) * 100)}%</span>
+                      </div>
+
+                      <div className="feedback-field">
+                        <label>Additional Comments:</label>
+                        <textarea
+                          value={userFeedback.comments}
+                          onChange={(e) => setUserFeedback({
+                            ...userFeedback,
+                            comments: e.target.value
+                          })}
+                          placeholder="Any additional feedback or corrections..."
+                          rows={3}
+                        />
+                      </div>
+
+                      <button onClick={submitFeedback} className="submit-feedback">
+                        Submit Feedback
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
+          )}
+        </div>
+      )}
+
+      {/* Batch Analysis Tab */}
+      {activeTab === 'batch' && (
+        <div className="input-section">
+          <textarea
+            value={batchInput}
+            onChange={(e) => setBatchInput(e.target.value)}
+            placeholder="Enter multiple lines of text to analyze (one per line)..."
+            rows={8}
+            className="text-input"
+          />
+
+          <button 
+            onClick={analyzeBatch} 
+            disabled={loading || !batchInput.trim()}
+            className="analyze-button"
+          >
+            {loading ? 'Analyzing Batch...' : 'Analyze Batch'}
+          </button>
+
+          {/* Batch Results */}
+          {batchResults.length > 0 && (
+            <div className="results-section">
+              <h3>Batch Analysis Results ({batchResults.length} items)</h3>
+              
+              <div className="batch-summary">
+                <div className="summary-stat">
+                  <span className="stat-label">Negation Detected:</span>
+                  <span className="stat-value">
+                    {batchResults.filter(r => r.negation_detected).length} / {batchResults.length}
+                  </span>
+                </div>
+                <div className="summary-stat">
+                  <span className="stat-label">Average Confidence:</span>
+                  <span className="stat-value">
+                    {(batchResults.reduce((sum, r) => sum + r.confidence_score, 0) / batchResults.length * 100).toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+
+              <div className="batch-results">
+                {batchResults.map((result, index) => (
+                  <div key={index} className="batch-result-item">
+                    <div className="result-header">
+                      <span className="result-id">#{result.id}</span>
+                      <span className={`negation-status ${result.negation_detected ? 'detected' : 'not-detected'}`}>
+                        {result.negation_detected ? '✓' : '✗'}
+                      </span>
+                      <span 
+                        className="confidence-score"
+                        style={{ color: getConfidenceColor(result.confidence_score) }}
+                      >
+                        {(result.confidence_score * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                    
+                    <div 
+                      className="result-text" 
+                      dangerouslySetInnerHTML={{ __html: result.highlighted }}
+                    />
+                    
+                    {result.matches && result.matches.length > 0 && (
+                      <div className="result-matches">
+                        {result.matches.map((match, i) => (
+                          <span key={i} className="match-tag small">{match}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
