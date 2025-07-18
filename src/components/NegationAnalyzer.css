@@ -400,6 +400,94 @@
   margin-top: 8px;
 }
 
+/* Classification Results */
+.classification-section {
+  margin: 15px 0;
+  padding: 15px;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  border-left: 4px solid #4299e1;
+}
+
+.classification-section h4 {
+  color: #2d3748;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.classification-result {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-radius: 4px;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+}
+
+.classification-text {
+  font-weight: 500;
+  color: #2d3748;
+  flex: 1;
+}
+
+.classification-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.classification-badge.expletive {
+  background-color: #fed7d7;
+  color: #c53030;
+}
+
+.classification-badge.logical {
+  background-color: #c6f6d5;
+  color: #2f855a;
+}
+
+.classification-badge.uncertain {
+  background-color: #faf089;
+  color: #744210;
+}
+
+.classification-result.expletive {
+  border-left: 4px solid #f56565;
+}
+
+.classification-result.logical {
+  border-left: 4px solid #48bb78;
+}
+
+.classification-result.uncertain {
+  border-left: 4px solid #ed8936;
+}
+
+/* Enhanced pattern display */
+.patterns-section {
+  margin: 15px 0;
+}
+
+.patterns-section h4 {
+  color: #2d3748;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.pattern-details {
+  background-color: #f7fafc;
+  padding: 10px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  color: #4a5568;
+}
+
 /* Password Gate Styles */
 .password-gate {
   display: flex;

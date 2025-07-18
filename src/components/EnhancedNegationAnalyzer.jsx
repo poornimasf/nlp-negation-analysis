@@ -65,7 +65,65 @@ const EnhancedNegationAnalyzer = () => {
   // Load system statistics on component mount
   useEffect(() => {
     loadSystemStats();
+    loadExistingTrainingData();
   }, []);
+
+  const loadExistingTrainingData = async () => {
+    try {
+      // In a real implementation, you would load the Excel file from the data folder
+      // For now, we'll simulate loading some training patterns
+      const mockTrainingPatterns = {
+        french: {
+          withNe: {
+            patterns: [
+              { text: "Je crains qu'il ne vienne", classification: "expletive", subjects: ["il"], verbs: ["vienne"] },
+              { text: "J'ai peur qu'elle ne soit malade", classification: "expletive", subjects: ["elle"], verbs: ["soit"] },
+              { text: "Je redoute qu'ils ne partent", classification: "expletive", subjects: ["ils"], verbs: ["partent"] }
+            ],
+            statistics: {
+              commonConstructions: {
+                "il vienne": 15,
+                "elle soit": 12,
+                "ils partent": 8
+              }
+            }
+          },
+          withoutNe: {
+            patterns: [
+              { text: "Je pense qu'il viendra", classification: "logical", subjects: ["il"], verbs: ["viendra"] },
+              { text: "Je crois qu'elle est malade", classification: "logical", subjects: ["elle"], verbs: ["est"] },
+              { text: "Je sais qu'ils partiront", classification: "logical", subjects: ["ils"], verbs: ["partiront"] }
+            ],
+            statistics: {
+              commonConstructions: {
+                "il viendra": 20,
+                "elle est": 18,
+                "ils partiront": 10
+              }
+            }
+          }
+        },
+        english: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } },
+        mandarin: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } }
+      };
+
+      setLearnedPatterns(mockTrainingPatterns);
+      
+      // Update training stats
+      const totalWithNe = mockTrainingPatterns.french.withNe.patterns.length;
+      const totalWithoutNe = mockTrainingPatterns.french.withoutNe.patterns.length;
+      
+      setTrainingStats({
+        totalExamples: totalWithNe + totalWithoutNe,
+        withNe: totalWithNe,
+        withoutNe: totalWithoutNe,
+        lastUpdated: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error('Error loading existing training data:', error);
+    }
+  };
 
   // Helper functions from original component
   const hasNegation = (text, lang) => {
@@ -85,6 +143,147 @@ const EnhancedNegationAnalyzer = () => {
     };
     
     return text.replace(patterns[lang], '<mark>$1</mark>');
+  };
+
+  // Advanced expletive vs logical negation classification
+  const extractComplement = (text, trigger) => {
+    if (!trigger) return text;
+    const triggerIndex = text.indexOf(trigger);
+    if (triggerIndex === -1) return text;
+    return text.substring(triggerIndex + trigger.length);
+  };
+
+  const classifyNegation = (text, lang) => {
+    const lowerText = text.toLowerCase();
+    const enTrigger = TRIGGERS[lang]?.en.find(trigger => lowerText.includes(trigger));
+    const nonEnTrigger = TRIGGERS[lang]?.nonEn.find(trigger => lowerText.includes(trigger));
+    const negation = hasNegation(lowerText, lang);
+    
+    if (!negation) return "No negation detected.";
+
+    const matchedTrigger = enTrigger || nonEnTrigger || "";
+    const relevantClause = extractComplement(lowerText, matchedTrigger);
+    const clauseHasNeg = hasNegation(relevantClause, lang);
+
+    // Check for full logical negation (ne + pas/rien/jamais/etc.)
+    const isFullNegation = /\bne\b[^.?!]{0,15}\b(pas|rien|jamais|plus|personne|aucun|guère)\b/i.test(relevantClause);
+    if (isFullNegation) return "Logically consistent negation. Not expletive.";
+
+    if (!clauseHasNeg) return "Negation found, but not in the complement clause. No expletive negation.";
+
+    // Special case for "peur que" constructions
+    if (/\bpeur que\b[^.?!]*\b(il|elle|je|tu|nous|vous|ils|elles)\b[^.?!]{0,10}\b(s'agisse|soit|ait|aille|vienne|tombe|manque)\b/i.test(lowerText) && !/\bne\b/i.test(relevantClause)) {
+      return "EN-trigger + logically consistent negation";
+    }
+
+    // Classify based on trigger type and negation pattern
+    if (enTrigger) {
+      if (/\b(peur|craindre|redouter|regretter) que\b[^.?!]*\bne\b(?!\s+(pas|rien|jamais|plus|aucun))/i.test(lowerText)) {
+        return "EN-trigger + expletive negation";
+      }
+      return "EN-trigger + logically consistent negation";
+    } else if (nonEnTrigger) {
+      return "Non-EN-trigger + logically inconsistent negation";
+    } else {
+      return "Trigger not clearly identified.";
+    }
+  };
+
+  // Pattern extraction for advanced analysis
+  const extractPeurQuePatterns = (text) => {
+    const patterns = {
+      peurQue: [],
+      expletiveNe: [],
+      context: [],
+      subjects: [],
+      verbs: []
+    };
+    
+    const peurQueRegex = /\b(?:\w+\s+){0,3}(?:avoir\s+)?peur\s+que\b[^.!?]*[.!?]/gi;
+    const neRegex = /\bne\b(?!\s+(pas|plus|jamais|rien|personne|aucun|guère))[^.!?]*?(?=\b(soit|ait|fasse|vienne|parte|tombe|mange|dise|prenne|mette)\b)/gi;
+    const subjectRegex = /\b(je|tu|il|elle|nous|vous|ils|elles)\b/gi;
+    const verbRegex = /\b(soit|ait|fasse|vienne|parte|tombe|mange|dise|prenne|mette)\b/gi;
+
+    let match;
+    while ((match = peurQueRegex.exec(text)) !== null) {
+      patterns.peurQue.push({
+        full: match[0],
+        context: text.slice(Math.max(0, match.index - 30), match.index + match[0].length + 30)
+      });
+    }
+    
+    while ((match = neRegex.exec(text)) !== null) {
+      patterns.expletiveNe.push({
+        pattern: match[0],
+        context: text.slice(Math.max(0, match.index - 20), match.index + match[0].length + 20)
+      });
+    }
+    
+    patterns.subjects = text.match(subjectRegex) || [];
+    patterns.verbs = text.match(verbRegex) || [];
+    
+    return patterns;
+  };
+
+  const calculatePatternScore = (testPatterns, learnedPatterns) => {
+    if (!learnedPatterns || learnedPatterns.length === 0) return 0;
+    
+    let score = 0;
+    const weights = {
+      subject: 0.3,
+      verb: 0.3,
+      construction: 0.4
+    };
+
+    const subjectMatch = testPatterns.subjects.some(subject =>
+      learnedPatterns.some(p => p.subjects && p.subjects.includes(subject))
+    );
+    if (subjectMatch) score += weights.subject;
+
+    const verbMatch = testPatterns.verbs.some(verb =>
+      learnedPatterns.some(p => p.verbs && p.verbs.includes(verb))
+    );
+    if (verbMatch) score += weights.verb;
+
+    const constructionMatch = testPatterns.peurQue.some(({ full }) =>
+      learnedPatterns.some(p => 
+        p.peurQue && p.peurQue.some(learned => learned.full && learned.full.includes(full))
+      )
+    );
+    if (constructionMatch) score += weights.construction;
+
+    return score;
+  };
+
+  // Enhanced classification combining rules and learning
+  const enhancedClassifyNegation = (text, lang) => {
+    const basicClassification = classifyNegation(text, lang);
+    
+    if (lang === 'french' && learnedPatterns.french) {
+      const patterns = extractPeurQuePatterns(text);
+      const stats = learnedPatterns.french;
+      
+      const withNeScore = calculatePatternScore(patterns, stats.withNe?.patterns || []);
+      const withoutNeScore = calculatePatternScore(patterns, stats.withoutNe?.patterns || []);
+      
+      if (withNeScore > withoutNeScore && withNeScore > 0.6) {
+        return "Expletive negation (high confidence from training data)";
+      } else if (withoutNeScore > withNeScore && withoutNeScore > 0.6) {
+        return "Logical negation (high confidence from training data)";
+      } else if (patterns.expletiveNe.length > 0) {
+        const hasLearnedPattern = patterns.subjects.some(subj => 
+          patterns.verbs.some(verb => 
+            stats.withNe?.statistics?.commonConstructions?.[`${subj} ${verb}`]
+          )
+        );
+        
+        if (hasLearnedPattern) {
+          return "Likely expletive negation (based on learned patterns)";
+        }
+      }
+    }
+
+    return basicClassification;
   };
 
   // Training data management functions
@@ -319,8 +518,12 @@ const EnhancedNegationAnalyzer = () => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Use original negation detection logic
+    // Use sophisticated expletive vs logical negation classification
+    const classification = enhancedClassifyNegation(text, lang);
     const negationDetected = hasNegation(text, lang);
+    
+    // Extract patterns for detailed analysis
+    const patterns = lang === 'french' ? extractPeurQuePatterns(text) : {};
     
     // Enhanced analysis simulation with knowledge base features
     const negationWords = {
@@ -340,6 +543,21 @@ const EnhancedNegationAnalyzer = () => {
       }
     });
 
+    // Add trigger words to matches if found
+    const enTrigger = TRIGGERS[lang]?.en.find(trigger => textLower.includes(trigger));
+    const nonEnTrigger = TRIGGERS[lang]?.nonEn.find(trigger => textLower.includes(trigger));
+    if (enTrigger) matches.push(`EN-trigger: ${enTrigger}`);
+    if (nonEnTrigger) matches.push(`Non-EN-trigger: ${nonEnTrigger}`);
+
+    // Determine if this is expletive negation
+    const isExpletive = classification.toLowerCase().includes('expletive');
+    const isLogical = classification.toLowerCase().includes('logical') || classification.toLowerCase().includes('consistent');
+    
+    // Adjust confidence based on classification certainty
+    if (isExpletive || isLogical) {
+      baseConfidence = Math.max(baseConfidence, 0.7);
+    }
+
     // Simulate knowledge base enhancement
     const kbEnhanced = matches.length > 0 && Math.random() > 0.3;
     const kbConfidenceBoost = kbEnhanced ? 0.15 : 0;
@@ -351,6 +569,9 @@ const EnhancedNegationAnalyzer = () => {
       confidence_score: finalConfidence,
       matches: matches,
       language: lang,
+      classification: classification,
+      classification_type: isExpletive ? 'expletive' : isLogical ? 'logical' : 'uncertain',
+      patterns_found: patterns,
       kb_enhanced: kbEnhanced,
       similar_patterns_count: kbEnhanced ? Math.floor(Math.random() * 10) + 1 : 0,
       pattern_type: matches.length > 1 ? 'complex' : 'simple',
@@ -407,8 +628,8 @@ const EnhancedNegationAnalyzer = () => {
   return (
     <div className="negation-analyzer">
       <div className="header">
-        <h1>Enhanced Negation Analyzer</h1>
-        <p>AI-powered text analysis with continuous learning</p>
+        <h1>Enhanced Expletive Negation Analyzer</h1>
+        <p>AI-powered analysis of expletive vs logical negation with continuous learning</p>
         
         {systemStats && (
           <div className="system-stats">
@@ -503,6 +724,22 @@ const EnhancedNegationAnalyzer = () => {
                     </span>
                   </div>
                 </div>
+
+                {/* Classification Results */}
+                {results.classification && (
+                  <div className="classification-section">
+                    <h4>Classification Analysis:</h4>
+                    <div className={`classification-result ${results.classification_type}`}>
+                      <span className="classification-text">{results.classification}</span>
+                      {results.classification_type && (
+                        <span className={`classification-badge ${results.classification_type}`}>
+                          {results.classification_type === 'expletive' ? '🔸 Expletive' : 
+                           results.classification_type === 'logical' ? '🔹 Logical' : '❓ Uncertain'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Highlighted Text */}
                 {highlightedText && (
