@@ -1,16 +1,5 @@
-import { useState, useCallback } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import * as XLSX from 'xlsx';
+import React, { useState } from 'react';
+import './NegationAnalyzer.css';
 
 export default function NegationAnalyzer() {
   // State definitions
@@ -116,11 +105,11 @@ export default function NegationAnalyzer() {
   // Pattern extraction and analysis
   const extractPeurQuePatterns = (text) => {
     const patterns = {
-      peurQue: [],      // Full "peur que" constructions
-      expletiveNe: [],  // Expletive ne patterns
-      context: [],      // Surrounding context
-      subjects: [],     // Subject pronouns
-      verbs: []         // Verbs in subjunctive
+      peurQue: [],
+      expletiveNe: [],
+      context: [],
+      subjects: [],
+      verbs: []
     };
     
     const peurQueRegex = /\b(?:\w+\s+){0,3}(?:avoir\s+)?peur\s+que\b[^.!?]*[.!?]/gi;
@@ -210,39 +199,54 @@ export default function NegationAnalyzer() {
     return basicClassification;
   };
 
-  // Training data processing
-  const updateStatistics = (stats, patterns, type) => {
-    patterns.subjects.forEach(subject => {
-      stats.patterns.subjectFrequency[subject] = (stats.patterns.subjectFrequency[subject] || 0) + 1;
-    });
-
-    patterns.verbs.forEach(verb => {
-      stats.patterns.verbFrequency[verb] = (stats.patterns.verbFrequency[verb] || 0) + 1;
-    });
-
-    patterns.peurQue.forEach(({ full }) => {
-      stats.patterns.commonConstructions[full] = (stats.patterns.commonConstructions[full] || 0) + 1;
-    });
+  // Event handlers
+  const handleAnalyze = () => {
+    const classification = enhancedClassifyNegation(inputText, language);
+    setResult(classification);
+    setHighlightedText(highlight(inputText, language));
   };
 
-  const mergeStatistics = (oldStats = {}, newStats = {}) => {
-    const merged = { ...oldStats };
-    Object.keys(newStats).forEach(key => {
-      if (typeof newStats[key] === 'object') {
-        merged[key] = { ...merged[key], ...newStats[key] };
-      } else {
-        merged[key] = (merged[key] || 0) + newStats[key];
+  const handleBatchAnalyze = () => {
+    const sentences = batchInput.split("\n").filter(Boolean);
+    const results = sentences.map((sentence, index) => ({
+      id: index + 1,
+      text: sentence,
+      label: enhancedClassifyNegation(sentence, language),
+    }));
+    setBatchResults(results);
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    setUploadError(null);
+
+    if (!file) return;
+
+    try {
+      const data = new Uint8Array(await file.arrayBuffer());
+      const workbook = await import('xlsx').then(XLSX => XLSX.read(data, { type: 'array' }));
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = await import('xlsx').then(XLSX => XLSX.utils.sheet_to_json(worksheet));
+
+      if (!validateTrainingData(jsonData)) {
+        setUploadError("Invalid file format. Please ensure the file has at least two columns.");
+        return;
       }
-    });
-    return merged;
+
+      processTrainingData(jsonData);
+    } catch (error) {
+      setUploadError(`Error processing file: ${error.message}`);
+    }
   };
 
+  // Training data processing
   const validateTrainingData = (data) => {
     if (!Array.isArray(data) || data.length === 0) return false;
     return Object.keys(data[0]).length >= 2;
   };
 
-  const processTrainingData = useCallback((data) => {
+  const processTrainingData = (data) => {
     const newPatterns = {
       french: {
         withoutNe: { patterns: [], statistics: {} },
@@ -301,52 +305,158 @@ export default function NegationAnalyzer() {
 
     setTrainingStats(stats);
     setTrainingData(prevData => [...prevData, ...data]);
-  }, []);
+  };
 
-  // Event handlers
-  const handleFileUpload = useCallback((event) => {
-    const file = event.target.files[0];
-    setUploadError(null);
+  const updateStatistics = (stats, patterns, type) => {
+    patterns.subjects.forEach(subject => {
+      stats.patterns.subjectFrequency[subject] = (stats.patterns.subjectFrequency[subject] || 0) + 1;
+    });
 
-    if (!file) return;
+    patterns.verbs.forEach(verb => {
+      stats.patterns.verbFrequency[verb] = (stats.patterns.verbFrequency[verb] || 0) + 1;
+    });
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const data = new Uint8Array(e.target.result);
-        const workbook = await import('xlsx').then(XLSX => XLSX.read(data, { type: 'array' }));
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = await import('xlsx').then(XLSX => XLSX.utils.sheet_to_json(worksheet));
+    patterns.peurQue.forEach(({ full }) => {
+      stats.patterns.commonConstructions[full] = (stats.patterns.commonConstructions[full] || 0) + 1;
+    });
+  };
 
-        if (!validateTrainingData(jsonData)) {
-          setUploadError("Invalid file format. Please ensure the file has at least two columns.");
-          return;
-        }
-
-        processTrainingData(jsonData);
-      } catch (error) {
-        setUploadError(`Error processing file: ${error.message}`);
+  const mergeStatistics = (oldStats = {}, newStats = {}) => {
+    const merged = { ...oldStats };
+    Object.keys(newStats).forEach(key => {
+      if (typeof newStats[key] === 'object') {
+        merged[key] = { ...merged[key], ...newStats[key] };
+      } else {
+        merged[key] = (merged[key] || 0) + newStats[key];
       }
-    };
-
-    reader.readAsArrayBuffer(file);
-  }, [processTrainingData]);
-
-  const handleAnalyze = () => {
-    const classification = enhancedClassifyNegation(inputText, language);
-    setResult(classification);
-    setHighlightedText(highlight(inputText, language));
+    });
+    return merged;
   };
 
-  const handleBatchAnalyze = () => {
-    const sentences = batchInput.split("\n").filter(Boolean);
-    const results = sentences.map((sentence, index) => ({
-      id: index + 1,
-      text: sentence,
-      label: enhancedClassifyNegation(sentence, language),
-    }));
-    setBatchResults(results);
-  };
+  // Render UI
+  return (
+    <div className="container">
+      <div className="card">
+        <h2 className="title">Multilingual Expletive Negation Analyzer</h2>
 
-  // [Rest of the component (JSX) remains the same]
+        <div className="form-group">
+          <label htmlFor="language-select">Select Language</label>
+          <select 
+            id="language-select"
+            value={language} 
+            onChange={(e) => setLanguage(e.target.value)}
+            className="select"
+          >
+            <option value="french">🇫🇷 French</option>
+            <option value="english">🇺🇸 English</option>
+            <option value="mandarin">🇨🇳 Mandarin</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="sentence-input">Enter Sentence:</label>
+          <div className="input-group">
+            <input
+              id="sentence-input"
+              type="text"
+              placeholder="Type a sentence with a negation..."
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              className="input"
+            />
+            <button onClick={handleAnalyze} className="button">
+              Evaluate
+            </button>
+          </div>
+        </div>
+
+        {result && (
+          <div className="result-section">
+            <h3>Classification Result:</h3>
+            <p>{result}</p>
+            <h3>Highlighted Sentence:</h3>
+            <p dangerouslySetInnerHTML={{ __html: highlightedText }}></p>
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <h3 className="title">Batch Evaluation</h3>
+        <div className="form-group">
+          <label htmlFor="batch-input">Enter Sentences (one per line)</label>
+          <textarea
+            id="batch-input"
+            rows={6}
+            placeholder="One sentence per line..."
+            value={batchInput}
+            onChange={(e) => setBatchInput(e.target.value)}
+            className="textarea"
+          />
+          <button onClick={handleBatchAnalyze} className="button">
+            Evaluate Batch
+          </button>
+        </div>
+
+        {batchResults.length > 0 && (
+          <table className="table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Sentence</th>
+                <th>Classification</th>
+              </tr>
+            </thead>
+            <tbody>
+              {batchResults.map(({ id, text, label }) => (
+                <tr key={id}>
+                  <td>{id}</td>
+                  <td>{text}</td>
+                  <td>{label}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <div className="card">
+        <h3 className="title">Training Data Management</h3>
+        <div className="form-group">
+          <label htmlFor="file-upload">Upload Training Data (Excel)</label>
+          <input
+            id="file-upload"
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleFileUpload}
+            className="input"
+          />
+          {uploadError && (
+            <p className="error-message">{uploadError}</p>
+          )}
+        </div>
+
+        {trainingStats.totalExamples > 0 && (
+          <div className="stats-section">
+            <h4>Training Data Statistics</h4>
+            <ul>
+              <li>Total examples: {trainingStats.totalExamples}</li>
+              <li>Examples without &apos;ne&apos;: {trainingStats.withoutNe}</li>
+              <li>Examples with &apos;ne&apos;: {trainingStats.withNe}</li>
+              <li>Last updated: {new Date(trainingStats.lastUpdated).toLocaleString()}</li>
+            </ul>
+          </div>
+        )}
+
+        {learnedPatterns.french && (
+          <div className="stats-section">
+            <h4>Learned Patterns - French</h4>
+            <div>
+              <p>Patterns without &apos;ne&apos;: {learnedPatterns.french.withoutNe?.patterns?.length || 0}</p>
+              <p>Patterns with &apos;ne&apos;: {learnedPatterns.french.withNe?.patterns?.length || 0}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
