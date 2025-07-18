@@ -29,6 +29,12 @@ const EnhancedNegationAnalyzer = () => {
     withNe: 0,
     lastUpdated: null
   });
+  const [uploadError, setUploadError] = useState(null);
+  const [learnedPatterns, setLearnedPatterns] = useState({
+    french: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } },
+    english: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } },
+    mandarin: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } }
+  });
 
   // Constants from original component
   const TRIGGERS = {
@@ -69,6 +75,132 @@ const EnhancedNegationAnalyzer = () => {
     };
     
     return text.replace(patterns[lang], '<mark>$1</mark>');
+  };
+
+  // Training data management functions
+  const validateTrainingData = (data) => {
+    if (!Array.isArray(data) || data.length === 0) return false;
+    return data.every(row => 
+      typeof row === 'object' && 
+      Object.keys(row).length >= 2
+    );
+  };
+
+  const processTrainingData = (data) => {
+    const processed = data.map((row, index) => ({
+      id: index + 1,
+      text: Object.values(row)[0] || '',
+      classification: Object.values(row)[1] || '',
+      language: language,
+      timestamp: new Date().toISOString()
+    }));
+
+    setTrainingData(processed);
+    
+    // Update training statistics
+    const stats = {
+      totalExamples: processed.length,
+      withoutNe: processed.filter(item => 
+        item.classification?.toLowerCase().includes('without') || 
+        item.classification?.toLowerCase().includes('logical')
+      ).length,
+      withNe: processed.filter(item => 
+        item.classification?.toLowerCase().includes('with') || 
+        item.classification?.toLowerCase().includes('expletive')
+      ).length,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    setTrainingStats(stats);
+    
+    // Process patterns for learning (simplified version)
+    processLearningPatterns(processed);
+  };
+
+  const processLearningPatterns = (data) => {
+    const patterns = {
+      french: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } },
+      english: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } },
+      mandarin: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } }
+    };
+
+    data.forEach(item => {
+      const lang = item.language || 'french';
+      const isWithNe = item.classification?.toLowerCase().includes('with') || 
+                      item.classification?.toLowerCase().includes('expletive');
+      
+      const category = isWithNe ? 'withNe' : 'withoutNe';
+      
+      if (patterns[lang] && patterns[lang][category]) {
+        patterns[lang][category].patterns.push({
+          text: item.text,
+          classification: item.classification,
+          id: item.id
+        });
+      }
+    });
+
+    setLearnedPatterns(patterns);
+  };
+
+  const handleFileUpload = async (event) => {
+    const file = event.target.files[0];
+    setUploadError(null);
+
+    if (!file) return;
+
+    try {
+      // For demo purposes, we'll simulate file processing
+      // In production, you'd use a library like xlsx to parse Excel files
+      const text = await file.text();
+      let jsonData;
+
+      if (file.name.endsWith('.json')) {
+        jsonData = JSON.parse(text);
+      } else if (file.name.endsWith('.csv')) {
+        // Simple CSV parsing (for demo)
+        const lines = text.split('\n').filter(line => line.trim());
+        const headers = lines[0].split(',');
+        jsonData = lines.slice(1).map(line => {
+          const values = line.split(',');
+          const obj = {};
+          headers.forEach((header, index) => {
+            obj[header.trim()] = values[index]?.trim() || '';
+          });
+          return obj;
+        });
+      } else {
+        throw new Error('Unsupported file format. Please use JSON or CSV files.');
+      }
+
+      if (!validateTrainingData(jsonData)) {
+        setUploadError("Invalid file format. Please ensure the file has at least two columns.");
+        return;
+      }
+
+      processTrainingData(jsonData);
+      alert(`Successfully processed ${jsonData.length} training examples!`);
+      
+    } catch (error) {
+      setUploadError(`Error processing file: ${error.message}`);
+    }
+  };
+
+  const clearTrainingData = () => {
+    if (window.confirm('Are you sure you want to clear all training data?')) {
+      setTrainingData([]);
+      setTrainingStats({
+        totalExamples: 0,
+        withoutNe: 0,
+        withNe: 0,
+        lastUpdated: null
+      });
+      setLearnedPatterns({
+        french: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } },
+        english: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } },
+        mandarin: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } }
+      });
+    }
   };
 
   const loadSystemStats = async () => {
@@ -269,6 +401,12 @@ const EnhancedNegationAnalyzer = () => {
           onClick={() => setActiveTab('batch')}
         >
           Batch Analysis
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'training' ? 'active' : ''}`}
+          onClick={() => setActiveTab('training')}
+        >
+          Training Data Management
         </button>
       </div>
 
@@ -529,6 +667,153 @@ const EnhancedNegationAnalyzer = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Training Data Management Tab */}
+      {activeTab === 'training' && (
+        <div className="training-section">
+          <div className="training-upload">
+            <h3>Upload Training Data</h3>
+            <p>Upload a CSV or JSON file with training examples to improve the model's accuracy.</p>
+            
+            <div className="upload-area">
+              <label htmlFor="file-upload" className="upload-label">
+                Choose File (CSV, JSON)
+              </label>
+              <input
+                id="file-upload"
+                type="file"
+                accept=".csv,.json,.xlsx,.xls"
+                onChange={handleFileUpload}
+                className="file-input"
+              />
+              
+              {uploadError && (
+                <div className="error-message">
+                  <strong>Error:</strong> {uploadError}
+                </div>
+              )}
+            </div>
+
+            <div className="file-format-info">
+              <h4>Expected File Format:</h4>
+              <ul>
+                <li><strong>CSV:</strong> First column = text, Second column = classification</li>
+                <li><strong>JSON:</strong> Array of objects with text and classification fields</li>
+                <li><strong>Classifications:</strong> "with ne", "without ne", "expletive", "logical", etc.</li>
+              </ul>
+              
+              <div className="example-format">
+                <strong>Example CSV:</strong>
+                <pre>
+{`text,classification
+"Je crains qu'il ne vienne",with ne
+"Je pense qu'il viendra",without ne
+"J'ai peur qu'il ne soit malade",expletive`}
+                </pre>
+              </div>
+            </div>
+          </div>
+
+          {/* Training Statistics */}
+          {trainingStats.totalExamples > 0 && (
+            <div className="training-stats">
+              <h3>Training Data Statistics</h3>
+              
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-number">{trainingStats.totalExamples}</div>
+                  <div className="stat-label">Total Examples</div>
+                </div>
+                
+                <div className="stat-card">
+                  <div className="stat-number">{trainingStats.withNe}</div>
+                  <div className="stat-label">With Negation</div>
+                </div>
+                
+                <div className="stat-card">
+                  <div className="stat-number">{trainingStats.withoutNe}</div>
+                  <div className="stat-label">Without Negation</div>
+                </div>
+                
+                <div className="stat-card">
+                  <div className="stat-number">
+                    {trainingStats.totalExamples > 0 
+                      ? Math.round((trainingStats.withNe / trainingStats.totalExamples) * 100)
+                      : 0}%
+                  </div>
+                  <div className="stat-label">Negation Ratio</div>
+                </div>
+              </div>
+
+              {trainingStats.lastUpdated && (
+                <div className="last-updated">
+                  <strong>Last Updated:</strong> {new Date(trainingStats.lastUpdated).toLocaleString()}
+                </div>
+              )}
+
+              <div className="training-actions">
+                <button onClick={clearTrainingData} className="clear-button">
+                  Clear Training Data
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Training Data Preview */}
+          {trainingData.length > 0 && (
+            <div className="training-preview">
+              <h3>Training Data Preview (First 10 items)</h3>
+              
+              <div className="training-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Text</th>
+                      <th>Classification</th>
+                      <th>Language</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {trainingData.slice(0, 10).map((item) => (
+                      <tr key={item.id}>
+                        <td>{item.id}</td>
+                        <td className="text-cell">{item.text}</td>
+                        <td className="classification-cell">
+                          <span className={`classification-tag ${
+                            item.classification?.toLowerCase().includes('with') || 
+                            item.classification?.toLowerCase().includes('expletive') 
+                              ? 'with-negation' : 'without-negation'
+                          }`}>
+                            {item.classification}
+                          </span>
+                        </td>
+                        <td>{item.language}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                {trainingData.length > 10 && (
+                  <div className="table-footer">
+                    Showing 10 of {trainingData.length} training examples
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Model Protection Notice */}
+          <div className="model-protection-notice">
+            <h4>🔒 Model Protection</h4>
+            <p>
+              Training data is stored locally and used to enhance analysis accuracy. 
+              The core model remains unchanged to ensure consistency across updates.
+              Your training data helps improve confidence scoring and pattern recognition.
+            </p>
+          </div>
         </div>
       )}
 
