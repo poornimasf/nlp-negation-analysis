@@ -44,7 +44,7 @@ const EnhancedNegationAnalyzer = () => {
   const [passwordError, setPasswordError] = useState('');
 
   // Set your secure password here (in production, use environment variables)
-  const TRAINING_PASSWORD = 'SecureTraining2024!';
+  const TRAINING_PASSWORD = 'Buffalo25';
 
   // Constants from original component
   const TRIGGERS = {
