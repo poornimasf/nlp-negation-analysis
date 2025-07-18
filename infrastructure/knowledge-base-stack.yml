@@ -1,0 +1,261 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Cost-effective Knowledge Base and Background Processing for Negation Analyzer'
+
+Resources:
+  # DynamoDB Tables - Pay per use, no fixed costs
+  NegationPatternsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: negation-patterns
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pattern_id
+          AttributeType: S
+        - AttributeName: language
+          AttributeType: S
+        - AttributeName: confidence_score
+          AttributeType: N
+      KeySchema:
+        - AttributeName: pattern_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: language-confidence-index
+          KeySchema:
+            - AttributeName: language
+              KeyType: HASH
+            - AttributeName: confidence_score
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  UserFeedbackTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: user-feedback
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: feedback_id
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: N
+      KeySchema:
+        - AttributeName: feedback_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: timestamp-index
+          KeySchema:
+            - AttributeName: timestamp
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # SQS Queue for background processing - Very low cost
+  LearningQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: negation-learning-queue
+      VisibilityTimeoutSeconds: 300
+      MessageRetentionPeriod: 1209600  # 14 days
+      ReceiveMessageWaitTimeSeconds: 20  # Long polling to reduce costs
+
+  LearningQueueDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: negation-learning-dlq
+      MessageRetentionPeriod: 1209600
+
+  # Lambda Functions - Serverless, pay per execution
+  BackgroundProcessorFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: negation-background-processor
+      Runtime: python3.9
+      Handler: background_processor.lambda_handler
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          import uuid
+          from datetime import datetime, timedelta
+          
+          dynamodb = boto3.resource('dynamodb')
+          patterns_table = dynamodb.Table('negation-patterns')
+          feedback_table = dynamodb.Table('user-feedback')
+          
+          def lambda_handler(event, context):
+              for record in event['Records']:
+                  try:
+                      process_learning_data(json.loads(record['body']))
+                  except Exception as e:
+                      print(f"Error processing record: {e}")
+                      raise
+              
+              return {'statusCode': 200, 'body': 'Processed successfully'}
+          
+          def process_learning_data(data):
+              # Store pattern learning data
+              if data.get('type') == 'pattern_analysis':
+                  store_pattern(data)
+              elif data.get('type') == 'user_feedback':
+                  store_feedback(data)
+          
+          def store_pattern(data):
+              patterns_table.put_item(
+                  Item={
+                      'pattern_id': str(uuid.uuid4()),
+                      'text': data['text'],
+                      'language': data.get('language', 'unknown'),
+                      'negation_detected': data['negation_detected'],
+                      'confidence_score': data['confidence_score'],
+                      'timestamp': int(datetime.now().timestamp()),
+                      'pattern_type': data.get('pattern_type', 'general')
+                  }
+              )
+          
+          def store_feedback(data):
+              feedback_table.put_item(
+                  Item={
+                      'feedback_id': str(uuid.uuid4()),
+                      'original_text': data['text'],
+                      'original_result': data['original_result'],
+                      'user_correction': data['user_correction'],
+                      'timestamp': int(datetime.now().timestamp()),
+                      'ttl': int((datetime.now() + timedelta(days=90)).timestamp())
+                  }
+              )
+      Environment:
+        Variables:
+          PATTERNS_TABLE: !Ref NegationPatternsTable
+          FEEDBACK_TABLE: !Ref UserFeedbackTable
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 60
+
+  KnowledgeBaseQueryFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: negation-knowledge-query
+      Runtime: python3.9
+      Handler: knowledge_query.lambda_handler
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          from boto3.dynamodb.conditions import Key
+          
+          dynamodb = boto3.resource('dynamodb')
+          patterns_table = dynamodb.Table('negation-patterns')
+          
+          def lambda_handler(event, context):
+              try:
+                  query_type = event.get('query_type', 'similar_patterns')
+                  
+                  if query_type == 'similar_patterns':
+                      return get_similar_patterns(event)
+                  elif query_type == 'language_patterns':
+                      return get_language_patterns(event)
+                  
+              except Exception as e:
+                  return {
+                      'statusCode': 500,
+                      'body': json.dumps({'error': str(e)})
+                  }
+          
+          def get_similar_patterns(event):
+              language = event.get('language', 'en')
+              min_confidence = event.get('min_confidence', 0.7)
+              
+              response = patterns_table.query(
+                  IndexName='language-confidence-index',
+                  KeyConditionExpression=Key('language').eq(language) & 
+                                       Key('confidence_score').gte(min_confidence),
+                  Limit=10
+              )
+              
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps(response['Items'], default=str)
+              }
+          
+          def get_language_patterns(event):
+              language = event.get('language', 'en')
+              
+              response = patterns_table.query(
+                  IndexName='language-confidence-index',
+                  KeyConditionExpression=Key('language').eq(language)
+              )
+              
+              return {
+                  'statusCode': 200,
+                  'body': json.dumps(response['Items'], default=str)
+              }
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Timeout: 30
+
+  # Event Source Mapping for SQS to Lambda
+  LearningQueueEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt LearningQueue.Arn
+      FunctionName: !Ref BackgroundProcessorFunction
+      BatchSize: 10
+
+  # IAM Role for Lambda functions
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                  - dynamodb:Scan
+                  - dynamodb:UpdateItem
+                Resource:
+                  - !GetAtt NegationPatternsTable.Arn
+                  - !GetAtt UserFeedbackTable.Arn
+                  - !Sub "${NegationPatternsTable.Arn}/index/*"
+                  - !Sub "${UserFeedbackTable.Arn}/index/*"
+        - PolicyName: SQSAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                  - sqs:DeleteMessage
+                  - sqs:GetQueueAttributes
+                Resource: !GetAtt LearningQueue.Arn
+
+Outputs:
+  LearningQueueUrl:
+    Description: URL of the learning queue
+    Value: !Ref LearningQueue
+    Export:
+      Name: !Sub "${AWS::StackName}-LearningQueueUrl"
+  
+  KnowledgeQueryFunctionArn:
+    Description: ARN of the knowledge query function
+    Value: !GetAtt KnowledgeBaseQueryFunction.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-KnowledgeQueryFunctionArn"
