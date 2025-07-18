@@ -400,6 +400,188 @@
   margin-top: 8px;
 }
 
+/* Password Gate Styles */
+.password-gate {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  padding: 40px 20px;
+}
+
+.password-gate-content {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 40px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.lock-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.password-gate-content h3 {
+  color: #2d3748;
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+.password-gate-content p {
+  color: #4a5568;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.password-form {
+  margin-bottom: 30px;
+}
+
+.password-input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.password-input {
+  flex: 1;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.password-input:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.password-submit {
+  background-color: #3182ce;
+  color: white;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+}
+
+.password-submit:hover {
+  background-color: #2c5282;
+}
+
+.password-error {
+  background-color: #fed7d7;
+  color: #c53030;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #e53e3e;
+  text-align: left;
+}
+
+.password-info {
+  background-color: #f7fafc;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: left;
+}
+
+.password-info h4 {
+  color: #2d3748;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.password-info ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.password-info li {
+  color: #4a5568;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* Training Header with Authorization */
+.training-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px 20px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.training-header h3 {
+  color: #2d3748;
+  margin: 0;
+}
+
+.training-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.authorized-indicator {
+  color: #38a169;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.revoke-access-btn {
+  background-color: #e53e3e;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.2s;
+}
+
+.revoke-access-btn:hover {
+  background-color: #c53030;
+}
+
+/* Responsive Design for Password Gate */
+@media (max-width: 768px) {
+  .password-gate-content {
+    padding: 30px 20px;
+    margin: 0 10px;
+  }
+  
+  .password-input-group {
+    flex-direction: column;
+  }
+  
+  .password-submit {
+    width: 100%;
+  }
+  
+  .training-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .training-controls {
+    justify-content: center;
+  }
+}
+
 /* Training Data Management */
 .training-section {
   margin-bottom: 30px;

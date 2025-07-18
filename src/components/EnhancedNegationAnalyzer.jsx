@@ -36,6 +36,16 @@ const EnhancedNegationAnalyzer = () => {
     mandarin: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } }
   });
 
+  // Password protection for training data management
+  const [isTrainingAuthorized, setIsTrainingAuthorized] = useState(
+    localStorage.getItem('training_authorized') === 'true'
+  );
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+
+  // Set your secure password here (in production, use environment variables)
+  const TRAINING_PASSWORD = 'SecureTraining2024!';
+
   // Constants from original component
   const TRIGGERS = {
     french: {
@@ -200,6 +210,36 @@ const EnhancedNegationAnalyzer = () => {
         english: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } },
         mandarin: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } }
       });
+    }
+  };
+
+  // Password protection functions
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault();
+    setPasswordError('');
+
+    if (passwordInput === TRAINING_PASSWORD) {
+      setIsTrainingAuthorized(true);
+      localStorage.setItem('training_authorized', 'true');
+      setPasswordInput('');
+      
+      // Log successful access (optional)
+      console.log('Training access granted at:', new Date().toISOString());
+    } else {
+      setPasswordError('Invalid password. Please try again.');
+      setPasswordInput('');
+      
+      // Log failed attempt (optional)
+      console.warn('Failed training access attempt at:', new Date().toISOString());
+    }
+  };
+
+  const revokeTrainingAccess = () => {
+    if (window.confirm('Are you sure you want to revoke training access?')) {
+      setIsTrainingAuthorized(false);
+      localStorage.removeItem('training_authorized');
+      setPasswordInput('');
+      setPasswordError('');
     }
   };
 
@@ -673,7 +713,61 @@ const EnhancedNegationAnalyzer = () => {
       {/* Training Data Management Tab */}
       {activeTab === 'training' && (
         <div className="training-section">
-          <div className="training-upload">
+          {!isTrainingAuthorized ? (
+            // Password Gate
+            <div className="password-gate">
+              <div className="password-gate-content">
+                <div className="lock-icon">🔒</div>
+                <h3>Admin Access Required</h3>
+                <p>Training data management requires administrator privileges to prevent unauthorized model modifications.</p>
+                
+                <form onSubmit={handlePasswordSubmit} className="password-form">
+                  <div className="password-input-group">
+                    <input
+                      type="password"
+                      value={passwordInput}
+                      onChange={(e) => setPasswordInput(e.target.value)}
+                      placeholder="Enter admin password"
+                      className="password-input"
+                      autoFocus
+                    />
+                    <button type="submit" className="password-submit">
+                      Access Training
+                    </button>
+                  </div>
+                  
+                  {passwordError && (
+                    <div className="password-error">
+                      <strong>⚠️ {passwordError}</strong>
+                    </div>
+                  )}
+                </form>
+
+                <div className="password-info">
+                  <h4>Why is this protected?</h4>
+                  <ul>
+                    <li>Prevents unauthorized users from uploading malicious training data</li>
+                    <li>Maintains model quality and accuracy</li>
+                    <li>Protects against data poisoning attacks</li>
+                    <li>Ensures only trusted administrators can modify training datasets</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          ) : (
+            // Authorized Training Interface
+            <div>
+              <div className="training-header">
+                <h3>🎯 Training Data Management</h3>
+                <div className="training-controls">
+                  <span className="authorized-indicator">✅ Authorized Access</span>
+                  <button onClick={revokeTrainingAccess} className="revoke-access-btn">
+                    Revoke Access
+                  </button>
+                </div>
+              </div>
+
+              <div className="training-upload">
             <h3>Upload Training Data</h3>
             <p>Upload a CSV or JSON file with training examples to improve the model's accuracy.</p>
             
@@ -814,6 +908,8 @@ const EnhancedNegationAnalyzer = () => {
               Your training data helps improve confidence scoring and pattern recognition.
             </p>
           </div>
+            </div>
+          )}
         </div>
       )}
 
