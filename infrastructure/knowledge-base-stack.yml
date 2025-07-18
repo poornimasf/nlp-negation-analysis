@@ -61,7 +61,6 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       QueueName: negation-learning-queue
-      VisibilityTimeoutSeconds: 300
       MessageRetentionPeriod: 1209600  # 14 days
       ReceiveMessageWaitTimeSeconds: 20  # Long polling to reduce costs
 
