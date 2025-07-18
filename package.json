@@ -1,22 +1,39 @@
 {
   "name": "negation-analyzer",
   "version": "1.0.0",
-  "description": "Multilingual Expletive Negation Analyzer",
-  "main": "index.js",
+  "private": true,
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5"
+  },
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "start": "react-scripts start",
+    "build": "CI=false react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": [
-      "@testing-library/jest-dom/extend-expect"
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
     ],
-    "moduleNameMapper": {
-      "^@/components/(.*)$": "<rootDir>/src/components/$1"
-    }
-  },
-  "devDependencies": {
-    "jest-environment-jsdom": "^30.0.4"
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
