@@ -43,6 +43,17 @@ const EnhancedNegationAnalyzer = () => {
   const [passwordInput, setPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState('');
 
+  // Prediction tab state
+  const [predictionText, setPredictionText] = useState('');
+  const [predictionResult, setPredictionResult] = useState(null);
+  const [predictionLoading, setPredictionLoading] = useState(false);
+
+  // Batch prediction tab state
+  const [batchPredictionInput, setBatchPredictionInput] = useState('');
+  const [batchPredictionResults, setBatchPredictionResults] = useState([]);
+  const [batchPredictionLoading, setBatchPredictionLoading] = useState(false);
+  const [batchPredictionStats, setBatchPredictionStats] = useState(null);
+
   // Set your secure password here (in production, use environment variables)
   const TRAINING_PASSWORD = 'Buffalo25';
 
@@ -412,6 +423,215 @@ const EnhancedNegationAnalyzer = () => {
     }
   };
 
+  // Prediction function for expletive negation likelihood
+  const predictExpletiveNegation = (text) => {
+    if (!text.trim()) return null;
+
+    const normalizedText = text.toLowerCase().trim();
+    let expletiveScore = 0;
+    let logicalScore = 0;
+    let totalIndicators = 0;
+    const foundPatterns = [];
+
+    // Analyze patterns from training data
+    const frenchPatterns = learnedPatterns.french;
+    
+    // Check for expletive negation indicators
+    const expletiveIndicators = [
+      'craindre que', 'avoir peur que', 'redouter que', 'appréhender que',
+      'empêcher que', 'éviter que', 'prendre garde que', 'se garder que',
+      'douter que', 'nier que', 'contester que', 'désespérer que',
+      'il s\'en faut que', 'peu s\'en faut que', 'avant que', 'à moins que',
+      'de peur que', 'de crainte que', 'sans que'
+    ];
+
+    // Check for logical negation indicators
+    const logicalIndicators = [
+      'ne pas', 'ne plus', 'ne jamais', 'ne rien', 'ne personne',
+      'ne guère', 'ne point', 'ne nullement', 'ne aucun', 'ne nul'
+    ];
+
+    // Analyze expletive patterns
+    expletiveIndicators.forEach(pattern => {
+      if (normalizedText.includes(pattern)) {
+        expletiveScore += 3;
+        totalIndicators++;
+        foundPatterns.push({ type: 'expletive', pattern, weight: 3 });
+      }
+    });
+
+    // Analyze logical patterns
+    logicalIndicators.forEach(pattern => {
+      if (normalizedText.includes(pattern)) {
+        logicalScore += 2;
+        totalIndicators++;
+        foundPatterns.push({ type: 'logical', pattern, weight: 2 });
+      }
+    });
+
+    // Check for "ne" without typical negation words (potential expletive)
+    const neMatches = normalizedText.match(/\bne\b/g);
+    const negationWords = ['pas', 'plus', 'jamais', 'rien', 'personne', 'guère', 'point', 'nullement', 'aucun', 'nul'];
+    
+    if (neMatches) {
+      const hasNegationWord = negationWords.some(word => normalizedText.includes(word));
+      if (!hasNegationWord) {
+        expletiveScore += 2;
+        totalIndicators++;
+        foundPatterns.push({ type: 'expletive', pattern: 'ne without negation word', weight: 2 });
+      }
+    }
+
+    // Apply training data patterns if available
+    if (trainingData.length > 0) {
+      const trainingPatterns = trainingData.filter(item => 
+        item.text && normalizedText.includes(item.text.toLowerCase().substring(0, 10))
+      );
+      
+      trainingPatterns.forEach(item => {
+        if (item.expletive_negation === true || item.expletive_negation === 'true') {
+          expletiveScore += 1;
+          foundPatterns.push({ type: 'training_expletive', pattern: 'training data match', weight: 1 });
+        } else if (item.expletive_negation === false || item.expletive_negation === 'false') {
+          logicalScore += 1;
+          foundPatterns.push({ type: 'training_logical', pattern: 'training data match', weight: 1 });
+        }
+      });
+    }
+
+    // Calculate likelihood percentages
+    const totalScore = expletiveScore + logicalScore;
+    const expletiveLikelihood = totalScore > 0 ? Math.round((expletiveScore / totalScore) * 100) : 0;
+    const logicalLikelihood = totalScore > 0 ? Math.round((logicalScore / totalScore) * 100) : 0;
+
+    // Determine confidence level
+    let confidence = 'Low';
+    if (totalIndicators >= 3) confidence = 'High';
+    else if (totalIndicators >= 2) confidence = 'Medium';
+
+    return {
+      expletiveLikelihood,
+      logicalLikelihood,
+      confidence,
+      totalIndicators,
+      foundPatterns,
+      analysis: {
+        hasNe: neMatches ? neMatches.length : 0,
+        expletiveIndicators: foundPatterns.filter(p => p.type === 'expletive').length,
+        logicalIndicators: foundPatterns.filter(p => p.type === 'logical').length,
+        trainingMatches: foundPatterns.filter(p => p.type.includes('training')).length
+      }
+    };
+  };
+
+  // Handle prediction analysis
+  const handlePrediction = async () => {
+    if (!predictionText.trim()) return;
+    
+    setPredictionLoading(true);
+    
+    try {
+      // Simulate processing delay for better UX
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const result = predictExpletiveNegation(predictionText);
+      setPredictionResult(result);
+    } catch (error) {
+      console.error('Prediction error:', error);
+    } finally {
+      setPredictionLoading(false);
+    }
+  };
+
+  // Handle batch prediction analysis
+  const handleBatchPrediction = async () => {
+    if (!batchPredictionInput.trim()) return;
+    
+    setBatchPredictionLoading(true);
+    setBatchPredictionResults([]);
+    setBatchPredictionStats(null);
+    
+    try {
+      // Split input into sentences
+      const sentences = batchPredictionInput
+        .split(/[.!?]+/)
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+      if (sentences.length === 0) {
+        setBatchPredictionLoading(false);
+        return;
+      }
+
+      const results = [];
+      let totalExpletive = 0;
+      let totalLogical = 0;
+      let highConfidenceCount = 0;
+      let mediumConfidenceCount = 0;
+      let lowConfidenceCount = 0;
+
+      // Process each sentence with a small delay for better UX
+      for (let i = 0; i < sentences.length; i++) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        const sentence = sentences[i];
+        const prediction = predictExpletiveNegation(sentence);
+        
+        if (prediction) {
+          results.push({
+            id: i + 1,
+            text: sentence,
+            ...prediction
+          });
+
+          // Update statistics
+          if (prediction.expletiveLikelihood > prediction.logicalLikelihood) {
+            totalExpletive++;
+          } else if (prediction.logicalLikelihood > prediction.expletiveLikelihood) {
+            totalLogical++;
+          }
+
+          // Count confidence levels
+          switch (prediction.confidence) {
+            case 'High':
+              highConfidenceCount++;
+              break;
+            case 'Medium':
+              mediumConfidenceCount++;
+              break;
+            case 'Low':
+              lowConfidenceCount++;
+              break;
+          }
+        }
+      }
+
+      // Calculate overall statistics
+      const stats = {
+        totalSentences: sentences.length,
+        expletiveLikely: totalExpletive,
+        logicalLikely: totalLogical,
+        uncertain: sentences.length - totalExpletive - totalLogical,
+        expletivePercentage: Math.round((totalExpletive / sentences.length) * 100),
+        logicalPercentage: Math.round((totalLogical / sentences.length) * 100),
+        uncertainPercentage: Math.round(((sentences.length - totalExpletive - totalLogical) / sentences.length) * 100),
+        highConfidence: highConfidenceCount,
+        mediumConfidence: mediumConfidenceCount,
+        lowConfidence: lowConfidenceCount,
+        averageIndicators: results.length > 0 ? 
+          Math.round(results.reduce((sum, r) => sum + r.totalIndicators, 0) / results.length * 10) / 10 : 0
+      };
+
+      setBatchPredictionResults(results);
+      setBatchPredictionStats(stats);
+      
+    } catch (error) {
+      console.error('Batch prediction error:', error);
+    } finally {
+      setBatchPredictionLoading(false);
+    }
+  };
+
   // Password protection functions
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
@@ -662,6 +882,18 @@ const EnhancedNegationAnalyzer = () => {
           onClick={() => setActiveTab('batch')}
         >
           Batch Analysis
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'prediction' ? 'active' : ''}`}
+          onClick={() => setActiveTab('prediction')}
+        >
+          Expletive Prediction
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'batch-prediction' ? 'active' : ''}`}
+          onClick={() => setActiveTab('batch-prediction')}
+        >
+          Batch Prediction
         </button>
         <button 
           className={`tab-button ${activeTab === 'training' ? 'active' : ''}`}
@@ -939,6 +1171,304 @@ const EnhancedNegationAnalyzer = () => {
                         ))}
                       </div>
                     )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Expletive Prediction Tab */}
+      {activeTab === 'prediction' && (
+        <div className="input-section">
+          <div className="prediction-header">
+            <h3>Expletive Negation Prediction</h3>
+            <p className="prediction-description">
+              Analyze the likelihood that a French sentence contains expletive negation based on linguistic patterns and training data.
+            </p>
+          </div>
+          
+          <textarea
+            value={predictionText}
+            onChange={(e) => setPredictionText(e.target.value)}
+            placeholder="Enter French text to predict expletive negation likelihood..."
+            className="text-input prediction-input"
+            rows="4"
+          />
+          
+          <div className="button-group">
+            <button 
+              onClick={handlePrediction}
+              disabled={!predictionText.trim() || predictionLoading}
+              className="analyze-button"
+            >
+              {predictionLoading ? 'Analyzing...' : 'Predict Expletive Negation'}
+            </button>
+            <button 
+              onClick={() => {
+                setPredictionText('');
+                setPredictionResult(null);
+              }}
+              className="clear-button"
+            >
+              Clear
+            </button>
+          </div>
+
+          {predictionResult && (
+            <div className="prediction-results">
+              <h4>Prediction Results</h4>
+              
+              <div className="prediction-summary">
+                <div className="likelihood-scores">
+                  <div className="score-item expletive">
+                    <span className="score-label">Expletive Negation Likelihood:</span>
+                    <span className="score-value">{predictionResult.expletiveLikelihood}%</span>
+                  </div>
+                  <div className="score-item logical">
+                    <span className="score-label">Logical Negation Likelihood:</span>
+                    <span className="score-value">{predictionResult.logicalLikelihood}%</span>
+                  </div>
+                </div>
+                
+                <div className="confidence-indicator">
+                  <span className="confidence-label">Confidence Level:</span>
+                  <span className={`confidence-badge ${predictionResult.confidence.toLowerCase()}`}>
+                    {predictionResult.confidence}
+                  </span>
+                </div>
+              </div>
+
+              <div className="prediction-analysis">
+                <h5>Analysis Details</h5>
+                <div className="analysis-stats">
+                  <div className="stat-item">
+                    <span className="stat-label">Total Indicators Found:</span>
+                    <span className="stat-value">{predictionResult.totalIndicators}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">"Ne" Occurrences:</span>
+                    <span className="stat-value">{predictionResult.analysis.hasNe}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Expletive Indicators:</span>
+                    <span className="stat-value">{predictionResult.analysis.expletiveIndicators}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Logical Indicators:</span>
+                    <span className="stat-value">{predictionResult.analysis.logicalIndicators}</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-label">Training Data Matches:</span>
+                    <span className="stat-value">{predictionResult.analysis.trainingMatches}</span>
+                  </div>
+                </div>
+              </div>
+
+              {predictionResult.foundPatterns.length > 0 && (
+                <div className="found-patterns">
+                  <h5>Detected Patterns</h5>
+                  <div className="patterns-list">
+                    {predictionResult.foundPatterns.map((pattern, index) => (
+                      <div key={index} className={`pattern-item ${pattern.type}`}>
+                        <span className="pattern-text">{pattern.pattern}</span>
+                        <span className="pattern-type">{pattern.type.replace('_', ' ')}</span>
+                        <span className="pattern-weight">Weight: {pattern.weight}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="prediction-interpretation">
+                <h5>Interpretation</h5>
+                <div className="interpretation-text">
+                  {predictionResult.expletiveLikelihood > predictionResult.logicalLikelihood ? (
+                    <p className="expletive-likely">
+                      <strong>Expletive negation is more likely</strong> in this text. 
+                      The sentence probably contains "ne" that doesn't actually negate the meaning 
+                      but is used for stylistic or grammatical reasons.
+                    </p>
+                  ) : predictionResult.logicalLikelihood > predictionResult.expletiveLikelihood ? (
+                    <p className="logical-likely">
+                      <strong>Logical negation is more likely</strong> in this text. 
+                      The sentence probably contains standard French negation that actually 
+                      negates the meaning of the verb or clause.
+                    </p>
+                  ) : (
+                    <p className="uncertain">
+                      <strong>Uncertain prediction</strong> - the text shows equal likelihood 
+                      for both expletive and logical negation. More context or analysis may be needed.
+                    </p>
+                  )}
+                  
+                  <p className="confidence-note">
+                    Confidence level is <strong>{predictionResult.confidence.toLowerCase()}</strong> 
+                    based on {predictionResult.totalIndicators} linguistic indicator(s) found.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Batch Prediction Tab */}
+      {activeTab === 'batch-prediction' && (
+        <div className="input-section">
+          <div className="prediction-header">
+            <h3>Batch Expletive Negation Prediction</h3>
+            <p className="prediction-description">
+              Analyze multiple French sentences at once to predict expletive negation likelihood. 
+              Separate sentences with periods, exclamation marks, or question marks.
+            </p>
+          </div>
+          
+          <textarea
+            value={batchPredictionInput}
+            onChange={(e) => setBatchPredictionInput(e.target.value)}
+            placeholder="Enter multiple French sentences separated by punctuation (. ! ?)...
+
+Example:
+Je crains qu'il ne vienne demain. Il ne mange pas de légumes. J'ai peur qu'elle ne comprenne mal. Nous ne partons jamais en vacances."
+            className="text-input batch-prediction-input"
+            rows="8"
+          />
+          
+          <div className="button-group">
+            <button 
+              onClick={handleBatchPrediction}
+              disabled={!batchPredictionInput.trim() || batchPredictionLoading}
+              className="analyze-button"
+            >
+              {batchPredictionLoading ? 'Analyzing Batch...' : 'Predict Batch Expletive Negation'}
+            </button>
+            <button 
+              onClick={() => {
+                setBatchPredictionInput('');
+                setBatchPredictionResults([]);
+                setBatchPredictionStats(null);
+              }}
+              className="clear-button"
+            >
+              Clear All
+            </button>
+          </div>
+
+          {batchPredictionLoading && (
+            <div className="loading-indicator">
+              <div className="loading-spinner"></div>
+              <p>Processing {batchPredictionInput.split(/[.!?]+/).filter(s => s.trim().length > 0).length} sentences...</p>
+            </div>
+          )}
+
+          {batchPredictionStats && (
+            <div className="batch-prediction-stats">
+              <h4>Batch Analysis Summary</h4>
+              
+              <div className="stats-overview">
+                <div className="stats-grid">
+                  <div className="stat-card total">
+                    <div className="stat-number">{batchPredictionStats.totalSentences}</div>
+                    <div className="stat-label">Total Sentences</div>
+                  </div>
+                  <div className="stat-card expletive">
+                    <div className="stat-number">{batchPredictionStats.expletiveLikely}</div>
+                    <div className="stat-label">Likely Expletive</div>
+                    <div className="stat-percentage">{batchPredictionStats.expletivePercentage}%</div>
+                  </div>
+                  <div className="stat-card logical">
+                    <div className="stat-number">{batchPredictionStats.logicalLikely}</div>
+                    <div className="stat-label">Likely Logical</div>
+                    <div className="stat-percentage">{batchPredictionStats.logicalPercentage}%</div>
+                  </div>
+                  <div className="stat-card uncertain">
+                    <div className="stat-number">{batchPredictionStats.uncertain}</div>
+                    <div className="stat-label">Uncertain</div>
+                    <div className="stat-percentage">{batchPredictionStats.uncertainPercentage}%</div>
+                  </div>
+                </div>
+
+                <div className="confidence-breakdown">
+                  <h5>Confidence Distribution</h5>
+                  <div className="confidence-stats">
+                    <div className="confidence-item high">
+                      <span className="confidence-count">{batchPredictionStats.highConfidence}</span>
+                      <span className="confidence-label">High Confidence</span>
+                    </div>
+                    <div className="confidence-item medium">
+                      <span className="confidence-count">{batchPredictionStats.mediumConfidence}</span>
+                      <span className="confidence-label">Medium Confidence</span>
+                    </div>
+                    <div className="confidence-item low">
+                      <span className="confidence-count">{batchPredictionStats.lowConfidence}</span>
+                      <span className="confidence-label">Low Confidence</span>
+                    </div>
+                  </div>
+                  <div className="average-indicators">
+                    <span className="avg-label">Average Indicators per Sentence:</span>
+                    <span className="avg-value">{batchPredictionStats.averageIndicators}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {batchPredictionResults.length > 0 && (
+            <div className="batch-prediction-results">
+              <h4>Detailed Results ({batchPredictionResults.length} sentences)</h4>
+              
+              <div className="results-list">
+                {batchPredictionResults.map((result) => (
+                  <div key={result.id} className="batch-result-item">
+                    <div className="result-header">
+                      <span className="sentence-number">#{result.id}</span>
+                      <span className={`confidence-badge ${result.confidence.toLowerCase()}`}>
+                        {result.confidence}
+                      </span>
+                    </div>
+                    
+                    <div className="sentence-text">
+                      "{result.text}"
+                    </div>
+                    
+                    <div className="prediction-scores">
+                      <div className="score-bar">
+                        <div className="score-section expletive" style={{width: `${result.expletiveLikelihood}%`}}>
+                          <span className="score-label">Expletive: {result.expletiveLikelihood}%</span>
+                        </div>
+                        <div className="score-section logical" style={{width: `${result.logicalLikelihood}%`}}>
+                          <span className="score-label">Logical: {result.logicalLikelihood}%</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="result-details">
+                      <div className="indicators-summary">
+                        <span className="indicators-count">{result.totalIndicators} indicators</span>
+                        <span className="ne-count">{result.analysis.hasNe} "ne"</span>
+                        <span className="expletive-indicators">{result.analysis.expletiveIndicators} expletive</span>
+                        <span className="logical-indicators">{result.analysis.logicalIndicators} logical</span>
+                        {result.analysis.trainingMatches > 0 && (
+                          <span className="training-matches">{result.analysis.trainingMatches} training matches</span>
+                        )}
+                      </div>
+                      
+                      {result.foundPatterns.length > 0 && (
+                        <div className="patterns-summary">
+                          <strong>Patterns:</strong>
+                          {result.foundPatterns.slice(0, 3).map((pattern, idx) => (
+                            <span key={idx} className={`pattern-tag ${pattern.type}`}>
+                              {pattern.pattern}
+                            </span>
+                          ))}
+                          {result.foundPatterns.length > 3 && (
+                            <span className="more-patterns">+{result.foundPatterns.length - 3} more</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
