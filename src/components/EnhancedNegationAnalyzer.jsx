@@ -473,36 +473,84 @@ const EnhancedNegationAnalyzer = () => {
     // Analyze patterns from training data
     const frenchPatterns = learnedPatterns.french;
     
-    // Check for expletive negation indicators (enhanced for French apostrophes and verb forms)
+    // Check for expletive negation indicators (comprehensive coverage for training data)
     const expletiveIndicators = [
-      'peur qu', 'peur que',  // Handle both "peur qu'" and "peur que"
-      'craindre qu', 'craindre que', 'crains qu', 'craint qu', 'craignons qu', 'craignez qu', 'craignent qu',
-      'avoir peur qu', 'avoir peur que', 'ai peur qu', 'as peur qu', 'a peur qu', 'avons peur qu', 'avez peur qu', 'ont peur qu',
-      'redouter qu', 'redouter que', 'redoute qu', 'redoutes qu', 'redoutons qu', 'redoutez qu', 'redoutent qu',
-      'appréhender qu', 'appréhender que', 'appréhende qu', 'appréhendes qu', 'appréhendons qu', 'appréhendez qu', 'appréhendent qu',
-      'empêcher qu', 'empêcher que', 'empêche qu', 'empêches qu', 'empêchons qu', 'empêchez qu', 'empêchent qu',
-      'éviter qu', 'éviter que', 'évite qu', 'évites qu', 'évitons qu', 'évitez qu', 'évitent qu',
-      'prendre garde qu', 'prendre garde que', 'prends garde qu', 'prend garde qu', 'prenons garde qu', 'prenez garde qu', 'prennent garde qu',
-      'se garder qu', 'se garder que', 'me garde qu', 'te garde qu', 'se garde qu', 'nous gardons qu', 'vous gardez qu', 'se gardent qu',
-      'douter qu', 'douter que', 'doute qu', 'doutes qu', 'doutons qu', 'doutez qu', 'doutent qu',
-      'nier qu', 'nier que', 'nie qu', 'nies qu', 'nions qu', 'niez qu', 'nient qu',
-      'contester qu', 'contester que', 'conteste qu', 'contestes qu', 'contestons qu', 'contestez qu', 'contestent qu',
-      'désespérer qu', 'désespérer que', 'désespère qu', 'désespères qu', 'désespérons qu', 'désespérez qu', 'désespèrent qu',
-      'il s\'en faut qu', 'il s\'en faut que', 
-      'peu s\'en faut qu', 'peu s\'en faut que', 
-      'avant qu', 'avant que', 
-      'à moins qu', 'à moins que',
-      'de peur qu', 'de peur que', 
-      'de crainte qu', 'de crainte que', 
-      'sans qu', 'sans que',
-      'par peur qu', 'par peur que', 
-      'dans la peur qu', 'dans la peur que'  // Additional "peur que" variations
+      // Core "peur que" patterns
+      'peur qu', 'peur que', 'ai peur qu', 'as peur qu', 'a peur qu', 'avons peur qu', 'avez peur qu', 'ont peur qu',
+      'avoir peur qu', 'avoir peur que', 'par peur qu', 'par peur que', 'de peur qu', 'de peur que', 'dans la peur qu', 'dans la peur que',
+      
+      // Craindre patterns (all conjugations)
+      'craindre qu', 'craindre que', 'crains qu', 'crains que', 'craint qu', 'craint que', 
+      'craignons qu', 'craignons que', 'craignez qu', 'craignez que', 'craignent qu', 'craignent que',
+      
+      // Redouter patterns (all conjugations)
+      'redouter qu', 'redouter que', 'redoute qu', 'redoute que', 'redoutes qu', 'redoutes que',
+      'redoutons qu', 'redoutons que', 'redoutez qu', 'redoutez que', 'redoutent qu', 'redoutent que',
+      
+      // Douter patterns (all conjugations)
+      'douter qu', 'douter que', 'doute qu', 'doute que', 'doutes qu', 'doutes que',
+      'doutons qu', 'doutons que', 'doutez qu', 'doutez que', 'doutent qu', 'doutent que',
+      
+      // Éviter patterns (all conjugations)
+      'éviter qu', 'éviter que', 'évite qu', 'évite que', 'évites qu', 'évites que',
+      'évitons qu', 'évitons que', 'évitez qu', 'évitez que', 'évitent qu', 'évitent que',
+      
+      // Empêcher patterns (all conjugations)
+      'empêcher qu', 'empêcher que', 'empêche qu', 'empêche que', 'empêches qu', 'empêches que',
+      'empêchons qu', 'empêchons que', 'empêchez qu', 'empêchez que', 'empêchent qu', 'empêchent que',
+      
+      // Appréhender patterns
+      'appréhender qu', 'appréhender que', 'appréhende qu', 'appréhende que', 'appréhendes qu', 'appréhendes que',
+      'appréhendons qu', 'appréhendons que', 'appréhendez qu', 'appréhendez que', 'appréhendent qu', 'appréhendent que',
+      
+      // Prendre garde patterns
+      'prendre garde qu', 'prendre garde que', 'prends garde qu', 'prends garde que', 'prend garde qu', 'prend garde que',
+      'prenons garde qu', 'prenons garde que', 'prenez garde qu', 'prenez garde que', 'prennent garde qu', 'prennent garde que',
+      
+      // Se garder patterns
+      'se garder qu', 'se garder que', 'me garde qu', 'me garde que', 'te garde qu', 'te garde que',
+      'se garde qu', 'se garde que', 'nous gardons qu', 'nous gardons que', 'vous gardez qu', 'vous gardez que', 'se gardent qu', 'se gardent que',
+      
+      // Nier patterns
+      'nier qu', 'nier que', 'nie qu', 'nie que', 'nies qu', 'nies que',
+      'nions qu', 'nions que', 'niez qu', 'niez que', 'nient qu', 'nient que',
+      
+      // Contester patterns
+      'contester qu', 'contester que', 'conteste qu', 'conteste que', 'contestes qu', 'contestes que',
+      'contestons qu', 'contestons que', 'contestez qu', 'contestez que', 'contestent qu', 'contestent que',
+      
+      // Désespérer patterns
+      'désespérer qu', 'désespérer que', 'désespère qu', 'désespère que', 'désespères qu', 'désespères que',
+      'désespérons qu', 'désespérons que', 'désespérez qu', 'désespérez que', 'désespèrent qu', 'désespèrent que',
+      
+      // Fixed expressions
+      'il s\'en faut qu', 'il s\'en faut que', 'peu s\'en faut qu', 'peu s\'en faut que',
+      'avant qu', 'avant que', 'à moins qu', 'à moins que', 'de crainte qu', 'de crainte que', 'sans qu', 'sans que'
     ];
 
-    // Check for logical negation indicators
+    // Check for logical negation indicators (comprehensive patterns)
     const logicalIndicators = [
+      // Standard logical negation patterns
       'ne pas', 'ne plus', 'ne jamais', 'ne rien', 'ne personne',
-      'ne guère', 'ne point', 'ne nullement', 'ne aucun', 'ne nul'
+      'ne guère', 'ne point', 'ne nullement', 'ne aucun', 'ne nul',
+      'ne aucune', 'ne nulle part', 'ne que',
+      
+      // Contracted forms
+      'n\'ai pas', 'n\'as pas', 'n\'a pas', 'n\'avons pas', 'n\'avez pas', 'n\'ont pas',
+      'n\'ai plus', 'n\'as plus', 'n\'a plus', 'n\'avons plus', 'n\'avez plus', 'n\'ont plus',
+      'n\'ai jamais', 'n\'as jamais', 'n\'a jamais', 'n\'avons jamais', 'n\'avez jamais', 'n\'ont jamais',
+      
+      // Verb-specific logical negations
+      'ne sais pas', 'ne sait pas', 'ne savons pas', 'ne savez pas', 'ne savent pas',
+      'ne veux pas', 'ne veut pas', 'ne voulons pas', 'ne voulez pas', 'ne veulent pas',
+      'ne peux pas', 'ne peut pas', 'ne pouvons pas', 'ne pouvez pas', 'ne peuvent pas',
+      'ne vais pas', 'ne va pas', 'ne allons pas', 'ne allez pas', 'ne vont pas',
+      'ne fais pas', 'ne fait pas', 'ne faisons pas', 'ne faites pas', 'ne font pas',
+      
+      // Thinking/believing verbs with logical negation
+      'ne pense pas', 'ne penses pas', 'ne pensons pas', 'ne pensez pas', 'ne pensent pas',
+      'ne crois pas', 'ne croit pas', 'ne croyons pas', 'ne croyez pas', 'ne croient pas',
+      'ne dis pas', 'ne dit pas', 'ne disons pas', 'ne dites pas', 'ne disent pas'
     ];
 
     // Analyze expletive patterns
@@ -543,69 +591,112 @@ const EnhancedNegationAnalyzer = () => {
         if (!item.text) return false;
         
         const trainingText = item.text.toLowerCase();
+        const inputWords = normalizedText.split(/\s+/);
+        const trainingWords = trainingText.split(/\s+/);
         
         // Check for similar "peur que" constructions
-        if (normalizedText.includes('peur que') && trainingText.includes('peur que')) {
+        if (normalizedText.includes('peur qu') && trainingText.includes('peur qu')) {
           return true;
         }
         
-        // Check for similar sentence structure (first 15 characters)
-        if (normalizedText.substring(0, 15) === trainingText.substring(0, 15)) {
+        // Check for similar expletive trigger words
+        const expletiveTriggers = ['craindre', 'crains', 'redouter', 'redoute', 'douter', 'doute', 'éviter', 'évite', 'empêcher', 'empêche'];
+        const hasCommonTrigger = expletiveTriggers.some(trigger => 
+          normalizedText.includes(trigger) && trainingText.includes(trigger)
+        );
+        
+        if (hasCommonTrigger) {
           return true;
         }
         
-        // Check for common subject-verb patterns
+        // Check for similar sentence structure (first 20 characters)
+        if (normalizedText.substring(0, 20) === trainingText.substring(0, 20)) {
+          return true;
+        }
+        
+        // Check for common subject-verb patterns with "ne"
         const textSubjects = normalizedText.match(/\b(je|tu|il|elle|nous|vous|ils|elles)\b/g) || [];
         const trainingSubjects = trainingText.match(/\b(je|tu|il|elle|nous|vous|ils|elles)\b/g) || [];
         
-        return textSubjects.some(subj => trainingSubjects.includes(subj));
+        const hasCommonSubject = textSubjects.some(subj => trainingSubjects.includes(subj));
+        const bothHaveNe = normalizedText.includes(' ne ') && trainingText.includes(' ne ');
+        
+        return hasCommonSubject && bothHaveNe;
       });
       
       trainingMatches.forEach(item => {
         const isExpletive = item.classification?.toLowerCase().includes('expletive') || 
-                           item.classification?.toLowerCase().includes('with');
+                           item.classification?.toLowerCase().includes('with') ||
+                           item.classification?.toLowerCase().includes('ne');
         
         if (isExpletive) {
-          expletiveScore += 2; // Higher weight for training data matches
+          expletiveScore += 3; // Higher weight for training data matches
           totalIndicators++;
           foundPatterns.push({ 
             type: 'training_expletive', 
             pattern: `training: ${item.classification}`, 
-            weight: 2 
+            weight: 3 
           });
         } else {
-          logicalScore += 2;
+          logicalScore += 3;
           totalIndicators++;
           foundPatterns.push({ 
             type: 'training_logical', 
             pattern: `training: ${item.classification}`, 
-            weight: 2 
+            weight: 3 
           });
         }
       });
     }
 
     // Special handling for "peur que" constructions based on training data patterns
-    if (normalizedText.includes('peur que')) {
+    if (normalizedText.includes('peur qu')) {
       const peurQuePatterns = extractPeurQuePatterns(normalizedText);
       
       if (peurQuePatterns.peurQue.length > 0) {
         // Check if this matches learned "peur que" patterns
         const hasExpletiveNe = peurQuePatterns.expletiveNe.length > 0;
         const hasSubjunctive = peurQuePatterns.verbs.some(verb => 
-          ['soit', 'ait', 'vienne', 'comprenne', 'sache', 'puisse'].includes(verb.toLowerCase())
+          ['soit', 'ait', 'vienne', 'comprenne', 'sache', 'puisse', 'veuille', 'fasse', 'parte'].includes(verb.toLowerCase())
         );
         
+        // Strong indicator for expletive negation in "peur que" constructions
         if (hasExpletiveNe && hasSubjunctive) {
-          expletiveScore += 3; // High confidence for "peur que" + expletive "ne" + subjunctive
+          expletiveScore += 4; // Very high confidence for "peur que" + expletive "ne" + subjunctive
           totalIndicators++;
           foundPatterns.push({ 
             type: 'peur_que_expletive', 
             pattern: 'peur que + expletive ne + subjunctive', 
+            weight: 4 
+          });
+        } else if (normalizedText.includes('peur qu') && normalizedText.includes(' ne ') && !normalizedText.includes('ne pas')) {
+          // "Peur que" with "ne" but no "pas" is likely expletive
+          expletiveScore += 3;
+          totalIndicators++;
+          foundPatterns.push({ 
+            type: 'peur_que_ne', 
+            pattern: 'peur que + ne (likely expletive)', 
             weight: 3 
           });
         }
       }
+    }
+
+    // Check for mixed patterns (both expletive trigger + logical negation)
+    const hasExpletiveTrigger = foundPatterns.some(p => p.type === 'expletive');
+    const hasLogicalNegation = foundPatterns.some(p => p.type === 'logical');
+    
+    if (hasExpletiveTrigger && hasLogicalNegation) {
+      // When both are present, check which is stronger
+      const expletiveWeight = foundPatterns.filter(p => p.type.includes('expletive')).reduce((sum, p) => sum + p.weight, 0);
+      const logicalWeight = foundPatterns.filter(p => p.type.includes('logical')).reduce((sum, p) => sum + p.weight, 0);
+      
+      // Add a mixed pattern indicator
+      foundPatterns.push({
+        type: 'mixed_pattern',
+        pattern: `mixed: expletive(${expletiveWeight}) vs logical(${logicalWeight})`,
+        weight: 1
+      });
     }
 
     // Calculate likelihood percentages
