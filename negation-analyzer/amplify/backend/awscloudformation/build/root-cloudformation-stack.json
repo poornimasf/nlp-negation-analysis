@@ -204,8 +204,6 @@
       "Properties": {
         "TemplateURL": "https://s3.amazonaws.com/amplify-negationanalyzer-dev-01dc4-deployment/amplify-cfn-templates/hosting/amplifyhosting-template.json",
         "Parameters": {
-          "appId": "dulya4p6otkup",
-          "type": "manual",
           "env": "dev"
         }
       }

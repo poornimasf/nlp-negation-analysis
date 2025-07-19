@@ -1,5 +1,5 @@
 {
-  "providers": {
+  "dev": {
     "awscloudformation": {
       "AuthRoleName": "amplify-negationanalyzer-dev-01dc4-authRole",
       "UnauthRoleArn": "arn:aws:iam::403492127137:role/amplify-negationanalyzer-dev-01dc4-unauthRole",
@@ -10,20 +10,6 @@
       "StackName": "amplify-negationanalyzer-dev-01dc4",
       "StackId": "arn:aws:cloudformation:us-east-2:403492127137:stack/amplify-negationanalyzer-dev-01dc4/c19451c0-63ec-11f0-85b9-0ab9e29a9465",
       "AmplifyAppId": "dulya4p6otkup"
-    }
-  },
-  "hosting": {
-    "amplifyhosting": {
-      "service": "amplifyhosting",
-      "providerPlugin": "awscloudformation",
-      "type": "manual",
-      "providerMetadata": {
-        "s3TemplateURL": "https://s3.amazonaws.com/amplify-negationanalyzer-dev-01dc4-deployment/amplify-cfn-templates/hosting/amplifyhosting-template.json",
-        "logicalId": "hostingamplifyhosting"
-      },
-      "lastPushTimeStamp": "2025-07-19T07:48:38.755Z",
-      "output": {},
-      "lastPushDirHash": "Ncx4mJ8Q1kUQXZJirAR9/AUR1PQ="
     }
   }
 }
