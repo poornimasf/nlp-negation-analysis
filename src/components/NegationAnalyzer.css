@@ -1776,3 +1776,96 @@
     min-height: 120px;
   }
 }
+/* Enhanced pattern type styling for "peur que" constructions */
+.pattern-item.peur_que_expletive {
+  background-color: #fef5e7;
+  border-left: 4px solid #f6ad55;
+  color: #c05621;
+}
+
+.pattern-item.peur_que_expletive .pattern-type::after {
+  content: " 🎯";
+}
+
+.pattern-tag.peur_que_expletive {
+  background-color: #fef5e7;
+  color: #c05621;
+  border: 1px solid #f6ad55;
+}
+
+/* Enhanced training data match styling */
+.pattern-item.training_expletive {
+  background-color: #e6fffa;
+  border-left: 4px solid #38b2ac;
+  color: #234e52;
+}
+
+.pattern-item.training_logical {
+  background-color: #f0fff4;
+  border-left: 4px solid #48bb78;
+  color: #22543d;
+}
+
+.pattern-tag.training_expletive,
+.pattern-tag.training_logical {
+  font-weight: 600;
+}
+
+.pattern-tag.training_expletive::before {
+  content: "📚 ";
+}
+
+.pattern-tag.training_logical::before {
+  content: "📖 ";
+}
+
+/* Peur que specific styling */
+.peur-que-indicator {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-block;
+  margin: 2px;
+}
+
+.peur-que-indicator::before {
+  content: "🇫🇷 ";
+}
+
+/* Training data integration indicators */
+.training-match-indicator {
+  background-color: #e6fffa;
+  border: 1px solid #38b2ac;
+  color: #234e52;
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-left: 8px;
+}
+
+.training-match-indicator::before {
+  content: "📊 ";
+}
+
+/* Enhanced confidence styling */
+.confidence-badge.high {
+  background-color: #c6f6d5 !important;
+  color: #22543d !important;
+  border: 1px solid #48bb78 !important;
+}
+
+.confidence-badge.medium {
+  background-color: #fef5e7 !important;
+  color: #c05621 !important;
+  border: 1px solid #f6ad55 !important;
+}
+
+.confidence-badge.low {
+  background-color: #fed7d7 !important;
+  color: #c53030 !important;
+  border: 1px solid #fc8181 !important;
+}
