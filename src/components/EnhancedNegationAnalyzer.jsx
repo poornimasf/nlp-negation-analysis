@@ -2034,21 +2034,50 @@ Je crains qu'il ne vienne demain. Il ne mange pas de légumes. J'ai peur qu'elle
             </div>
 
             <div className="file-format-info">
-              <h4>Expected File Format:</h4>
-              <ul>
-                <li><strong>CSV:</strong> First column = text, Second column = classification</li>
-                <li><strong>JSON:</strong> Array of objects with text and classification fields</li>
-                <li><strong>Classifications:</strong> "with ne", "without ne", "expletive", "logical", etc.</li>
-              </ul>
+              <h4>Supported File Formats:</h4>
               
-              <div className="example-format">
-                <strong>Example CSV:</strong>
-                <pre>
+              <div className="format-section">
+                <h5>📊 Basic Training Data Format:</h5>
+                <ul>
+                  <li><strong>CSV:</strong> First column = text, Second column = classification</li>
+                  <li><strong>JSON:</strong> Array of objects with text and classification fields</li>
+                  <li><strong>Classifications:</strong> "with ne", "without ne", "expletive", "logical", etc.</li>
+                </ul>
+                
+                <div className="example-format">
+                  <strong>Example CSV (Basic):</strong>
+                  <pre>
 {`text,classification
 "Je crains qu'il ne vienne",with ne
 "Je pense qu'il viendra",without ne
 "J'ai peur qu'il ne soit malade",expletive`}
-                </pre>
+                  </pre>
+                </div>
+              </div>
+
+              <div className="format-section">
+                <h5>🔬 Research Dataset Format (for Expletive Inference):</h5>
+                <ul>
+                  <li><code>original_text</code> - Original sentence with expletive "ne"</li>
+                  <li><code>modified_text</code> - Modified sentence (with "ne" removed or never had "ne")</li>
+                  <li><code>had_expletive_ne</code> - Boolean ground truth (true/false)</li>
+                  <li><code>classification</code> - Classification label (optional)</li>
+                  <li><code>expletive_type</code> - Type of expletive construction (optional)</li>
+                </ul>
+                
+                <div className="example-format">
+                  <strong>Example CSV (Research):</strong>
+                  <pre>
+{`original_text,modified_text,had_expletive_ne,classification,expletive_type
+"J'ai peur qu'il ne vienne pas","J'ai peur qu'il vienne",true,expletive,peur_que
+"Je crains qu'elle ne soit malade","Je crains qu'elle soit malade",true,expletive,craindre
+"Il mange du pain","Il mange du pain",false,no_expletive,none`}
+                  </pre>
+                </div>
+              </div>
+
+              <div className="format-note">
+                <p><strong>Note:</strong> The system automatically detects which format you're using. Research dataset format enables advanced expletive inference analysis with pattern matching and similarity algorithms.</p>
               </div>
             </div>
           </div>
