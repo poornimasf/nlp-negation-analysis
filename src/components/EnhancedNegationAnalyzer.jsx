@@ -10,7 +10,7 @@ const EnhancedNegationAnalyzer = () => {
   const [loading, setLoading] = useState(false);
   const [language, setLanguage] = useState('french');
   const [highlightedText, setHighlightedText] = useState('');
-  const [activeTab, setActiveTab] = useState('inference');
+  const [activeTab, setActiveTab] = useState('training');
   
   // Enhanced functionality state
   const [systemStats, setSystemStats] = useState(null);
@@ -1359,6 +1359,12 @@ const EnhancedNegationAnalyzer = () => {
       {/* Tab Navigation */}
       <div className="tab-navigation">
         <button 
+          className={`tab-button ${activeTab === 'training' ? 'active' : ''}`}
+          onClick={() => setActiveTab('training')}
+        >
+          Upload Negation Data
+        </button>
+        <button 
           className={`tab-button ${activeTab === 'inference' ? 'active' : ''}`}
           onClick={() => setActiveTab('inference')}
         >
@@ -1387,12 +1393,6 @@ const EnhancedNegationAnalyzer = () => {
           onClick={() => setActiveTab('batch-prediction')}
         >
           Batch Prediction
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'training' ? 'active' : ''}`}
-          onClick={() => setActiveTab('training')}
-        >
-          Training Data Management
         </button>
       </div>
 
@@ -1970,7 +1970,7 @@ Je crains qu'il ne vienne demain. Il ne mange pas de légumes. J'ai peur qu'elle
         </div>
       )}
 
-      {/* Training Data Management Tab */}
+      {/* Upload Negation Data Tab */}
       {activeTab === 'training' && (
         <div className="training-section">
           {!isTrainingAuthorized ? (
@@ -1979,7 +1979,7 @@ Je crains qu'il ne vienne demain. Il ne mange pas de légumes. J'ai peur qu'elle
               <div className="password-gate-content">
                 <div className="lock-icon">🔒</div>
                 <h3>Admin Access Required</h3>
-                <p>Training data management requires administrator privileges to prevent unauthorized model modifications.</p>
+                <p>Upload negation data requires administrator privileges to prevent unauthorized model modifications.</p>
                 
                 <form onSubmit={handlePasswordSubmit} className="password-form">
                   <div className="password-input-group">
@@ -2018,7 +2018,7 @@ Je crains qu'il ne vienne demain. Il ne mange pas de légumes. J'ai peur qu'elle
             // Authorized Training Interface
             <div>
               <div className="training-header">
-                <h3>🎯 Training Data Management</h3>
+                <h3>🎯 Upload Negation Data</h3>
                 <div className="training-controls">
                   <span className="authorized-indicator">✅ Authorized Access</span>
                   <button onClick={revokeTrainingAccess} className="revoke-access-btn">
