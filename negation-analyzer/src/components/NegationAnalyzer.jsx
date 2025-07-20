@@ -5,7 +5,7 @@ export default function NegationAnalyzer() {
   // State definitions
   const [inputText, setInputText] = useState("");
   const [batchInput, setBatchInput] = useState("");
-  const [language, setLanguage] = useState("french");
+  const language = "french"; // Fixed to French only
   const [result, setResult] = useState(null);
   const [highlightedText, setHighlightedText] = useState("");
   const [batchResults, setBatchResults] = useState([]);
@@ -18,9 +18,7 @@ export default function NegationAnalyzer() {
   });
   const [uploadError, setUploadError] = useState(null);
   const [learnedPatterns, setLearnedPatterns] = useState({
-    french: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } },
-    english: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } },
-    mandarin: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } }
+    french: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } }
   });
 
   // Constants
@@ -28,23 +26,13 @@ export default function NegationAnalyzer() {
     french: {
       en: ["craindre", "avoir peur que", "peur que", "redouter", "avant que", "regretter"],
       nonEn: ["commencer", "arrêter", "cesser", "décider", "oublier"],
-    },
-    english: {
-      en: ["afraid", "fear", "regret", "prevent", "before"],
-      nonEn: ["start", "stop", "decide", "quit"],
-    },
-    mandarin: {
-      en: ["怕", "抱歉", "避免", "前"],
-      nonEn: ["开始", "停止", "决定"],
-    },
+    }
   };
 
   // Basic analysis functions
   const hasNegation = (text, lang) => {
     const patterns = {
       french: /\bne\b([^a-zA-Z]|\s|$)/i,
-      english: /\bnot\b|\bnever\b|\bno\b|\bnobody\b/i,
-      mandarin: /不|没|别/,
     };
     return patterns[lang].test(text);
   };
@@ -337,21 +325,7 @@ export default function NegationAnalyzer() {
   return (
     <div className="container">
       <div className="card">
-        <h2 className="title">Multilingual Expletive Negation Analyzer</h2>
-
-        <div className="form-group">
-          <label htmlFor="language-select">Select Language</label>
-          <select 
-            id="language-select"
-            value={language} 
-            onChange={(e) => setLanguage(e.target.value)}
-            className="select"
-          >
-            <option value="french">🇫🇷 French</option>
-            <option value="english">🇺🇸 English</option>
-            <option value="mandarin">🇨🇳 Mandarin</option>
-          </select>
-        </div>
+        <h2 className="title">🇫🇷 French Expletive Negation Analyzer</h2>
 
         <div className="form-group">
           <label htmlFor="sentence-input">Enter Sentence:</label>

@@ -1,4 +1,4 @@
-# Enhanced Negation Analyzer - Complete System
+# Expletive Negation Analysis - Complete System
 
 A comprehensive linguistic analysis platform specializing in expletive vs logical negation detection with cloud-based machine learning capabilities.
 
@@ -67,7 +67,7 @@ chmod +x deploy-complete.sh
 
 ### Analysis Engine
 - **Enhanced Negation System**: Core linguistic processing
-- **Multi-Language Support**: French, English, Mandarin detection
+- **French Language Focus**: Specialized French expletive negation detection
 - **Pattern Recognition**: Advanced expletive negation classification
 - **Confidence Scoring**: Statistical confidence measurement
 
@@ -242,7 +242,7 @@ const processLearningPatterns = (data) => {
 ## 🧠 Expletive Inference (Research Mode)
 
 ### Overview
-The Enhanced Negation Analyzer now includes a sophisticated **Expletive Inference** system designed specifically for linguistic research. This feature can infer whether a French sentence originally contained expletive negation ("ne") even when the "ne" has been removed or never existed.
+The Expletive Negation Analysis system now includes a sophisticated **Expletive Inference** system designed specifically for linguistic research. This feature can infer whether a French sentence originally contained expletive negation ("ne") even when the "ne" has been removed or never existed.
 
 ### Research Methodology
 
@@ -447,7 +447,7 @@ Using the provided example dataset (`research_dataset_example.csv`):
 When using this system for academic research, please cite:
 
 ```
-Enhanced Negation Analyzer - Expletive Inference System
+Expletive Negation Analysis - Expletive Inference System
 Linguistic Analysis Platform for French Expletive Negation Research
 Version 2.2.0 (2025)
 ```
@@ -693,7 +693,7 @@ npm run build
 
 ---
 
-**Enhanced Negation Analyzer - Advancing linguistic analysis through intelligent automation**
+**Expletive Negation Analysis - Advancing linguistic analysis through intelligent automation**
 
 **Live Application**: https://main.d1gx30ivteuneq.amplifyapp.com/
 

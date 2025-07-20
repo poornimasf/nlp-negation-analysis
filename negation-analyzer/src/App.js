@@ -12,7 +12,7 @@ function App() {
       {({ signOut, user }) => (
         <div className="App">
           <div className="header">
-            <h1>Negation Analyzer</h1>
+            <h1>Expletive Negation Analysis</h1>
             <div className="user-info">
               <span>Welcome, {user.attributes.email}</span>
               <button onClick={signOut} className="sign-out-button">Sign out</button>

@@ -31,9 +31,7 @@ const EnhancedNegationAnalyzer = () => {
   });
   const [uploadError, setUploadError] = useState(null);
   const [learnedPatterns, setLearnedPatterns] = useState({
-    french: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } },
-    english: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } },
-    mandarin: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } }
+    french: { withoutNe: { patterns: [], statistics: {} }, withNe: { patterns: [], statistics: {} } }
   });
 
   // Password protection for training data management
@@ -1335,7 +1333,7 @@ const EnhancedNegationAnalyzer = () => {
   return (
     <div className="negation-analyzer">
       <div className="header">
-        <h1>Enhanced Expletive Negation Analyzer</h1>
+        <h1>Expletive Negation Analysis</h1>
         <p>AI-powered analysis of expletive vs logical negation with continuous learning</p>
       </div>
 
@@ -1379,8 +1377,8 @@ const EnhancedNegationAnalyzer = () => {
         </button>
       </div>
 
-      {/* Language Selector */}
-      <div className="language-selector">
+      {/* Language Selector - Hidden since only French is supported */}
+      <div className="language-selector" style={{display: 'none'}}>
         <label htmlFor="language">Language:</label>
         <select 
           id="language" 
@@ -1388,8 +1386,6 @@ const EnhancedNegationAnalyzer = () => {
           onChange={(e) => setLanguage(e.target.value)}
         >
           <option value="french">French</option>
-          <option value="english">English</option>
-          <option value="mandarin">Mandarin</option>
         </select>
       </div>
 
