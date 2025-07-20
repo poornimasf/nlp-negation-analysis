@@ -2041,16 +2041,16 @@ Je crains qu'il ne vienne demain. Il ne mange pas de légumes. J'ai peur qu'elle
                 <ul>
                   <li><strong>CSV:</strong> First column = text, Second column = classification</li>
                   <li><strong>JSON:</strong> Array of objects with text and classification fields</li>
-                  <li><strong>Classifications:</strong> "with ne", "without ne", "expletive", "logical", etc.</li>
+                  <li><strong>Classifications:</strong> "expletive negation", "logical negation"</li>
                 </ul>
                 
                 <div className="example-format">
                   <strong>Example CSV (Basic):</strong>
                   <pre>
 {`text,classification
-"Je crains qu'il ne vienne",with ne
-"Je pense qu'il viendra",without ne
-"J'ai peur qu'il ne soit malade",expletive`}
+"Je crains qu'il ne vienne",expletive negation
+"Je ne pense pas qu'il viendra",logical negation
+"J'ai peur qu'il ne soit malade",expletive negation`}
                   </pre>
                 </div>
               </div>
