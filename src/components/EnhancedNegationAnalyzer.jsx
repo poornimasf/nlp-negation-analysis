@@ -10,7 +10,7 @@ const EnhancedNegationAnalyzer = () => {
   const [loading, setLoading] = useState(false);
   const [language, setLanguage] = useState('french');
   const [highlightedText, setHighlightedText] = useState('');
-  const [activeTab, setActiveTab] = useState('single');
+  const [activeTab, setActiveTab] = useState('inference');
   
   // Enhanced functionality state
   const [systemStats, setSystemStats] = useState(null);
@@ -1359,6 +1359,12 @@ const EnhancedNegationAnalyzer = () => {
       {/* Tab Navigation */}
       <div className="tab-navigation">
         <button 
+          className={`tab-button ${activeTab === 'inference' ? 'active' : ''}`}
+          onClick={() => setActiveTab('inference')}
+        >
+          Expletive Inference
+        </button>
+        <button 
           className={`tab-button ${activeTab === 'single' ? 'active' : ''}`}
           onClick={() => setActiveTab('single')}
         >
@@ -1381,12 +1387,6 @@ const EnhancedNegationAnalyzer = () => {
           onClick={() => setActiveTab('batch-prediction')}
         >
           Batch Prediction
-        </button>
-        <button 
-          className={`tab-button ${activeTab === 'inference' ? 'active' : ''}`}
-          onClick={() => setActiveTab('inference')}
-        >
-          Expletive Inference (Research)
         </button>
         <button 
           className={`tab-button ${activeTab === 'training' ? 'active' : ''}`}
@@ -2173,11 +2173,11 @@ Je crains qu'il ne vienne demain. Il ne mange pas de légumes. J'ai peur qu'elle
         </div>
       )}
 
-      {/* Expletive Inference (Research) Tab */}
+      {/* Expletive Inference Tab */}
       {activeTab === 'inference' && (
         <div className="inference-section">
           <div className="inference-header">
-            <h3>🔬 Expletive Negation Inference (Research Mode)</h3>
+            <h3>🔬 Expletive Negation Inference</h3>
             <p className="inference-description">
               Infer whether a French sentence originally contained expletive negation ("ne") based on linguistic patterns, 
               even when "ne" has been removed or never existed. This tool is designed for research on expletive negation patterns.
