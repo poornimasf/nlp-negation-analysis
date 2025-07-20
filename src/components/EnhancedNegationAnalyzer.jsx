@@ -1337,23 +1337,6 @@ const EnhancedNegationAnalyzer = () => {
       <div className="header">
         <h1>Enhanced Expletive Negation Analyzer</h1>
         <p>AI-powered analysis of expletive vs logical negation with continuous learning</p>
-        
-        {systemStats && (
-          <div className="system-stats">
-            <div className="stat-item">
-              <span className="stat-label">Patterns Learned:</span>
-              <span className="stat-value">{systemStats.total_patterns_learned?.toLocaleString()}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-label">User Feedback:</span>
-              <span className="stat-value">{systemStats.user_feedback_count}</span>
-            </div>
-            <div className="stat-item">
-              <span className="stat-label">Accuracy Improvement:</span>
-              <span className="stat-value">+{(systemStats.average_confidence_improvement * 100).toFixed(1)}%</span>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Tab Navigation */}
