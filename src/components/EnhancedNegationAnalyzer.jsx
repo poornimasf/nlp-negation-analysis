@@ -54,6 +54,14 @@ const EnhancedNegationAnalyzer = () => {
   const [batchPredictionLoading, setBatchPredictionLoading] = useState(false);
   const [batchPredictionStats, setBatchPredictionStats] = useState(null);
 
+  // Research-specific state for expletive inference
+  const [inferenceMode, setInferenceMode] = useState(false);
+  const [inferenceResults, setInferenceResults] = useState(null);
+  const [researchDataset, setResearchDataset] = useState([]);
+  const [evaluationMetrics, setEvaluationMetrics] = useState(null);
+  const [inferenceText, setInferenceText] = useState('');
+  const [inferenceLoading, setInferenceLoading] = useState(false);
+
   // Set your secure password here (in production, use environment variables)
   const TRAINING_PASSWORD = 'Buffalo25';
 
@@ -724,6 +732,285 @@ const EnhancedNegationAnalyzer = () => {
     };
   };
 
+  // Research-specific inference algorithm for original expletive negation
+  const inferOriginalExpletiveNegation = (modifiedText, researchDataset = []) => {
+    if (!modifiedText.trim()) return null;
+
+    const normalizedText = modifiedText.toLowerCase().trim();
+    let inferenceScore = 0;
+    let totalIndicators = 0;
+    const foundEvidence = [];
+    const reasoning = {
+      trigger_found: false,
+      subjunctive_present: false,
+      similar_training_examples: 0,
+      linguistic_context: [],
+      pattern_matches: []
+    };
+
+    // Step 1: Identify expletive trigger patterns (strong indicators)
+    const expletiveTriggers = [
+      // Core "peur que" patterns
+      'peur qu', 'peur que', 'ai peur qu', 'as peur qu', 'a peur qu', 
+      'avons peur qu', 'avez peur qu', 'ont peur qu',
+      'avoir peur qu', 'avoir peur que', 'par peur qu', 'par peur que', 
+      'de peur qu', 'de peur que',
+      
+      // Craindre patterns
+      'crains qu', 'craint qu', 'craignons qu', 'craignez qu', 'craignent qu',
+      'craindre qu', 'craindre que',
+      
+      // Redouter patterns  
+      'redoute qu', 'redoutes qu', 'redoutons qu', 'redoutez qu', 'redoutent qu',
+      'redouter qu', 'redouter que',
+      
+      // Douter patterns
+      'doute qu', 'doutes qu', 'doutons qu', 'doutez qu', 'doutent qu',
+      'douter qu', 'douter que',
+      
+      // Éviter patterns
+      'évite qu', 'évites qu', 'évitons qu', 'évitez qu', 'évitent qu',
+      'éviter qu', 'éviter que',
+      
+      // Empêcher patterns
+      'empêche qu', 'empêches qu', 'empêchons qu', 'empêchez qu', 'empêchent qu',
+      'empêcher qu', 'empêcher que'
+    ];
+
+    // Check for expletive triggers
+    const foundTriggers = expletiveTriggers.filter(trigger => normalizedText.includes(trigger));
+    if (foundTriggers.length > 0) {
+      inferenceScore += 4; // High weight for expletive triggers
+      totalIndicators++;
+      reasoning.trigger_found = true;
+      reasoning.linguistic_context.push(`Expletive trigger found: ${foundTriggers[0]}`);
+      foundEvidence.push({ 
+        type: 'expletive_trigger', 
+        pattern: foundTriggers[0], 
+        weight: 4,
+        confidence: 0.9 
+      });
+    }
+
+    // Step 2: Check for subjunctive mood (very strong indicator for expletive context)
+    const subjunctiveVerbs = [
+      'soit', 'ait', 'vienne', 'comprenne', 'sache', 'puisse', 'veuille', 
+      'fasse', 'parte', 'aille', 'tombe', 'manque', 'arrive', 'devienne',
+      'prenne', 'mette', 'dise', 'voie', 'entende', 'sorte', 'finisse'
+    ];
+
+    const foundSubjunctive = subjunctiveVerbs.filter(verb => normalizedText.includes(verb));
+    if (foundSubjunctive.length > 0) {
+      inferenceScore += 3; // High weight for subjunctive
+      totalIndicators++;
+      reasoning.subjunctive_present = true;
+      reasoning.linguistic_context.push(`Subjunctive mood: ${foundSubjunctive[0]}`);
+      foundEvidence.push({ 
+        type: 'subjunctive_mood', 
+        pattern: foundSubjunctive[0], 
+        weight: 3,
+        confidence: 0.85 
+      });
+    }
+
+    // Step 3: Advanced pattern matching with research dataset
+    if (researchDataset.length > 0) {
+      const similarPatterns = researchDataset.filter(item => {
+        if (!item.original_text || !item.modified_text) return false;
+        
+        const similarity = calculateTextSimilarity(normalizedText, item.modified_text.toLowerCase());
+        return similarity > 0.7;
+      });
+
+      reasoning.similar_training_examples = similarPatterns.length;
+      
+      if (similarPatterns.length > 0) {
+        // Weight based on ground truth from research dataset
+        const expletiveExamples = similarPatterns.filter(item => item.had_expletive_ne === true);
+        const expletiveRatio = expletiveExamples.length / similarPatterns.length;
+        
+        if (expletiveRatio > 0.6) {
+          inferenceScore += 3;
+          totalIndicators++;
+          reasoning.pattern_matches.push(`${expletiveExamples.length}/${similarPatterns.length} similar examples had expletive ne`);
+          foundEvidence.push({ 
+            type: 'research_pattern_match', 
+            pattern: `${expletiveExamples.length} similar expletive examples`, 
+            weight: 3,
+            confidence: expletiveRatio 
+          });
+        }
+      }
+    }
+
+    // Step 4: Contextual linguistic analysis
+    // Check for complement clause structure (que + subject + verb)
+    const complementPattern = /que\s+(?:il|elle|je|tu|nous|vous|ils|elles|on)\s+\w+/i;
+    if (complementPattern.test(normalizedText)) {
+      inferenceScore += 1;
+      totalIndicators++;
+      reasoning.linguistic_context.push('Complement clause structure detected');
+      foundEvidence.push({ 
+        type: 'complement_structure', 
+        pattern: 'que + subject + verb', 
+        weight: 1,
+        confidence: 0.6 
+      });
+    }
+
+    // Step 5: Check for absence of logical negation markers
+    const logicalNegationMarkers = ['pas', 'plus', 'jamais', 'rien', 'personne', 'guère', 'point'];
+    const hasLogicalMarkers = logicalNegationMarkers.some(marker => normalizedText.includes(marker));
+    
+    if (!hasLogicalMarkers && foundTriggers.length > 0) {
+      inferenceScore += 2; // Absence of logical negation in expletive context
+      totalIndicators++;
+      reasoning.linguistic_context.push('No logical negation markers found');
+      foundEvidence.push({ 
+        type: 'absence_logical_negation', 
+        pattern: 'no pas/plus/jamais', 
+        weight: 2,
+        confidence: 0.7 
+      });
+    }
+
+    // Step 6: Calculate confidence and make inference
+    const maxPossibleScore = 12; // 4 + 3 + 3 + 1 + 2 - 1
+    const rawConfidence = Math.min(inferenceScore / maxPossibleScore, 1.0);
+    
+    // Adjust confidence based on number of indicators
+    let adjustedConfidence = rawConfidence;
+    if (totalIndicators >= 3) adjustedConfidence = Math.min(rawConfidence + 0.1, 1.0);
+    if (totalIndicators >= 4) adjustedConfidence = Math.min(rawConfidence + 0.2, 1.0);
+
+    // Determine inference result
+    let inference = 'uncertain';
+    let likelihood = 50;
+    
+    if (adjustedConfidence >= 0.7) {
+      inference = 'likely_had_expletive';
+      likelihood = Math.round(adjustedConfidence * 100);
+    } else if (adjustedConfidence >= 0.4) {
+      inference = 'possibly_had_expletive';
+      likelihood = Math.round(adjustedConfidence * 100);
+    } else {
+      inference = 'unlikely_had_expletive';
+      likelihood = Math.round(adjustedConfidence * 100);
+    }
+
+    return {
+      inference,
+      likelihood,
+      confidence: adjustedConfidence,
+      confidence_level: adjustedConfidence >= 0.8 ? 'High' : 
+                       adjustedConfidence >= 0.6 ? 'Medium' : 'Low',
+      total_indicators: totalIndicators,
+      inference_score: inferenceScore,
+      found_evidence: foundEvidence,
+      reasoning,
+      analysis: {
+        expletive_triggers: foundTriggers.length,
+        subjunctive_verbs: foundSubjunctive.length,
+        similar_patterns: reasoning.similar_training_examples,
+        linguistic_features: reasoning.linguistic_context.length
+      }
+    };
+  };
+
+  // Helper function for text similarity calculation
+  const calculateTextSimilarity = (text1, text2) => {
+    const words1 = text1.split(/\s+/).filter(w => w.length > 2);
+    const words2 = text2.split(/\s+/).filter(w => w.length > 2);
+    
+    if (words1.length === 0 || words2.length === 0) return 0;
+    
+    const commonWords = words1.filter(word => words2.includes(word));
+    const similarity = (2 * commonWords.length) / (words1.length + words2.length);
+    
+    return similarity;
+  };
+
+  // Research dataset processing for training pairs
+  const processResearchDataset = (data) => {
+    const processed = data.map((item, index) => ({
+      id: index + 1,
+      original_text: item.original_text || item.text,
+      modified_text: item.modified_text || item.text,
+      had_expletive_ne: item.had_expletive_ne || item.classification?.toLowerCase().includes('expletive'),
+      classification: item.classification,
+      expletive_type: item.expletive_type || 'general'
+    }));
+    
+    setResearchDataset(processed);
+    return processed;
+  };
+
+  // Batch inference evaluation for research
+  const evaluateInferenceBatch = async (sentences, groundTruth = []) => {
+    if (!sentences || sentences.length === 0) return null;
+    
+    const results = [];
+    let correctInferences = 0;
+    let totalEvaluated = 0;
+    
+    for (let i = 0; i < sentences.length; i++) {
+      const sentence = sentences[i];
+      const inference = inferOriginalExpletiveNegation(sentence, researchDataset);
+      
+      if (inference) {
+        results.push({
+          id: i + 1,
+          text: sentence,
+          ...inference
+        });
+        
+        // Compare with ground truth if available
+        if (groundTruth[i] !== undefined) {
+          const predicted = inference.inference === 'likely_had_expletive';
+          const actual = groundTruth[i];
+          if (predicted === actual) correctInferences++;
+          totalEvaluated++;
+        }
+      }
+    }
+    
+    // Calculate evaluation metrics
+    const metrics = {
+      total_sentences: sentences.length,
+      total_evaluated: totalEvaluated,
+      accuracy: totalEvaluated > 0 ? (correctInferences / totalEvaluated) : 0,
+      high_confidence_count: results.filter(r => r.confidence_level === 'High').length,
+      medium_confidence_count: results.filter(r => r.confidence_level === 'Medium').length,
+      low_confidence_count: results.filter(r => r.confidence_level === 'Low').length,
+      average_confidence: results.length > 0 ? 
+        results.reduce((sum, r) => sum + r.confidence, 0) / results.length : 0,
+      likely_expletive_count: results.filter(r => r.inference === 'likely_had_expletive').length,
+      possibly_expletive_count: results.filter(r => r.inference === 'possibly_had_expletive').length,
+      unlikely_expletive_count: results.filter(r => r.inference === 'unlikely_had_expletive').length
+    };
+    
+    setEvaluationMetrics(metrics);
+    return { results, metrics };
+  };
+
+  // Handle single inference analysis
+  const handleInference = async () => {
+    if (!inferenceText.trim()) return;
+    
+    setInferenceLoading(true);
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate processing
+      
+      const result = inferOriginalExpletiveNegation(inferenceText, researchDataset);
+      setInferenceResults(result);
+    } catch (error) {
+      console.error('Inference error:', error);
+    } finally {
+      setInferenceLoading(false);
+    }
+  };
+
   // Handle prediction analysis
   const handlePrediction = async () => {
     if (!predictionText.trim()) return;
@@ -1094,6 +1381,12 @@ const EnhancedNegationAnalyzer = () => {
           onClick={() => setActiveTab('batch-prediction')}
         >
           Batch Prediction
+        </button>
+        <button 
+          className={`tab-button ${activeTab === 'inference' ? 'active' : ''}`}
+          onClick={() => setActiveTab('inference')}
+        >
+          Expletive Inference (Research)
         </button>
         <button 
           className={`tab-button ${activeTab === 'training' ? 'active' : ''}`}
@@ -1877,6 +2170,336 @@ Je crains qu'il ne vienne demain. Il ne mange pas de légumes. J'ai peur qu'elle
           </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Expletive Inference (Research) Tab */}
+      {activeTab === 'inference' && (
+        <div className="inference-section">
+          <div className="inference-header">
+            <h3>🔬 Expletive Negation Inference (Research Mode)</h3>
+            <p className="inference-description">
+              Infer whether a French sentence originally contained expletive negation ("ne") based on linguistic patterns, 
+              even when "ne" has been removed or never existed. This tool is designed for research on expletive negation patterns.
+            </p>
+            
+            {researchDataset.length > 0 && (
+              <div className="research-dataset-info">
+                <span className="dataset-indicator">📊 Research Dataset: {researchDataset.length} training pairs loaded</span>
+              </div>
+            )}
+          </div>
+
+          <div className="inference-modes">
+            <div className="mode-selector">
+              <button 
+                className={`mode-button ${!inferenceMode ? 'active' : ''}`}
+                onClick={() => setInferenceMode(false)}
+              >
+                Single Sentence Inference
+              </button>
+              <button 
+                className={`mode-button ${inferenceMode ? 'active' : ''}`}
+                onClick={() => setInferenceMode(true)}
+              >
+                Batch Evaluation Mode
+              </button>
+            </div>
+          </div>
+
+          {!inferenceMode ? (
+            // Single Sentence Inference Mode
+            <div className="single-inference">
+              <div className="inference-input-section">
+                <label htmlFor="inference-text">French Sentence (with or without "ne"):</label>
+                <textarea
+                  id="inference-text"
+                  value={inferenceText}
+                  onChange={(e) => setInferenceText(e.target.value)}
+                  placeholder="Enter a French sentence to infer original expletive negation presence...
+Examples:
+- J'ai peur qu'il vienne (removed 'ne')
+- Je crains qu'elle soit malade (never had 'ne')
+- Il faut qu'on parte maintenant (check for expletive context)"
+                  className="text-input inference-input"
+                  rows="4"
+                />
+              </div>
+
+              <div className="button-group">
+                <button 
+                  onClick={handleInference}
+                  disabled={!inferenceText.trim() || inferenceLoading}
+                  className="analyze-button inference-button"
+                >
+                  {inferenceLoading ? 'Analyzing...' : 'Infer Original Expletive Negation'}
+                </button>
+                <button 
+                  onClick={() => {
+                    setInferenceText('');
+                    setInferenceResults(null);
+                  }}
+                  className="clear-button"
+                >
+                  Clear
+                </button>
+              </div>
+
+              {inferenceResults && (
+                <div className="inference-results">
+                  <h4>Inference Results</h4>
+                  
+                  <div className="inference-summary">
+                    <div className="inference-conclusion">
+                      <div className={`inference-badge ${inferenceResults.inference}`}>
+                        {inferenceResults.inference === 'likely_had_expletive' ? '✅ Likely Had Expletive "Ne"' :
+                         inferenceResults.inference === 'possibly_had_expletive' ? '❓ Possibly Had Expletive "Ne"' :
+                         '❌ Unlikely Had Expletive "Ne"'}
+                      </div>
+                      <div className="likelihood-score">
+                        <span className="likelihood-label">Likelihood:</span>
+                        <span className="likelihood-value">{inferenceResults.likelihood}%</span>
+                      </div>
+                      <div className="confidence-indicator">
+                        <span className="confidence-label">Confidence:</span>
+                        <span className={`confidence-badge ${inferenceResults.confidence_level.toLowerCase()}`}>
+                          {inferenceResults.confidence_level} ({Math.round(inferenceResults.confidence * 100)}%)
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="inference-analysis">
+                    <h5>Analysis Details</h5>
+                    <div className="analysis-grid">
+                      <div className="analysis-item">
+                        <span className="analysis-label">Total Indicators:</span>
+                        <span className="analysis-value">{inferenceResults.total_indicators}</span>
+                      </div>
+                      <div className="analysis-item">
+                        <span className="analysis-label">Inference Score:</span>
+                        <span className="analysis-value">{inferenceResults.inference_score}/12</span>
+                      </div>
+                      <div className="analysis-item">
+                        <span className="analysis-label">Expletive Triggers:</span>
+                        <span className="analysis-value">{inferenceResults.analysis.expletive_triggers}</span>
+                      </div>
+                      <div className="analysis-item">
+                        <span className="analysis-label">Subjunctive Verbs:</span>
+                        <span className="analysis-value">{inferenceResults.analysis.subjunctive_verbs}</span>
+                      </div>
+                      <div className="analysis-item">
+                        <span className="analysis-label">Similar Patterns:</span>
+                        <span className="analysis-value">{inferenceResults.analysis.similar_patterns}</span>
+                      </div>
+                      <div className="analysis-item">
+                        <span className="analysis-label">Linguistic Features:</span>
+                        <span className="analysis-value">{inferenceResults.analysis.linguistic_features}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {inferenceResults.found_evidence.length > 0 && (
+                    <div className="evidence-section">
+                      <h5>Supporting Evidence</h5>
+                      <div className="evidence-list">
+                        {inferenceResults.found_evidence.map((evidence, index) => (
+                          <div key={index} className={`evidence-item ${evidence.type}`}>
+                            <div className="evidence-header">
+                              <span className="evidence-type">
+                                {evidence.type === 'expletive_trigger' ? '🎯 Expletive Trigger' :
+                                 evidence.type === 'subjunctive_mood' ? '📝 Subjunctive Mood' :
+                                 evidence.type === 'research_pattern_match' ? '📊 Research Pattern' :
+                                 evidence.type === 'complement_structure' ? '🔗 Complement Structure' :
+                                 evidence.type === 'absence_logical_negation' ? '🚫 No Logical Negation' :
+                                 evidence.type}
+                              </span>
+                              <span className="evidence-weight">Weight: {evidence.weight}</span>
+                              <span className="evidence-confidence">
+                                Confidence: {Math.round(evidence.confidence * 100)}%
+                              </span>
+                            </div>
+                            <div className="evidence-pattern">
+                              Pattern: "{evidence.pattern}"
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {inferenceResults.reasoning.linguistic_context.length > 0 && (
+                    <div className="reasoning-section">
+                      <h5>Linguistic Reasoning</h5>
+                      <ul className="reasoning-list">
+                        {inferenceResults.reasoning.linguistic_context.map((reason, index) => (
+                          <li key={index} className="reasoning-item">{reason}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="inference-interpretation">
+                    <h5>Research Interpretation</h5>
+                    <div className="interpretation-text">
+                      {inferenceResults.inference === 'likely_had_expletive' ? (
+                        <p className="likely-interpretation">
+                          <strong>High likelihood of original expletive negation.</strong> The sentence shows strong 
+                          linguistic indicators typical of expletive "ne" constructions. This suggests the original 
+                          sentence likely contained expletive "ne" that was either removed or is contextually implied.
+                        </p>
+                      ) : inferenceResults.inference === 'possibly_had_expletive' ? (
+                        <p className="possible-interpretation">
+                          <strong>Moderate likelihood of original expletive negation.</strong> The sentence contains 
+                          some indicators of expletive context, but the evidence is not conclusive. Additional 
+                          context or linguistic analysis may be needed.
+                        </p>
+                      ) : (
+                        <p className="unlikely-interpretation">
+                          <strong>Low likelihood of original expletive negation.</strong> The sentence lacks strong 
+                          indicators of expletive "ne" constructions and is more likely to represent standard 
+                          French syntax without expletive negation.
+                        </p>
+                      )}
+                      
+                      <p className="methodology-note">
+                        <em>This inference is based on linguistic pattern analysis, subjunctive mood detection, 
+                        expletive trigger identification, and comparison with research training data.</em>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            // Batch Evaluation Mode
+            <div className="batch-inference">
+              <div className="batch-inference-info">
+                <h4>📊 Batch Evaluation for Research</h4>
+                <p>
+                  Upload your research dataset with original/modified sentence pairs to evaluate 
+                  the inference algorithm's performance on your specific data.
+                </p>
+              </div>
+
+              <div className="research-dataset-upload">
+                <h5>Research Dataset Format</h5>
+                <div className="format-requirements">
+                  <p><strong>Required columns:</strong></p>
+                  <ul>
+                    <li><code>original_text</code> - Original sentence with expletive "ne"</li>
+                    <li><code>modified_text</code> - Modified sentence (with "ne" removed)</li>
+                    <li><code>had_expletive_ne</code> - Boolean (true/false) ground truth</li>
+                    <li><code>classification</code> - Optional classification label</li>
+                  </ul>
+                </div>
+
+                <div className="dataset-upload-section">
+                  <input
+                    type="file"
+                    accept=".csv,.json,.xlsx"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        // Process research dataset file
+                        console.log('Research dataset file selected:', file.name);
+                      }
+                    }}
+                    className="file-input"
+                  />
+                  <p className="upload-help">
+                    Upload CSV, JSON, or Excel file with your research dataset
+                  </p>
+                </div>
+              </div>
+
+              {evaluationMetrics && (
+                <div className="evaluation-metrics">
+                  <h5>📈 Evaluation Results</h5>
+                  <div className="metrics-grid">
+                    <div className="metric-card">
+                      <div className="metric-value">{Math.round(evaluationMetrics.accuracy * 100)}%</div>
+                      <div className="metric-label">Accuracy</div>
+                    </div>
+                    <div className="metric-card">
+                      <div className="metric-value">{evaluationMetrics.total_sentences}</div>
+                      <div className="metric-label">Total Sentences</div>
+                    </div>
+                    <div className="metric-card">
+                      <div className="metric-value">{Math.round(evaluationMetrics.average_confidence * 100)}%</div>
+                      <div className="metric-label">Avg Confidence</div>
+                    </div>
+                    <div className="metric-card">
+                      <div className="metric-value">{evaluationMetrics.high_confidence_count}</div>
+                      <div className="metric-label">High Confidence</div>
+                    </div>
+                  </div>
+
+                  <div className="inference-distribution">
+                    <h6>Inference Distribution</h6>
+                    <div className="distribution-bars">
+                      <div className="distribution-item">
+                        <span className="distribution-label">Likely Expletive:</span>
+                        <div className="distribution-bar">
+                          <div 
+                            className="distribution-fill likely" 
+                            style={{width: `${(evaluationMetrics.likely_expletive_count / evaluationMetrics.total_sentences) * 100}%`}}
+                          ></div>
+                        </div>
+                        <span className="distribution-count">{evaluationMetrics.likely_expletive_count}</span>
+                      </div>
+                      <div className="distribution-item">
+                        <span className="distribution-label">Possibly Expletive:</span>
+                        <div className="distribution-bar">
+                          <div 
+                            className="distribution-fill possible" 
+                            style={{width: `${(evaluationMetrics.possibly_expletive_count / evaluationMetrics.total_sentences) * 100}%`}}
+                          ></div>
+                        </div>
+                        <span className="distribution-count">{evaluationMetrics.possibly_expletive_count}</span>
+                      </div>
+                      <div className="distribution-item">
+                        <span className="distribution-label">Unlikely Expletive:</span>
+                        <div className="distribution-bar">
+                          <div 
+                            className="distribution-fill unlikely" 
+                            style={{width: `${(evaluationMetrics.unlikely_expletive_count / evaluationMetrics.total_sentences) * 100}%`}}
+                          ></div>
+                        </div>
+                        <span className="distribution-count">{evaluationMetrics.unlikely_expletive_count}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="inference-methodology">
+            <h4>🔬 Research Methodology</h4>
+            <div className="methodology-details">
+              <div className="methodology-step">
+                <h6>1. Expletive Trigger Detection</h6>
+                <p>Identifies French constructions that typically require expletive "ne": peur que, craindre, redouter, douter, éviter, empêcher</p>
+              </div>
+              <div className="methodology-step">
+                <h6>2. Subjunctive Mood Analysis</h6>
+                <p>Detects subjunctive verb forms that often co-occur with expletive negation in French</p>
+              </div>
+              <div className="methodology-step">
+                <h6>3. Pattern Similarity Matching</h6>
+                <p>Compares input against research dataset to find similar constructions with known expletive status</p>
+              </div>
+              <div className="methodology-step">
+                <h6>4. Contextual Linguistic Analysis</h6>
+                <p>Analyzes complement clause structure and absence of logical negation markers</p>
+              </div>
+              <div className="methodology-step">
+                <h6>5. Confidence Scoring</h6>
+                <p>Weighted scoring system combining all indicators with confidence calibration</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

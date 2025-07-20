@@ -1,0 +1,51 @@
+original_text,modified_text,had_expletive_ne,classification,expletive_type
+"J'ai peur qu'il ne vienne pas","J'ai peur qu'il vienne",true,expletive,peur_que
+"Je crains qu'elle ne soit malade","Je crains qu'elle soit malade",true,expletive,craindre
+"Il redoute qu'ils ne partent","Il redoute qu'ils partent",true,expletive,redouter
+"Je doute qu'il ne comprenne","Je doute qu'il comprenne",true,expletive,douter
+"J'évite qu'elle ne tombe","J'évite qu'elle tombe",true,expletive,eviter
+"Il empêche qu'on ne sorte","Il empêche qu'on sorte",true,expletive,empecher
+"Par peur qu'il ne pleuve","Par peur qu'il pleuve",true,expletive,peur_que
+"De peur qu'elle ne s'inquiète","De peur qu'elle s'inquiète",true,expletive,peur_que
+"Je crains qu'il ne fasse froid","Je crains qu'il fasse froid",true,expletive,craindre
+"Il redoute qu'elle ne parte","Il redoute qu'elle parte",true,expletive,redouter
+"J'ai peur qu'il ne comprenne pas","J'ai peur qu'il comprenne",true,expletive,peur_que
+"Je crains qu'ils ne viennent","Je crains qu'ils viennent",true,expletive,craindre
+"Il doute qu'elle ne sache","Il doute qu'elle sache",true,expletive,douter
+"J'évite qu'il ne tombe","J'évite qu'il tombe",true,expletive,eviter
+"Elle empêche qu'on ne parte","Elle empêche qu'on parte",true,expletive,empecher
+"J'ai peur qu'il ne soit en retard","J'ai peur qu'il soit en retard",true,expletive,peur_que
+"Je crains qu'elle ne manque le train","Je crains qu'elle manque le train",true,expletive,craindre
+"Il redoute qu'ils ne se perdent","Il redoute qu'ils se perdent",true,expletive,redouter
+"Je doute qu'il ne réussisse","Je doute qu'il réussisse",true,expletive,douter
+"J'évite qu'elle ne se blesse","J'évite qu'elle se blesse",true,expletive,eviter
+"Il mange du pain","Il mange du pain",false,no_expletive,none
+"Elle travaille tous les jours","Elle travaille tous les jours",false,no_expletive,none
+"Je pense qu'il viendra","Je pense qu'il viendra",false,no_expletive,none
+"Il dit qu'elle est belle","Il dit qu'elle est belle",false,no_expletive,none
+"Nous savons qu'ils arrivent","Nous savons qu'ils arrivent",false,no_expletive,none
+"Je crois qu'il fait beau","Je crois qu'il fait beau",false,no_expletive,none
+"Elle espère qu'il réussira","Elle espère qu'il réussira",false,no_expletive,none
+"Il affirme qu'elle viendra","Il affirme qu'elle viendra",false,no_expletive,none
+"Nous pensons qu'ils partent","Nous pensons qu'ils partent",false,no_expletive,none
+"Je suppose qu'elle comprend","Je suppose qu'elle comprend",false,no_expletive,none
+"Il ne mange pas","Il ne mange pas",false,logical_negation,none
+"Elle ne travaille plus","Elle ne travaille plus",false,logical_negation,none
+"Je ne pense jamais à ça","Je ne pense jamais à ça",false,logical_negation,none
+"Il ne dit rien","Il ne dit rien",false,logical_negation,none
+"Nous ne savons personne","Nous ne savons personne",false,logical_negation,none
+"Je ne crois guère","Je ne crois guère",false,logical_negation,none
+"Elle n'espère plus rien","Elle n'espère plus rien",false,logical_negation,none
+"Il n'affirme jamais ça","Il n'affirme jamais ça",false,logical_negation,none
+"Nous ne pensons à personne","Nous ne pensons à personne",false,logical_negation,none
+"Je ne suppose rien","Je ne suppose rien",false,logical_negation,none
+"J'ai peur qu'il ne vienne","J'ai peur qu'il vienne",true,expletive,peur_que
+"Je crains qu'elle ne soit là","Je crains qu'elle soit là",true,expletive,craindre
+"Il redoute qu'ils ne arrivent","Il redoute qu'ils arrivent",true,expletive,redouter
+"Je doute qu'il ne parte","Je doute qu'il parte",true,expletive,douter
+"J'évite qu'elle ne vienne","J'évite qu'elle vienne",true,expletive,eviter
+"Il empêche qu'on ne reste","Il empêche qu'on reste",true,expletive,empecher
+"Par peur qu'il ne fasse mal","Par peur qu'il fasse mal",true,expletive,peur_que
+"De peur qu'elle ne tombe","De peur qu'elle tombe",true,expletive,peur_que
+"Je crains qu'il ne pleuve","Je crains qu'il pleuve",true,expletive,craindre
+"Il redoute qu'elle ne s'en aille","Il redoute qu'elle s'en aille",true,expletive,redouter
