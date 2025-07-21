@@ -204,11 +204,36 @@ export default function NegationAnalyzer() {
     if (!file) return;
 
     try {
-      const data = new Uint8Array(await file.arrayBuffer());
-      const workbook = await import('xlsx').then(XLSX => XLSX.read(data, { type: 'array' }));
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = await import('xlsx').then(XLSX => XLSX.utils.sheet_to_json(worksheet));
+      const fileType = file.name.split('.').pop().toLowerCase();
+      let jsonData;
+
+      if (fileType === 'json') {
+        // Handle JSON files
+        const text = await file.text();
+        jsonData = JSON.parse(text);
+      } else if (fileType === 'csv') {
+        // Handle CSV files
+        const text = await file.text();
+        const rows = text.split('\n').map(row => row.split(','));
+        const headers = rows[0];
+        jsonData = rows.slice(1).map(row => {
+          const obj = {};
+          headers.forEach((header, index) => {
+            obj[header.trim()] = row[index]?.trim();
+          });
+          return obj;
+        });
+      } else if (fileType === 'xlsx' || fileType === 'xls') {
+        // Handle Excel files
+        const data = new Uint8Array(await file.arrayBuffer());
+        const workbook = await import('xlsx').then(XLSX => XLSX.read(data, { type: 'array' }));
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        jsonData = await import('xlsx').then(XLSX => XLSX.utils.sheet_to_json(worksheet));
+      } else {
+        setUploadError("Unsupported file format. Please use CSV, JSON, or Excel files.");
+        return;
+      }
 
       if (!validateTrainingData(jsonData)) {
         setUploadError("Invalid file format. Please ensure the file has at least two columns.");
@@ -423,7 +448,7 @@ export default function NegationAnalyzer() {
           <input
             id="file-upload"
             type="file"
-            accept=".xlsx,.xls"
+            accept=".csv,.json,.xlsx,.xls"
             onChange={handleFileUpload}
             className="input"
           />
