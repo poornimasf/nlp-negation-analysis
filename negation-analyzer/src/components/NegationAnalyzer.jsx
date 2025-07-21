@@ -5,7 +5,6 @@ export default function NegationAnalyzer() {
   // State definitions
   const [inputText, setInputText] = useState("");
   const [batchInput, setBatchInput] = useState("");
-  const language = "french"; // Fixed to French only
   const [result, setResult] = useState(null);
   const [highlightedText, setHighlightedText] = useState("");
   const [batchResults, setBatchResults] = useState([]);
@@ -23,18 +22,13 @@ export default function NegationAnalyzer() {
 
   // Constants
   const TRIGGERS = {
-    french: {
-      en: ["craindre", "avoir peur que", "peur que", "redouter", "avant que", "regretter"],
-      nonEn: ["commencer", "arrêter", "cesser", "décider", "oublier"],
-    }
+    en: ["craindre", "avoir peur que", "peur que", "redouter", "avant que", "regretter"],
+    nonEn: ["commencer", "arrêter", "cesser", "décider", "oublier"],
   };
 
   // Basic analysis functions
-  const hasNegation = (text, lang) => {
-    const patterns = {
-      french: /\bne\b([^a-zA-Z]|\s|$)/i,
-    };
-    return patterns[lang].test(text);
+  const hasNegation = (text) => {
+    return /\bne\b([^a-zA-Z]|\s|$)/i.test(text);
   };
 
   const extractComplement = (text, trigger) => {
@@ -44,30 +38,28 @@ export default function NegationAnalyzer() {
     return after.split(/[.?!]/)[0];
   };
 
-  const highlight = (text, lang) => {
+  const highlight = (text) => {
     let output = text;
-    const triggerList = [...TRIGGERS[lang].en, ...TRIGGERS[lang].nonEn];
+    const triggerList = [...TRIGGERS.en, ...TRIGGERS.nonEn];
     for (const trig of triggerList) {
       const re = new RegExp(`(${trig})`, "gi");
       output = output.replace(re, '<span class="highlight-yellow">$1</span>');
     }
-    if (lang === "french") {
-      output = output.replace(/\b(ne)\b/gi, '<span class="highlight-green">$1</span>');
-    }
+    output = output.replace(/\b(ne)\b/gi, '<span class="highlight-green">$1</span>');
     return output;
   };
 
-  const classifyNegation = (text, lang) => {
+  const classifyNegation = (text) => {
     const lowerText = text.toLowerCase();
-    const enTrigger = TRIGGERS[lang].en.find(trigger => lowerText.includes(trigger));
-    const nonEnTrigger = TRIGGERS[lang].nonEn.find(trigger => lowerText.includes(trigger));
-    const negation = hasNegation(lowerText, lang);
+    const enTrigger = TRIGGERS.en.find(trigger => lowerText.includes(trigger));
+    const nonEnTrigger = TRIGGERS.nonEn.find(trigger => lowerText.includes(trigger));
+    const negation = hasNegation(lowerText);
     
     if (!negation) return "No negation detected.";
 
     const matchedTrigger = enTrigger || nonEnTrigger || "";
     const relevantClause = extractComplement(lowerText, matchedTrigger);
-    const clauseHasNeg = hasNegation(relevantClause, lang);
+    const clauseHasNeg = hasNegation(relevantClause);
 
     const isFullNegation = /\bne\b[^.?!]{0,15}\b(pas|rien|jamais|plus|personne|aucun|guère)\b/i.test(relevantClause);
     if (isFullNegation) return "Logically consistent negation. Not expletive.";
@@ -157,10 +149,10 @@ export default function NegationAnalyzer() {
   };
 
   // Enhanced classification with learning
-  const enhancedClassifyNegation = (text, lang) => {
-    const basicClassification = classifyNegation(text, lang);
+  const enhancedClassifyNegation = (text) => {
+    const basicClassification = classifyNegation(text);
     
-    if (lang === 'french' && learnedPatterns.french) {
+    if (learnedPatterns.french) {
       const patterns = extractPeurQuePatterns(text);
       const stats = learnedPatterns.french;
       
@@ -189,9 +181,9 @@ export default function NegationAnalyzer() {
 
   // Event handlers
   const handleAnalyze = () => {
-    const classification = enhancedClassifyNegation(inputText, language);
+    const classification = enhancedClassifyNegation(inputText);
     setResult(classification);
-    setHighlightedText(highlight(inputText, language));
+    setHighlightedText(highlight(inputText));
   };
 
   const handleBatchAnalyze = () => {
@@ -199,7 +191,8 @@ export default function NegationAnalyzer() {
     const results = sentences.map((sentence, index) => ({
       id: index + 1,
       text: sentence,
-      label: enhancedClassifyNegation(sentence, language),
+      highlightedText: highlight(sentence),
+      label: enhancedClassifyNegation(sentence),
     }));
     setBatchResults(results);
   };
@@ -356,41 +349,36 @@ export default function NegationAnalyzer() {
       </div>
 
       <div className="card">
-        <h3 className="title">Ignore2</h3>
+        <h3 className="title">Batch Analysis</h3>
         <div className="form-group">
-          <label htmlFor="batch-input">Enter Sentences (one per line)</label>
-          <textarea
-            id="batch-input"
-            rows={6}
-            placeholder="One sentence per line..."
-            value={batchInput}
-            onChange={(e) => setBatchInput(e.target.value)}
-            className="textarea"
-          />
-          <button onClick={handleBatchAnalyze} className="button">
-            Evaluate
-          </button>
+          <label htmlFor="batch-input">Enter Sentences:</label>
+          <div className="input-group">
+            <textarea
+              id="batch-input"
+              rows={6}
+              placeholder="Type multiple sentences (one per line)..."
+              value={batchInput}
+              onChange={(e) => setBatchInput(e.target.value)}
+              className="input"
+            />
+            <button onClick={handleBatchAnalyze} className="button">
+              Evaluate
+            </button>
+          </div>
         </div>
 
         {batchResults.length > 0 && (
-          <table className="table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Sentence</th>
-                <th>Classification</th>
-              </tr>
-            </thead>
-            <tbody>
-              {batchResults.map(({ id, text, label }) => (
-                <tr key={id}>
-                  <td>{id}</td>
-                  <td>{text}</td>
-                  <td>{label}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="result-section">
+            <h3>Classification Results:</h3>
+            {batchResults.map(({ id, text, label, highlightedText }) => (
+              <div key={id} className="batch-result">
+                <h4>Sentence {id}:</h4>
+                <p className="classification-result">{label}</p>
+                <h4>Highlighted Sentence:</h4>
+                <p className="sentence-text" dangerouslySetInnerHTML={{ __html: highlightedText }}></p>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 
