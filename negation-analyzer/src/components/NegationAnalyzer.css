@@ -126,3 +126,26 @@
   font-size: 14px;
   margin-top: 4px;
 }
+.batch-result {
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #f7fafc;
+  border-radius: 4px;
+}
+
+.batch-result h4 {
+  margin: 0 0 8px 0;
+  color: #1a365d;
+  font-size: 16px;
+}
+
+.sentence-text {
+  margin: 8px 0;
+  font-size: 14px;
+}
+
+.classification-result {
+  margin: 8px 0;
+  font-weight: 500;
+  color: #2c5282;
+}
