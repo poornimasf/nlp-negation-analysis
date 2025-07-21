@@ -355,7 +355,7 @@ export default function NegationAnalyzer() {
       </div>
 
       <div className="card">
-        <h3 className="title">Batch Evaluation</h3>
+        <h3 className="title">Ignore2</h3>
         <div className="form-group">
           <label htmlFor="batch-input">Enter Sentences (one per line)</label>
           <textarea
@@ -367,7 +367,7 @@ export default function NegationAnalyzer() {
             className="textarea"
           />
           <button onClick={handleBatchAnalyze} className="button">
-            Evaluate Batch
+            Evaluate
           </button>
         </div>
 
