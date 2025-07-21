@@ -325,7 +325,8 @@ export default function NegationAnalyzer() {
   return (
     <div className="container">
       <div className="card">
-        <h2 className="title">🇫🇷 French Expletive Negation Analyzer</h2>
+        <h2 className="title">🔬 Expletive Negation Inference</h2>
+        <p>Infer whether a French sentence originally contained expletive negation ("ne") based on linguistic patterns, even when "ne" has been removed or never existed.</p>
 
         <div className="form-group">
           <label htmlFor="sentence-input">Enter Sentence:</label>
