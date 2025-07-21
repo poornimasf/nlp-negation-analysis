@@ -321,6 +321,7 @@ export default function NegationAnalyzer() {
         <h2 className="title">🔬 Expletive Negation Inference</h2>
         <p>Infer whether a French sentence originally contained expletive negation ("ne") based on linguistic patterns, even when "ne" has been removed or never existed.</p>
 
+        {/* Single Sentence Section */}
         <div className="form-group">
           <label htmlFor="sentence-input">Enter Sentence:</label>
           <div className="input-group">
@@ -344,6 +345,39 @@ export default function NegationAnalyzer() {
             <p>{result}</p>
             <h3>Highlighted Sentence:</h3>
             <p dangerouslySetInnerHTML={{ __html: highlightedText }}></p>
+          </div>
+        )}
+
+        {/* Batch Evaluation Section */}
+        <div className="form-group">
+          <label htmlFor="batch-input">Enter Multiple Sentences:</label>
+          <div className="input-group">
+            <textarea
+              id="batch-input"
+              rows={6}
+              placeholder="Type multiple sentences (one per line)..."
+              value={batchInput}
+              onChange={(e) => setBatchInput(e.target.value)}
+              className="input"
+            />
+            <button onClick={handleBatchAnalyze} className="button">
+              Evaluate
+            </button>
+          </div>
+        </div>
+
+        {/* Batch Results Section */}
+        {batchResults.length > 0 && (
+          <div className="result-section">
+            <h3>Classification Results:</h3>
+            {batchResults.map(({ id, text, label, highlightedText }) => (
+              <div key={id} className="batch-result">
+                <h4>Sentence {id}:</h4>
+                <p className="classification-result">{label}</p>
+                <h4>Highlighted Sentence:</h4>
+                <p className="sentence-text" dangerouslySetInnerHTML={{ __html: highlightedText }}></p>
+              </div>
+            ))}
           </div>
         )}
       </div>
