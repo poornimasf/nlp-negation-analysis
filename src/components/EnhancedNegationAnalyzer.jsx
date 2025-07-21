@@ -1373,7 +1373,7 @@ const EnhancedNegationAnalyzer = () => {
           className={`tab-button ${activeTab === 'batch-prediction' ? 'active' : ''}`}
           onClick={() => setActiveTab('batch-prediction')}
         >
-          Batch Prediction
+          Ignore2
         </button>
       </div>
 
@@ -1786,7 +1786,7 @@ const EnhancedNegationAnalyzer = () => {
         </div>
       )}
 
-      {/* Batch Prediction Tab */}
+      {/* Ignore2 Tab */}
       {activeTab === 'batch-prediction' && (
         <div className="input-section">
           <div className="prediction-header">
