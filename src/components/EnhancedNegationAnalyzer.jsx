@@ -47,10 +47,7 @@ const EnhancedNegationAnalyzer = () => {
   const [predictionLoading, setPredictionLoading] = useState(false);
 
   // Batch prediction tab state
-  const [batchPredictionInput, setBatchPredictionInput] = useState('');
-  const [batchPredictionResults, setBatchPredictionResults] = useState([]);
-  const [batchPredictionLoading, setBatchPredictionLoading] = useState(false);
-  const [batchPredictionStats, setBatchPredictionStats] = useState(null);
+
 
   // Research-specific state for expletive inference
   const [inferenceMode, setInferenceMode] = useState(false);
@@ -1028,94 +1025,6 @@ const EnhancedNegationAnalyzer = () => {
     }
   };
 
-  // Handle batch prediction analysis
-  const handleBatchPrediction = async () => {
-    if (!batchPredictionInput.trim()) return;
-    
-    setBatchPredictionLoading(true);
-    setBatchPredictionResults([]);
-    setBatchPredictionStats(null);
-    
-    try {
-      // Split input into sentences
-      const sentences = batchPredictionInput
-        .split(/[.!?]+/)
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
-
-      if (sentences.length === 0) {
-        setBatchPredictionLoading(false);
-        return;
-      }
-
-      const results = [];
-      let totalExpletive = 0;
-      let totalLogical = 0;
-      let highConfidenceCount = 0;
-      let mediumConfidenceCount = 0;
-      let lowConfidenceCount = 0;
-
-      // Process each sentence with a small delay for better UX
-      for (let i = 0; i < sentences.length; i++) {
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        const sentence = sentences[i];
-        const prediction = predictExpletiveNegation(sentence);
-        
-        if (prediction) {
-          results.push({
-            id: i + 1,
-            text: sentence,
-            ...prediction
-          });
-
-          // Update statistics
-          if (prediction.expletiveLikelihood > prediction.logicalLikelihood) {
-            totalExpletive++;
-          } else if (prediction.logicalLikelihood > prediction.expletiveLikelihood) {
-            totalLogical++;
-          }
-
-          // Count confidence levels
-          switch (prediction.confidence) {
-            case 'High':
-              highConfidenceCount++;
-              break;
-            case 'Medium':
-              mediumConfidenceCount++;
-              break;
-            case 'Low':
-              lowConfidenceCount++;
-              break;
-          }
-        }
-      }
-
-      // Calculate overall statistics
-      const stats = {
-        totalSentences: sentences.length,
-        expletiveLikely: totalExpletive,
-        logicalLikely: totalLogical,
-        uncertain: sentences.length - totalExpletive - totalLogical,
-        expletivePercentage: Math.round((totalExpletive / sentences.length) * 100),
-        logicalPercentage: Math.round((totalLogical / sentences.length) * 100),
-        uncertainPercentage: Math.round(((sentences.length - totalExpletive - totalLogical) / sentences.length) * 100),
-        highConfidence: highConfidenceCount,
-        mediumConfidence: mediumConfidenceCount,
-        lowConfidence: lowConfidenceCount,
-        averageIndicators: results.length > 0 ? 
-          Math.round(results.reduce((sum, r) => sum + r.totalIndicators, 0) / results.length * 10) / 10 : 0
-      };
-
-      setBatchPredictionResults(results);
-      setBatchPredictionStats(stats);
-      
-    } catch (error) {
-      console.error('Batch prediction error:', error);
-    } finally {
-      setBatchPredictionLoading(false);
-    }
-  };
 
   // Password protection functions
   const handlePasswordSubmit = (e) => {
@@ -1369,12 +1278,7 @@ const EnhancedNegationAnalyzer = () => {
         >
           Ignore1
         </button>
-        <button 
-          className={`tab-button ${activeTab === 'batch-prediction' ? 'active' : ''}`}
-          onClick={() => setActiveTab('batch-prediction')}
-        >
-          Ignore2
-        </button>
+
       </div>
 
       {/* Language Selector - Hidden since only French is supported */}
@@ -1786,170 +1690,6 @@ const EnhancedNegationAnalyzer = () => {
         </div>
       )}
 
-      {/* Ignore2 Tab */}
-      {activeTab === 'batch-prediction' && (
-        <div className="input-section">
-          <div className="prediction-header">
-            <h3>Batch Expletive Negation Prediction</h3>
-            <p className="prediction-description">
-              Analyze multiple French sentences at once to predict expletive negation likelihood. 
-              Separate sentences with periods, exclamation marks, or question marks.
-            </p>
-          </div>
-          
-          <textarea
-            value={batchPredictionInput}
-            onChange={(e) => setBatchPredictionInput(e.target.value)}
-            placeholder="Enter multiple French sentences separated by punctuation (. ! ?)...
-
-Example:
-Je crains qu'il ne vienne demain. Il ne mange pas de légumes. J'ai peur qu'elle ne comprenne mal. Nous ne partons jamais en vacances."
-            className="text-input batch-prediction-input"
-            rows="8"
-          />
-          
-          <div className="button-group">
-            <button 
-              onClick={handleBatchPrediction}
-              disabled={!batchPredictionInput.trim() || batchPredictionLoading}
-              className="analyze-button"
-            >
-              {batchPredictionLoading ? 'Analyzing Batch...' : 'Predict Batch Expletive Negation'}
-            </button>
-            <button 
-              onClick={() => {
-                setBatchPredictionInput('');
-                setBatchPredictionResults([]);
-                setBatchPredictionStats(null);
-              }}
-              className="clear-button"
-            >
-              Clear All
-            </button>
-          </div>
-
-          {batchPredictionLoading && (
-            <div className="loading-indicator">
-              <div className="loading-spinner"></div>
-              <p>Processing {batchPredictionInput.split(/[.!?]+/).filter(s => s.trim().length > 0).length} sentences...</p>
-            </div>
-          )}
-
-          {batchPredictionStats && (
-            <div className="batch-prediction-stats">
-              <h4>Batch Analysis Summary</h4>
-              
-              <div className="stats-overview">
-                <div className="stats-grid">
-                  <div className="stat-card total">
-                    <div className="stat-number">{batchPredictionStats.totalSentences}</div>
-                    <div className="stat-label">Total Sentences</div>
-                  </div>
-                  <div className="stat-card expletive">
-                    <div className="stat-number">{batchPredictionStats.expletiveLikely}</div>
-                    <div className="stat-label">Likely Expletive</div>
-                    <div className="stat-percentage">{batchPredictionStats.expletivePercentage}%</div>
-                  </div>
-                  <div className="stat-card logical">
-                    <div className="stat-number">{batchPredictionStats.logicalLikely}</div>
-                    <div className="stat-label">Likely Logical</div>
-                    <div className="stat-percentage">{batchPredictionStats.logicalPercentage}%</div>
-                  </div>
-                  <div className="stat-card uncertain">
-                    <div className="stat-number">{batchPredictionStats.uncertain}</div>
-                    <div className="stat-label">Uncertain</div>
-                    <div className="stat-percentage">{batchPredictionStats.uncertainPercentage}%</div>
-                  </div>
-                </div>
-
-                <div className="confidence-breakdown">
-                  <h5>Confidence Distribution</h5>
-                  <div className="confidence-stats">
-                    <div className="confidence-item high">
-                      <span className="confidence-count">{batchPredictionStats.highConfidence}</span>
-                      <span className="confidence-label">High Confidence</span>
-                    </div>
-                    <div className="confidence-item medium">
-                      <span className="confidence-count">{batchPredictionStats.mediumConfidence}</span>
-                      <span className="confidence-label">Medium Confidence</span>
-                    </div>
-                    <div className="confidence-item low">
-                      <span className="confidence-count">{batchPredictionStats.lowConfidence}</span>
-                      <span className="confidence-label">Low Confidence</span>
-                    </div>
-                  </div>
-                  <div className="average-indicators">
-                    <span className="avg-label">Average Indicators per Sentence:</span>
-                    <span className="avg-value">{batchPredictionStats.averageIndicators}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {batchPredictionResults.length > 0 && (
-            <div className="batch-prediction-results">
-              <h4>Detailed Results ({batchPredictionResults.length} sentences)</h4>
-              
-              <div className="results-list">
-                {batchPredictionResults.map((result) => (
-                  <div key={result.id} className="batch-result-item">
-                    <div className="result-header">
-                      <span className="sentence-number">#{result.id}</span>
-                      <span className={`confidence-badge ${result.confidence.toLowerCase()}`}>
-                        {result.confidence}
-                      </span>
-                    </div>
-                    
-                    <div className="sentence-text">
-                      "{result.text}"
-                    </div>
-                    
-                    <div className="prediction-scores">
-                      <div className="score-bar">
-                        <div className="score-section expletive" style={{width: `${result.expletiveLikelihood}%`}}>
-                          <span className="score-label">Expletive: {result.expletiveLikelihood}%</span>
-                        </div>
-                        <div className="score-section logical" style={{width: `${result.logicalLikelihood}%`}}>
-                          <span className="score-label">Logical: {result.logicalLikelihood}%</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="result-details">
-                      <div className="indicators-summary">
-                        <span className="indicators-count">{result.totalIndicators} indicators</span>
-                        <span className="ne-count">{result.analysis.hasNe} "ne"</span>
-                        <span className="expletive-indicators">{result.analysis.expletiveIndicators} expletive</span>
-                        <span className="logical-indicators">{result.analysis.logicalIndicators} logical</span>
-                        {result.analysis.trainingMatches > 0 && (
-                          <span className="training-matches">{result.analysis.trainingMatches} training matches</span>
-                        )}
-                      </div>
-                      
-                      {result.foundPatterns.length > 0 && (
-                        <div className="patterns-summary">
-                          <strong>Patterns:</strong>
-                          {result.foundPatterns.slice(0, 3).map((pattern, idx) => (
-                            <span key={idx} className={`pattern-tag ${pattern.type}`}>
-                              {pattern.pattern}
-                            </span>
-                          ))}
-                          {result.foundPatterns.length > 3 && (
-                            <span className="more-patterns">+{result.foundPatterns.length - 3} more</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Upload Negation Data Tab */}
       {activeTab === 'training' && (
         <div className="training-section">
           {!isTrainingAuthorized ? (
