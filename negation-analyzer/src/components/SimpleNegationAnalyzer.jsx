@@ -9,6 +9,9 @@ export default function SimpleNegationAnalyzer() {
   const [highlightedText, setHighlightedText] = useState("");
   const [batchResults, setBatchResults] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
+  
+  // Feature flag for expletive negation logic
+  const [useExpletiveLogic, setUseExpletiveLogic] = useState(true);
 
   // Focused triggers for French expletive negation
   const TRIGGERS = ["peur que", "avant que"];
@@ -27,17 +30,39 @@ export default function SimpleNegationAnalyzer() {
 
   const highlight = (text) => {
     let output = text;
-    // Highlight the two specific triggers
-    for (const trigger of TRIGGERS) {
-      const re = new RegExp(`(${trigger})`, "gi");
-      output = output.replace(re, '<span class="highlight-yellow">$1</span>');
+    if (useExpletiveLogic) {
+      // Highlight the two specific triggers
+      for (const trigger of TRIGGERS) {
+        const re = new RegExp(`(${trigger})`, "gi");
+        output = output.replace(re, '<span class="highlight-yellow">$1</span>');
+      }
     }
-    // Highlight "ne"
+    // Always highlight "ne"
     output = output.replace(/\b(ne)\b/gi, '<span class="highlight-green">$1</span>');
     return output;
   };
 
-  const classifyNegation = (text) => {
+  // Simple classification without expletive logic
+  const classifyBasic = (text) => {
+    const lowerText = text.toLowerCase();
+    const hasNe = hasNegation(lowerText);
+    
+    if (!hasNe) {
+      return "No 'ne' negation detected.";
+    }
+    
+    // Check for logical negation markers
+    const hasLogicalNegation = /\bne\b[^.?!]{0,15}\b(pas|rien|jamais|plus|personne|aucun|guère)\b/i.test(lowerText);
+    
+    if (hasLogicalNegation) {
+      return "Logical negation detected: 'ne' + pas/rien/jamais/etc.";
+    }
+    
+    return "Negation detected: 'ne' without logical markers.";
+  };
+
+  // Full expletive negation classification
+  const classifyExpletive = (text) => {
     const lowerText = text.toLowerCase();
     const foundTrigger = TRIGGERS.find(trigger => lowerText.includes(trigger));
     const hasNe = hasNegation(lowerText);
@@ -72,6 +97,11 @@ export default function SimpleNegationAnalyzer() {
 
     // Pure expletive negation detected
     return `✅ EXPLETIVE NEGATION: '${foundTrigger}' + expletive 'ne' (without logical negation markers).`;
+  };
+
+  // Main classification function that uses feature flag
+  const classifyNegation = (text) => {
+    return useExpletiveLogic ? classifyExpletive(text) : classifyBasic(text);
   };
 
   // Sorting function
@@ -146,23 +176,90 @@ export default function SimpleNegationAnalyzer() {
   return (
     <div className="container">
       <div className="card">
-        <h2 className="title">🔬 French Expletive Negation Analysis</h2>
-        <p>Focused analysis for <strong>"peur que"</strong> and <strong>"avant que"</strong> constructions with expletive negation.</p>
+        <h2 className="title">🔬 French Negation Analysis</h2>
         
-        <div className="info-box" style={{ 
-          backgroundColor: '#f8f9fa', 
+        {/* Feature Flag Toggle */}
+        <div style={{ 
+          backgroundColor: '#e3f2fd', 
           padding: '15px', 
           borderRadius: '8px', 
           marginBottom: '20px',
-          border: '1px solid #dee2e6'
+          border: '2px solid #2196f3'
         }}>
-          <h4>🎯 What this analyzes:</h4>
-          <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-            <li><strong>"peur que"</strong> (fear that) + expletive "ne"</li>
-            <li><strong>"avant que"</strong> (before) + expletive "ne"</li>
-          </ul>
-          <p><strong>Example:</strong> "J'ai peur qu'il ne vienne" (expletive) vs "J'ai peur qu'il ne vienne pas" (logical)</p>
+          <h4>🚩 Analysis Mode:</h4>
+          <label style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: 'bold'
+          }}>
+            <input
+              type="checkbox"
+              checked={useExpletiveLogic}
+              onChange={(e) => setUseExpletiveLogic(e.target.checked)}
+              style={{ 
+                marginRight: '10px', 
+                transform: 'scale(1.2)',
+                cursor: 'pointer'
+              }}
+            />
+            {useExpletiveLogic ? '✅ Expletive Negation Logic ENABLED' : '❌ Expletive Negation Logic DISABLED'}
+          </label>
+          <div style={{ 
+            marginTop: '10px', 
+            fontSize: '14px', 
+            color: '#1976d2',
+            fontStyle: 'italic'
+          }}>
+            {useExpletiveLogic 
+              ? "🎯 Analyzing 'peur que' and 'avant que' constructions for expletive negation"
+              : "📝 Basic negation detection only (no trigger analysis)"
+            }
+          </div>
         </div>
+
+        <p>
+          {useExpletiveLogic 
+            ? "Focused analysis for expletive negation with 'peur que' and 'avant que' constructions."
+            : "Basic negation analysis without expletive logic - detects 'ne' and logical negation markers only."
+          }
+        </p>
+        
+        {useExpletiveLogic && (
+          <div className="info-box" style={{ 
+            backgroundColor: '#f8f9fa', 
+            padding: '15px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #dee2e6'
+          }}>
+            <h4>🎯 Expletive Logic Analyzes:</h4>
+            <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
+              <li><strong>"peur que"</strong> (fear that) + expletive "ne"</li>
+              <li><strong>"avant que"</strong> (before) + expletive "ne"</li>
+            </ul>
+            <p><strong>Example:</strong> "J'ai peur qu'il ne vienne" (expletive) vs "J'ai peur qu'il ne vienne pas" (logical)</p>
+          </div>
+        )}
+
+        {!useExpletiveLogic && (
+          <div className="info-box" style={{ 
+            backgroundColor: '#fff3cd', 
+            padding: '15px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #ffeaa7'
+          }}>
+            <h4>📝 Basic Logic Analyzes:</h4>
+            <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
+              <li>Presence of <strong>"ne"</strong> negation</li>
+              <li>Logical negation markers: <strong>pas, rien, jamais, plus, personne, aucun, guère</strong></li>
+              <li>No trigger-specific analysis</li>
+            </ul>
+            <p><strong>Example:</strong> "Il ne vient pas" (logical) vs "Il ne vient" (negation without markers)</p>
+          </div>
+        )}
 
         {/* Single Sentence Section */}
         <div className="form-group">
@@ -171,7 +268,10 @@ export default function SimpleNegationAnalyzer() {
             <input
               id="sentence-input"
               type="text"
-              placeholder="e.g., J'ai peur qu'il ne vienne..."
+              placeholder={useExpletiveLogic 
+                ? "e.g., J'ai peur qu'il ne vienne..." 
+                : "e.g., Il ne mange pas..."
+              }
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               className="input"
@@ -187,8 +287,10 @@ export default function SimpleNegationAnalyzer() {
             <h3>Analysis Result:</h3>
             <p className="classification-result" style={{
               padding: '15px',
-              backgroundColor: result.includes('✅ EXPLETIVE NEGATION') ? '#d4edda' : '#f8f9fa',
-              border: `1px solid ${result.includes('✅ EXPLETIVE NEGATION') ? '#c3e6cb' : '#dee2e6'}`,
+              backgroundColor: result.includes('✅ EXPLETIVE NEGATION') ? '#d4edda' : 
+                             result.includes('Negation detected') ? '#fff3cd' : '#f8f9fa',
+              border: `1px solid ${result.includes('✅ EXPLETIVE NEGATION') ? '#c3e6cb' : 
+                                  result.includes('Negation detected') ? '#ffeaa7' : '#dee2e6'}`,
               borderRadius: '8px',
               fontWeight: result.includes('✅ EXPLETIVE NEGATION') ? 'bold' : 'normal'
             }}>
@@ -212,7 +314,10 @@ export default function SimpleNegationAnalyzer() {
             <textarea
               id="batch-input"
               rows={6}
-              placeholder={`Enter multiple sentences (one per line):\nJ'ai peur qu'il ne vienne\nAvant qu'elle ne parte\nJ'ai peur qu'il ne vienne pas`}
+              placeholder={useExpletiveLogic 
+                ? `Enter multiple sentences (one per line):\nJ'ai peur qu'il ne vienne\nAvant qu'elle ne parte\nJ'ai peur qu'il ne vienne pas`
+                : `Enter multiple sentences (one per line):\nIl ne mange pas\nElle ne vient jamais\nNous ne partons`
+              }
               value={batchInput}
               onChange={(e) => setBatchInput(e.target.value)}
               className="input"
@@ -319,8 +424,10 @@ export default function SimpleNegationAnalyzer() {
                       }}>
                         <span style={{
                           padding: '4px 8px',
-                          backgroundColor: label.includes('✅ EXPLETIVE NEGATION') ? '#d4edda' : 'transparent',
-                          border: `1px solid ${label.includes('✅ EXPLETIVE NEGATION') ? '#c3e6cb' : 'transparent'}`,
+                          backgroundColor: label.includes('✅ EXPLETIVE NEGATION') ? '#d4edda' : 
+                                          label.includes('Negation detected') ? '#fff3cd' : 'transparent',
+                          border: `1px solid ${label.includes('✅ EXPLETIVE NEGATION') ? '#c3e6cb' : 
+                                              label.includes('Negation detected') ? '#ffeaa7' : 'transparent'}`,
                           borderRadius: '4px',
                           fontWeight: label.includes('✅ EXPLETIVE NEGATION') ? 'bold' : 'normal',
                           fontSize: '0.9em'
@@ -343,13 +450,16 @@ export default function SimpleNegationAnalyzer() {
             <div style={{ 
               marginTop: '15px', 
               padding: '10px', 
-              backgroundColor: '#f8f9fa', 
+              backgroundColor: useExpletiveLogic ? '#f8f9fa' : '#fff3cd', 
               borderRadius: '4px',
               fontSize: '0.9em',
               color: '#6c757d'
             }}>
               💡 <strong>Tip:</strong> Click on column headers to sort the results. 
-              Green highlighted results indicate expletive negation detected.
+              {useExpletiveLogic 
+                ? "Green highlighted results indicate expletive negation detected."
+                : "Yellow highlighted results indicate basic negation detected."
+              }
             </div>
           </div>
         )}
