@@ -272,17 +272,85 @@ export default function SimpleNegationAnalyzer() {
     return baseResult + ` (Enhanced with ${totalCount} training examples)`;
   };
 
-  // Main classification function that uses feature flags
+  // Main classification function that uses feature flags independently
   const classifyNegation = (text) => {
-    if (!useExpletiveLogic) {
+    // Pure training-based analysis (training flag on, expletive flag off)
+    if (!useExpletiveLogic && enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
+      return classifyPureTraining(text);
+    }
+    
+    // Basic logic only (both flags off)
+    if (!useExpletiveLogic && !enableTrainingData) {
       return classifyBasic(text);
     }
     
-    if (enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
+    // Rule-based expletive logic only (expletive flag on, training flag off)
+    if (useExpletiveLogic && !enableTrainingData) {
+      return classifyExpletive(text);
+    }
+    
+    // Hybrid: Training-enhanced expletive logic (both flags on)
+    if (useExpletiveLogic && enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
       return classifyWithTraining(text);
     }
     
-    return classifyExpletive(text);
+    // Fallback to appropriate base logic
+    if (useExpletiveLogic) {
+      return classifyExpletive(text);
+    } else {
+      return classifyBasic(text);
+    }
+  };
+
+  // Pure training-based classification (no rule-based logic)
+  const classifyPureTraining = (text) => {
+    if (trainingData.length === 0) {
+      return "No training data available for pure training-based analysis.";
+    }
+
+    const lowerText = text.toLowerCase();
+    const foundTrigger = TRIGGERS.find(trigger => lowerText.includes(trigger));
+    
+    if (!foundTrigger) {
+      return "No supported triggers ('peur que' or 'avant que') found for training-based analysis.";
+    }
+
+    // Find similar examples in training data
+    const similarExamples = trainingData.filter(item => 
+      item.trigger === foundTrigger
+    );
+
+    if (similarExamples.length === 0) {
+      return `No training examples found for '${foundTrigger}' trigger.`;
+    }
+
+    // Simple similarity matching based on text content
+    const textWords = lowerText.split(/\s+/);
+    const scoredExamples = similarExamples.map(item => {
+      const exampleWords = item.text.toLowerCase().split(/\s+/);
+      const commonWords = textWords.filter(word => exampleWords.includes(word)).length;
+      const similarity = commonWords / Math.max(textWords.length, exampleWords.length);
+      return { ...item, similarity };
+    }).sort((a, b) => b.similarity - a.similarity);
+
+    const topMatches = scoredExamples.slice(0, 5).filter(item => item.similarity > 0.3);
+    
+    if (topMatches.length === 0) {
+      return `Training data available for '${foundTrigger}' but no similar examples found (${similarExamples.length} total examples).`;
+    }
+
+    // Calculate prediction based on training data
+    const expletiveCount = topMatches.filter(item => item.has_expletive_ne).length;
+    const totalCount = topMatches.length;
+    const confidence = Math.round((Math.max(expletiveCount, totalCount - expletiveCount) / totalCount) * 100);
+    
+    const avgSimilarity = Math.round((topMatches.reduce((sum, item) => sum + item.similarity, 0) / totalCount) * 100);
+
+    if (expletiveCount > totalCount - expletiveCount) {
+      return `🤖 PURE TRAINING: '${foundTrigger}' + expletive 'ne' predicted (${confidence}% confidence, ${avgSimilarity}% similarity, ${totalCount} examples)`;
+    } else {
+      return `🤖 PURE TRAINING: '${foundTrigger}' + logical negation predicted (${confidence}% confidence, ${avgSimilarity}% similarity, ${totalCount} examples)`;
+    }
   };
 
   // Sorting function
@@ -354,6 +422,47 @@ export default function SimpleNegationAnalyzer() {
 
   const sortedResults = sortResults(batchResults, sortConfig);
 
+  // Helper functions for UI mode display
+  const getCurrentModeDescription = () => {
+    if (!useExpletiveLogic && !enableTrainingData) {
+      return "📝 Basic Logic Only - Simple 'ne' detection without trigger analysis";
+    }
+    if (useExpletiveLogic && !enableTrainingData) {
+      return "🎯 Rule-Based Expletive Logic Only - Trigger analysis for 'peur que' and 'avant que'";
+    }
+    if (!useExpletiveLogic && enableTrainingData) {
+      if (useTrainingEnhancement && trainingData.length > 0) {
+        return `🤖 Pure Training-Based Analysis - ML predictions from ${trainingData.length} examples`;
+      } else {
+        return "📚 Training Data Available - Upload data and enable enhancement for pure ML analysis";
+      }
+    }
+    if (useExpletiveLogic && enableTrainingData) {
+      if (useTrainingEnhancement && trainingData.length > 0) {
+        return `🔄 Hybrid Analysis - Rule-based logic enhanced with ${trainingData.length} training examples`;
+      } else {
+        return "🔄 Hybrid Mode Available - Upload data and enable enhancement for combined analysis";
+      }
+    }
+    return "Unknown mode";
+  };
+
+  const getCurrentModeColor = () => {
+    if (!useExpletiveLogic && !enableTrainingData) {
+      return "#ff9800"; // Orange for basic
+    }
+    if (useExpletiveLogic && !enableTrainingData) {
+      return "#2196f3"; // Blue for rule-based
+    }
+    if (!useExpletiveLogic && enableTrainingData) {
+      return "#4caf50"; // Green for pure training
+    }
+    if (useExpletiveLogic && enableTrainingData) {
+      return "#9c27b0"; // Purple for hybrid
+    }
+    return "#666";
+  };
+
   return (
     <div className="container">
       <div className="card">
@@ -367,7 +476,7 @@ export default function SimpleNegationAnalyzer() {
           marginBottom: '20px',
           border: '2px solid #2196f3'
         }}>
-          <h4>🚩 Analysis Mode:</h4>
+          <h4>🚩 Analysis Mode (Independent Flags):</h4>
           
           {/* Expletive Logic Toggle */}
           <label style={{ 
@@ -388,41 +497,39 @@ export default function SimpleNegationAnalyzer() {
                 cursor: 'pointer'
               }}
             />
-            {useExpletiveLogic ? '✅ Expletive Negation Logic ENABLED' : '❌ Expletive Negation Logic DISABLED'}
+            {useExpletiveLogic ? '✅ Rule-Based Expletive Logic ENABLED' : '❌ Rule-Based Expletive Logic DISABLED'}
           </label>
           
-          {/* Training Data Toggle */}
-          {useExpletiveLogic && (
+          {/* Training Data Toggle - Now Independent */}
+          <label style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            cursor: 'pointer',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            color: '#1976d2',
+            marginBottom: '10px'
+          }}>
+            <input
+              type="checkbox"
+              checked={enableTrainingData}
+              onChange={(e) => setEnableTrainingData(e.target.checked)}
+              style={{ 
+                marginRight: '10px', 
+                transform: 'scale(1.2)',
+                cursor: 'pointer'
+              }}
+            />
+            {enableTrainingData ? '📚 Training Data Analysis ENABLED' : '📚 Training Data Analysis DISABLED'}
+          </label>
+          
+          {/* Training Enhancement Toggle */}
+          {enableTrainingData && (
             <label style={{ 
               display: 'flex', 
               alignItems: 'center', 
               cursor: 'pointer',
               fontSize: '14px',
-              fontWeight: 'bold',
-              color: '#1976d2',
-              marginBottom: '10px'
-            }}>
-              <input
-                type="checkbox"
-                checked={enableTrainingData}
-                onChange={(e) => setEnableTrainingData(e.target.checked)}
-                style={{ 
-                  marginRight: '10px', 
-                  transform: 'scale(1.1)',
-                  cursor: 'pointer'
-                }}
-              />
-              {enableTrainingData ? '📚 Training Data Features ENABLED' : '📚 Training Data Features DISABLED'}
-            </label>
-          )}
-          
-          {/* Training Enhancement Toggle */}
-          {useExpletiveLogic && enableTrainingData && (
-            <label style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              cursor: 'pointer',
-              fontSize: '13px',
               fontWeight: 'bold',
               color: '#4caf50',
               marginLeft: '20px'
@@ -443,70 +550,45 @@ export default function SimpleNegationAnalyzer() {
             </label>
           )}
           
+          {/* Current Analysis Mode Display */}
           <div style={{ 
-            marginTop: '10px', 
-            fontSize: '14px', 
-            color: '#1976d2',
-            fontStyle: 'italic'
+            marginTop: '15px', 
+            padding: '10px',
+            backgroundColor: 'rgba(255,255,255,0.7)',
+            borderRadius: '4px',
+            border: '1px solid #2196f3'
           }}>
-            {!useExpletiveLogic 
-              ? "📝 Basic negation detection only (no trigger analysis)"
-              : !enableTrainingData
-                ? "🎯 Rule-based analysis for 'peur que' and 'avant que' constructions"
-                : useTrainingEnhancement && trainingData.length > 0
-                  ? `🎯 Training-enhanced with ${trainingData.length} examples (${trainingStats.expletiveExamples} expletive, ${trainingStats.logicalExamples} logical)`
-                  : "📚 Training data features enabled but not active"
-            }
+            <strong>🎯 Current Analysis Mode:</strong>
+            <div style={{ 
+              marginTop: '5px', 
+              fontSize: '14px', 
+              fontWeight: 'bold',
+              color: getCurrentModeColor()
+            }}>
+              {getCurrentModeDescription()}
+            </div>
           </div>
         </div>
 
         <p>
-          {!useExpletiveLogic 
-            ? "Basic negation analysis without expletive logic - detects 'ne' and logical negation markers only."
-            : !enableTrainingData
-              ? "Rule-based analysis for expletive negation with 'peur que' and 'avant que' constructions."
-              : useTrainingEnhancement && trainingData.length > 0
-                ? "Training-enhanced analysis using machine learning patterns from your uploaded examples."
-                : "Expletive negation analysis with training data features available."
+          {!useExpletiveLogic && !enableTrainingData 
+            ? "Basic negation analysis - detects 'ne' and logical negation markers only."
+            : useExpletiveLogic && !enableTrainingData
+              ? "Rule-based expletive negation analysis for 'peur que' and 'avant que' constructions."
+              : !useExpletiveLogic && enableTrainingData
+                ? useTrainingEnhancement && trainingData.length > 0
+                  ? "Pure training-based analysis using machine learning patterns from your uploaded examples."
+                  : "Training data analysis available - upload examples for pure ML-based classification."
+                : useExpletiveLogic && enableTrainingData
+                  ? useTrainingEnhancement && trainingData.length > 0
+                    ? "Hybrid analysis combining rule-based logic with machine learning enhancement."
+                    : "Hybrid analysis mode available - upload training data for enhanced accuracy."
+                  : "Select your preferred analysis approach using the toggles above."
           }
         </p>
         
-        {useExpletiveLogic && !enableTrainingData && (
-          <div className="info-box" style={{ 
-            backgroundColor: '#f8f9fa', 
-            padding: '15px', 
-            borderRadius: '8px', 
-            marginBottom: '20px',
-            border: '1px solid #dee2e6'
-          }}>
-            <h4>🎯 Rule-Based Logic:</h4>
-            <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-              <li><strong>"peur que"</strong> (fear that) + expletive "ne"</li>
-              <li><strong>"avant que"</strong> (before) + expletive "ne"</li>
-            </ul>
-            <p><strong>Example:</strong> "J'ai peur qu'il ne vienne" (expletive) vs "J'ai peur qu'il ne vienne pas" (logical)</p>
-          </div>
-        )}
-
-        {useExpletiveLogic && enableTrainingData && (
-          <div className="info-box" style={{ 
-            backgroundColor: useTrainingEnhancement ? '#e8f5e8' : '#fff3cd', 
-            padding: '15px', 
-            borderRadius: '8px', 
-            marginBottom: '20px',
-            border: `1px solid ${useTrainingEnhancement ? '#4caf50' : '#ffeaa7'}`
-          }}>
-            <h4>{useTrainingEnhancement ? '🎯 Training-Enhanced Logic:' : '📚 Training Data Available:'}</h4>
-            <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-              <li><strong>"peur que"</strong> (fear that) + expletive "ne"</li>
-              <li><strong>"avant que"</strong> (before) + expletive "ne"</li>
-              {useTrainingEnhancement && <li><strong>Pattern matching</strong> with confidence scoring from training data</li>}
-            </ul>
-            <p><strong>Example:</strong> "J'ai peur qu'il ne vienne" (expletive) vs "J'ai peur qu'il ne vienne pas" (logical)</p>
-          </div>
-        )}
-
-        {!useExpletiveLogic && (
+        {/* Basic Logic Info Box */}
+        {!useExpletiveLogic && !enableTrainingData && (
           <div className="info-box" style={{ 
             backgroundColor: '#fff3cd', 
             padding: '15px', 
@@ -521,6 +603,65 @@ export default function SimpleNegationAnalyzer() {
               <li>No trigger-specific analysis</li>
             </ul>
             <p><strong>Example:</strong> "Il ne vient pas" (logical) vs "Il ne vient" (negation without markers)</p>
+          </div>
+        )}
+
+        {/* Rule-Based Logic Info Box */}
+        {useExpletiveLogic && !enableTrainingData && (
+          <div className="info-box" style={{ 
+            backgroundColor: '#e3f2fd', 
+            padding: '15px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #2196f3'
+          }}>
+            <h4>🎯 Rule-Based Expletive Logic:</h4>
+            <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
+              <li><strong>"peur que"</strong> (fear that) + expletive "ne"</li>
+              <li><strong>"avant que"</strong> (before) + expletive "ne"</li>
+              <li>Logical negation detection with markers</li>
+            </ul>
+            <p><strong>Example:</strong> "J'ai peur qu'il ne vienne" (expletive) vs "J'ai peur qu'il ne vienne pas" (logical)</p>
+          </div>
+        )}
+
+        {/* Pure Training Logic Info Box */}
+        {!useExpletiveLogic && enableTrainingData && (
+          <div className="info-box" style={{ 
+            backgroundColor: '#e8f5e8', 
+            padding: '15px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #4caf50'
+          }}>
+            <h4>🤖 Pure Training-Based Analysis:</h4>
+            <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
+              <li><strong>Machine learning only</strong> - no rule-based logic</li>
+              <li><strong>Pattern matching</strong> with uploaded training examples</li>
+              <li><strong>Similarity scoring</strong> and confidence percentages</li>
+              <li>Supports <strong>"peur que"</strong> and <strong>"avant que"</strong> triggers from training data</li>
+            </ul>
+            <p><strong>Advantage:</strong> Pure data-driven predictions without linguistic rule bias</p>
+          </div>
+        )}
+
+        {/* Hybrid Analysis Info Box */}
+        {useExpletiveLogic && enableTrainingData && (
+          <div className="info-box" style={{ 
+            backgroundColor: '#f3e5f5', 
+            padding: '15px', 
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            border: '1px solid #9c27b0'
+          }}>
+            <h4>🔄 Hybrid Analysis (Rule-Based + Training):</h4>
+            <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
+              <li><strong>Rule-based foundation</strong> with training data enhancement</li>
+              <li><strong>Confidence boosting</strong> from similar training examples</li>
+              <li><strong>Fallback logic</strong> when training data is insufficient</li>
+              <li>Best of both worlds: <strong>linguistic rules + machine learning</strong></li>
+            </ul>
+            <p><strong>Advantage:</strong> Combines linguistic expertise with data-driven improvements</p>
           </div>
         )}
 
@@ -547,12 +688,12 @@ export default function SimpleNegationAnalyzer() {
             <h3>Analysis Result:</h3>
             <p className="classification-result" style={{
               padding: '15px',
-              backgroundColor: result.includes('✅ EXPLETIVE NEGATION') || result.includes('🎯 TRAINING-ENHANCED') ? '#d4edda' : 
+              backgroundColor: result.includes('✅ EXPLETIVE NEGATION') || result.includes('🎯 TRAINING-ENHANCED') || result.includes('🤖 PURE TRAINING') ? '#d4edda' : 
                              result.includes('Negation detected') ? '#fff3cd' : '#f8f9fa',
-              border: `1px solid ${result.includes('✅ EXPLETIVE NEGATION') || result.includes('🎯 TRAINING-ENHANCED') ? '#c3e6cb' : 
+              border: `1px solid ${result.includes('✅ EXPLETIVE NEGATION') || result.includes('🎯 TRAINING-ENHANCED') || result.includes('🤖 PURE TRAINING') ? '#c3e6cb' : 
                                   result.includes('Negation detected') ? '#ffeaa7' : '#dee2e6'}`,
               borderRadius: '8px',
-              fontWeight: result.includes('✅ EXPLETIVE NEGATION') || result.includes('🎯 TRAINING-ENHANCED') ? 'bold' : 'normal'
+              fontWeight: result.includes('✅ EXPLETIVE NEGATION') || result.includes('🎯 TRAINING-ENHANCED') || result.includes('🤖 PURE TRAINING') ? 'bold' : 'normal'
             }}>
               {result}
             </p>
@@ -566,11 +707,11 @@ export default function SimpleNegationAnalyzer() {
         )}
       </div>
 
-      {/* Training Data Section */}
-      {useExpletiveLogic && enableTrainingData && (
+      {/* Training Data Section - Now Independent */}
+      {enableTrainingData && (
         <div className="card">
           <h3 className="title">📚 Training Data Management</h3>
-          <p>Upload training examples to improve expletive negation detection accuracy through machine learning.</p>
+          <p>Upload training examples for {useExpletiveLogic ? 'enhanced' : 'pure'} machine learning-based expletive negation detection.</p>
           
           <div className="info-box" style={{ 
             backgroundColor: '#fff3cd', 
@@ -751,12 +892,12 @@ export default function SimpleNegationAnalyzer() {
                       }}>
                         <span style={{
                           padding: '4px 8px',
-                          backgroundColor: label.includes('✅ EXPLETIVE NEGATION') || label.includes('🎯 TRAINING-ENHANCED') ? '#d4edda' : 
+                          backgroundColor: label.includes('✅ EXPLETIVE NEGATION') || label.includes('🎯 TRAINING-ENHANCED') || label.includes('🤖 PURE TRAINING') ? '#d4edda' : 
                                           label.includes('Negation detected') ? '#fff3cd' : 'transparent',
-                          border: `1px solid ${label.includes('✅ EXPLETIVE NEGATION') || label.includes('🎯 TRAINING-ENHANCED') ? '#c3e6cb' : 
+                          border: `1px solid ${label.includes('✅ EXPLETIVE NEGATION') || label.includes('🎯 TRAINING-ENHANCED') || label.includes('🤖 PURE TRAINING') ? '#c3e6cb' : 
                                               label.includes('Negation detected') ? '#ffeaa7' : 'transparent'}`,
                           borderRadius: '4px',
-                          fontWeight: label.includes('✅ EXPLETIVE NEGATION') || label.includes('🎯 TRAINING-ENHANCED') ? 'bold' : 'normal',
+                          fontWeight: label.includes('✅ EXPLETIVE NEGATION') || label.includes('🎯 TRAINING-ENHANCED') || label.includes('🤖 PURE TRAINING') ? 'bold' : 'normal',
                           fontSize: '0.9em'
                         }}>
                           {label}
@@ -783,11 +924,13 @@ export default function SimpleNegationAnalyzer() {
               color: '#6c757d'
             }}>
               💡 <strong>Tip:</strong> Click on column headers to sort the results. 
-              {useExpletiveLogic 
-                ? useTrainingEnhancement && trainingData.length > 0
-                  ? "Green highlighted results indicate expletive negation detected (enhanced with training data)."
-                  : "Green highlighted results indicate expletive negation detected."
-                : "Yellow highlighted results indicate basic negation detected."
+              {!useExpletiveLogic && !enableTrainingData
+                ? "Yellow highlighted results indicate basic negation detected."
+                : useExpletiveLogic && !enableTrainingData
+                  ? "Green highlighted results indicate rule-based expletive negation detected."
+                  : !useExpletiveLogic && enableTrainingData
+                    ? "Green highlighted results indicate pure training-based predictions."
+                    : "Green highlighted results indicate hybrid rule-based + training analysis."
               }
             </div>
           </div>
