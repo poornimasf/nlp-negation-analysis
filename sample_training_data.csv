@@ -1,0 +1,7 @@
+text,has_expletive_ne,trigger,classification
+"J'ai peur qu'il ne vienne",true,peur que,expletive
+"J'ai peur qu'il ne vienne pas",false,peur que,logical
+"Avant qu'elle ne parte",true,avant que,expletive
+"Avant qu'elle parte",false,avant que,no_negation
+"J'ai peur qu'elle ne soit malade",true,peur que,expletive
+"J'ai peur qu'elle ne soit pas malade",false,peur que,logical
