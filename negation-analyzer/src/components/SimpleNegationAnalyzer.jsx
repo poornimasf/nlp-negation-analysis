@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './NegationAnalyzer.css';
+import * as XLSX from 'xlsx';
 
 export default function SimpleNegationAnalyzer() {
   // Basic state
@@ -441,7 +442,248 @@ export default function SimpleNegationAnalyzer() {
       downloadJSON(filename, analysisMode);
     } else if (format === 'txt') {
       downloadTXT(filename, analysisMode);
+    } else if (format === 'excel') {
+      downloadExcel(filename, analysisMode);
     }
+  };
+
+  const downloadExcel = (filename, analysisMode) => {
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    
+    // Prepare main results data
+    const resultsData = [
+      // Header row
+      ['Sentence #', 'Text', 'Analysis Result', 'Classification', 'Confidence', 'Triggers', 'Analysis Mode'],
+      // Data rows
+      ...batchResults.map(result => {
+        // Extract classification details from the label
+        const isExpletive = result.label.includes('✅ EXPLETIVE NEGATION');
+        const isTrainingEnhanced = result.label.includes('🎯 TRAINING-ENHANCED');
+        const isPureTraining = result.label.includes('🤖 PURE TRAINING');
+        const isLogicalNegation = result.label.includes('Negation detected');
+        
+        // Extract confidence if available
+        const confidenceMatch = result.label.match(/(\d+)%/);
+        const confidence = confidenceMatch ? confidenceMatch[1] + '%' : 'N/A';
+        
+        // Extract triggers if available
+        const triggerMatch = result.label.match(/Trigger: ([^,\n]+)/);
+        const triggers = triggerMatch ? triggerMatch[1] : 'None';
+        
+        // Determine classification type
+        let classificationType = 'No Negation';
+        if (isExpletive) classificationType = 'Expletive Negation';
+        else if (isTrainingEnhanced) classificationType = 'Training Enhanced';
+        else if (isPureTraining) classificationType = 'Pure Training';
+        else if (isLogicalNegation) classificationType = 'Logical Negation';
+        
+        return [
+          result.id,
+          result.text,
+          result.label,
+          classificationType,
+          confidence,
+          triggers,
+          analysisMode
+        ];
+      })
+    ];
+    
+    // Create main results worksheet
+    const ws = XLSX.utils.aoa_to_sheet(resultsData);
+    
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 10 },  // Sentence #
+      { wch: 40 },  // Text
+      { wch: 60 },  // Analysis Result
+      { wch: 20 },  // Classification
+      { wch: 12 },  // Confidence
+      { wch: 15 },  // Triggers
+      { wch: 50 }   // Analysis Mode
+    ];
+    
+    // Apply formatting to header row
+    const headerRange = XLSX.utils.decode_range(ws['!ref']);
+    for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
+      if (!ws[cellAddress]) continue;
+      
+      ws[cellAddress].s = {
+        font: { bold: true, color: { rgb: "FFFFFF" } },
+        fill: { fgColor: { rgb: "4472C4" } },
+        alignment: { horizontal: "center", vertical: "center" },
+        border: {
+          top: { style: "thin", color: { rgb: "000000" } },
+          bottom: { style: "thin", color: { rgb: "000000" } },
+          left: { style: "thin", color: { rgb: "000000" } },
+          right: { style: "thin", color: { rgb: "000000" } }
+        }
+      };
+    }
+    
+    // Apply formatting to data rows based on classification
+    for (let row = 1; row <= batchResults.length; row++) {
+      const result = batchResults[row - 1];
+      const isExpletive = result.label.includes('✅ EXPLETIVE NEGATION');
+      const isTrainingEnhanced = result.label.includes('🎯 TRAINING-ENHANCED');
+      const isPureTraining = result.label.includes('🤖 PURE TRAINING');
+      const isLogicalNegation = result.label.includes('Negation detected');
+      
+      // Determine row color based on classification
+      let fillColor = "FFFFFF"; // Default white
+      if (isExpletive) fillColor = "D4EDDA"; // Light green for expletive
+      else if (isTrainingEnhanced) fillColor = "E3F2FD"; // Light blue for training enhanced
+      else if (isPureTraining) fillColor = "F3E5F5"; // Light purple for pure training
+      else if (isLogicalNegation) fillColor = "FFF3CD"; // Light yellow for logical
+      
+      // Apply formatting to all cells in the row
+      for (let col = 0; col < 7; col++) {
+        const cellAddress = XLSX.utils.encode_cell({ r: row, c: col });
+        if (!ws[cellAddress]) continue;
+        
+        ws[cellAddress].s = {
+          fill: { fgColor: { rgb: fillColor } },
+          alignment: { vertical: "top", wrapText: true },
+          border: {
+            top: { style: "thin", color: { rgb: "CCCCCC" } },
+            bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+            left: { style: "thin", color: { rgb: "CCCCCC" } },
+            right: { style: "thin", color: { rgb: "CCCCCC" } }
+          }
+        };
+        
+        // Special formatting for classification column
+        if (col === 3) { // Classification column
+          ws[cellAddress].s.font = { bold: true };
+          if (isExpletive) ws[cellAddress].s.font.color = { rgb: "155724" };
+          else if (isTrainingEnhanced) ws[cellAddress].s.font.color = { rgb: "0C5460" };
+          else if (isPureTraining) ws[cellAddress].s.font.color = { rgb: "6A1B9A" };
+          else if (isLogicalNegation) ws[cellAddress].s.font.color = { rgb: "856404" };
+        }
+      }
+    }
+    
+    // Add the main results sheet
+    XLSX.utils.book_append_sheet(wb, ws, "Analysis Results");
+    
+    // Create summary statistics sheet
+    const stats = calculateBatchStatistics();
+    const summaryData = [
+      ['French Expletive Negation Analysis - Summary Statistics'],
+      [''],
+      ['Generated:', new Date().toISOString()],
+      ['Analysis Mode:', analysisMode],
+      ['Total Sentences:', batchResults.length],
+      [''],
+      ['Classification Breakdown:'],
+      ['Expletive Negation:', stats.expletiveCount],
+      ['Training Enhanced:', stats.trainingEnhancedCount],
+      ['Pure Training:', stats.pureTrainingCount],
+      ['Logical Negation:', stats.logicalCount],
+      ['No Negation:', stats.noNegationCount],
+      [''],
+      ['Confidence Distribution:'],
+      ['High Confidence (≥80%):', stats.highConfidenceCount],
+      ['Medium Confidence (60-79%):', stats.mediumConfidenceCount],
+      ['Low Confidence (<60%):', stats.lowConfidenceCount],
+      [''],
+      ['Trigger Analysis:'],
+      ['Sentences with Triggers:', stats.withTriggersCount],
+      ['Most Common Trigger:', stats.mostCommonTrigger || 'N/A']
+    ];
+    
+    const summaryWs = XLSX.utils.aoa_to_sheet(summaryData);
+    
+    // Format summary sheet
+    summaryWs['!cols'] = [{ wch: 30 }, { wch: 20 }];
+    
+    // Style the title
+    if (summaryWs['A1']) {
+      summaryWs['A1'].s = {
+        font: { bold: true, size: 14, color: { rgb: "FFFFFF" } },
+        fill: { fgColor: { rgb: "4472C4" } },
+        alignment: { horizontal: "center" }
+      };
+    }
+    
+    // Merge title cell
+    summaryWs['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
+    
+    XLSX.utils.book_append_sheet(wb, summaryWs, "Summary Statistics");
+    
+    // Create detailed breakdown sheet if training data is available
+    if (enableTrainingData && trainingData.length > 0) {
+      const trainingStatsData = [
+        ['Training Data Analysis'],
+        [''],
+        ['Total Training Examples:', trainingData.length],
+        ['Training Data Statistics:'],
+        ['Total Examples:', trainingStats.totalExamples],
+        ['Expletive Examples:', trainingStats.expletiveCount],
+        ['Logical Examples:', trainingStats.logicalCount],
+        [''],
+        ['Training Examples by Classification:'],
+        ...trainingData.slice(0, 10).map(item => [item.text, item.classification])
+      ];
+      
+      const trainingWs = XLSX.utils.aoa_to_sheet(trainingStatsData);
+      trainingWs['!cols'] = [{ wch: 40 }, { wch: 20 }];
+      
+      XLSX.utils.book_append_sheet(wb, trainingWs, "Training Data");
+    }
+    
+    // Write the file
+    XLSX.writeFile(wb, `${filename}.xlsx`);
+  };
+
+  // Helper function to calculate batch statistics
+  const calculateBatchStatistics = () => {
+    const stats = {
+      expletiveCount: 0,
+      trainingEnhancedCount: 0,
+      pureTrainingCount: 0,
+      logicalCount: 0,
+      noNegationCount: 0,
+      highConfidenceCount: 0,
+      mediumConfidenceCount: 0,
+      lowConfidenceCount: 0,
+      withTriggersCount: 0,
+      triggers: {}
+    };
+    
+    batchResults.forEach(result => {
+      // Count classifications
+      if (result.label.includes('✅ EXPLETIVE NEGATION')) stats.expletiveCount++;
+      else if (result.label.includes('🎯 TRAINING-ENHANCED')) stats.trainingEnhancedCount++;
+      else if (result.label.includes('🤖 PURE TRAINING')) stats.pureTrainingCount++;
+      else if (result.label.includes('Negation detected')) stats.logicalCount++;
+      else stats.noNegationCount++;
+      
+      // Count confidence levels
+      const confidenceMatch = result.label.match(/(\d+)%/);
+      if (confidenceMatch) {
+        const confidence = parseInt(confidenceMatch[1]);
+        if (confidence >= 80) stats.highConfidenceCount++;
+        else if (confidence >= 60) stats.mediumConfidenceCount++;
+        else stats.lowConfidenceCount++;
+      }
+      
+      // Count triggers
+      const triggerMatch = result.label.match(/Trigger: ([^,\n]+)/);
+      if (triggerMatch) {
+        stats.withTriggersCount++;
+        const trigger = triggerMatch[1];
+        stats.triggers[trigger] = (stats.triggers[trigger] || 0) + 1;
+      }
+    });
+    
+    // Find most common trigger
+    stats.mostCommonTrigger = Object.keys(stats.triggers).reduce((a, b) => 
+      stats.triggers[a] > stats.triggers[b] ? a : b, null);
+    
+    return stats;
   };
 
   const downloadCSV = (filename, analysisMode) => {
@@ -948,7 +1190,8 @@ export default function SimpleNegationAnalyzer() {
         }}>
           <strong>💡 Download Options:</strong>
           <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-            <li><strong>📊 CSV:</strong> Excel-compatible format with structured columns (sentence number, text, analysis, classification type, confidence, triggers)</li>
+            <li><strong>📊 Excel:</strong> Rich formatted spreadsheet with color-coded classifications, multiple sheets (results, statistics, training data), and professional styling</li>
+            <li><strong>📋 CSV:</strong> Excel-compatible format with structured columns (sentence number, text, analysis, classification type, confidence, triggers)</li>
             <li><strong>🔧 JSON:</strong> Structured data format for programming/research with detailed metadata and classification details</li>
             <li><strong>📄 TXT:</strong> Human-readable report format perfect for documentation and sharing</li>
           </ul>
@@ -963,6 +1206,22 @@ export default function SimpleNegationAnalyzer() {
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                 <span style={{ fontSize: '14px', color: '#666', marginRight: '10px' }}>📥 Download:</span>
                 <button 
+                  onClick={() => downloadBatchResults('excel')}
+                  style={{
+                    padding: '6px 12px',
+                    backgroundColor: '#217346',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                  }}
+                  title="Download as Excel with rich formatting and multiple sheets"
+                >
+                  📊 Excel
+                </button>
+                <button 
                   onClick={() => downloadBatchResults('csv')}
                   style={{
                     padding: '6px 12px',
@@ -976,7 +1235,7 @@ export default function SimpleNegationAnalyzer() {
                   }}
                   title="Download as CSV (Excel compatible)"
                 >
-                  📊 CSV
+                  📋 CSV
                 </button>
                 <button 
                   onClick={() => downloadBatchResults('json')}

@@ -1,0 +1,66 @@
+{
+  "metadata": {
+    "title": "French Expletive Negation Analysis - Batch Results",
+    "generated": "2025-07-24T01:52:00.000Z",
+    "analysisMode": "🔄 Hybrid Analysis (Rule-Based + Training) - Rule-based foundation with training data enhancement",
+    "totalSentences": 5,
+    "version": "2.1.0"
+  },
+  "results": [
+    {
+      "sentenceNumber": 1,
+      "text": "J'ai peur qu'il ne vienne",
+      "analysisResult": "✅ EXPLETIVE NEGATION - Trigger: peur qu, Expletive 'ne' found without logical negation markers",
+      "classification": {
+        "type": "expletive_negation",
+        "confidence": 95,
+        "triggers": "peur qu"
+      },
+      "highlightedText": "J'ai <span style=\"background-color: yellow; font-weight: bold;\">peur qu</span>'il <span style=\"background-color: lightgreen; font-weight: bold;\">ne</span> vienne"
+    },
+    {
+      "sentenceNumber": 2,
+      "text": "Avant qu'elle ne parte",
+      "analysisResult": "✅ EXPLETIVE NEGATION - Trigger: avant qu, Expletive 'ne' found without logical negation markers",
+      "classification": {
+        "type": "expletive_negation",
+        "confidence": 90,
+        "triggers": "avant qu"
+      },
+      "highlightedText": "<span style=\"background-color: yellow; font-weight: bold;\">Avant qu</span>'elle <span style=\"background-color: lightgreen; font-weight: bold;\">ne</span> parte"
+    },
+    {
+      "sentenceNumber": 3,
+      "text": "J'ai peur qu'il ne vienne pas",
+      "analysisResult": "Logical negation detected - Trigger: peur qu, 'ne' found with logical marker 'pas'",
+      "classification": {
+        "type": "logical_negation",
+        "confidence": 85,
+        "triggers": "peur qu"
+      },
+      "highlightedText": "J'ai <span style=\"background-color: yellow; font-weight: bold;\">peur qu</span>'il <span style=\"background-color: lightgreen; font-weight: bold;\">ne</span> vienne <span style=\"background-color: lightcoral; font-weight: bold;\">pas</span>"
+    },
+    {
+      "sentenceNumber": 4,
+      "text": "Je crains qu'il vienne",
+      "analysisResult": "🤖 PURE TRAINING: Likely expletive negation (78% confidence) - Similar to training examples",
+      "classification": {
+        "type": "pure_training",
+        "confidence": 78,
+        "triggers": null
+      },
+      "highlightedText": "Je crains qu'il vienne"
+    },
+    {
+      "sentenceNumber": 5,
+      "text": "Il mange du pain",
+      "analysisResult": "No negation detected",
+      "classification": {
+        "type": "no_negation",
+        "confidence": null,
+        "triggers": null
+      },
+      "highlightedText": "Il mange du pain"
+    }
+  ]
+}

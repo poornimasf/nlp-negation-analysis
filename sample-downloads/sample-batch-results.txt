@@ -1,0 +1,30 @@
+French Expletive Negation Analysis - Batch Results
+Generated: 2025-07-24T01:52:00.000Z
+Analysis Mode: 🔄 Hybrid Analysis (Rule-Based + Training) - Rule-based foundation with training data enhancement
+Total Sentences: 5
+============================================================
+
+1. Sentence #1
+   Text: J'ai peur qu'il ne vienne
+   Analysis: ✅ EXPLETIVE NEGATION - Trigger: peur qu, Expletive 'ne' found without logical negation markers
+   ──────────────────────────────────────────────────────
+
+2. Sentence #2
+   Text: Avant qu'elle ne parte
+   Analysis: ✅ EXPLETIVE NEGATION - Trigger: avant qu, Expletive 'ne' found without logical negation markers
+   ──────────────────────────────────────────────────────
+
+3. Sentence #3
+   Text: J'ai peur qu'il ne vienne pas
+   Analysis: Logical negation detected - Trigger: peur qu, 'ne' found with logical marker 'pas'
+   ──────────────────────────────────────────────────────
+
+4. Sentence #4
+   Text: Je crains qu'il vienne
+   Analysis: 🤖 PURE TRAINING: Likely expletive negation (78% confidence) - Similar to training examples
+   ──────────────────────────────────────────────────────
+
+5. Sentence #5
+   Text: Il mange du pain
+   Analysis: No negation detected
+   ──────────────────────────────────────────────────────
