@@ -28,30 +28,219 @@ export default function SimpleNegationAnalyzer() {
   const [uploadError, setUploadError] = useState(null);
   const [useTrainingEnhancement, setUseTrainingEnhancement] = useState(false);
 
-  // Focused triggers for French expletive negation
-  const TRIGGERS = ["peur que", "avant que"];
+  // Comprehensive French expletive negation triggers with variations
+  const EXPLETIVE_PATTERNS = {
+    // Fear expressions - all variations and conjugations
+    peur: [
+      /\b(?:j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont|elles ont)\s+(?:grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
+      /\b(?:par|de|dans\s+la)\s+peur\s+qu[e']?\s*/gi,
+      /\bpeur\s+qu[e']?\s*/gi
+    ],
+    
+    // Before expressions - temporal constructions
+    avant: [
+      /\bavant\s+qu[e']?\s*/gi,
+      /\b(?:juste|bien)\s+avant\s+qu[e']?\s*/gi
+    ],
+    
+    // Fear verbs - comprehensive conjugations
+    craindre: [
+      /\b(?:je\s+crains|tu\s+crains|il\s+craint|elle\s+craint|on\s+craint)\s+qu[e']?\s*/gi,
+      /\b(?:nous\s+craignons|vous\s+craignez|ils\s+craignent|elles\s+craignent)\s+qu[e']?\s*/gi,
+      /\b(?:j'ai\s+craint|tu\s+as\s+craint|il\s+a\s+craint|elle\s+a\s+craint)\s+qu[e']?\s*/gi,
+      /\bcraindr[aei].*qu[e']?\s*/gi // Future and conditional forms
+    ],
+    
+    // Dread/fear verbs
+    redouter: [
+      /\b(?:je\s+redoute|tu\s+redoutes|il\s+redoute|elle\s+redoute)\s+qu[e']?\s*/gi,
+      /\b(?:nous\s+redoutons|vous\s+redoutez|ils\s+redoutent|elles\s+redoutent)\s+qu[e']?\s*/gi,
+      /\bredout[aei].*qu[e']?\s*/gi
+    ],
+    
+    // Doubt expressions
+    douter: [
+      /\b(?:je\s+doute|tu\s+doutes|il\s+doute|elle\s+doute)\s+qu[e']?\s*/gi,
+      /\b(?:nous\s+doutons|vous\s+doutez|ils\s+doutent|elles\s+doutent)\s+qu[e']?\s*/gi,
+      /\bdout[aei].*qu[e']?\s*/gi
+    ],
+    
+    // Avoid expressions
+    eviter: [
+      /\b(?:j'évite|tu\s+évites|il\s+évite|elle\s+évite)\s+qu[e']?\s*/gi,
+      /\b(?:nous\s+évitons|vous\s+évitez|ils\s+évitent|elles\s+évitent)\s+qu[e']?\s*/gi,
+      /\bévit[aei].*qu[e']?\s*/gi,
+      /\b(?:évitez|éviter)\s+qu[e']?\s*/gi
+    ],
+    
+    // Prevent expressions
+    empecher: [
+      /\b(?:j'empêche|tu\s+empêches|il\s+empêche|elle\s+empêche)\s+qu[e']?\s*/gi,
+      /\b(?:nous\s+empêchons|vous\s+empêchez|ils\s+empêchent|elles\s+empêchent)\s+qu[e']?\s*/gi,
+      /\bempêch[aei].*qu[e']?\s*/gi
+    ]
+  };
 
-  // Basic analysis functions
+  // Logical negation markers with context
+  const LOGICAL_MARKERS = [
+    /\bne\s+(?:pas|point)\b/gi,
+    /\bne\s+plus\b/gi,
+    /\bne\s+jamais\b/gi,
+    /\bne\s+rien\b/gi,
+    /\bne\s+personne\b/gi,
+    /\bne\s+aucun[e]?\b/gi,
+    /\bne\s+guère\b/gi,
+    /\bne\s+nullement\b/gi,
+    /\bn'(?:pas|plus|jamais|rien|personne|aucun|guère)\b/gi
+  ];
+
+  // Subjunctive verb forms that often appear with expletive "ne"
+  const SUBJUNCTIVE_PATTERNS = [
+    /\b(?:soit|soient|ait|aient|vienne|viennent|comprenne|comprennent|sache|sachent|puisse|puissent|veuille|veuillent|fasse|fassent|dise|disent|parte|partent)\b/gi
+  ];
+
+  // Enhanced negation detection with context awareness
   const hasNegation = (text) => {
-    return /\bne\b([^a-zA-Z]|\s|$)/i.test(text);
+    // Look for "ne" with proper word boundaries and context
+    const nePattern = /\b(?:ne|n')\b/gi;
+    return nePattern.test(text);
   };
 
-  const extractComplement = (text, trigger) => {
-    const idx = text.toLowerCase().indexOf(trigger);
-    if (idx === -1) return "";
-    const after = text.slice(idx + trigger.length);
-    return after.split(/[.?!]/)[0];
+  // Detect logical negation markers
+  const hasLogicalNegation = (text) => {
+    return LOGICAL_MARKERS.some(pattern => pattern.test(text));
   };
+
+  // Find expletive triggers with comprehensive pattern matching
+  const findExpletiveTrigger = (text) => {
+    const normalizedText = text.toLowerCase()
+      .replace(/['']/g, "'") // Normalize apostrophes
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
+
+    for (const [triggerType, patterns] of Object.entries(EXPLETIVE_PATTERNS)) {
+      for (const pattern of patterns) {
+        const match = normalizedText.match(pattern);
+        if (match) {
+          return {
+            type: triggerType,
+            match: match[0].trim(),
+            position: match.index,
+            confidence: calculateTriggerConfidence(match[0], triggerType)
+          };
+        }
+      }
+    }
+    return null;
+  };
+
+  // Calculate confidence based on trigger pattern specificity
+  const calculateTriggerConfidence = (matchedText, triggerType) => {
+    let confidence = 0.7; // Base confidence
+    
+    // Higher confidence for more specific patterns
+    if (matchedText.includes("j'ai") || matchedText.includes("nous avons")) confidence += 0.1;
+    if (matchedText.includes("grand")) confidence += 0.05; // "grand peur"
+    if (matchedText.includes("par peur") || matchedText.includes("de peur")) confidence += 0.1;
+    if (triggerType === 'avant' && matchedText.includes("juste")) confidence += 0.05;
+    
+    return Math.min(confidence, 0.95);
+  };
+
+  // Detect subjunctive mood for additional confidence
+  const hasSubjunctive = (text) => {
+    return SUBJUNCTIVE_PATTERNS.some(pattern => pattern.test(text));
+  };
+
+  // Extract complement clause after trigger
+  const extractComplementClause = (text, triggerMatch) => {
+    if (!triggerMatch) return null;
+    
+    const afterTrigger = text.substring(triggerMatch.position + triggerMatch.match.length);
+    // Look for the clause until punctuation or conjunction
+    const clauseMatch = afterTrigger.match(/^[^.!?;]+/);
+    return clauseMatch ? clauseMatch[0].trim() : null;
+  };
+
+  // Advanced expletive negation classification
+  const classifyExpletive = (text) => {
+    const triggerInfo = findExpletiveTrigger(text);
+    const hasNe = hasNegation(text);
+    const hasLogical = hasLogicalNegation(text);
+    const hasSubj = hasSubjunctive(text);
+    
+    // No trigger found
+    if (!triggerInfo) {
+      if (hasNe) {
+        return hasLogical 
+          ? "Logical negation detected: 'ne' + logical markers found, but no expletive triggers."
+          : "Negation found, but no expletive triggers ('peur que', 'avant que', etc.) detected.";
+      }
+      return "No expletive negation triggers found.";
+    }
+
+    // Trigger found, analyze negation type
+    if (!hasNe) {
+      return `Found '${triggerInfo.match}' trigger but no 'ne' detected. Incomplete expletive construction.`;
+    }
+
+    // Check for logical vs expletive negation
+    if (hasLogical) {
+      const confidence = Math.round(triggerInfo.confidence * 100);
+      return `Logical negation detected - Trigger: ${triggerInfo.match}, 'ne' found with logical markers (${confidence}% trigger confidence)`;
+    }
+
+    // Pure expletive negation detected
+    const complementClause = extractComplementClause(text, triggerInfo);
+    let confidence = triggerInfo.confidence;
+    
+    // Boost confidence with subjunctive
+    if (hasSubj) {
+      confidence = Math.min(confidence + 0.1, 0.98);
+    }
+    
+    // Boost confidence with proper complement structure
+    if (complementClause && complementClause.length > 3) {
+      confidence = Math.min(confidence + 0.05, 0.98);
+    }
+
+    const confidencePercent = Math.round(confidence * 100);
+    let result = `✅ EXPLETIVE NEGATION - Trigger: ${triggerInfo.match}, Expletive 'ne' found without logical negation markers (${confidencePercent}% confidence)`;
+    
+    if (hasSubj) {
+      result += ", subjunctive mood detected";
+    }
+    
+    return result;
+  };
+
+  // Legacy trigger array for backward compatibility
+  const TRIGGERS = ["peur que", "avant que"];
 
   const highlight = (text) => {
     let output = text;
-    // Highlight the two specific triggers
-    for (const trigger of TRIGGERS) {
-      const re = new RegExp(`(${trigger})`, "gi");
-      output = output.replace(re, '<span class="highlight-yellow">$1</span>');
+    
+    // Highlight expletive triggers using the robust pattern matching
+    const triggerInfo = findExpletiveTrigger(text);
+    if (triggerInfo) {
+      const escapedMatch = triggerInfo.match.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const triggerRegex = new RegExp(`(${escapedMatch})`, 'gi');
+      output = output.replace(triggerRegex, '<span class="highlight-yellow">$1</span>');
     }
-    // Highlight "ne"
-    output = output.replace(/\b(ne)\b/gi, '<span class="highlight-green">$1</span>');
+    
+    // Highlight "ne" and "n'"
+    output = output.replace(/\b(ne|n')\b/gi, '<span class="highlight-green">$1</span>');
+    
+    // Highlight logical negation markers in red
+    LOGICAL_MARKERS.forEach(pattern => {
+      const matches = [...text.matchAll(pattern)];
+      matches.forEach(match => {
+        const escapedMatch = match[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const markerRegex = new RegExp(`(${escapedMatch})`, 'gi');
+        output = output.replace(markerRegex, '<span class="highlight-red">$1</span>');
+      });
+    });
+    
     return output;
   };
 
@@ -72,44 +261,6 @@ export default function SimpleNegationAnalyzer() {
     }
     
     return "Negation detected: 'ne' without logical markers.";
-  };
-
-  // Full expletive negation classification
-  const classifyExpletive = (text) => {
-    const lowerText = text.toLowerCase();
-    const foundTrigger = TRIGGERS.find(trigger => lowerText.includes(trigger));
-    const hasNe = hasNegation(lowerText);
-    
-    // No trigger found
-    if (!foundTrigger) {
-      if (hasNe) {
-        return "Negation found, but no 'peur que' or 'avant que' trigger detected.";
-      }
-      return "No expletive negation triggers ('peur que' or 'avant que') found.";
-    }
-
-    // Trigger found, check for negation
-    if (!hasNe) {
-      return `Found '${foundTrigger}' but no 'ne' detected. No expletive negation.`;
-    }
-
-    // Both trigger and "ne" found - analyze the complement clause
-    const complement = extractComplement(lowerText, foundTrigger);
-    const complementHasNe = hasNegation(complement);
-
-    if (!complementHasNe) {
-      return `Found '${foundTrigger}' and 'ne', but 'ne' is not in the complement clause.`;
-    }
-
-    // Check for logical negation markers after "ne"
-    const hasLogicalNegation = /\bne\b[^.?!]{0,15}\b(pas|rien|jamais|plus|personne|aucun|guère)\b/i.test(complement);
-    
-    if (hasLogicalNegation) {
-      return `'${foundTrigger}' + logical negation (ne + pas/rien/jamais/etc.). Not expletive.`;
-    }
-
-    // Pure expletive negation detected
-    return `✅ EXPLETIVE NEGATION: '${foundTrigger}' + expletive 'ne' (without logical negation markers).`;
   };
 
   // Training data processing functions
@@ -138,18 +289,31 @@ export default function SimpleNegationAnalyzer() {
         ? hasExpletive.toLowerCase() === 'true' || hasExpletive.toLowerCase() === 'expletive'
         : Boolean(hasExpletive);
 
-      // Detect trigger if not provided
+      // Detect trigger if not provided using robust pattern matching
       let detectedTrigger = trigger;
       if (!detectedTrigger) {
-        detectedTrigger = TRIGGERS.find(t => text.toLowerCase().includes(t)) || '';
+        const triggerInfo = findExpletiveTrigger(text);
+        detectedTrigger = triggerInfo ? triggerInfo.match : '';
       }
 
-      if (detectedTrigger && TRIGGERS.includes(detectedTrigger)) {
+      // For backward compatibility, map to simple trigger names
+      let simpleTrigger = detectedTrigger;
+      if (detectedTrigger) {
+        if (detectedTrigger.includes('peur')) simpleTrigger = 'peur que';
+        else if (detectedTrigger.includes('avant')) simpleTrigger = 'avant que';
+        else if (detectedTrigger.includes('crain')) simpleTrigger = 'craindre';
+        else if (detectedTrigger.includes('redout')) simpleTrigger = 'redouter';
+        else if (detectedTrigger.includes('dout')) simpleTrigger = 'douter';
+        else if (detectedTrigger.includes('évit')) simpleTrigger = 'éviter';
+        else if (detectedTrigger.includes('empêch')) simpleTrigger = 'empêcher';
+      }
+
+      if (simpleTrigger && (TRIGGERS.includes(simpleTrigger) || ['craindre', 'redouter', 'douter', 'éviter', 'empêcher'].includes(simpleTrigger))) {
         const processedRow = {
           id: index + 1,
           text: text.trim(),
           has_expletive_ne: isExpletive,
-          trigger: detectedTrigger,
+          trigger: simpleTrigger,
           classification: classification || (isExpletive ? 'expletive' : 'logical')
         };
 
@@ -243,17 +407,25 @@ export default function SimpleNegationAnalyzer() {
       return baseResult;
     }
 
-    const lowerText = text.toLowerCase();
-    const foundTrigger = TRIGGERS.find(trigger => lowerText.includes(trigger));
+    const triggerInfo = findExpletiveTrigger(text);
     
-    if (!foundTrigger) {
+    if (!triggerInfo) {
       return baseResult;
     }
 
+    // Map robust trigger to simple trigger for training data lookup
+    let simpleTrigger = 'peur que'; // default
+    if (triggerInfo.match.includes('avant')) simpleTrigger = 'avant que';
+    else if (triggerInfo.match.includes('crain')) simpleTrigger = 'craindre';
+    else if (triggerInfo.match.includes('redout')) simpleTrigger = 'redouter';
+    else if (triggerInfo.match.includes('dout')) simpleTrigger = 'douter';
+    else if (triggerInfo.match.includes('évit')) simpleTrigger = 'éviter';
+    else if (triggerInfo.match.includes('empêch')) simpleTrigger = 'empêcher';
+
     // Find similar examples in training data
     const similarExamples = trainingData.filter(item => 
-      item.trigger === foundTrigger && 
-      item.text.toLowerCase().includes(foundTrigger)
+      item.trigger === simpleTrigger || 
+      (item.trigger && item.trigger.includes(simpleTrigger.split(' ')[0]))
     );
 
     if (similarExamples.length === 0) {
@@ -265,9 +437,9 @@ export default function SimpleNegationAnalyzer() {
     const confidence = Math.round((Math.max(expletiveCount, totalCount - expletiveCount) / totalCount) * 100);
 
     if (baseResult.includes('✅ EXPLETIVE NEGATION')) {
-      return `🎯 TRAINING-ENHANCED: '${foundTrigger}' + expletive 'ne' (${confidence}% confidence from ${totalCount} training examples)`;
+      return `🎯 TRAINING-ENHANCED: '${triggerInfo.match}' + expletive 'ne' (${confidence}% confidence from ${totalCount} training examples)`;
     } else if (baseResult.includes('logical negation')) {
-      return `🎯 TRAINING-ENHANCED: '${foundTrigger}' + logical negation (${confidence}% confidence from ${totalCount} training examples)`;
+      return `🎯 TRAINING-ENHANCED: '${triggerInfo.match}' + logical negation (${confidence}% confidence from ${totalCount} training examples)`;
     }
 
     return baseResult + ` (Enhanced with ${totalCount} training examples)`;
@@ -309,23 +481,33 @@ export default function SimpleNegationAnalyzer() {
       return "No training data available for pure training-based analysis.";
     }
 
-    const lowerText = text.toLowerCase();
-    const foundTrigger = TRIGGERS.find(trigger => lowerText.includes(trigger));
+    const triggerInfo = findExpletiveTrigger(text);
     
-    if (!foundTrigger) {
-      return "No supported triggers ('peur que' or 'avant que') found for training-based analysis.";
+    if (!triggerInfo) {
+      return "No supported expletive triggers found for training-based analysis.";
     }
+
+    // Map robust trigger to simple trigger for training data lookup
+    let simpleTrigger = 'peur que'; // default
+    if (triggerInfo.match.includes('avant')) simpleTrigger = 'avant que';
+    else if (triggerInfo.match.includes('crain')) simpleTrigger = 'craindre';
+    else if (triggerInfo.match.includes('redout')) simpleTrigger = 'redouter';
+    else if (triggerInfo.match.includes('dout')) simpleTrigger = 'douter';
+    else if (triggerInfo.match.includes('évit')) simpleTrigger = 'éviter';
+    else if (triggerInfo.match.includes('empêch')) simpleTrigger = 'empêcher';
 
     // Find similar examples in training data
     const similarExamples = trainingData.filter(item => 
-      item.trigger === foundTrigger
+      item.trigger === simpleTrigger ||
+      (item.trigger && item.trigger.includes(simpleTrigger.split(' ')[0]))
     );
 
     if (similarExamples.length === 0) {
-      return `No training examples found for '${foundTrigger}' trigger.`;
+      return `No training examples found for '${triggerInfo.match}' trigger.`;
     }
 
     // Simple similarity matching based on text content
+    const lowerText = text.toLowerCase();
     const textWords = lowerText.split(/\s+/);
     const scoredExamples = similarExamples.map(item => {
       const exampleWords = item.text.toLowerCase().split(/\s+/);
@@ -337,7 +519,7 @@ export default function SimpleNegationAnalyzer() {
     const topMatches = scoredExamples.slice(0, 5).filter(item => item.similarity > 0.3);
     
     if (topMatches.length === 0) {
-      return `Training data available for '${foundTrigger}' but no similar examples found (${similarExamples.length} total examples).`;
+      return `Training data available for '${triggerInfo.match}' but no similar examples found (${similarExamples.length} total examples).`;
     }
 
     // Calculate prediction based on training data
@@ -348,9 +530,9 @@ export default function SimpleNegationAnalyzer() {
     const avgSimilarity = Math.round((topMatches.reduce((sum, item) => sum + item.similarity, 0) / totalCount) * 100);
 
     if (expletiveCount > totalCount - expletiveCount) {
-      return `🤖 PURE TRAINING: '${foundTrigger}' + expletive 'ne' predicted (${confidence}% confidence, ${avgSimilarity}% similarity, ${totalCount} examples)`;
+      return `🤖 PURE TRAINING: '${triggerInfo.match}' + expletive 'ne' predicted (${confidence}% confidence, ${avgSimilarity}% similarity, ${totalCount} examples)`;
     } else {
-      return `🤖 PURE TRAINING: '${foundTrigger}' + logical negation predicted (${confidence}% confidence, ${avgSimilarity}% similarity, ${totalCount} examples)`;
+      return `🤖 PURE TRAINING: '${triggerInfo.match}' + logical negation predicted (${confidence}% confidence, ${avgSimilarity}% similarity, ${totalCount} examples)`;
     }
   };
 

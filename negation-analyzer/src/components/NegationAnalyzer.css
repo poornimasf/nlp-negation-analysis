@@ -119,6 +119,15 @@
   background-color: #c6f6d5;
   padding: 2px 4px;
   border-radius: 2px;
+  font-weight: bold;
+}
+
+.highlight-red {
+  background-color: #fed7d7;
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-weight: bold;
+  color: #c53030;
 }
 
 .error-message {
