@@ -555,6 +555,12 @@ export default function SimpleNegationAnalyzer() {
           : b.label.localeCompare(a.label);
       }
       
+      if (config.key === 'classification') {
+        return config.direction === 'asc'
+          ? a.classification.localeCompare(b.classification)
+          : b.classification.localeCompare(a.classification);
+      }
+      
       return 0;
     });
   };
@@ -587,6 +593,23 @@ export default function SimpleNegationAnalyzer() {
     setHighlightedText(highlight(inputText));
   };
 
+  // Helper function to extract clean classification from analysis result
+  const extractClassification = (analysisResult) => {
+    if (analysisResult.includes('✅ EXPLETIVE NEGATION')) {
+      return 'Expletive';
+    } else if (analysisResult.includes('🎯 TRAINING-ENHANCED')) {
+      return 'Training Enhanced';
+    } else if (analysisResult.includes('🤖 PURE TRAINING')) {
+      return 'Pure Training';
+    } else if (analysisResult.includes('Logical negation detected') || analysisResult.includes('logical negation')) {
+      return 'Logical';
+    } else if (analysisResult.includes('No negation') || analysisResult.includes('No expletive')) {
+      return 'No Negation';
+    } else {
+      return 'Other';
+    }
+  };
+
   const handleBatchAnalyze = () => {
     if (!batchInput.trim()) {
       setBatchResults([]);
@@ -594,12 +617,16 @@ export default function SimpleNegationAnalyzer() {
     }
 
     const sentences = batchInput.split("\n").filter(line => line.trim());
-    const results = sentences.map((sentence, index) => ({
-      id: index + 1,
-      text: sentence.trim(),
-      highlightedText: highlight(sentence.trim()),
-      label: classifyNegation(sentence.trim()),
-    }));
+    const results = sentences.map((sentence, index) => {
+      const analysisResult = classifyNegation(sentence.trim());
+      return {
+        id: index + 1,
+        text: sentence.trim(),
+        highlightedText: highlight(sentence.trim()),
+        label: analysisResult,
+        classification: extractClassification(analysisResult)
+      };
+    });
     setBatchResults(results);
   };
 
@@ -639,12 +666,6 @@ export default function SimpleNegationAnalyzer() {
       ['Sentence #', 'Text', 'Analysis Result', 'Classification', 'Confidence', 'Triggers', 'Analysis Mode'],
       // Data rows
       ...batchResults.map(result => {
-        // Extract classification details from the label
-        const isExpletive = result.label.includes('✅ EXPLETIVE NEGATION');
-        const isTrainingEnhanced = result.label.includes('🎯 TRAINING-ENHANCED');
-        const isPureTraining = result.label.includes('🤖 PURE TRAINING');
-        const isLogicalNegation = result.label.includes('Negation detected');
-        
         // Extract confidence if available
         const confidenceMatch = result.label.match(/(\d+)%/);
         const confidence = confidenceMatch ? confidenceMatch[1] + '%' : 'N/A';
@@ -653,18 +674,11 @@ export default function SimpleNegationAnalyzer() {
         const triggerMatch = result.label.match(/Trigger: ([^,\n]+)/);
         const triggers = triggerMatch ? triggerMatch[1] : 'None';
         
-        // Determine classification type
-        let classificationType = 'No Negation';
-        if (isExpletive) classificationType = 'Expletive Negation';
-        else if (isTrainingEnhanced) classificationType = 'Training Enhanced';
-        else if (isPureTraining) classificationType = 'Pure Training';
-        else if (isLogicalNegation) classificationType = 'Logical Negation';
-        
         return [
           result.id,
           result.text,
           result.label,
-          classificationType,
+          result.classification, // Use the direct classification field
           confidence,
           triggers,
           analysisMode
@@ -865,11 +879,11 @@ export default function SimpleNegationAnalyzer() {
     };
     
     batchResults.forEach(result => {
-      // Count classifications
-      if (result.label.includes('✅ EXPLETIVE NEGATION')) stats.expletiveCount++;
-      else if (result.label.includes('🎯 TRAINING-ENHANCED')) stats.trainingEnhancedCount++;
-      else if (result.label.includes('🤖 PURE TRAINING')) stats.pureTrainingCount++;
-      else if (result.label.includes('Negation detected')) stats.logicalCount++;
+      // Count classifications using the direct classification field
+      if (result.classification === 'Expletive') stats.expletiveCount++;
+      else if (result.classification === 'Training Enhanced') stats.trainingEnhancedCount++;
+      else if (result.classification === 'Pure Training') stats.pureTrainingCount++;
+      else if (result.classification === 'Logical') stats.logicalCount++;
       else stats.noNegationCount++;
       
       // Count confidence levels
@@ -903,12 +917,6 @@ export default function SimpleNegationAnalyzer() {
     
     // Process results into CSV format
     const csvData = batchResults.map(result => {
-      // Extract classification details from the label
-      const isExpletive = result.label.includes('✅ EXPLETIVE NEGATION');
-      const isTrainingEnhanced = result.label.includes('🎯 TRAINING-ENHANCED');
-      const isPureTraining = result.label.includes('🤖 PURE TRAINING');
-      const isLogicalNegation = result.label.includes('Negation detected');
-      
       // Extract confidence if available
       const confidenceMatch = result.label.match(/(\d+)%/);
       const confidence = confidenceMatch ? confidenceMatch[1] + '%' : 'N/A';
@@ -917,18 +925,11 @@ export default function SimpleNegationAnalyzer() {
       const triggerMatch = result.label.match(/Trigger: ([^,\n]+)/);
       const triggers = triggerMatch ? triggerMatch[1] : 'None';
       
-      // Determine classification type
-      let classificationType = 'No Negation';
-      if (isExpletive) classificationType = 'Expletive Negation';
-      else if (isTrainingEnhanced) classificationType = 'Training Enhanced';
-      else if (isPureTraining) classificationType = 'Pure Training';
-      else if (isLogicalNegation) classificationType = 'Logical Negation';
-      
       return [
         result.id,
         `"${result.text.replace(/"/g, '""')}"`, // Escape quotes in CSV
         `"${result.label.replace(/"/g, '""')}"`,
-        classificationType,
+        result.classification, // Use the direct classification field
         confidence,
         triggers,
         `"${analysisMode.replace(/"/g, '""')}"`
@@ -957,11 +958,6 @@ export default function SimpleNegationAnalyzer() {
       },
       results: batchResults.map(result => {
         // Extract detailed analysis from label
-        const isExpletive = result.label.includes('✅ EXPLETIVE NEGATION');
-        const isTrainingEnhanced = result.label.includes('🎯 TRAINING-ENHANCED');
-        const isPureTraining = result.label.includes('🤖 PURE TRAINING');
-        const isLogicalNegation = result.label.includes('Negation detected');
-        
         const confidenceMatch = result.label.match(/(\d+)%/);
         const triggerMatch = result.label.match(/Trigger: ([^,\n]+)/);
         
@@ -970,10 +966,7 @@ export default function SimpleNegationAnalyzer() {
           text: result.text,
           analysisResult: result.label,
           classification: {
-            type: isExpletive ? 'expletive_negation' : 
-                  isTrainingEnhanced ? 'training_enhanced' :
-                  isPureTraining ? 'pure_training' :
-                  isLogicalNegation ? 'logical_negation' : 'no_negation',
+            type: result.classification.toLowerCase().replace(/\s+/g, '_'),
             confidence: confidenceMatch ? parseInt(confidenceMatch[1]) : null,
             triggers: triggerMatch ? triggerMatch[1] : null
           },
@@ -1538,6 +1531,20 @@ export default function SimpleNegationAnalyzer() {
                       📝 Text{getSortIcon('text')}
                     </th>
                     <th 
+                      onClick={() => handleSort('classification')}
+                      style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        borderBottom: '2px solid #dee2e6',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        fontWeight: 'bold',
+                        minWidth: '120px'
+                      }}
+                    >
+                      🏷️ Classification{getSortIcon('classification')}
+                    </th>
+                    <th 
                       onClick={() => handleSort('analysis')}
                       style={{
                         padding: '12px',
@@ -1563,7 +1570,7 @@ export default function SimpleNegationAnalyzer() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedResults.map(({ id, text, label, highlightedText }, index) => (
+                  {sortedResults.map(({ id, text, label, highlightedText, classification }, index) => (
                     <tr 
                       key={id}
                       style={{
@@ -1583,6 +1590,38 @@ export default function SimpleNegationAnalyzer() {
                         wordBreak: 'break-word'
                       }}>
                         {text}
+                      </td>
+                      <td style={{
+                        padding: '12px',
+                        textAlign: 'center'
+                      }}>
+                        <span style={{
+                          padding: '4px 8px',
+                          borderRadius: '12px',
+                          fontSize: '12px',
+                          fontWeight: 'bold',
+                          backgroundColor: 
+                            classification === 'Expletive' ? '#d4edda' :
+                            classification === 'Training Enhanced' ? '#e3f2fd' :
+                            classification === 'Pure Training' ? '#f3e5f5' :
+                            classification === 'Logical' ? '#fff3cd' :
+                            '#f8f9fa',
+                          color:
+                            classification === 'Expletive' ? '#155724' :
+                            classification === 'Training Enhanced' ? '#0c5460' :
+                            classification === 'Pure Training' ? '#6a1b9a' :
+                            classification === 'Logical' ? '#856404' :
+                            '#495057',
+                          border: `1px solid ${
+                            classification === 'Expletive' ? '#c3e6cb' :
+                            classification === 'Training Enhanced' ? '#bbdefb' :
+                            classification === 'Pure Training' ? '#e1bee7' :
+                            classification === 'Logical' ? '#ffeaa7' :
+                            '#dee2e6'
+                          }`
+                        }}>
+                          {classification}
+                        </span>
                       </td>
                       <td style={{
                         padding: '12px',
@@ -1621,14 +1660,18 @@ export default function SimpleNegationAnalyzer() {
               fontSize: '0.9em',
               color: '#6c757d'
             }}>
-              💡 <strong>Tip:</strong> Click on column headers to sort the results. 
+              💡 <strong>Tip:</strong> Click on column headers to sort the results. The Classification column shows color-coded badges for easy identification: 
+              <span style={{color: '#155724'}}>🟢 Expletive</span>, 
+              <span style={{color: '#0c5460'}}>🔵 Training Enhanced</span>, 
+              <span style={{color: '#6a1b9a'}}>🟣 Pure Training</span>, 
+              <span style={{color: '#856404'}}>🟡 Logical</span>. 
               {!useExpletiveLogic && !enableTrainingData
-                ? "Yellow highlighted results indicate basic negation detected."
+                ? "Analysis results show basic negation detection."
                 : useExpletiveLogic && !enableTrainingData
-                  ? "Green highlighted results indicate rule-based expletive negation detected."
+                  ? "Analysis results show rule-based expletive negation detection."
                   : !useExpletiveLogic && enableTrainingData
-                    ? "Green highlighted results indicate pure training-based predictions from your data."
-                    : "Green highlighted results indicate hybrid rule-based + your training analysis."
+                    ? "Analysis results show pure training-based predictions from your data."
+                    : "Analysis results show hybrid rule-based + your training analysis."
               }
             </div>
           </div>
