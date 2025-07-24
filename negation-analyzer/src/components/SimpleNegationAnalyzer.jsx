@@ -595,17 +595,32 @@ export default function SimpleNegationAnalyzer() {
 
   // Helper function to extract clean classification from analysis result
   const extractClassification = (analysisResult) => {
+    // Priority 1: Check for actual negation types first (regardless of enhancement)
     if (analysisResult.includes('✅ EXPLETIVE NEGATION')) {
       return 'Expletive';
-    } else if (analysisResult.includes('🎯 TRAINING-ENHANCED')) {
-      return 'Training Enhanced';
-    } else if (analysisResult.includes('🤖 PURE TRAINING')) {
-      return 'Pure Training';
     } else if (analysisResult.includes('Logical negation detected') || analysisResult.includes('logical negation')) {
       return 'Logical';
-    } else if (analysisResult.includes('No negation') || analysisResult.includes('No expletive')) {
+    } 
+    
+    // Priority 2: Check for pure training-based predictions
+    else if (analysisResult.includes('🤖 PURE TRAINING')) {
+      // Determine if pure training predicted expletive or logical
+      if (analysisResult.includes('expletive')) {
+        return 'Expletive (ML)';
+      } else if (analysisResult.includes('logical')) {
+        return 'Logical (ML)';
+      } else {
+        return 'Pure Training';
+      }
+    }
+    
+    // Priority 3: Check for no negation cases
+    else if (analysisResult.includes('No negation') || analysisResult.includes('No expletive')) {
       return 'No Negation';
-    } else {
+    } 
+    
+    // Priority 4: Fallback for other cases
+    else {
       return 'Other';
     }
   };
@@ -775,8 +790,7 @@ export default function SimpleNegationAnalyzer() {
       [''],
       ['Classification Breakdown:'],
       ['Expletive Negation:', stats.expletiveCount],
-      ['Training Enhanced:', stats.trainingEnhancedCount],
-      ['Pure Training:', stats.pureTrainingCount],
+      ['Pure Training (Uncertain):', stats.pureTrainingCount],
       ['Logical Negation:', stats.logicalCount],
       ['No Negation:', stats.noNegationCount],
       [''],
@@ -867,7 +881,6 @@ export default function SimpleNegationAnalyzer() {
   const calculateBatchStatistics = () => {
     const stats = {
       expletiveCount: 0,
-      trainingEnhancedCount: 0,
       pureTrainingCount: 0,
       logicalCount: 0,
       noNegationCount: 0,
@@ -879,12 +892,16 @@ export default function SimpleNegationAnalyzer() {
     };
     
     batchResults.forEach(result => {
-      // Count classifications using the direct classification field
-      if (result.classification === 'Expletive') stats.expletiveCount++;
-      else if (result.classification === 'Training Enhanced') stats.trainingEnhancedCount++;
-      else if (result.classification === 'Pure Training') stats.pureTrainingCount++;
-      else if (result.classification === 'Logical') stats.logicalCount++;
-      else stats.noNegationCount++;
+      // Count classifications using the corrected classification field
+      if (result.classification === 'Expletive' || result.classification === 'Expletive (ML)') {
+        stats.expletiveCount++;
+      } else if (result.classification === 'Logical' || result.classification === 'Logical (ML)') {
+        stats.logicalCount++;
+      } else if (result.classification === 'Pure Training') {
+        stats.pureTrainingCount++;
+      } else {
+        stats.noNegationCount++;
+      }
       
       // Count confidence levels
       const confidenceMatch = result.label.match(/(\d+)%/);
@@ -1601,22 +1618,19 @@ export default function SimpleNegationAnalyzer() {
                           fontSize: '12px',
                           fontWeight: 'bold',
                           backgroundColor: 
-                            classification === 'Expletive' ? '#d4edda' :
-                            classification === 'Training Enhanced' ? '#e3f2fd' :
+                            classification === 'Expletive' || classification === 'Expletive (ML)' ? '#d4edda' :
+                            classification === 'Logical' || classification === 'Logical (ML)' ? '#fff3cd' :
                             classification === 'Pure Training' ? '#f3e5f5' :
-                            classification === 'Logical' ? '#fff3cd' :
                             '#f8f9fa',
                           color:
-                            classification === 'Expletive' ? '#155724' :
-                            classification === 'Training Enhanced' ? '#0c5460' :
+                            classification === 'Expletive' || classification === 'Expletive (ML)' ? '#155724' :
+                            classification === 'Logical' || classification === 'Logical (ML)' ? '#856404' :
                             classification === 'Pure Training' ? '#6a1b9a' :
-                            classification === 'Logical' ? '#856404' :
                             '#495057',
                           border: `1px solid ${
-                            classification === 'Expletive' ? '#c3e6cb' :
-                            classification === 'Training Enhanced' ? '#bbdefb' :
+                            classification === 'Expletive' || classification === 'Expletive (ML)' ? '#c3e6cb' :
+                            classification === 'Logical' || classification === 'Logical (ML)' ? '#ffeaa7' :
                             classification === 'Pure Training' ? '#e1bee7' :
-                            classification === 'Logical' ? '#ffeaa7' :
                             '#dee2e6'
                           }`
                         }}>
@@ -1661,17 +1675,16 @@ export default function SimpleNegationAnalyzer() {
               color: '#6c757d'
             }}>
               💡 <strong>Tip:</strong> Click on column headers to sort the results. The Classification column shows color-coded badges for easy identification: 
-              <span style={{color: '#155724'}}>🟢 Expletive</span>, 
-              <span style={{color: '#0c5460'}}>🔵 Training Enhanced</span>, 
-              <span style={{color: '#6a1b9a'}}>🟣 Pure Training</span>, 
-              <span style={{color: '#856404'}}>🟡 Logical</span>. 
+              <span style={{color: '#155724'}}>🟢 Expletive</span> (including ML predictions), 
+              <span style={{color: '#856404'}}>🟡 Logical</span> (including ML predictions), 
+              <span style={{color: '#6a1b9a'}}>🟣 Pure Training</span> (uncertain ML predictions). 
               {!useExpletiveLogic && !enableTrainingData
                 ? "Analysis results show basic negation detection."
                 : useExpletiveLogic && !enableTrainingData
                   ? "Analysis results show rule-based expletive negation detection."
                   : !useExpletiveLogic && enableTrainingData
                     ? "Analysis results show pure training-based predictions from your data."
-                    : "Analysis results show hybrid rule-based + your training analysis."
+                    : "Analysis results show hybrid rule-based analysis (enhanced with training data when available)."
               }
             </div>
           </div>
