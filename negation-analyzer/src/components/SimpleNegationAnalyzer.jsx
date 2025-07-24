@@ -185,38 +185,38 @@ export default function SimpleNegationAnalyzer() {
 
     try {
       const fileType = file.name.split('.').pop().toLowerCase();
-      let jsonData;
-
-      if (fileType === 'json') {
-        const text = await file.text();
-        jsonData = JSON.parse(text);
-      } else if (fileType === 'csv') {
-        const text = await file.text();
-        const lines = text.split('\n').filter(line => line.trim());
-        const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-        
-        jsonData = lines.slice(1).map(line => {
-          const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
-          const obj = {};
-          headers.forEach((header, index) => {
-            obj[header] = values[index] || '';
-          });
-          return obj;
-        });
-      } else {
-        setUploadError("Unsupported file format. Please use CSV or JSON files.");
+      
+      if (fileType !== 'json') {
+        setUploadError("Please upload a JSON file. CSV support has been removed to ensure reliable parsing of complex French sentences.");
         return;
       }
 
+      const text = await file.text();
+      const jsonData = JSON.parse(text);
+
       if (!Array.isArray(jsonData) || jsonData.length === 0) {
-        setUploadError("Invalid file format. Please ensure the file contains an array of training examples.");
+        setUploadError("Invalid JSON format. Please ensure the file contains an array of training examples.");
+        return;
+      }
+
+      // Validate JSON structure
+      const requiredFields = ['text'];
+      const sampleItem = jsonData[0];
+      const missingFields = requiredFields.filter(field => !(field in sampleItem));
+      
+      if (missingFields.length > 0) {
+        setUploadError(`Missing required fields: ${missingFields.join(', ')}. Each training example must have at least a 'text' field.`);
         return;
       }
 
       processTrainingData(jsonData);
       
     } catch (error) {
-      setUploadError(`Error processing file: ${error.message}`);
+      if (error instanceof SyntaxError) {
+        setUploadError(`Invalid JSON syntax: ${error.message}. Please check your JSON formatting.`);
+      } else {
+        setUploadError(`Error processing file: ${error.message}`);
+      }
     }
   };
 
@@ -421,6 +421,148 @@ export default function SimpleNegationAnalyzer() {
   };
 
   const sortedResults = sortResults(batchResults, sortConfig);
+
+  // Download functionality for batch results
+  const downloadBatchResults = (format) => {
+    if (batchResults.length === 0) {
+      alert('No batch results to download. Please run batch analysis first.');
+      return;
+    }
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const filename = `negation-analysis-batch-${timestamp}`;
+    
+    // Get current analysis mode for metadata
+    const analysisMode = getCurrentModeDescription();
+    
+    if (format === 'csv') {
+      downloadCSV(filename, analysisMode);
+    } else if (format === 'json') {
+      downloadJSON(filename, analysisMode);
+    } else if (format === 'txt') {
+      downloadTXT(filename, analysisMode);
+    }
+  };
+
+  const downloadCSV = (filename, analysisMode) => {
+    // Prepare CSV headers
+    const headers = ['Sentence_Number', 'Text', 'Analysis_Result', 'Classification_Type', 'Confidence', 'Triggers_Found', 'Analysis_Mode'];
+    
+    // Process results into CSV format
+    const csvData = batchResults.map(result => {
+      // Extract classification details from the label
+      const isExpletive = result.label.includes('✅ EXPLETIVE NEGATION');
+      const isTrainingEnhanced = result.label.includes('🎯 TRAINING-ENHANCED');
+      const isPureTraining = result.label.includes('🤖 PURE TRAINING');
+      const isLogicalNegation = result.label.includes('Negation detected');
+      
+      // Extract confidence if available
+      const confidenceMatch = result.label.match(/(\d+)%/);
+      const confidence = confidenceMatch ? confidenceMatch[1] + '%' : 'N/A';
+      
+      // Extract triggers if available
+      const triggerMatch = result.label.match(/Trigger: ([^,\n]+)/);
+      const triggers = triggerMatch ? triggerMatch[1] : 'None';
+      
+      // Determine classification type
+      let classificationType = 'No Negation';
+      if (isExpletive) classificationType = 'Expletive Negation';
+      else if (isTrainingEnhanced) classificationType = 'Training Enhanced';
+      else if (isPureTraining) classificationType = 'Pure Training';
+      else if (isLogicalNegation) classificationType = 'Logical Negation';
+      
+      return [
+        result.id,
+        `"${result.text.replace(/"/g, '""')}"`, // Escape quotes in CSV
+        `"${result.label.replace(/"/g, '""')}"`,
+        classificationType,
+        confidence,
+        triggers,
+        `"${analysisMode.replace(/"/g, '""')}"`
+      ];
+    });
+    
+    // Combine headers and data
+    const csvContent = [headers, ...csvData]
+      .map(row => row.join(','))
+      .join('\n');
+    
+    // Add metadata header
+    const metadata = `# French Expletive Negation Analysis - Batch Results\n# Generated: ${new Date().toISOString()}\n# Analysis Mode: ${analysisMode}\n# Total Sentences: ${batchResults.length}\n#\n`;
+    
+    downloadFile(csvContent, `${filename}.csv`, 'text/csv', metadata);
+  };
+
+  const downloadJSON = (filename, analysisMode) => {
+    const jsonData = {
+      metadata: {
+        title: 'French Expletive Negation Analysis - Batch Results',
+        generated: new Date().toISOString(),
+        analysisMode: analysisMode,
+        totalSentences: batchResults.length,
+        version: '2.1.0'
+      },
+      results: batchResults.map(result => {
+        // Extract detailed analysis from label
+        const isExpletive = result.label.includes('✅ EXPLETIVE NEGATION');
+        const isTrainingEnhanced = result.label.includes('🎯 TRAINING-ENHANCED');
+        const isPureTraining = result.label.includes('🤖 PURE TRAINING');
+        const isLogicalNegation = result.label.includes('Negation detected');
+        
+        const confidenceMatch = result.label.match(/(\d+)%/);
+        const triggerMatch = result.label.match(/Trigger: ([^,\n]+)/);
+        
+        return {
+          sentenceNumber: result.id,
+          text: result.text,
+          analysisResult: result.label,
+          classification: {
+            type: isExpletive ? 'expletive_negation' : 
+                  isTrainingEnhanced ? 'training_enhanced' :
+                  isPureTraining ? 'pure_training' :
+                  isLogicalNegation ? 'logical_negation' : 'no_negation',
+            confidence: confidenceMatch ? parseInt(confidenceMatch[1]) : null,
+            triggers: triggerMatch ? triggerMatch[1] : null
+          },
+          highlightedText: result.highlightedText
+        };
+      })
+    };
+    
+    const jsonContent = JSON.stringify(jsonData, null, 2);
+    downloadFile(jsonContent, `${filename}.json`, 'application/json');
+  };
+
+  const downloadTXT = (filename, analysisMode) => {
+    let content = `French Expletive Negation Analysis - Batch Results\n`;
+    content += `Generated: ${new Date().toISOString()}\n`;
+    content += `Analysis Mode: ${analysisMode}\n`;
+    content += `Total Sentences: ${batchResults.length}\n`;
+    content += `${'='.repeat(60)}\n\n`;
+    
+    batchResults.forEach((result, index) => {
+      content += `${index + 1}. Sentence #${result.id}\n`;
+      content += `   Text: ${result.text}\n`;
+      content += `   Analysis: ${result.label}\n`;
+      content += `   ${'─'.repeat(50)}\n\n`;
+    });
+    
+    downloadFile(content, `${filename}.txt`, 'text/plain');
+  };
+
+  const downloadFile = (content, filename, mimeType, metadata = '') => {
+    const fullContent = metadata + content;
+    const blob = new Blob([fullContent], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   // Helper functions for UI mode display
   const getCurrentModeDescription = () => {
@@ -737,7 +879,7 @@ export default function SimpleNegationAnalyzer() {
               <input
                 id="training-file-upload"
                 type="file"
-                accept=".csv,.json"
+                accept=".json"
                 onChange={handleFileUpload}
                 className="input"
               />
@@ -796,9 +938,80 @@ export default function SimpleNegationAnalyzer() {
           </div>
         </div>
 
+        <div style={{
+          backgroundColor: '#e3f2fd',
+          border: '1px solid #bbdefb',
+          borderRadius: '6px',
+          padding: '12px',
+          marginTop: '15px',
+          fontSize: '14px'
+        }}>
+          <strong>💡 Download Options:</strong>
+          <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
+            <li><strong>📊 CSV:</strong> Excel-compatible format with structured columns (sentence number, text, analysis, classification type, confidence, triggers)</li>
+            <li><strong>🔧 JSON:</strong> Structured data format for programming/research with detailed metadata and classification details</li>
+            <li><strong>📄 TXT:</strong> Human-readable report format perfect for documentation and sharing</li>
+          </ul>
+          <em>All formats include analysis mode, timestamp, and complete results for research reproducibility.</em>
+        </div>
+
         {batchResults.length > 0 && (
           <div className="result-section">
-            <h3>Batch Results ({batchResults.length} sentences):</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <h3>Batch Results ({batchResults.length} sentences):</h3>
+              
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <span style={{ fontSize: '14px', color: '#666', marginRight: '10px' }}>📥 Download:</span>
+                <button 
+                  onClick={() => downloadBatchResults('csv')}
+                  style={{
+                    padding: '6px 12px',
+                    backgroundColor: '#28a745',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                  }}
+                  title="Download as CSV (Excel compatible)"
+                >
+                  📊 CSV
+                </button>
+                <button 
+                  onClick={() => downloadBatchResults('json')}
+                  style={{
+                    padding: '6px 12px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                  }}
+                  title="Download as JSON (structured data)"
+                >
+                  🔧 JSON
+                </button>
+                <button 
+                  onClick={() => downloadBatchResults('txt')}
+                  style={{
+                    padding: '6px 12px',
+                    backgroundColor: '#6c757d',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 'bold'
+                  }}
+                  title="Download as plain text report"
+                >
+                  📄 TXT
+                </button>
+              </div>
+            </div>
             
             <div style={{ overflowX: 'auto', marginTop: '20px' }}>
               <table style={{
