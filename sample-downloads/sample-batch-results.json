@@ -2,9 +2,10 @@
   "metadata": {
     "title": "French Expletive Negation Analysis - Batch Results",
     "generated": "2025-07-24T01:52:00.000Z",
-    "analysisMode": "🔄 Hybrid Analysis (Rule-Based + Training) - Rule-based foundation with training data enhancement",
+    "analysisMode": "🔄 Hybrid Analysis (Rule-Based + User Training) - Rule-based foundation with user training data enhancement",
     "totalSentences": 5,
-    "version": "2.1.0"
+    "version": "2.1.0",
+    "dataSource": "User-uploaded training examples only"
   },
   "results": [
     {
@@ -43,7 +44,7 @@
     {
       "sentenceNumber": 4,
       "text": "Je crains qu'il vienne",
-      "analysisResult": "🤖 PURE TRAINING: Likely expletive negation (78% confidence) - Similar to training examples",
+      "analysisResult": "🤖 PURE TRAINING: Likely expletive negation (78% confidence) - Similar to user training examples",
       "classification": {
         "type": "pure_training",
         "confidence": 78,

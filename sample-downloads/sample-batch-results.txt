@@ -1,7 +1,8 @@
 French Expletive Negation Analysis - Batch Results
 Generated: 2025-07-24T01:52:00.000Z
-Analysis Mode: 🔄 Hybrid Analysis (Rule-Based + Training) - Rule-based foundation with training data enhancement
+Analysis Mode: 🔄 Hybrid Analysis (Rule-Based + User Training) - Rule-based foundation with user training data enhancement
 Total Sentences: 5
+Data Source: User-uploaded training examples only
 ============================================================
 
 1. Sentence #1
@@ -21,7 +22,7 @@ Total Sentences: 5
 
 4. Sentence #4
    Text: Je crains qu'il vienne
-   Analysis: 🤖 PURE TRAINING: Likely expletive negation (78% confidence) - Similar to training examples
+   Analysis: 🤖 PURE TRAINING: Likely expletive negation (78% confidence) - Similar to user training examples
    ──────────────────────────────────────────────────────
 
 5. Sentence #5

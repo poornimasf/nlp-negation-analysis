@@ -613,25 +613,54 @@ export default function SimpleNegationAnalyzer() {
     
     XLSX.utils.book_append_sheet(wb, summaryWs, "Summary Statistics");
     
-    // Create detailed breakdown sheet if training data is available
+    // Create detailed breakdown sheet if user training data is available
     if (enableTrainingData && trainingData.length > 0) {
-      const trainingStatsData = [
-        ['Training Data Analysis'],
+      const userTrainingStatsData = [
+        ['User Training Data Analysis'],
         [''],
-        ['Total Training Examples:', trainingData.length],
-        ['Training Data Statistics:'],
+        ['Total User Examples:', trainingData.length],
+        ['User Data Statistics:'],
         ['Total Examples:', trainingStats.totalExamples],
         ['Expletive Examples:', trainingStats.expletiveCount],
         ['Logical Examples:', trainingStats.logicalCount],
         [''],
-        ['Training Examples by Classification:'],
-        ...trainingData.slice(0, 10).map(item => [item.text, item.classification])
+        ['Sample User Examples (First 10):'],
+        ['Text', 'Classification'],
+        ...trainingData.slice(0, 10).map(item => [item.text, item.classification || 'N/A'])
       ];
       
-      const trainingWs = XLSX.utils.aoa_to_sheet(trainingStatsData);
-      trainingWs['!cols'] = [{ wch: 40 }, { wch: 20 }];
+      const userTrainingWs = XLSX.utils.aoa_to_sheet(userTrainingStatsData);
+      userTrainingWs['!cols'] = [{ wch: 50 }, { wch: 20 }];
       
-      XLSX.utils.book_append_sheet(wb, trainingWs, "Training Data");
+      // Style the title
+      if (userTrainingWs['A1']) {
+        userTrainingWs['A1'].s = {
+          font: { bold: true, size: 14, color: { rgb: "FFFFFF" } },
+          fill: { fgColor: { rgb: "4472C4" } },
+          alignment: { horizontal: "center" }
+        };
+      }
+      
+      // Merge title cell
+      userTrainingWs['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 1 } }];
+      
+      // Style the sample data header
+      if (userTrainingWs['A9']) {
+        userTrainingWs['A9'].s = {
+          font: { bold: true, color: { rgb: "FFFFFF" } },
+          fill: { fgColor: { rgb: "28a745" } },
+          alignment: { horizontal: "center" }
+        };
+      }
+      if (userTrainingWs['B9']) {
+        userTrainingWs['B9'].s = {
+          font: { bold: true, color: { rgb: "FFFFFF" } },
+          fill: { fgColor: { rgb: "28a745" } },
+          alignment: { horizontal: "center" }
+        };
+      }
+      
+      XLSX.utils.book_append_sheet(wb, userTrainingWs, "User Training Data");
     }
     
     // Write the file
@@ -816,14 +845,14 @@ export default function SimpleNegationAnalyzer() {
     }
     if (!useExpletiveLogic && enableTrainingData) {
       if (useTrainingEnhancement && trainingData.length > 0) {
-        return `🤖 Pure Training-Based Analysis - ML predictions from ${trainingData.length} examples`;
+        return `🤖 Pure Training-Based Analysis - ML predictions from ${trainingData.length} user examples`;
       } else {
         return "📚 Training Data Available - Upload data and enable enhancement for pure ML analysis";
       }
     }
     if (useExpletiveLogic && enableTrainingData) {
       if (useTrainingEnhancement && trainingData.length > 0) {
-        return `🔄 Hybrid Analysis - Rule-based logic enhanced with ${trainingData.length} training examples`;
+        return `🔄 Hybrid Analysis - Rule-based logic enhanced with ${trainingData.length} user examples`;
       } else {
         return "🔄 Hybrid Mode Available - Upload data and enable enhancement for combined analysis";
       }
@@ -961,12 +990,12 @@ export default function SimpleNegationAnalyzer() {
               ? "Rule-based expletive negation analysis for 'peur que' and 'avant que' constructions."
               : !useExpletiveLogic && enableTrainingData
                 ? useTrainingEnhancement && trainingData.length > 0
-                  ? "Pure training-based analysis using machine learning patterns from your uploaded examples."
-                  : "Training data analysis available - upload examples for pure ML-based classification."
+                  ? "Pure training-based analysis using machine learning patterns from your uploaded examples only."
+                  : "Training data analysis available - upload your examples for pure ML-based classification."
                 : useExpletiveLogic && enableTrainingData
                   ? useTrainingEnhancement && trainingData.length > 0
-                    ? "Hybrid analysis combining rule-based logic with machine learning enhancement."
-                    : "Hybrid analysis mode available - upload training data for enhanced accuracy."
+                    ? "Hybrid analysis combining rule-based logic with your machine learning examples."
+                    : "Hybrid analysis mode available - upload your training data for enhanced accuracy."
                   : "Select your preferred analysis approach using the toggles above."
           }
         </p>
@@ -1020,12 +1049,12 @@ export default function SimpleNegationAnalyzer() {
           }}>
             <h4>🤖 Pure Training-Based Analysis:</h4>
             <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-              <li><strong>Machine learning only</strong> - no rule-based logic</li>
-              <li><strong>Pattern matching</strong> with uploaded training examples</li>
-              <li><strong>Similarity scoring</strong> and confidence percentages</li>
-              <li>Supports <strong>"peur que"</strong> and <strong>"avant que"</strong> triggers from training data</li>
+              <li><strong>Machine learning only</strong> - no rule-based logic interference</li>
+              <li><strong>Pattern matching</strong> with your uploaded training examples</li>
+              <li><strong>Similarity scoring</strong> and confidence percentages from user data</li>
+              <li>Uses <strong>only your examples</strong> - no external datasets</li>
             </ul>
-            <p><strong>Advantage:</strong> Pure data-driven predictions without linguistic rule bias</p>
+            <p><strong>Advantage:</strong> Pure data-driven predictions from your training data only</p>
           </div>
         )}
 
@@ -1091,10 +1120,22 @@ export default function SimpleNegationAnalyzer() {
         )}
       </div>
 
-      {/* Training Data Section - Now Independent */}
+      {/* User Training Data Section - Completely User-Controlled */}
       {enableTrainingData && (
         <div className="card">
-          <h3 className="title">📚 Training Data Management</h3>
+          <h3 className="title">📚 User Training Data Management</h3>
+          <div style={{
+            backgroundColor: '#e8f5e8',
+            border: '1px solid #c3e6cb',
+            borderRadius: '6px',
+            padding: '12px',
+            marginBottom: '15px',
+            fontSize: '14px'
+          }}>
+            <strong>🎯 Complete User Control:</strong> Upload your own training examples to enhance analysis accuracy. 
+            The system uses ONLY your uploaded data - no hidden datasets or external training sources. 
+            Perfect for custom research with your specific linguistic examples.
+          </div>
           <p>Upload training examples for {useExpletiveLogic ? 'enhanced' : 'pure'} machine learning-based expletive negation detection.</p>
           
           <div className="info-box" style={{ 
@@ -1143,7 +1184,7 @@ export default function SimpleNegationAnalyzer() {
               borderRadius: '8px', 
               border: '1px solid #4caf50'
             }}>
-              <h4>📊 Training Data Statistics:</h4>
+              <h4>📊 Your Training Data Statistics:</h4>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
                 <div>
                   <strong>Total Examples:</strong> {trainingStats.totalExamples}<br/>
@@ -1155,6 +1196,9 @@ export default function SimpleNegationAnalyzer() {
                   <strong>"Avant que" Examples:</strong> {trainingStats.avantQueExamples}<br/>
                   <strong>Last Updated:</strong> {new Date(trainingStats.lastUpdated).toLocaleString()}
                 </div>
+              </div>
+              <div style={{ marginTop: '10px', fontSize: '12px', color: '#666', fontStyle: 'italic' }}>
+                🔍 <strong>Data Transparency:</strong> Analysis uses only your uploaded examples. No external datasets or hidden training sources.
               </div>
             </div>
           )}
@@ -1190,12 +1234,12 @@ export default function SimpleNegationAnalyzer() {
         }}>
           <strong>💡 Download Options:</strong>
           <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-            <li><strong>📊 Excel:</strong> Rich formatted spreadsheet with color-coded classifications, multiple sheets (results, statistics, training data), and professional styling</li>
+            <li><strong>📊 Excel:</strong> Rich formatted spreadsheet with color-coded classifications, multiple sheets (results, statistics, user training data), and professional styling</li>
             <li><strong>📋 CSV:</strong> Excel-compatible format with structured columns (sentence number, text, analysis, classification type, confidence, triggers)</li>
             <li><strong>🔧 JSON:</strong> Structured data format for programming/research with detailed metadata and classification details</li>
             <li><strong>📄 TXT:</strong> Human-readable report format perfect for documentation and sharing</li>
           </ul>
-          <em>All formats include analysis mode, timestamp, and complete results for research reproducibility.</em>
+          <em>All formats include analysis mode, timestamp, and complete results. Training data sheets only include your uploaded examples for full transparency.</em>
         </div>
 
         {batchResults.length > 0 && (
@@ -1401,8 +1445,8 @@ export default function SimpleNegationAnalyzer() {
                 : useExpletiveLogic && !enableTrainingData
                   ? "Green highlighted results indicate rule-based expletive negation detected."
                   : !useExpletiveLogic && enableTrainingData
-                    ? "Green highlighted results indicate pure training-based predictions."
-                    : "Green highlighted results indicate hybrid rule-based + training analysis."
+                    ? "Green highlighted results indicate pure training-based predictions from your data."
+                    : "Green highlighted results indicate hybrid rule-based + your training analysis."
               }
             </div>
           </div>

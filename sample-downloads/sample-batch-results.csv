@@ -1,11 +1,12 @@
 # French Expletive Negation Analysis - Batch Results
 # Generated: 2025-07-24T01:52:00.000Z
-# Analysis Mode: 🔄 Hybrid Analysis (Rule-Based + Training) - Rule-based foundation with training data enhancement
+# Analysis Mode: 🔄 Hybrid Analysis (Rule-Based + User Training) - Rule-based foundation with user training data enhancement
 # Total Sentences: 5
+# Data Source: User-uploaded training examples only
 #
 Sentence_Number,Text,Analysis_Result,Classification_Type,Confidence,Triggers_Found,Analysis_Mode
-1,"J'ai peur qu'il ne vienne","✅ EXPLETIVE NEGATION - Trigger: peur qu, Expletive 'ne' found without logical negation markers",Expletive Negation,95%,peur qu,"🔄 Hybrid Analysis (Rule-Based + Training) - Rule-based foundation with training data enhancement"
-2,"Avant qu'elle ne parte","✅ EXPLETIVE NEGATION - Trigger: avant qu, Expletive 'ne' found without logical negation markers",Expletive Negation,90%,avant qu,"🔄 Hybrid Analysis (Rule-Based + Training) - Rule-based foundation with training data enhancement"
-3,"J'ai peur qu'il ne vienne pas","Logical negation detected - Trigger: peur qu, 'ne' found with logical marker 'pas'",Logical Negation,85%,peur qu,"🔄 Hybrid Analysis (Rule-Based + Training) - Rule-based foundation with training data enhancement"
-4,"🤖 PURE TRAINING: Likely expletive negation (78% confidence) - Similar to training examples","Pure Training,78%,None,"🔄 Hybrid Analysis (Rule-Based + Training) - Rule-based foundation with training data enhancement"
-5,"Il mange du pain","No negation detected",No Negation,N/A,None,"🔄 Hybrid Analysis (Rule-Based + Training) - Rule-based foundation with training data enhancement"
+1,"J'ai peur qu'il ne vienne","✅ EXPLETIVE NEGATION - Trigger: peur qu, Expletive 'ne' found without logical negation markers",Expletive Negation,95%,peur qu,"🔄 Hybrid Analysis (Rule-Based + User Training)"
+2,"Avant qu'elle ne partie","✅ EXPLETIVE NEGATION - Trigger: avant qu, Expletive 'ne' found without logical negation markers",Expletive Negation,90%,avant qu,"🔄 Hybrid Analysis (Rule-Based + User Training)"
+3,"J'ai peur qu'il ne vienne pas","Logical negation detected - Trigger: peur qu, 'ne' found with logical marker 'pas'",Logical Negation,85%,peur qu,"🔄 Hybrid Analysis (Rule-Based + User Training)"
+4,"Je crains qu'il vienne","🤖 PURE TRAINING: Likely expletive negation (78% confidence) - Similar to user training examples",Pure Training,78%,None,"🔄 Hybrid Analysis (Rule-Based + User Training)"
+5,"Il mange du pain","No negation detected",No Negation,N/A,None,"🔄 Hybrid Analysis (Rule-Based + User Training)"
