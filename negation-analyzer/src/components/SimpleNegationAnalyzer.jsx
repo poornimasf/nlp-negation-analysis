@@ -8,6 +8,7 @@ export default function SimpleNegationAnalyzer() {
   const [result, setResult] = useState(null);
   const [highlightedText, setHighlightedText] = useState("");
   const [batchResults, setBatchResults] = useState([]);
+  const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
 
   // Focused triggers for French expletive negation
   const TRIGGERS = ["peur que", "avant que"];
@@ -73,6 +74,44 @@ export default function SimpleNegationAnalyzer() {
     return `✅ EXPLETIVE NEGATION: '${foundTrigger}' + expletive 'ne' (without logical negation markers).`;
   };
 
+  // Sorting function
+  const sortResults = (results, config) => {
+    return [...results].sort((a, b) => {
+      if (config.key === 'id') {
+        return config.direction === 'asc' ? a.id - b.id : b.id - a.id;
+      }
+      
+      if (config.key === 'text') {
+        return config.direction === 'asc' 
+          ? a.text.localeCompare(b.text)
+          : b.text.localeCompare(a.text);
+      }
+      
+      if (config.key === 'analysis') {
+        return config.direction === 'asc'
+          ? a.label.localeCompare(b.label)
+          : b.label.localeCompare(a.label);
+      }
+      
+      return 0;
+    });
+  };
+
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (columnName) => {
+    if (sortConfig.key === columnName) {
+      return sortConfig.direction === 'asc' ? ' ↑' : ' ↓';
+    }
+    return ' ↕';
+  };
+
   // Event handlers
   const handleAnalyze = () => {
     if (!inputText.trim()) {
@@ -101,6 +140,8 @@ export default function SimpleNegationAnalyzer() {
     }));
     setBatchResults(results);
   };
+
+  const sortedResults = sortResults(batchResults, sortConfig);
 
   return (
     <div className="container">
@@ -185,31 +226,131 @@ export default function SimpleNegationAnalyzer() {
         {batchResults.length > 0 && (
           <div className="result-section">
             <h3>Batch Results ({batchResults.length} sentences):</h3>
-            {batchResults.map(({ id, text, label, highlightedText }) => (
-              <div key={id} className="batch-result" style={{
-                marginBottom: '20px',
-                padding: '15px',
-                backgroundColor: '#f8f9fa',
+            
+            <div style={{ overflowX: 'auto', marginTop: '20px' }}>
+              <table style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                backgroundColor: 'white',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                 borderRadius: '8px',
-                border: '1px solid #dee2e6'
+                overflow: 'hidden'
               }}>
-                <h4>Sentence {id}:</h4>
-                <p><strong>Text:</strong> {text}</p>
-                <p><strong>Analysis:</strong> 
-                  <span className="classification-result" style={{
-                    marginLeft: '10px',
-                    padding: '5px 10px',
-                    backgroundColor: label.includes('✅ EXPLETIVE NEGATION') ? '#d4edda' : 'white',
-                    border: `1px solid ${label.includes('✅ EXPLETIVE NEGATION') ? '#c3e6cb' : '#dee2e6'}`,
-                    borderRadius: '4px',
-                    fontWeight: label.includes('✅ EXPLETIVE NEGATION') ? 'bold' : 'normal'
-                  }}>
-                    {label}
-                  </span>
-                </p>
-                <p><strong>Highlighted:</strong> <span dangerouslySetInnerHTML={{ __html: highlightedText }}></span></p>
-              </div>
-            ))}
+                <thead>
+                  <tr style={{ backgroundColor: '#f8f9fa' }}>
+                    <th 
+                      onClick={() => handleSort('id')}
+                      style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        borderBottom: '2px solid #dee2e6',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        fontWeight: 'bold',
+                        width: '80px'
+                      }}
+                    >
+                      #️⃣ Sentence{getSortIcon('id')}
+                    </th>
+                    <th 
+                      onClick={() => handleSort('text')}
+                      style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        borderBottom: '2px solid #dee2e6',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        fontWeight: 'bold',
+                        minWidth: '200px'
+                      }}
+                    >
+                      📝 Text{getSortIcon('text')}
+                    </th>
+                    <th 
+                      onClick={() => handleSort('analysis')}
+                      style={{
+                        padding: '12px',
+                        textAlign: 'left',
+                        borderBottom: '2px solid #dee2e6',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        fontWeight: 'bold',
+                        minWidth: '250px'
+                      }}
+                    >
+                      🔍 Analysis{getSortIcon('analysis')}
+                    </th>
+                    <th style={{
+                      padding: '12px',
+                      textAlign: 'left',
+                      borderBottom: '2px solid #dee2e6',
+                      fontWeight: 'bold',
+                      minWidth: '200px'
+                    }}>
+                      🎨 Highlighted
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedResults.map(({ id, text, label, highlightedText }, index) => (
+                    <tr 
+                      key={id}
+                      style={{
+                        backgroundColor: index % 2 === 0 ? 'white' : '#f8f9fa',
+                        borderBottom: '1px solid #dee2e6'
+                      }}
+                    >
+                      <td style={{
+                        padding: '12px',
+                        fontWeight: 'bold',
+                        color: '#495057'
+                      }}>
+                        {id}
+                      </td>
+                      <td style={{
+                        padding: '12px',
+                        wordBreak: 'break-word'
+                      }}>
+                        {text}
+                      </td>
+                      <td style={{
+                        padding: '12px',
+                        wordBreak: 'break-word'
+                      }}>
+                        <span style={{
+                          padding: '4px 8px',
+                          backgroundColor: label.includes('✅ EXPLETIVE NEGATION') ? '#d4edda' : 'transparent',
+                          border: `1px solid ${label.includes('✅ EXPLETIVE NEGATION') ? '#c3e6cb' : 'transparent'}`,
+                          borderRadius: '4px',
+                          fontWeight: label.includes('✅ EXPLETIVE NEGATION') ? 'bold' : 'normal',
+                          fontSize: '0.9em'
+                        }}>
+                          {label}
+                        </span>
+                      </td>
+                      <td style={{
+                        padding: '12px',
+                        wordBreak: 'break-word'
+                      }}>
+                        <span dangerouslySetInnerHTML={{ __html: highlightedText }}></span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ 
+              marginTop: '15px', 
+              padding: '10px', 
+              backgroundColor: '#f8f9fa', 
+              borderRadius: '4px',
+              fontSize: '0.9em',
+              color: '#6c757d'
+            }}>
+              💡 <strong>Tip:</strong> Click on column headers to sort the results. 
+              Green highlighted results indicate expletive negation detected.
+            </div>
           </div>
         )}
       </div>
