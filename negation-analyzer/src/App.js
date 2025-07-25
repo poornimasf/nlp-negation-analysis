@@ -7,7 +7,6 @@ function App() {
     <div className="App">
       <div className="header">
         <h1>Expletive Negation Analysis</h1>
-        <p>French Expletive Negation Detection System</p>
       </div>
       <SimpleNegationAnalyzer />
     </div>
