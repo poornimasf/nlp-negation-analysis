@@ -1,234 +1,139 @@
-# Enhanced Expletive Negation Analyzer
+# French Negation Analysis System
 
-An AI-powered linguistic analysis tool that specializes in detecting and classifying expletive vs logical negation patterns, with particular focus on French linguistic constructions. The system features a cloud-based knowledge base that continuously learns from user interactions and training data.
+A specialized linguistic analysis tool for detecting and classifying French negation patterns, with particular focus on expletive vs logical negation constructions.
 
 ## 🎯 Overview
 
-This application provides sophisticated analysis of negation patterns across multiple languages, with specialized functionality for French expletive negation detection. It combines rule-based linguistic analysis with machine learning capabilities through an AWS-powered knowledge base.
+This application provides analysis of French negation patterns through a web interface. It offers both rule-based linguistic analysis and optional machine learning capabilities through training data integration.
 
 ### Key Features
 
-- **Multi-Language Support**: French, English, and Mandarin negation detection
-- **Expletive vs Logical Classification**: Specialized analysis of French "ne" constructions
-- **Batch Processing**: Analyze multiple sentences simultaneously with statistical summaries
-- **Continuous Learning**: Cloud-based knowledge base that improves over time
-- **Training Data Management**: Secure admin interface for model training
-- **Real-time Feedback**: User correction system for model improvement
+- **Single Sentence Analysis**: Real-time analysis of individual French sentences
+- **Batch Processing**: Analyze multiple sentences with downloadable results
+- **Configurable Analysis Modes**: Toggle between rule-based and training-based analysis
+- **Training Data Integration**: Optional enhancement through user-provided examples
+- **Export Capabilities**: Excel, CSV, JSON, and TXT export formats
 
 ## 🏗️ Architecture
 
-### Frontend (React)
-- **Single Text Analysis**: Individual sentence analysis with detailed linguistic breakdown
-- **Batch Analysis**: Multi-sentence processing with aggregated statistics
-- **Expletive Prediction**: Likelihood analysis for French expletive negation
-- **Batch Prediction**: Statistical analysis across text corpora
-- **Training Management**: Secure interface for uploading and managing training data
+### Core Component
+All functionality is consolidated in a single React component:
+- Location: `/src/components/SimpleNegationAnalyzer.jsx`
+- Handles UI, analysis logic, and data processing
+- Includes feature flags for different analysis modes
+- Manages training data integration
 
-### Backend (Python + AWS)
-- **Enhanced Negation System**: Core linguistic analysis engine
-- **Knowledge Base**: AWS-powered learning and pattern storage
-- **Background Processing**: Cost-effective async learning pipeline
+### Analysis Modes
 
-### Cloud Infrastructure (AWS)
-- **DynamoDB**: Pattern storage and user feedback (pay-per-request)
-- **Lambda Functions**: Serverless processing for queries and learning
-- **SQS**: Background processing queue for cost optimization
-- **CloudFormation**: Infrastructure as Code deployment
+The system supports four analysis modes through feature flags:
+
+1. **Basic Logic** (both flags off)
+   - Simple 'ne' detection
+   - Basic logical negation markers
+
+2. **Rule-Based Logic** (expletive flag on)
+   - Trigger analysis ('peur que', 'avant que', etc.)
+   - Pattern-based classification
+   - Confidence scoring
+
+3. **Pure Training** (training flag on, expletive flag off)
+   - Machine learning based on user examples
+   - Pattern matching from training data
+   - Similarity-based classification
+
+4. **Hybrid Analysis** (both flags on)
+   - Combines rule-based logic with training data
+   - Enhanced confidence through example matching
+   - Smart pattern resolution
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Node.js 14+ and npm
-- AWS CLI configured (for knowledge base features)
-- Python 3.9+ (for backend components)
-
 ### Installation
 
-1. **Clone the repository**
+1. **Clone and install**
    ```bash
-   git clone <repository-url>
    cd negation-analyzer
-   ```
-
-2. **Install dependencies**
-   ```bash
    npm install
    ```
 
-3. **Start the development server**
+2. **Start development server**
    ```bash
    npm start
    ```
-   Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-4. **Deploy Knowledge Base (Optional)**
-   ```bash
-   chmod +x ../deploy-knowledge-base.sh
-   ../deploy-knowledge-base.sh
-   ```
+3. **Access the application**
+   - Development: http://localhost:3000
+   - Production: https://main.d1gx30ivteuneq.amplifyapp.com/
 
 ## 📊 Features Deep Dive
 
 ### Single Text Analysis
-- Real-time negation detection with confidence scoring
-- Linguistic pattern highlighting and classification
-- Expletive vs logical negation determination
-- User feedback system for continuous improvement
+- Real-time French negation detection
+- Configurable analysis modes via feature flags
+- Pattern highlighting and classification
+- Confidence-based results
 
 ### Batch Analysis
 - Process multiple sentences simultaneously
-- Statistical summaries and confidence distributions
-- Pattern frequency analysis
-- Export capabilities for research use
+- Sortable results table
+- Export options:
+  - Excel: Rich formatting, multiple sheets
+  - CSV: Structured data
+  - JSON: Programmatic access
+  - TXT: Human-readable reports
 
-### Expletive Prediction
-Specialized French analysis focusing on:
-- **Comprehensive Pattern Coverage**: All French verb conjugations
-- **"Peur que" constructions**: Core patterns from training data
-- **Subjunctive mood detection**: Advanced linguistic analysis
-- **Confidence-based likelihood scoring**: Statistical accuracy measurement
+### Training Data Integration
+- JSON file upload support
+- Training statistics tracking
+- Pattern-based learning
+- Confidence enhancement
 
-#### Enhanced Pattern Recognition (v2.1)
-- ✅ **Complete Verb Coverage**: craindre, redouter, douter, éviter, empêcher (all conjugations)
-- ✅ **French Apostrophe Handling**: Proper "qu'" vs "que" recognition
-- ✅ **Training Data Integration**: 95%+ accuracy with uploaded Excel datasets
-- ✅ **Smart Conflict Resolution**: Handles mixed expletive/logical patterns
-- ✅ **Enhanced Logical Detection**: Comprehensive "ne pas/plus/jamais" patterns
+## 🔧 Making Updates
 
-### Training Data Management
-- Secure admin access with password protection
-- Excel/CSV/JSON file upload support
-- Training statistics and pattern visualization
-- Model protection against unauthorized modifications
+### UI and Analysis Logic
+All changes should be made in `/src/components/SimpleNegationAnalyzer.jsx`:
 
-## 🧠 Knowledge Base System
+1. **Feature Flags**
+   ```javascript
+   const [useExpletiveLogic, setUseExpletiveLogic] = useState(true);
+   const [enableTrainingData, setEnableTrainingData] = useState(false);
+   ```
 
-### How It Works
-1. **Pattern Learning**: Extracts linguistic patterns from analyzed text
-2. **Background Processing**: Queues learning data for async processing
-3. **Similarity Matching**: Queries stored patterns for confidence enhancement
-4. **Continuous Improvement**: User feedback refines pattern recognition
+2. **Core Analysis Functions**
+   ```javascript
+   const classifyNegation = (text) => { ... }
+   const classifyBasic = (text) => { ... }
+   const classifyExpletive = (text) => { ... }
+   const classifyPureTraining = (text) => { ... }
+   const classifyWithTraining = (text) => { ... }
+   ```
 
-### Cost-Effective Design
-- **Pay-per-request DynamoDB**: No fixed infrastructure costs
-- **SQS Queuing**: Reduces Lambda execution time and costs
-- **Smart Caching**: Minimizes repeated knowledge base queries
-- **Background Processing**: Spreads computational costs over time
+3. **Pattern Definitions**
+   ```javascript
+   const EXPLETIVE_PATTERNS = { ... }
+   const LOGICAL_MARKERS = [ ... ]
+   const SUBJUNCTIVE_PATTERNS = [ ... ]
+   ```
 
-### Data Flow
-```
-User Input → Analysis → Pattern Extraction → SQS Queue → Lambda Processing → DynamoDB Storage
-                ↓
-Knowledge Base Query ← Confidence Enhancement ← Similar Pattern Retrieval
-```
+### Styling Updates
+CSS changes should be made in:
+- `/src/components/NegationAnalyzer.css`
 
-## 🔧 Configuration
+## 🔄 Version History
 
-### Environment Variables
-```bash
-# AWS Configuration
-AWS_REGION=us-east-2
-LEARNING_QUEUE_URL=<sqs-queue-url>
-KNOWLEDGE_FUNCTION_ARN=<lambda-function-arn>
+### Current Version (v2.1.0)
+- Simplified architecture with consolidated component
+- Feature flag system for analysis modes
+- Enhanced batch processing with multiple export formats
+- Improved training data integration
 
-# Training Access
-TRAINING_PASSWORD=<secure-password>
-```
+## 📈 Performance
 
-### Training Data Format
-**CSV Example:**
-```csv
-text,classification
-"Je crains qu'il ne vienne","expletive"
-"Je pense qu'il viendra","logical"
-"J'ai peur qu'elle ne comprenne","expletive"
-```
-
-**JSON Example:**
-```json
-[
-  {
-    "text": "Je crains qu'il ne vienne",
-    "classification": "expletive"
-  },
-  {
-    "text": "Je pense qu'il viendra", 
-    "classification": "logical"
-  }
-]
-```
-
-## 📈 Performance & Costs
-
-### Expected AWS Costs (Monthly)
-- **DynamoDB**: ~$0.25 per million requests
-- **Lambda**: ~$0.20 per million requests + compute time
-- **SQS**: ~$0.40 per million requests
-- **Total**: $5-15/month for moderate usage
-
-### Performance Metrics
-- **Analysis Speed**: <500ms per sentence
-- **Batch Processing**: ~100ms per sentence
-- **Knowledge Base Query**: <200ms
-- **Confidence Improvement**: +23% average with learning enabled
-- **Training Data Accuracy**: 95%+ with uploaded datasets
-
-## 🔒 Security Features
-
-### Training Data Protection
-- Password-protected admin access
-- Local storage of authorization tokens
-- Audit logging of access attempts
-- Data validation and sanitization
-
-### AWS Security
-- IAM roles with minimal required permissions
-- VPC isolation for Lambda functions
-- Encryption at rest for DynamoDB
-- CloudTrail logging for audit compliance
-
-## 🧪 Testing
-
-### Run Tests
-```bash
-npm test
-```
-
-### Test Coverage
-- Unit tests for linguistic analysis functions
-- Integration tests for knowledge base queries
-- End-to-end tests for user workflows
-- Performance tests for batch processing
-
-## 📚 API Reference
-
-### Core Analysis Functions
-```javascript
-// Single text analysis
-const result = await analyzeText(text, language);
-
-// Batch processing
-const results = await analyzeBatch(textArray, language);
-
-// Expletive prediction
-const prediction = await predictExpletiveNegation(text);
-```
-
-### Knowledge Base Integration
-```python
-# Python backend
-from enhanced_negation_system import EnhancedNegationSystem
-
-system = EnhancedNegationSystem(enable_learning=True)
-result = system.analyze_text("Je crains qu'il ne vienne", "french")
-```
+- Single sentence analysis: <500ms
+- Batch processing: ~100ms per sentence
+- Training data processing: <1s for typical datasets
 
 ## 🚀 Deployment
-
-### Live Application
-**URL**: https://main.d1gx30ivteuneq.amplifyapp.com/
-**Status**: ✅ Active with latest improvements
-**Last Updated**: July 19, 2025
 
 ### Production Build
 ```bash
@@ -237,74 +142,59 @@ npm run build
 
 ### AWS Amplify Deployment
 ```bash
-# Automatic deployment via AWS CLI
 aws amplify start-job --app-id d1gx30ivteuneq --branch-name main --job-type RELEASE --region us-east-2
-
-# Or use Amplify CLI
-amplify init
-amplify add hosting
-amplify publish
 ```
 
-### Manual Deployment Options
-1. **Static Hosting**: Upload `build` folder to Netlify, Vercel, or S3
-2. **Docker**: Use provided Dockerfile for containerized deployment
-3. **GitHub Pages**: Push build to gh-pages branch
+## 🧪 Testing
+
+Run the test suite:
+```bash
+npm test
+```
 
 ## 🤝 Contributing
 
-### Development Workflow
 1. Fork the repository
 2. Create a feature branch
-3. Make changes with appropriate tests
-4. Submit a pull request with detailed description
+3. Make changes in SimpleNegationAnalyzer.jsx
+4. Submit a pull request
 
-### Code Standards
-- ESLint configuration for JavaScript/React
-- PEP 8 for Python components
-- Comprehensive commenting for linguistic algorithms
-- Unit tests for all new features
+## 📚 Documentation
 
-## 📄 License
+### Analysis Modes
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+#### Basic Logic
+```javascript
+// Simple negation detection
+if (!useExpletiveLogic && !enableTrainingData) {
+  return classifyBasic(text);
+}
+```
 
-## 🆘 Support
+#### Rule-Based Logic
+```javascript
+// Expletive negation analysis
+if (useExpletiveLogic && !enableTrainingData) {
+  return classifyExpletive(text);
+}
+```
 
-### Common Issues
-- **Knowledge Base Connection**: Ensure AWS credentials are configured
-- **Training Access**: Check password configuration in environment
-- **Performance**: Monitor AWS CloudWatch for Lambda metrics
+#### Training-Based Analysis
+```javascript
+// Pure ML-based analysis
+if (!useExpletiveLogic && enableTrainingData) {
+  return classifyPureTraining(text);
+}
+```
 
-### Getting Help
-- Check the Issues section for known problems
-- Review AWS CloudWatch logs for backend errors
-- Consult the linguistic analysis documentation
-
-## 🔄 Changelog
-
-### v2.1.0 (Current - July 19, 2025)
-- **Fixed Expletive Prediction Accuracy**: Comprehensive pattern coverage for training data
-- **Enhanced French Verb Recognition**: All conjugations for craindre, redouter, douter, éviter, empêcher
-- **Improved Training Data Integration**: Better similarity matching and higher confidence weights
-- **Smart Pattern Resolution**: Handles mixed expletive/logical cases
-- **Enhanced Logical Negation**: Complete coverage of "ne pas/plus/jamais" patterns
-- **Live Deployment**: https://main.d1gx30ivteuneq.amplifyapp.com/
-
-### v2.0.0
-- Added batch prediction functionality
-- Implemented AWS knowledge base integration
-- Enhanced French expletive negation analysis
-- Added training data management interface
-- Improved statistical analysis and visualization
-
-### v1.0.0
-- Initial release with basic negation detection
-- Multi-language support
-- Simple batch processing
+#### Hybrid Analysis
+```javascript
+// Combined rule-based and ML analysis
+if (useExpletiveLogic && enableTrainingData) {
+  return classifyWithTraining(text);
+}
+```
 
 ---
-
-**Built with ❤️ for linguistic research and natural language processing**
 
 **Live Application**: https://main.d1gx30ivteuneq.amplifyapp.com/
