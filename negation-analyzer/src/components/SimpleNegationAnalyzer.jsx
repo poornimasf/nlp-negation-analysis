@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 import * as XLSX from 'xlsx';
+import { LOGICAL_NEGATION_PATTERNS } from '../utils/patterns';
 
 export default function SimpleNegationAnalyzer() {
   // Basic state
@@ -543,7 +544,7 @@ export default function SimpleNegationAnalyzer() {
     return output;
   };
 
-  // Simple classification without expletive logic
+  // Enhanced classification with detailed logical negation analysis
   const classifyBasic = (text) => {
     const lowerText = text.toLowerCase();
     const hasNe = hasNegation(lowerText);
@@ -552,14 +553,118 @@ export default function SimpleNegationAnalyzer() {
       return "No 'ne' negation detected.";
     }
     
-    // Check for logical negation markers
-    const hasLogicalNegation = /\bne\b[^.?!]{0,15}\b(pas|rien|jamais|plus|personne|aucun|guère)\b/i.test(lowerText);
+    // Check for logical negation with enhanced detection
+    const logicalAnalysis = detectLogicalNegation(text);
     
-    if (hasLogicalNegation) {
-      return "Logical negation detected: 'ne' + pas/rien/jamais/etc.";
+    if (logicalAnalysis.isLogical) {
+      return formatLogicalResult(logicalAnalysis);
     }
     
     return "Negation detected: 'ne' without logical markers.";
+  };
+
+  // Enhanced logical negation detection with evidence collection
+  const detectLogicalNegation = (text) => {
+    let evidence = [];
+    let maxConfidence = 0;
+    let foundPatterns = [];
+    let details = [];
+
+    // Check each category of patterns
+    for (const [category, info] of Object.entries(LOGICAL_NEGATION_PATTERNS)) {
+      for (const pattern of info.patterns) {
+        const matches = text.match(pattern);
+        if (matches) {
+          foundPatterns.push({
+            category,
+            match: matches[0],
+            confidence: info.confidence,
+            description: info.description
+          });
+          maxConfidence = Math.max(maxConfidence, info.confidence);
+        }
+      }
+    }
+
+    // No logical negation found
+    if (foundPatterns.length === 0) {
+      return {
+        isLogical: false,
+        confidence: 0,
+        evidence: [],
+        details: []
+      };
+    }
+
+    // Sort patterns by confidence
+    foundPatterns.sort((a, b) => b.confidence - a.confidence);
+
+    // Build evidence and details
+    foundPatterns.forEach(pattern => {
+      evidence.push(`Found ${pattern.description.toLowerCase()}: "${pattern.match}"`);
+      details.push({
+        aspect: pattern.description,
+        finding: `Detected "${pattern.match}"`,
+        impact: `Strong indicator of logical negation (${Math.round(pattern.confidence * 100)}% confidence)`,
+        confidence: pattern.confidence
+      });
+    });
+
+    // Additional context analysis
+    const hasVerb = /\b(?:est|sont|a|ont|fait|va|vont)\b/i.test(text);
+    if (hasVerb) {
+      evidence.push("Complete verb construction present");
+      details.push({
+        aspect: "Verb Construction",
+        finding: "Complete grammatical structure",
+        impact: "Supports logical negation classification",
+        confidence: 0.1
+      });
+    }
+
+    // Check for reinforcing elements
+    const hasReinforcement = /\bdu\s+tout\b|\bvraiment\b|\babsolument\b/i.test(text);
+    if (hasReinforcement) {
+      evidence.push("Contains negation reinforcement");
+      details.push({
+        aspect: "Reinforcement",
+        finding: "Additional negative emphasis",
+        impact: "Strengthens logical negation classification",
+        confidence: 0.05
+      });
+    }
+
+    // Final confidence calculation
+    const finalConfidence = Math.min(0.95, maxConfidence + (hasVerb ? 0.05 : 0) + (hasReinforcement ? 0.05 : 0));
+
+    return {
+      isLogical: true,
+      confidence: finalConfidence,
+      evidence,
+      details
+    };
+  };
+
+  // Format logical negation result
+  const formatLogicalResult = (analysis) => {
+    if (!analysis.isLogical) return null;
+
+    const result = [];
+    
+    // Main classification
+    result.push("✅ LOGICAL NEGATION DETECTED");
+    result.push(`(${Math.round(analysis.confidence * 100)}% confidence)\n`);
+
+    // Evidence section
+    result.push("📚 ANALYSIS DETAILS:");
+    analysis.details.forEach(detail => {
+      result.push(`• ${detail.finding}`);
+      if (detail.impact) {
+        result.push(`  ↳ ${detail.impact}`);
+      }
+    });
+
+    return result.join('\n');
   };
 
   // Training data processing functions
