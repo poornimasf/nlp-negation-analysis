@@ -753,7 +753,7 @@ export default function SimpleNegationAnalyzer() {
     return result.join('\n');
   };
 
-  // Training data processing functions
+  // Training data processing functions for removed 'ne' prediction
   const processTrainingData = (data) => {
     const processedData = [];
     const stats = {
@@ -762,11 +762,12 @@ export default function SimpleNegationAnalyzer() {
       logicalExamples: 0,
       peurQueExamples: 0,
       avantQueExamples: 0,
+      peuSenFautExamples: 0,
       lastUpdated: new Date().toISOString()
     };
 
     data.forEach((row, index) => {
-      // Handle different possible column names
+      // Handle different possible column names for removed 'ne' data
       const text = row.text || row.sentence || row.example || '';
       const hasExpletive = row.has_expletive_ne || row.expletive || row.is_expletive || false;
       const trigger = row.trigger || row.construction || '';
@@ -774,16 +775,23 @@ export default function SimpleNegationAnalyzer() {
 
       if (!text || !text.trim()) return;
 
-      // Convert string boolean values
+      // Convert string boolean values for removed 'ne' classification
       const isExpletive = typeof hasExpletive === 'string' 
         ? hasExpletive.toLowerCase() === 'true' || hasExpletive.toLowerCase() === 'expletive'
         : Boolean(hasExpletive);
 
-      // Detect trigger if not provided using robust pattern matching
+      // Detect trigger if not provided using pattern matching (for removed 'ne' context)
       let detectedTrigger = trigger;
       if (!detectedTrigger) {
-        const triggerInfo = findExpletiveTrigger(text);
-        detectedTrigger = triggerInfo ? triggerInfo.match : '';
+        // Use basic pattern detection since we can't await here
+        const lowerText = text.toLowerCase();
+        if (lowerText.includes('peur') && lowerText.includes('que')) {
+          detectedTrigger = 'peur que';
+        } else if (lowerText.includes('avant') && lowerText.includes('que')) {
+          detectedTrigger = 'avant que';
+        } else if (lowerText.includes('peu s\'en faut') || lowerText.includes('s\'en faut')) {
+          detectedTrigger = 'peu s\'en faut';
+        }
       }
 
       // For backward compatibility, map to simple trigger names
@@ -791,7 +799,7 @@ export default function SimpleNegationAnalyzer() {
       if (detectedTrigger) {
         if (detectedTrigger.includes('peur')) simpleTrigger = 'peur que';
         else if (detectedTrigger.includes('avant')) simpleTrigger = 'avant que';
-        else if (detectedTrigger.includes('peu s\'en')) simpleTrigger = 'peu s\'en faut';
+        else if (detectedTrigger.includes('peu s\'en') || detectedTrigger.includes('s\'en faut')) simpleTrigger = 'peu s\'en faut';
         else if (detectedTrigger.includes('crain')) simpleTrigger = 'craindre';
         else if (detectedTrigger.includes('redout')) simpleTrigger = 'redouter';
         else if (detectedTrigger.includes('dout')) simpleTrigger = 'douter';
@@ -805,7 +813,8 @@ export default function SimpleNegationAnalyzer() {
           text: text.trim(),
           has_expletive_ne: isExpletive,
           trigger: simpleTrigger,
-          classification: classification || (isExpletive ? 'expletive' : 'logical')
+          classification: classification || (isExpletive ? 'expletive' : 'logical'),
+          context: 'removed_ne_prediction' // Add context marker
         };
 
         processedData.push(processedRow);
@@ -817,7 +826,24 @@ export default function SimpleNegationAnalyzer() {
           stats.logicalExamples++;
         }
 
-        if (detectedTrigger === 'peur que') {
+        // Count by trigger type for removed 'ne' statistics
+        if (simpleTrigger === 'peur que') {
+          stats.peurQueExamples++;
+        } else if (simpleTrigger === 'avant que') {
+          stats.avantQueExamples++;
+        } else if (simpleTrigger === 'peu s\'en faut') {
+          stats.peuSenFautExamples++;
+        }
+      }
+    });
+
+    setTrainingData(processedData);
+    setTrainingStats(stats);
+    
+    if (processedData.length > 0) {
+      setUseTrainingEnhancement(true);
+    }
+  };
           stats.peurQueExamples++;
         } else if (detectedTrigger === 'avant que') {
           stats.avantQueExamples++;
@@ -892,9 +918,9 @@ export default function SimpleNegationAnalyzer() {
     setUploadError(null);
   };
 
-  // Enhanced classification using training data (hybrid mode)
+  // Enhanced classification using training data for removed 'ne' prediction (hybrid mode)
   const classifyWithTraining = async (text) => {
-    // Get rule-based analysis and format it
+    // Get rule-based analysis for removed 'ne' prediction
     let ruleBasedResult = await classifyExpletive(text);
     
     // Format rule-based result with a header
@@ -915,45 +941,47 @@ export default function SimpleNegationAnalyzer() {
     const triggerInfo = await findExpletiveTrigger(text);
     
     if (!triggerInfo) {
-      return ruleBasedResult;
+      return ruleBasedResult + '\n\n🤖 TRAINING DATA: No trigger detected - cannot match with training examples';
     }
 
-    // Map robust trigger to simple trigger for training data lookup
+    // Map robust trigger to simple trigger for training data lookup (removed 'ne' context)
     let simpleTrigger = 'peur que'; // default
     if (triggerInfo.match.includes('avant')) simpleTrigger = 'avant que';
-    else if (triggerInfo.match.includes('peu s\'en faut')) simpleTrigger = 'peu s\'en faut';
+    else if (triggerInfo.match.includes('peu s\'en faut') || triggerInfo.match.includes('s\'en faut')) simpleTrigger = 'peu s\'en faut';
     else if (triggerInfo.match.includes('crain')) simpleTrigger = 'craindre';
     else if (triggerInfo.match.includes('redout')) simpleTrigger = 'redouter';
     else if (triggerInfo.match.includes('dout')) simpleTrigger = 'douter';
     else if (triggerInfo.match.includes('évit')) simpleTrigger = 'éviter';
     else if (triggerInfo.match.includes('empêch')) simpleTrigger = 'empêcher';
 
-    // Find similar examples in training data
+    // Find similar examples in training data for removed 'ne' prediction
     const similarExamples = trainingData.filter(item => 
       item.trigger === simpleTrigger || 
       (item.trigger && item.trigger.includes(simpleTrigger.split(' ')[0]))
     );
 
     if (similarExamples.length === 0) {
-      return ruleBasedResult;
+      return ruleBasedResult + `\n\n🤖 TRAINING DATA: No examples found for "${simpleTrigger}" trigger pattern`;
     }
 
     const expletiveCount = similarExamples.filter(item => item.has_expletive_ne).length;
     const totalCount = similarExamples.length;
     const confidence = Math.round((Math.max(expletiveCount, totalCount - expletiveCount) / totalCount) * 100);
 
-    // Format training-based result with detailed information
+    // Format training-based result with detailed information for removed 'ne' prediction
     let trainingResult = '\n\n🤖 TRAINING DATA ANALYSIS:\n';
     if (expletiveCount > totalCount - expletiveCount) {
-      trainingResult += `• Prediction: Expletive\n`;
+      trainingResult += `• Prediction: Removed 'ne' was expletive\n`;
       trainingResult += `• Confidence: ${confidence}%\n`;
-      trainingResult += `• Based on ${totalCount} similar examples\n`;
-      trainingResult += `• ${expletiveCount} examples classified as expletive`;
+      trainingResult += `• Based on ${totalCount} similar "${simpleTrigger}" examples\n`;
+      trainingResult += `• ${expletiveCount}/${totalCount} examples had expletive 'ne'\n`;
+      trainingResult += `• Training data supports expletive classification for this construction`;
     } else {
-      trainingResult += `• Prediction: Logical\n`;
+      trainingResult += `• Prediction: Removed 'ne' was logical\n`;
       trainingResult += `• Confidence: ${confidence}%\n`;
-      trainingResult += `• Based on ${totalCount} similar examples\n`;
-      trainingResult += `• ${totalCount - expletiveCount} examples classified as logical`;
+      trainingResult += `• Based on ${totalCount} similar "${simpleTrigger}" examples\n`;
+      trainingResult += `• ${totalCount - expletiveCount}/${totalCount} examples had logical 'ne'\n`;
+      trainingResult += `• Training data suggests logical negation for this construction`;
     }
 
     // Combine rule-based and training results with clear separation
@@ -990,10 +1018,10 @@ export default function SimpleNegationAnalyzer() {
     }
   };
 
-  // Pure training-based classification (no rule-based logic)
+  // Pure training-based classification for removed 'ne' type prediction
   const classifyPureTraining = (text) => {
     if (trainingData.length === 0) {
-      return "No training data available for pure training-based analysis.";
+      return "No training data available for removed 'ne' type prediction.";
     }
 
     // Simple text normalization
@@ -1002,7 +1030,7 @@ export default function SimpleNegationAnalyzer() {
       .replace(/\s+/g, ' ')
       .trim();
 
-    // Find similar examples based purely on text similarity
+    // Find similar examples based on text similarity for removed 'ne' prediction
     const scoredExamples = trainingData.map(item => {
       const exampleText = item.text.toLowerCase();
       const words = normalizedText.split(/\s+/);
@@ -1012,17 +1040,26 @@ export default function SimpleNegationAnalyzer() {
       const commonWords = words.filter(word => exampleWords.includes(word));
       const similarity = commonWords.length / Math.max(words.length, exampleWords.length);
       
-      return { ...item, similarity };
+      // Boost similarity for trigger pattern matches (important for removed 'ne' prediction)
+      let triggerBoost = 0;
+      const triggers = ['peur', 'avant', 'peu s\'en faut', 'craindre', 'redouter'];
+      triggers.forEach(trigger => {
+        if (normalizedText.includes(trigger) && exampleText.includes(trigger)) {
+          triggerBoost += 0.2; // Significant boost for matching trigger patterns
+        }
+      });
+      
+      return { ...item, similarity: Math.min(similarity + triggerBoost, 1.0) };
     }).sort((a, b) => b.similarity - a.similarity);
 
     // Get top matches with good similarity
     const topMatches = scoredExamples.slice(0, 5).filter(item => item.similarity > 0.3);
     
     if (topMatches.length === 0) {
-      return "No similar examples found in training data.";
+      return "No similar examples found in training data for removed 'ne' type prediction.";
     }
 
-    // Calculate prediction based purely on training examples
+    // Calculate prediction based on training examples of removed 'ne' classification
     const expletiveCount = topMatches.filter(item => item.has_expletive_ne).length;
     const totalCount = topMatches.length;
     const confidence = Math.round((Math.max(expletiveCount, totalCount - expletiveCount) / totalCount) * 100);
@@ -1034,14 +1071,17 @@ export default function SimpleNegationAnalyzer() {
                             bestMatch.similarity > 0.5 ? "similar to" : 
                             "somewhat similar to";
 
+    // Format result with context about removed 'ne' prediction
     if (expletiveCount > totalCount - expletiveCount) {
-      return `🤖 PURE TRAINING: Likely had expletive 'ne' (${confidence}% confidence)\n` +
+      return `🤖 PURE TRAINING: Removed 'ne' was likely expletive (${confidence}% confidence)\n` +
              `   • Based on ${totalCount} similar examples (${avgSimilarity}% avg similarity)\n` +
-             `   • Most ${similarityPhrase}: "${bestMatch.text}"`;
+             `   • Most ${similarityPhrase}: "${bestMatch.text}"\n` +
+             `   • Training data suggests expletive context for this construction`;
     } else {
-      return `🤖 PURE TRAINING: Likely had logical negation (${confidence}% confidence)\n` +
+      return `🤖 PURE TRAINING: Removed 'ne' was likely logical (${confidence}% confidence)\n` +
              `   • Based on ${totalCount} similar examples (${avgSimilarity}% avg similarity)\n` +
-             `   • Most ${similarityPhrase}: "${bestMatch.text}"`;
+             `   • Most ${similarityPhrase}: "${bestMatch.text}"\n` +
+             `   • Training data suggests logical negation context`;
     }
   };
 
