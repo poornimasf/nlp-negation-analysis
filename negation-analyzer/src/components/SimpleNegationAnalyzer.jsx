@@ -1027,7 +1027,7 @@ export default function SimpleNegationAnalyzer() {
     
     // Check for explicit expletive negation detection
     if (firstLine.startsWith('✅ EXPLETIVE NEGATION') ||
-        firstLine.startsWith('Potential expletive')) {
+        firstLine.startsWith('LIKELY EXPLETIVE NEGATION')) {
       return "Expletive";
     }
     
