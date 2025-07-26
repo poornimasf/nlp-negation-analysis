@@ -113,3 +113,29 @@ aws amplify start-job --app-id d1gx30ivteuneq --branch-name main
 - Error tracking and logging active
 
 For detailed implementation and deployment information, please refer to the documentation files in the negation-analyzer/ directory.
+### Environment Setup
+
+1. Get your Hugging Face API token:
+   - Go to https://huggingface.co/settings/tokens
+   - Create a new token with read access
+   - Copy the token
+
+2. Set up environment variables:
+   ```bash
+   # Create .env file
+   cd negation-analyzer
+   echo "REACT_APP_HF_TOKEN=your_token_here" > .env
+   ```
+
+3. Install dependencies:
+   ```bash
+   cd negation-analyzer
+   npm install
+   ```
+
+4. Start development server:
+   ```bash
+   npm start
+   ```
+
+Note: Replace `your_token_here` with your actual Hugging Face API token.
