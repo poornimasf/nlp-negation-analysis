@@ -1974,9 +1974,12 @@ export default function SimpleNegationAnalyzer() {
                     </thead>
                     <tbody>
                       {trainingData.slice(0, 10).map((item, index) => {
-                        // Validate trigger type
-                        const isValidTrigger = TRIGGERS.includes(item.trigger) || 
-                          ['craindre', 'redouter', 'douter', 'éviter', 'empêcher'].includes(item.trigger);
+                        // Validate trigger type - updated to handle peu s'en faut
+                        const isValidTrigger = item.trigger && (
+                          TRIGGERS.includes(item.trigger.toLowerCase()) || 
+                          ['craindre', 'redouter', 'douter', 'éviter', 'empêcher'].includes(item.trigger.toLowerCase()) ||
+                          item.trigger.toLowerCase() === "peu s'en faut"
+                        );
                         
                         // Check for proper structure
                         const hasValidStructure = item.text && 
