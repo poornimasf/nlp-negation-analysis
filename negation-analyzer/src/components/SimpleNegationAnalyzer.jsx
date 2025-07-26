@@ -30,37 +30,59 @@ export default function SimpleNegationAnalyzer() {
 
   // Comprehensive French expletive negation triggers with variations
   const EXPLETIVE_PATTERNS = {
-    // Fear expressions - all variations and conjugations
-    peur: [
-      // Standard avoir peur constructions
-      /\b(?:j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont|elles ont)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
-      /\b(?:j'avais|tu avais|il avait|elle avait|on avait|nous avions|vous aviez|ils avaient|elles avaient)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
-      /\b(?:j'aurai|tu auras|il aura|elle aura|on aura|nous aurons|vous aurez|ils auront|elles auront)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
-      /\b(?:j'aurais|tu aurais|il aurait|elle aurait|on aurait|nous aurions|vous auriez|ils auraient|elles auraient)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
+    // Fear expressions that trigger expletive ne (must have 'que')
+    peur_que: [
+      // avoir peur que constructions
+      /\b(?:j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont|elles ont)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e'](?!\s+pas)\s*/gi,
+      /\b(?:j'avais|tu avais|il avait|elle avait|on avait|nous avions|vous aviez|ils avaient|elles avaient)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e'](?!\s+pas)\s*/gi,
+      /\b(?:j'aurai|tu auras|il aura|elle aura|on aura|nous aurons|vous aurez|ils auront|elles auront)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e'](?!\s+pas)\s*/gi,
+      /\b(?:j'aurais|tu aurais|il aurait|elle aurait|on aurait|nous aurions|vous auriez|ils auraient|elles auraient)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e'](?!\s+pas)\s*/gi,
       
-      // Prepositional constructions
-      /\b(?:par|de|dans|avec|sous)\s+(?:la\s+|une\s+)?(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
-      /\b(?:en ayant|ayant)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
+      // Prepositional constructions with que
+      /\b(?:par|de|dans|avec|sous)\s+(?:la\s+|une\s+)?(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e'](?!\s+pas)\s*/gi,
+      /\b(?:en ayant|ayant)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e'](?!\s+pas)\s*/gi,
       
       // Direct peur que constructions
-      /\bpeur\s+qu[e']?\s*/gi,
+      /\bpeur\s+qu[e'](?!\s+pas)\s*/gi,
       
-      // Faire peur constructions
-      /\b(?:ça|cela)\s+(?:me|te|lui|nous|vous|leur)\s+fait\s+peur\s+qu[e']?\s*/gi,
-      /\b(?:me|te|lui|nous|vous|leur)\s+faisant\s+peur\s+qu[e']?\s*/gi,
+      // Faire peur que constructions
+      /\b(?:ça|cela)\s+(?:me|te|lui|nous|vous|leur)\s+fait\s+peur\s+qu[e'](?!\s+pas)\s*/gi,
+      /\b(?:me|te|lui|nous|vous|leur)\s+faisant\s+peur\s+qu[e'](?!\s+pas)\s*/gi,
       
-      // Adjectival constructions
-      /\b(?:je suis|tu es|il est|elle est|on est|nous sommes|vous êtes|ils sont|elles sont)\s+apeuré[e]?s?\s+qu[e']?\s*/gi,
+      // Nominal constructions with que
+      /\bla\s+peur\s+(?:intense\s+|terrible\s+|horrible\s+)?qu[e'](?!\s+pas)\s*/gi,
       
-      // Nominal constructions
-      /\bla\s+peur\s+(?:intense\s+|terrible\s+|horrible\s+)?qu[e']?\s*/gi,
-      
-      // Intensity modifiers
-      /\b(?:tellement|si|très|fort)\s+peur\s+qu[e']?\s*/gi
+      // Intensity modifiers with que
+      /\b(?:tellement|si|très|fort)\s+peur\s+qu[e'](?!\s+pas)\s*/gi
     ],
     
     // Before expressions - temporal constructions
     avant: [
+      // Basic temporal constructions
+      /\bavant\s+qu[e'](?!\s+pas)\s*/gi,
+      /\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e'](?!\s+pas)\s*/gi,
+      
+      // Prepositional phrases
+      /\bd'avant\s+qu[e'](?!\s+pas)\s*/gi,
+      /\bpeu\s+de\s+temps\s+avant\s+qu[e'](?!\s+pas)\s*/gi,
+      
+      // Temporal precision
+      /\b(?:quelques?|plusieurs|deux|trois|quatre|cinq)\s+(?:minutes?|heures?|jours?|semaines?|mois|ans?)\s+avant\s+qu[e'](?!\s+pas)\s*/gi,
+      
+      // Complex temporal expressions
+      /\b(?:la\s+veille|le\s+jour|la\s+semaine|le\s+mois|l'année)\s+(?:d'|de\s+)?avant\s+qu[e'](?!\s+pas)\s*/gi,
+      
+      // Immediate anteriority
+      /\b(?:tout|juste|immédiatement|directement)\s+avant\s+qu[e'](?!\s+pas)\s*/gi,
+      
+      // Relative time expressions
+      /\bpeu\s+(?:de\s+temps\s+)?avant\s+qu[e'](?!\s+pas)\s*/gi,
+      /\b(?:bien|très|assez)\s+avant\s+qu[e'](?!\s+pas)\s*/gi,
+      
+      // Compound constructions
+      /\b(?:un\s+moment|un\s+instant)\s+avant\s+qu[e'](?!\s+pas)\s*/gi,
+      /\b(?:la\s+période|l'époque)\s+(?:d'|de\s+)?avant\s+qu[e'](?!\s+pas)\s*/gi
+    ],
       // Basic temporal constructions
       /\bavant\s+qu[e']?\s*/gi,
       /\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e']?\s*/gi,
@@ -214,21 +236,39 @@ export default function SimpleNegationAnalyzer() {
     }
     
     // Trigger type confidence
-    if (triggerInfo.type === 'peur') {
-      // Fear expressions are very reliable indicators
+    if (triggerInfo.type === 'peur_que') {
+      // Fear expressions with 'que' are very reliable indicators
       confidence += 0.15;
       
-      // Additional confidence for formal constructions
-      if (text.match(/\b(?:j'ai|tu as|il a|elle a|nous avons|vous avez|ils ont)\s+(?:grand[e]?\s+)?peur\s+qu[e']?\s*/i)) {
+      // Check for complete construction
+      if (text.match(/\b(?:j'ai|tu as|il a|elle a|nous avons|vous avez|ils ont)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e'](?!\s+pas)\s*/i)) {
         confidence += 0.05;
+      }
+      
+      // Check for subjunctive after que
+      const queIndex = text.indexOf('que');
+      if (queIndex !== -1) {
+        const afterQue = text.slice(queIndex + 3);
+        if (hasSubjunctive(afterQue)) {
+          confidence += 0.05; // Additional boost for subjunctive in correct position
+        }
       }
     } else if (triggerInfo.type === 'avant') {
       // Temporal expressions are also reliable
       confidence += 0.1;
       
       // Additional confidence for precise temporal markers
-      if (text.match(/\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e']?\s*/i)) {
+      if (text.match(/\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e'](?!\s+pas)\s*/i)) {
         confidence += 0.05;
+      }
+      
+      // Check for subjunctive after que
+      const queIndex = text.indexOf('que');
+      if (queIndex !== -1) {
+        const afterQue = text.slice(queIndex + 3);
+        if (hasSubjunctive(afterQue)) {
+          confidence += 0.05; // Additional boost for subjunctive in correct position
+        }
       }
     }
     
@@ -238,7 +278,7 @@ export default function SimpleNegationAnalyzer() {
     }
     
     // Sentence structure analysis
-    if (text.match(/\bque?\s+[^.!?]+$/i)) {
+    if (text.match(/\bqu[e']\s+[^.!?]+$/i)) {
       confidence += 0.05; // Proper complement clause structure
     }
     
