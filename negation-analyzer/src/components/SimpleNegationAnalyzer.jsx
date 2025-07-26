@@ -8,6 +8,8 @@ export default function SimpleNegationAnalyzer() {
   // Basic state
   const [batchInput, setBatchInput] = useState("");
   const [batchResults, setBatchResults] = useState([]);
+  const [batchLoading, setBatchLoading] = useState(false);
+  const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
 
   // Feature flags
@@ -1196,86 +1198,98 @@ export default function SimpleNegationAnalyzer() {
       return;
     }
 
+    setBatchLoading(true);
     const sentences = batchInput.split("\n").filter(line => line.trim());
+    setBatchProgress({ current: 0, total: sentences.length });
     const results = [];
     
-    for (let index = 0; index < sentences.length; index++) {
-      const sentence = sentences[index];
-      try {
-        const analysis = await classifyNegation(sentence.trim());
-        const triggerInfo = await findExpletiveTrigger(sentence.trim());
-        const hasNe = hasNegation(sentence.trim());
-        const hasSubj = hasSubjunctive(sentence.trim());
+    try {
+      for (let index = 0; index < sentences.length; index++) {
+        setBatchProgress({ current: index + 1, total: sentences.length });
+        const sentence = sentences[index];
         
-        // Build detailed reasoning
-        const reasoning = [];
-        
-        // Check for trigger patterns
-        if (triggerInfo && triggerInfo.match) {
-          const triggerType = triggerInfo.mappedType || mapTriggerType(triggerInfo.type);
-          reasoning.push(`Found trigger pattern: "${triggerInfo.match}" (${triggerType})`);
+        try {
+          const analysis = await classifyNegation(sentence.trim());
+          const triggerInfo = await findExpletiveTrigger(sentence.trim());
+          const hasNe = hasNegation(sentence.trim());
+          const hasSubj = hasSubjunctive(sentence.trim());
           
-          if (triggerInfo.type === 'peur_que') {
-            reasoning.push('Trigger indicates fear expression');
-          } else if (triggerInfo.type === 'avant') {
-            reasoning.push('Trigger indicates temporal expression');
-          } else if (triggerInfo.type === 'peu_sen_faut') {
-            reasoning.push('Trigger indicates expletive construction');
+          // Build detailed reasoning
+          const reasoning = [];
+          
+          // Check for trigger patterns
+          if (triggerInfo && triggerInfo.match) {
+            const triggerType = triggerInfo.mappedType || mapTriggerType(triggerInfo.type);
+            reasoning.push(`Found trigger pattern: "${triggerInfo.match}" (${triggerType})`);
+            
+            if (triggerInfo.type === 'peur_que') {
+              reasoning.push('Trigger indicates fear expression');
+            } else if (triggerInfo.type === 'avant') {
+              reasoning.push('Trigger indicates temporal expression');
+            } else if (triggerInfo.type === 'peu_sen_faut') {
+              reasoning.push('Trigger indicates expletive construction');
+            }
           }
-        }
-        
-        // Check for 'ne' presence
-        if (hasNe) {
-          reasoning.push('Contains "ne" negation marker');
-        }
-        
-        // Check for subjunctive
-        if (hasSubj) {
-          reasoning.push('Contains subjunctive verb form');
-        }
-        
-        // Check for training data matches if enabled
-        if (enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
-          const similarExamples = trainingData.filter(example => 
-            example.text.toLowerCase().includes(sentence.toLowerCase()) ||
-            sentence.toLowerCase().includes(example.text.toLowerCase())
-          );
-          if (similarExamples.length > 0) {
-            reasoning.push(`Found ${similarExamples.length} similar examples in training data`);
+          
+          // Check for 'ne' presence
+          if (hasNe) {
+            reasoning.push('Contains "ne" negation marker');
           }
+          
+          // Check for subjunctive
+          if (hasSubj) {
+            reasoning.push('Contains subjunctive verb form');
+          }
+          
+          // Check for training data matches if enabled
+          if (enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
+            const similarExamples = trainingData.filter(example => 
+              example.text.toLowerCase().includes(sentence.toLowerCase()) ||
+              sentence.toLowerCase().includes(example.text.toLowerCase())
+            );
+            if (similarExamples.length > 0) {
+              reasoning.push(`Found ${similarExamples.length} similar examples in training data`);
+            }
+          }
+          
+          // Determine confidence level
+          const confidence = await calculateConfidence(sentence.trim(), triggerInfo);
+          reasoning.push(`Confidence level: ${Math.round(confidence * 100)}%`);
+          
+          results.push({
+            id: index + 1,
+            text: sentence.trim(),
+            highlightedText: highlight(sentence.trim()),
+            label: analysis,
+            classification: await determineClassification(sentence.trim()),
+            reasoning: reasoning.join('\n'),
+            confidence: confidence,
+            trigger: triggerInfo ? (triggerInfo.mappedType || mapTriggerType(triggerInfo.type)) : null
+          });
+        } catch (error) {
+          console.error(`Error processing sentence ${index + 1}:`, error);
+          // Add error result
+          results.push({
+            id: index + 1,
+            text: sentence.trim(),
+            highlightedText: sentence.trim(),
+            label: `Error: ${error.message}`,
+            classification: "Error",
+            reasoning: `Processing failed: ${error.message}`,
+            confidence: 0,
+            trigger: null
+          });
         }
-        
-        // Determine confidence level
-        const confidence = await calculateConfidence(sentence.trim(), triggerInfo);
-        reasoning.push(`Confidence level: ${Math.round(confidence * 100)}%`);
-        
-        results.push({
-          id: index + 1,
-          text: sentence.trim(),
-          highlightedText: highlight(sentence.trim()),
-          label: analysis,
-          classification: await determineClassification(sentence.trim()),
-          reasoning: reasoning.join('\n'),
-          confidence: confidence,
-          trigger: triggerInfo ? (triggerInfo.mappedType || mapTriggerType(triggerInfo.type)) : null
-        });
-      } catch (error) {
-        console.error(`Error processing sentence ${index + 1}:`, error);
-        // Add error result
-        results.push({
-          id: index + 1,
-          text: sentence.trim(),
-          highlightedText: sentence.trim(),
-          label: `Error: ${error.message}`,
-          classification: "Error",
-          reasoning: `Processing failed: ${error.message}`,
-          confidence: 0,
-          trigger: null
-        });
       }
+      
+      setBatchResults(results);
+    } catch (error) {
+      console.error('Batch analysis failed:', error);
+      setBatchResults([]);
+    } finally {
+      setBatchLoading(false);
+      setBatchProgress({ current: 0, total: 0 });
     }
-    
-    setBatchResults(results);
   };
 
   const sortedResults = sortResults(batchResults, sortConfig);
@@ -2203,14 +2217,68 @@ export default function SimpleNegationAnalyzer() {
               onChange={(e) => setBatchInput(e.target.value)}
               className="input"
             />
-            <button onClick={handleBatchAnalyze} className="button">
-              Analyze Batch
+            <button 
+              onClick={handleBatchAnalyze} 
+              className="button"
+              disabled={batchLoading}
+              style={{
+                backgroundColor: batchLoading ? '#ccc' : '#3182ce',
+                cursor: batchLoading ? 'not-allowed' : 'pointer',
+                opacity: batchLoading ? 0.7 : 1
+              }}
+            >
+              {batchLoading ? '🔄 Processing...' : 'Analyze Batch'}
             </button>
           </div>
         </div>
 
 
-        {batchResults.length > 0 && (
+        {/* Loading indicator */}
+        {batchLoading && (
+          <div style={{
+            textAlign: 'center',
+            padding: '40px',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '8px',
+            margin: '20px 0',
+            border: '2px dashed #dee2e6'
+          }}>
+            <div style={{ fontSize: '24px', marginBottom: '10px' }}>🔄</div>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#495057', marginBottom: '5px' }}>
+              Processing Batch Analysis...
+            </div>
+            <div style={{ fontSize: '14px', color: '#6c757d', marginBottom: '10px' }}>
+              {batchProgress.total > 0 
+                ? `Analyzing sentence ${batchProgress.current} of ${batchProgress.total}`
+                : `Analyzing ${batchInput.split('\n').filter(line => line.trim()).length} sentences with CroissantLLM enhancement`
+              }
+            </div>
+            <div style={{ 
+              width: '300px', 
+              height: '6px', 
+              backgroundColor: '#e9ecef', 
+              borderRadius: '3px', 
+              margin: '15px auto',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: batchProgress.total > 0 ? `${(batchProgress.current / batchProgress.total) * 100}%` : '100%',
+                height: '100%',
+                backgroundColor: '#007bff',
+                borderRadius: '3px',
+                transition: 'width 0.3s ease',
+                animation: batchProgress.total === 0 ? 'loading 2s ease-in-out infinite' : 'none'
+              }}></div>
+            </div>
+            {batchProgress.total > 0 && (
+              <div style={{ fontSize: '12px', color: '#6c757d', marginTop: '10px' }}>
+                {Math.round((batchProgress.current / batchProgress.total) * 100)}% complete
+              </div>
+            )}
+          </div>
+        )}
+
+        {batchResults.length > 0 && !batchLoading && (
           <div className="result-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
               <h3>Batch Results ({batchResults.length} sentences):</h3>
