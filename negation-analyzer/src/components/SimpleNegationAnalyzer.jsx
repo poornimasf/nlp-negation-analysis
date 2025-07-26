@@ -84,6 +84,25 @@ export default function SimpleNegationAnalyzer() {
       /\b(?:un\s+moment|un\s+instant)\s+avant\s+qu[e'](?!\s+pas)\s*/gi,
       /\b(?:la\s+période|l'époque)\s+(?:d'|de\s+)?avant\s+qu[e'](?!\s+pas)\s*/gi
     ],
+
+    // Peu s'en faut expressions
+    peu_sen_faut: [
+      // Basic construction
+      /\bpeu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+qu[e'](?!\s+pas)\s*/gi,
+      
+      // Variations with intensifiers
+      /\b(?:très|si|tellement)\s+peu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+qu[e'](?!\s+pas)\s*/gi,
+      
+      // Impersonal constructions
+      /\bil\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+(?:de\s+)?peu\s+qu[e'](?!\s+pas)\s*/gi,
+      
+      // Question forms
+      /\bs['']en\s+(?:faut|fallait|faudra|faudrait)[-]t[-]il\s+(?:de\s+)?peu\s+qu[e'](?!\s+pas)\s*/gi,
+      
+      // Temporal variations
+      /\bpeu\s+s['']en\s+est\s+fallu\s+qu[e'](?!\s+pas)\s*/gi,
+      /\bpeu\s+s['']en\s+serait\s+fallu\s+qu[e'](?!\s+pas)\s*/gi
+    ],
     
     // Fear verbs - comprehensive conjugations
     craindre: [
@@ -293,6 +312,13 @@ export default function SimpleNegationAnalyzer() {
     if (matchedText.includes("grand")) confidence += 0.05; // "grand peur"
     if (matchedText.includes("par peur") || matchedText.includes("de peur")) confidence += 0.1;
     if (triggerType === 'avant' && matchedText.includes("juste")) confidence += 0.05;
+    
+    // Special handling for peu s'en faut
+    if (triggerType === 'peu_sen_faut') {
+      if (matchedText.includes("il s'en")) confidence += 0.1; // Impersonal construction
+      if (matchedText.includes("très") || matchedText.includes("tellement")) confidence += 0.05; // Intensifiers
+      if (matchedText.includes("est fallu") || matchedText.includes("serait fallu")) confidence += 0.05; // Past/conditional
+    }
     
     return Math.min(confidence, 0.95);
   };
@@ -515,7 +541,7 @@ export default function SimpleNegationAnalyzer() {
   };
 
   // Legacy trigger array for backward compatibility
-  const TRIGGERS = ["peur que", "avant que"];
+  const TRIGGERS = ["peur que", "avant que", "peu s'en faut"];
 
   const highlight = (text) => {
     let output = text;
