@@ -83,31 +83,6 @@ export default function SimpleNegationAnalyzer() {
       /\b(?:un\s+moment|un\s+instant)\s+avant\s+qu[e'](?!\s+pas)\s*/gi,
       /\b(?:la\s+période|l'époque)\s+(?:d'|de\s+)?avant\s+qu[e'](?!\s+pas)\s*/gi
     ],
-      // Basic temporal constructions
-      /\bavant\s+qu[e']?\s*/gi,
-      /\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e']?\s*/gi,
-      
-      // Prepositional phrases
-      /\bd'avant\s+qu[e']?\s*/gi,
-      /\bpeu\s+de\s+temps\s+avant\s+qu[e']?\s*/gi,
-      
-      // Temporal precision
-      /\b(?:quelques?|plusieurs|deux|trois|quatre|cinq)\s+(?:minutes?|heures?|jours?|semaines?|mois|ans?)\s+avant\s+qu[e']?\s*/gi,
-      
-      // Complex temporal expressions
-      /\b(?:la\s+veille|le\s+jour|la\s+semaine|le\s+mois|l'année)\s+(?:d'|de\s+)?avant\s+qu[e']?\s*/gi,
-      
-      // Immediate anteriority
-      /\b(?:tout|juste|immédiatement|directement)\s+avant\s+qu[e']?\s*/gi,
-      
-      // Relative time expressions
-      /\bpeu\s+(?:de\s+temps\s+)?avant\s+qu[e']?\s*/gi,
-      /\b(?:bien|très|assez)\s+avant\s+qu[e']?\s*/gi,
-      
-      // Compound constructions
-      /\b(?:un\s+moment|un\s+instant)\s+avant\s+qu[e']?\s*/gi,
-      /\b(?:la\s+période|l'époque)\s+(?:d'|de\s+)?avant\s+qu[e']?\s*/gi
-    ],
     
     // Fear verbs - comprehensive conjugations
     craindre: [
@@ -326,10 +301,7 @@ export default function SimpleNegationAnalyzer() {
     return Math.min(confidence, 0.95);
   };
 
-  // Detect subjunctive mood for additional confidence
-  const hasSubjunctive = (text) => {
-    return SUBJUNCTIVE_PATTERNS.some(pattern => pattern.test(text));
-  };
+
 
   // Extract complement clause after trigger
   const extractComplementClause = (text, triggerMatch) => {
