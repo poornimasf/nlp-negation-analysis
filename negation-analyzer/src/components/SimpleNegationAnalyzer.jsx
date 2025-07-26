@@ -1639,23 +1639,23 @@ export default function SimpleNegationAnalyzer() {
   // Helper functions for UI mode display
   const getCurrentModeDescription = () => {
     if (!useExpletiveLogic && !enableTrainingData) {
-      return "📝 Basic Logic Only - Simple 'ne' detection without trigger analysis";
+      return "📝 Basic Logic Only - Simple trigger detection to predict removed 'ne' type";
     }
     if (useExpletiveLogic && !enableTrainingData) {
-      return "🎯 Rule-Based Expletive Logic Only - Trigger analysis for 'peur que' and 'avant que'";
+      return "🎯 Rule-Based Logic Only - French linguistic patterns + CroissantLLM for removed 'ne' prediction";
     }
     if (!useExpletiveLogic && enableTrainingData) {
       if (useTrainingEnhancement && trainingData.length > 0) {
-        return `🤖 Pure Training-Based Analysis - ML predictions from ${trainingData.length} user examples`;
+        return `🤖 Pure Training-Based Analysis - ML prediction of removed 'ne' type from ${trainingData.length} user examples`;
       } else {
-        return "📚 Training Data Available - Upload data and enable enhancement for pure ML analysis";
+        return "📚 Training Data Available - Upload data for pure ML-based removed 'ne' type prediction";
       }
     }
     if (useExpletiveLogic && enableTrainingData) {
       if (useTrainingEnhancement && trainingData.length > 0) {
-        return `🔄 Hybrid Analysis - Rule-based logic enhanced with ${trainingData.length} user examples`;
+        return `🔄 Hybrid Analysis - French rules + CroissantLLM + ML from ${trainingData.length} examples for removed 'ne' prediction`;
       } else {
-        return "🔄 Hybrid Mode Available - Upload data and enable enhancement for combined analysis";
+        return "🔄 Hybrid Mode Available - Upload data for combined rule-based + ML removed 'ne' prediction";
       }
     }
     return "Unknown mode";
@@ -1784,18 +1784,18 @@ export default function SimpleNegationAnalyzer() {
 
         <p>
           {!useExpletiveLogic && !enableTrainingData 
-            ? "Basic negation analysis - detects 'ne' and logical negation markers only."
+            ? "Basic analysis - detects trigger patterns and predicts whether removed 'ne' markers were logical or expletive."
             : useExpletiveLogic && !enableTrainingData
-              ? "Rule-based expletive negation analysis for 'peur que' and 'avant que' constructions."
+              ? "Rule-based prediction of removed 'ne' type using French linguistic patterns for 'peur que', 'avant que', and 'peu s'en faut' constructions."
               : !useExpletiveLogic && enableTrainingData
                 ? useTrainingEnhancement && trainingData.length > 0
-                  ? "Pure training-based analysis using machine learning patterns from your uploaded examples only."
-                  : "Training data analysis available - upload your examples for pure ML-based classification."
+                  ? "Pure machine learning prediction of removed 'ne' type using patterns from your uploaded examples only."
+                  : "Training data analysis available - upload examples to predict removed 'ne' type using pure ML classification."
                 : useExpletiveLogic && enableTrainingData
                   ? useTrainingEnhancement && trainingData.length > 0
-                    ? "Hybrid analysis combining rule-based logic with your machine learning examples."
-                    : "Hybrid analysis mode available - upload your training data for enhanced accuracy."
-                  : "Select your preferred analysis approach using the toggles above."
+                    ? "Hybrid prediction combining French linguistic rules with your machine learning examples to classify removed 'ne' markers."
+                    : "Hybrid analysis mode available - upload training data for enhanced removed 'ne' type prediction."
+                  : "Select your preferred approach for predicting whether removed 'ne' markers were expletive or logical."
           }
         </p>
         
@@ -1808,13 +1808,14 @@ export default function SimpleNegationAnalyzer() {
             marginBottom: '20px',
             border: '1px solid #ffeaa7'
           }}>
-            <h4>📝 Basic Logic Analyzes:</h4>
+            <h4>📝 Basic Logic Predicts:</h4>
             <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-              <li>Presence of <strong>"ne"</strong> negation</li>
-              <li>Logical negation markers: <strong>pas, rien, jamais, plus, personne, aucun, guère</strong></li>
-              <li>No trigger-specific analysis</li>
+              <li>Type of <strong>removed "ne"</strong> markers</li>
+              <li>Uses trigger patterns: <strong>peur que, avant que, peu s'en faut</strong></li>
+              <li>Considers subjunctive mood placement</li>
+              <li>No advanced linguistic analysis</li>
             </ul>
-            <p><strong>Example:</strong> "Il ne vient pas" (logical) vs "Il ne vient" (negation without markers)</p>
+            <p><strong>Task:</strong> Given "J'ai peur qu'il vienne" (ne removed), predict if the missing "ne" was expletive or logical</p>
           </div>
         )}
 
@@ -1827,13 +1828,14 @@ export default function SimpleNegationAnalyzer() {
             marginBottom: '20px',
             border: '1px solid #2196f3'
           }}>
-            <h4>🎯 Rule-Based Expletive Logic:</h4>
+            <h4>🎯 Rule-Based Prediction of Removed "Ne" Type:</h4>
             <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
               <li><strong>"peur que" constructions:</strong>
                 <ul>
                   <li>All conjugations of "avoir peur que"</li>
                   <li>Prepositional forms (par/de/dans peur que)</li>
                   <li>Intensity modifiers (très/grand peur que)</li>
+                  <li>→ Predicts removed "ne" was <strong>expletive</strong></li>
                 </ul>
               </li>
               <li><strong>"avant que" constructions:</strong>
@@ -1841,29 +1843,30 @@ export default function SimpleNegationAnalyzer() {
                   <li>Basic temporal markers</li>
                   <li>Time precision (juste/bien/peu avant que)</li>
                   <li>Complex temporal expressions</li>
+                  <li>→ Predicts removed "ne" was <strong>expletive</strong></li>
                 </ul>
               </li>
-              <li><strong>Subjunctive detection:</strong>
+              <li><strong>"peu s'en faut" constructions:</strong>
                 <ul>
-                  <li>Common verbs (être, avoir, aller)</li>
-                  <li>Irregular forms</li>
-                  <li>Position after "que"</li>
+                  <li>Basic: "peu s'en faut que"</li>
+                  <li>Impersonal: "il s'en faut de peu que"</li>
+                  <li>With intensifiers and temporal variations</li>
+                  <li>→ Predicts removed "ne" was <strong>expletive</strong></li>
                 </ul>
               </li>
-              <li><strong>Confidence scoring based on:</strong>
+              <li><strong>Enhanced with CroissantLLM:</strong>
                 <ul>
-                  <li>Trigger type and completeness</li>
-                  <li>Subjunctive presence</li>
-                  <li>Complement clause structure</li>
+                  <li>French syntax validation</li>
+                  <li>Context-aware confidence scoring</li>
+                  <li>Subjunctive mood analysis</li>
                 </ul>
               </li>
             </ul>
             <p><strong>Examples:</strong></p>
             <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
-              <li>"J'ai peur qu'il ne vienne" (expletive)</li>
-              <li>"J'ai grand peur qu'il ne soit malade" (expletive with intensity)</li>
-              <li>"Avant qu'il ne parte" (temporal expletive)</li>
-              <li>"J'ai peur qu'il ne vienne pas" (logical negation)</li>
+              <li>"J'ai peur qu'il vienne" → <strong>Expletive</strong> (removed "ne" was expletive)</li>
+              <li>"Avant qu'elle parte" → <strong>Expletive</strong> (removed "ne" was expletive)</li>
+              <li>"Peu s'en faut qu'il réussisse" → <strong>Expletive</strong> (removed "ne" was expletive)</li>
             </ul>
           </div>
         )}
@@ -1877,13 +1880,14 @@ export default function SimpleNegationAnalyzer() {
             marginBottom: '20px',
             border: '1px solid #4caf50'
           }}>
-            <h4>🤖 Pure Training-Based Analysis:</h4>
+            <h4>🤖 Pure Training-Based Prediction of Removed "Ne" Type:</h4>
             <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
               <li><strong>Text Similarity Only</strong>
                 <ul>
                   <li>No rule-based pattern matching</li>
                   <li>No predefined triggers or patterns</li>
                   <li>Pure example-based learning</li>
+                  <li>Predicts removed "ne" type from similar examples</li>
                 </ul>
               </li>
               <li><strong>Similarity Measures</strong>
@@ -1898,6 +1902,7 @@ export default function SimpleNegationAnalyzer() {
                   <li>Uses only your examples</li>
                   <li>No external patterns or rules</li>
                   <li>Transparent example matching</li>
+                  <li>Learns patterns of removed "ne" classification</li>
                 </ul>
               </li>
             </ul>
@@ -1909,7 +1914,7 @@ export default function SimpleNegationAnalyzer() {
               borderRadius: '4px',
               margin: '5px 0'
             }}>
-{`🤖 PURE TRAINING: Likely had expletive 'ne' (80% confidence)
+{`🤖 PURE TRAINING: Removed 'ne' was likely expletive (80% confidence)
    • Based on 5 similar examples (75% avg similarity)
    • Most similar to: "J'ai peur qu'il vienne"`}
             </pre>
@@ -1925,14 +1930,15 @@ export default function SimpleNegationAnalyzer() {
             marginBottom: '20px',
             border: '1px solid #9c27b0'
           }}>
-            <h4>🔄 Hybrid Analysis (Rule-Based + Training):</h4>
+            <h4>🔄 Hybrid Prediction of Removed "Ne" Type:</h4>
             <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-              <li><strong>Rule-based foundation</strong> with training data enhancement</li>
+              <li><strong>Rule-based foundation</strong> with training data enhancement for removed "ne" prediction</li>
               <li><strong>Confidence boosting</strong> from similar training examples</li>
               <li><strong>Fallback logic</strong> when training data is insufficient</li>
-              <li>Best of both worlds: <strong>linguistic rules + machine learning</strong></li>
+              <li>Best of both worlds: <strong>French linguistic rules + machine learning</strong></li>
+              <li><strong>CroissantLLM integration</strong> for context-aware French syntax analysis</li>
             </ul>
-            <p><strong>Advantage:</strong> Combines linguistic expertise with data-driven improvements</p>
+            <p><strong>Advantage:</strong> Combines linguistic expertise with data-driven improvements for accurate removed "ne" type prediction</p>
           </div>
         )}
       </div>
@@ -1953,7 +1959,7 @@ export default function SimpleNegationAnalyzer() {
             The system uses ONLY your uploaded data - no hidden datasets or external training sources. 
             Perfect for custom research with your specific linguistic examples.
           </div>
-          <p>Upload training examples for {useExpletiveLogic ? 'enhanced' : 'pure'} machine learning-based expletive negation detection.</p>
+          <p>Upload training examples for {useExpletiveLogic ? 'enhanced' : 'pure'} machine learning-based prediction of removed "ne" type (expletive vs logical).</p>
           
           <div className="info-box" style={{ 
             backgroundColor: '#e8f5e8', 
@@ -2163,12 +2169,12 @@ export default function SimpleNegationAnalyzer() {
       <div className="card">
         <h3 className="title">Batch Analysis</h3>
         <div className="form-group">
-          <label htmlFor="batch-input">Enter Multiple Sentences:</label>
+          <label htmlFor="batch-input">Enter Multiple Sentences (with "ne" removed):</label>
           <div className="input-group">
             <textarea
               id="batch-input"
               rows={6}
-              placeholder={`Enter multiple sentences (one per line):\nJ'ai peur qu'il ne vienne\nAvant qu'elle ne parte\nJ'ai peur qu'il ne vienne pas`}
+              placeholder={`Enter sentences with "ne" removed (one per line):\nJ'ai peur qu'il vienne\nAvant qu'elle parte\nPeu s'en faut qu'il réussisse`}
               value={batchInput}
               onChange={(e) => setBatchInput(e.target.value)}
               className="input"

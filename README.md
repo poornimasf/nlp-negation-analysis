@@ -1,6 +1,6 @@
-# Expletive Negation Analysis System
+# French Negation Type Prediction System
 
-A comprehensive linguistic analysis platform specializing in expletive vs logical negation detection with cloud-based machine learning capabilities.
+A comprehensive linguistic analysis platform specializing in predicting whether removed "ne" markers were expletive or logical negation, enhanced with cloud-based machine learning capabilities.
 
 ## Documentation Structure
 
@@ -10,68 +10,68 @@ A comprehensive linguistic analysis platform specializing in expletive vs logica
 - [Update Process](negation-analyzer/UPDATE_CHECKLIST.md) - Comprehensive testing and deployment checklist
 - [Analysis Modes](negation-analyzer/ANALYSIS_MODES.md) - Detailed description of analysis modes and features
 
-## Latest Updates (v2.4.0 - July 26, 2025)
+## Latest Updates (v2.5.0 - July 26, 2025)
 
 ### Major Changes
-- ✨ **Enhanced Trigger Detection**: Added comprehensive support for "peu s'en faut" patterns
-- 🔄 **Default Analysis Mode**: Training Data Analysis enabled by default, Rule-Based Logic optional
-- 📊 **Improved Batch Processing**: Enhanced support for all trigger patterns
-- 🎯 **Refined Classifications**: Updated confidence scoring for all trigger types
+- 🎯 **Context-Aware Task**: System now predicts type of removed "ne" markers (expletive vs logical)
+- 🤖 **CroissantLLM Integration**: French-specific LLM for syntax-aware analysis
+- 🔄 **Enhanced Trigger Detection**: Comprehensive support for "peur que", "avant que", and "peu s'en faut" patterns
+- 📊 **Improved Confidence Scoring**: Based on trigger patterns and subjunctive mood rather than "ne" presence
+
+### Analysis Task
+The system analyzes French sentences where "ne" markers have been removed and predicts whether the missing "ne" was:
+- **Expletive**: Semantically empty "ne" in constructions like "J'ai peur qu'il vienne" (originally "J'ai peur qu'il ne vienne")
+- **Logical**: True negation "ne" that would have been paired with "pas", "jamais", etc.
 
 ### Analysis Modes
 
 #### 1. Training Data Analysis (Default)
 - ✅ **Example-Based Learning**:
-  - Text similarity matching
-  - Confidence scoring
+  - Text similarity matching for removed "ne" prediction
+  - Confidence scoring based on similar examples
   - Transparent example references
   - Pure ML-based decisions
 
 #### 2. Rule-Based Analysis (Optional)
-- ✅ **Comprehensive Pattern Detection**:
-  - "peur que" constructions
-  - "avant que" temporal expressions
-  - "peu s'en faut" patterns
-  - Advanced subjunctive analysis
-  - Confidence-based classification
-  - Detailed evidence reporting
+- ✅ **French Linguistic Pattern Detection**:
+  - "peur que" constructions → predicts expletive
+  - "avant que" temporal expressions → predicts expletive
+  - "peu s'en faut" patterns → predicts expletive
+  - Subjunctive mood analysis
+  - CroissantLLM syntax validation
+  - Context-aware confidence scoring
 
 #### 3. Hybrid Analysis
 - ✅ **Combined Approach**:
-  - Training data foundation
-  - Rule-based enhancement
-  - Clear section separation
+  - Rule-based pattern foundation
+  - Training data enhancement
+  - CroissantLLM French syntax analysis
   - Weighted confidence scoring
 
-### Trigger Patterns
+### Trigger Patterns for Expletive Prediction
 - ✅ **"Peur que" Constructions**:
-  - Basic: "avoir peur que"
-  - Prepositional: "de/par peur que"
-  - Intensity modifiers
+  - "J'ai peur qu'il vienne" → Expletive (removed "ne" was expletive)
+  - Prepositional forms, intensity modifiers
   
 - ✅ **"Avant que" Expressions**:
-  - Basic temporal markers
-  - Time precision variations
-  - Complex temporal phrases
+  - "Avant qu'elle parte" → Expletive (removed "ne" was expletive)
+  - Time precision variations, complex temporal phrases
   
 - ✅ **"Peu s'en faut" Patterns**:
-  - Basic: "peu s'en faut que"
-  - Impersonal: "il s'en faut de peu que"
-  - Question form: "s'en faut-il de peu que"
-  - Temporal: "peu s'en est fallu que"
-  - With intensifiers: "très/si/tellement peu s'en faut que"
+  - "Peu s'en faut qu'il réussisse" → Expletive (removed "ne" was expletive)
+  - Impersonal, question forms, temporal variations
 
 ### Technical Improvements
-- Enhanced pattern matching for all trigger types
-- Improved confidence calculations
-- Streamlined batch processing
+- Context-aware CroissantLLM prompts for removed "ne" prediction
+- Enhanced pattern matching without "ne" dependency
+- Improved confidence calculations based on trigger + subjunctive
 - Rich export options (Excel, CSV, JSON, TXT)
 
 ## Quick Links
 
 ### Production Application
 - **URL**: https://main.d1gx30ivteuneq.amplifyapp.com/
-- **Status**: ✅ Active with enhanced analysis modes
+- **Status**: ✅ Active with removed "ne" prediction capabilities
 - **Last Updated**: July 26, 2025
 
 ### Development Setup
