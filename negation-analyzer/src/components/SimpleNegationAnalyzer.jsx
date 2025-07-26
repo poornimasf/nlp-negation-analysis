@@ -1331,11 +1331,11 @@ export default function SimpleNegationAnalyzer() {
           <p>Upload training examples for {useExpletiveLogic ? 'enhanced' : 'pure'} machine learning-based expletive negation detection.</p>
           
           <div className="info-box" style={{ 
-            backgroundColor: '#fff3cd', 
+            backgroundColor: '#e8f5e8', 
             padding: '15px', 
             borderRadius: '8px', 
             marginBottom: '20px',
-            border: '1px solid #ffeaa7'
+            border: '1px solid #4caf50'
           }}>
             <h4>📋 Expected File Format (CSV or JSON):</h4>
             <p><strong>CSV columns:</strong> text, has_expletive_ne, trigger, classification</p>
