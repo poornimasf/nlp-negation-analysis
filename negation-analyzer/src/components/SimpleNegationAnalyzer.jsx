@@ -308,81 +308,184 @@ export default function SimpleNegationAnalyzer() {
     return clauseMatch ? clauseMatch[0].trim() : null;
   };
 
-  // Advanced expletive negation classification
+  // Advanced expletive negation classification with detailed analysis
   const classifyExpletive = (text) => {
     const triggerInfo = findExpletiveTrigger(text);
     const hasNe = hasNegation(text);
     const hasLogical = hasLogicalNegation(text);
     const hasSubj = hasSubjunctive(text);
     
+    // Initialize analysis components
+    let classification = '';
+    let confidence = 0;
+    let evidence = [];
+    let details = [];
+    
     // No trigger found
     if (!triggerInfo) {
       if (hasNe) {
-        return hasLogical 
-          ? "Logical negation detected: 'ne' + logical markers found, but no expletive triggers."
-          : "Negation found, but no expletive triggers ('peur que', 'avant que', etc.) detected.";
+        if (hasLogical) {
+          classification = "Logical negation detected";
+          confidence = 0.85;
+          evidence = [
+            "Found 'ne' with logical markers",
+            `Logical markers: ${text.match(/\b(?:pas|point|plus|jamais|rien|personne|aucun[e]?|guère)\b/gi)?.join(', ')}`
+          ];
+        } else {
+          classification = "Negation found, but no expletive triggers detected";
+          confidence = 0.70;
+          evidence = ["Found 'ne' without expletive triggers or logical markers"];
+        }
+      } else {
+        classification = "No negation markers found";
+        confidence = 0.90;
+        evidence = ["No 'ne' or expletive triggers detected"];
       }
-      return "No expletive negation triggers found.";
+      return formatDetailedResult(classification, confidence, evidence);
     }
 
-    // Trigger found, analyze negation type
-    if (!hasNe) {
-      return `Found '${triggerInfo.match}' trigger but no 'ne' detected. Incomplete expletive construction.`;
-    }
-
-    // Calculate confidence
-    const confidence = calculateConfidence(text, triggerInfo);
-    const confidencePercent = Math.round(confidence * 100);
-
-    // Build detailed analysis
-    let result = [];
-    
-    // Main classification
-    if (hasLogical) {
-      result.push(`Logical negation detected - Trigger: ${triggerInfo.match}, 'ne' found with logical markers`);
-    } else {
-      result.push(`✅ EXPLETIVE NEGATION - Trigger: ${triggerInfo.match}`);
-    }
-    
-    // Supporting evidence
-    let evidence = [];
-    
-    // Trigger analysis
-    if (triggerInfo.type === 'peur') {
-      evidence.push("Fear expression trigger");
-      if (text.match(/\b(?:grand[e]?\s+)?peur\b/i)) {
-        evidence.push("Intensified fear construction");
-      }
+    // Analyze trigger pattern
+    let triggerConfidence = 0;
+    if (triggerInfo.type === 'peur_que') {
+      triggerConfidence = 0.4;
+      details.push({
+        aspect: "Trigger Type",
+        finding: "Fear expression (peur que)",
+        impact: "Strong indicator for expletive negation",
+        confidence: 0.4
+      });
     } else if (triggerInfo.type === 'avant') {
-      evidence.push("Temporal expression trigger");
-      if (text.match(/\b(?:juste|bien|peu|longtemps)\s+avant\b/i)) {
-        evidence.push("Precise temporal marker");
-      }
+      triggerConfidence = 0.35;
+      details.push({
+        aspect: "Trigger Type",
+        finding: "Temporal expression (avant que)",
+        impact: "Moderate to strong indicator for expletive negation",
+        confidence: 0.35
+      });
     }
-    
-    // Mood analysis
+
+    // Analyze trigger completeness
+    if (text.match(/\b(?:j'ai|tu as|il a|elle a|nous avons|vous avez|ils ont)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e'](?!\s+pas)\s*/i)) {
+      triggerConfidence += 0.1;
+      details.push({
+        aspect: "Construction Completeness",
+        finding: "Complete fear expression with subject and verb",
+        impact: "Strengthens expletive interpretation",
+        confidence: 0.1
+      });
+    }
+
+    // Analyze mood
     if (hasSubj) {
-      evidence.push("Subjunctive mood detected");
-      // Identify specific subjunctive form
-      for (const [category, pattern] of Object.entries(SUBJUNCTIVE_PATTERNS)) {
-        if (pattern.test(text)) {
-          evidence.push(`Subjunctive form of '${category}'`);
-          break;
+      triggerConfidence += 0.2;
+      details.push({
+        aspect: "Verbal Mood",
+        finding: "Subjunctive mood detected",
+        impact: "Strong support for expletive negation",
+        confidence: 0.2
+      });
+
+      // Check position of subjunctive
+      const triggerIndex = text.indexOf(triggerInfo.match);
+      if (triggerIndex !== -1) {
+        const afterTrigger = text.slice(triggerIndex + triggerInfo.match.length);
+        if (hasSubjunctive(afterTrigger)) {
+          triggerConfidence += 0.1;
+          details.push({
+            aspect: "Mood Position",
+            finding: "Subjunctive follows trigger directly",
+            impact: "Optimal position for expletive negation",
+            confidence: 0.1
+          });
         }
       }
     }
-    
-    // Structure analysis
+
+    // Analyze negation markers
+    if (hasNe) {
+      if (hasLogical) {
+        classification = "Logical negation detected";
+        confidence = 0.85;
+        details.push({
+          aspect: "Negation Type",
+          finding: "Found 'ne' with logical markers",
+          impact: "Indicates logical rather than expletive negation",
+          confidence: 0.85
+        });
+      } else {
+        classification = "✅ EXPLETIVE NEGATION";
+        confidence = Math.min(0.95, triggerConfidence + 0.3); // Base 0.3 for having 'ne' without logical markers
+        details.push({
+          aspect: "Negation Type",
+          finding: "Pure 'ne' without logical markers",
+          impact: "Strong support for expletive negation",
+          confidence: 0.3
+        });
+      }
+    } else {
+      classification = "Missing 'ne'";
+      confidence = triggerConfidence;
+      details.push({
+        aspect: "Negation Marker",
+        finding: "No 'ne' detected",
+        impact: "Potential missing expletive negation",
+        confidence: triggerConfidence
+      });
+    }
+
+    // Analyze complement clause
     const complementClause = extractComplementClause(text, triggerInfo);
     if (complementClause) {
-      evidence.push("Complete complement clause structure");
+      confidence = Math.min(0.95, confidence + 0.05);
+      details.push({
+        aspect: "Clause Structure",
+        finding: "Complete complement clause",
+        impact: "Supports expletive negation structure",
+        confidence: 0.05
+      });
     }
+
+    // Format detailed result
+    let result = [];
+    result.push(`${classification} - Trigger: ${triggerInfo.match}`);
+    result.push(`\nAnalysis (${Math.round(confidence * 100)}% confidence):`);
     
-    // Combine results
-    result.push(`Evidence (${confidencePercent}% confidence):`);
-    evidence.forEach(e => result.push(`  • ${e}`));
-    
-    return result.join("\n");
+    // Group details by confidence level
+    const strongEvidence = details.filter(d => d.confidence >= 0.3);
+    const moderateEvidence = details.filter(d => d.confidence >= 0.1 && d.confidence < 0.3);
+    const weakEvidence = details.filter(d => d.confidence < 0.1);
+
+    if (strongEvidence.length > 0) {
+      result.push('\nStrong Evidence:');
+      strongEvidence.forEach(d => {
+        result.push(`  • ${d.finding} (${d.impact})`);
+      });
+    }
+
+    if (moderateEvidence.length > 0) {
+      result.push('\nSupporting Evidence:');
+      moderateEvidence.forEach(d => {
+        result.push(`  • ${d.finding} (${d.impact})`);
+      });
+    }
+
+    if (weakEvidence.length > 0) {
+      result.push('\nAdditional Factors:');
+      weakEvidence.forEach(d => {
+        result.push(`  • ${d.finding} (${d.impact})`);
+      });
+    }
+
+    return result.join('\n');
+  };
+
+  const formatDetailedResult = (classification, confidence, evidence) => {
+    return [
+      classification,
+      `\nConfidence: ${Math.round(confidence * 100)}%`,
+      '\nEvidence:',
+      ...evidence.map(e => `  • ${e}`)
+    ].join('\n');
   };
 
   // Legacy trigger array for backward compatibility
