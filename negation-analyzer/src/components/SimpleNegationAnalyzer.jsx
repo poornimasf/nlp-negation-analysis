@@ -593,37 +593,6 @@ export default function SimpleNegationAnalyzer() {
     setHighlightedText(highlight(inputText));
   };
 
-  // Helper function to extract clean classification from analysis result
-  const extractClassification = (analysisResult) => {
-    // Priority 1: Check for actual negation types first (regardless of enhancement)
-    if (analysisResult.includes('✅ EXPLETIVE NEGATION')) {
-      return 'Expletive';
-    } else if (analysisResult.includes('Logical negation detected') || analysisResult.includes('logical negation')) {
-      return 'Logical';
-    } 
-    
-    // Priority 2: Check for pure training-based predictions
-    else if (analysisResult.includes('🤖 PURE TRAINING')) {
-      // Determine if pure training predicted expletive or logical
-      if (analysisResult.includes('expletive')) {
-        return 'Expletive (ML)';
-      } else if (analysisResult.includes('logical')) {
-        return 'Logical (ML)';
-      } else {
-        return 'Pure Training';
-      }
-    }
-    
-    // Priority 3: Check for no negation cases
-    else if (analysisResult.includes('No negation') || analysisResult.includes('No expletive')) {
-      return 'No Negation';
-    } 
-    
-    // Priority 4: Fallback for other cases
-    else {
-      return 'Other';
-    }
-  };
 
   const predictRemovedNegationType = (text) => {
     // Initialize confidence scores
