@@ -844,22 +844,6 @@ export default function SimpleNegationAnalyzer() {
       setUseTrainingEnhancement(true);
     }
   };
-          stats.peurQueExamples++;
-        } else if (detectedTrigger === 'avant que') {
-          stats.avantQueExamples++;
-        } else if (detectedTrigger === 'peu s\'en faut') {
-          stats.peuSenFautExamples++;
-        }
-      }
-    });
-
-    setTrainingData(processedData);
-    setTrainingStats(stats);
-    
-    if (processedData.length > 0) {
-      setUseTrainingEnhancement(true);
-    }
-  };
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
