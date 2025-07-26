@@ -893,7 +893,8 @@ export default function SimpleNegationAnalyzer() {
     }
     
     // Check for explicit expletive negation detection
-    if (firstLine.startsWith('✅ EXPLETIVE NEGATION')) {
+    if (firstLine.startsWith('✅ EXPLETIVE NEGATION') ||
+        firstLine.startsWith('Potential expletive')) {
       return "Expletive";
     }
     
@@ -906,11 +907,6 @@ export default function SimpleNegationAnalyzer() {
     if (firstLine.startsWith('🎯 TRAINING-ENHANCED: Expletive') ||
         firstLine.startsWith('🤖 PURE TRAINING: Likely had expletive')) {
       return useTrainingEnhancement && trainingData.length > 0 ? "Expletive (ML)" : "Expletive";
-    }
-    
-    // Check for potential expletive cases
-    if (firstLine.startsWith('Potential expletive')) {
-      return "Potential";
     }
     
     // Check for no negation cases
