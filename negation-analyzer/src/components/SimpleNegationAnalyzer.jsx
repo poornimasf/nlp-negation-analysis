@@ -1939,6 +1939,108 @@ export default function SimpleNegationAnalyzer() {
             {uploadError && (
               <p style={{ color: '#dc3545', marginTop: '10px' }}>{uploadError}</p>
             )}
+
+            {/* Preview Section */}
+            {trainingData.length > 0 && (
+              <div style={{ 
+                marginTop: '20px',
+                backgroundColor: '#f8f9fa',
+                border: '1px solid #dee2e6',
+                borderRadius: '8px',
+                padding: '15px'
+              }}>
+                <h4 style={{ marginBottom: '15px', color: '#495057' }}>
+                  🔍 Training Data Preview
+                </h4>
+                <div style={{ 
+                  maxHeight: '300px', 
+                  overflowY: 'auto',
+                  backgroundColor: 'white',
+                  border: '1px solid #e9ecef',
+                  borderRadius: '4px'
+                }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ 
+                        backgroundColor: '#e9ecef',
+                        position: 'sticky',
+                        top: 0
+                      }}>
+                        <th style={{ padding: '8px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>Text</th>
+                        <th style={{ padding: '8px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>Trigger</th>
+                        <th style={{ padding: '8px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>Type</th>
+                        <th style={{ padding: '8px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>Valid</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {trainingData.slice(0, 10).map((item, index) => {
+                        // Validate trigger type
+                        const isValidTrigger = TRIGGERS.includes(item.trigger) || 
+                          ['craindre', 'redouter', 'douter', 'éviter', 'empêcher'].includes(item.trigger);
+                        
+                        // Check for proper structure
+                        const hasValidStructure = item.text && 
+                          typeof item.has_expletive_ne !== 'undefined' &&
+                          item.trigger &&
+                          item.classification;
+
+                        return (
+                          <tr key={index} style={{ 
+                            borderBottom: '1px solid #dee2e6',
+                            backgroundColor: index % 2 === 0 ? 'white' : '#f8f9fa'
+                          }}>
+                            <td style={{ padding: '8px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {item.text}
+                            </td>
+                            <td style={{ padding: '8px', textAlign: 'center' }}>
+                              <span style={{
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                fontSize: '0.9em',
+                                backgroundColor: isValidTrigger ? '#e8f5e9' : '#ffebee',
+                                color: isValidTrigger ? '#2e7d32' : '#c62828',
+                                border: `1px solid ${isValidTrigger ? '#c8e6c9' : '#ffcdd2'}`
+                              }}>
+                                {item.trigger}
+                              </span>
+                            </td>
+                            <td style={{ padding: '8px', textAlign: 'center' }}>
+                              <span style={{
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                fontSize: '0.9em',
+                                backgroundColor: item.has_expletive_ne ? '#e3f2fd' : '#fff3e0',
+                                color: item.has_expletive_ne ? '#1565c0' : '#ef6c00',
+                                border: `1px solid ${item.has_expletive_ne ? '#bbdefb' : '#ffe0b2'}`
+                              }}>
+                                {item.has_expletive_ne ? 'Expletive' : 'Logical'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '8px', textAlign: 'center' }}>
+                              {hasValidStructure ? (
+                                <span style={{ color: '#2e7d32' }}>✓</span>
+                              ) : (
+                                <span style={{ color: '#c62828' }}>✗</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {trainingData.length > 10 && (
+                  <div style={{ 
+                    marginTop: '10px', 
+                    textAlign: 'center',
+                    color: '#666',
+                    fontSize: '0.9em'
+                  }}>
+                    Showing first 10 of {trainingData.length} examples
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {trainingStats.totalExamples > 0 && (
