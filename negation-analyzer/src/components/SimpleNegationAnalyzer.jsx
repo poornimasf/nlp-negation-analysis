@@ -206,55 +206,72 @@ export default function SimpleNegationAnalyzer() {
       return "No training data available for binary classifier.";
     }
 
-    // Simple feature extraction
+    // Mutually exclusive pattern detection (only one primary trigger)
     const features = {
       hasPeurQue: /\b(peur|crainte)\s+que?\b/i.test(text),
       hasAvantQue: /\bavant\s+que?\b/i.test(text),
       hasPeuSenFaut: /\b(peu\s+s'en\s+faut|s'en\s+faut)/i.test(text),
       hasSubjunctive: hasSubjunctive(text),
-      hasNegationMarkers: /\b(pas|jamais|plus|rien|personne)\b/i.test(text)
+      hasNegationMarkers: /\b(pas|jamais|plus|rien|personne|aucun|guère|nullement|point|mie)\b/i.test(text)
     };
 
-    // Simple scoring based on linguistic patterns
     let score = 0;
     let reasoning = [];
+    let primaryTrigger = null;
 
+    // Step 1: Check for PRIMARY expletive triggers (mutually exclusive)
     if (features.hasPeurQue) {
-      score += 0.8;
+      score = 0.75; // Strong expletive indicator
+      primaryTrigger = "peur que";
       reasoning.push("'peur que' construction detected");
-    }
-    if (features.hasAvantQue) {
-      score += 0.7;
+    } else if (features.hasAvantQue) {
+      score = 0.70; // Strong expletive indicator  
+      primaryTrigger = "avant que";
       reasoning.push("'avant que' temporal construction");
-    }
-    if (features.hasPeuSenFaut) {
-      score += 0.9;
+    } else if (features.hasPeuSenFaut) {
+      score = 0.80; // Strongest expletive indicator
+      primaryTrigger = "peu s'en faut";
       reasoning.push("'peu s'en faut' construction");
+    } else {
+      // No primary trigger - start neutral
+      score = 0.5;
+      reasoning.push("No primary expletive trigger detected");
     }
-    if (features.hasSubjunctive) {
-      score += 0.3;
-      reasoning.push("subjunctive mood present");
-    }
+
+    // Step 2: Apply LOGICAL negation penalty (strong counter-indicator)
     if (features.hasNegationMarkers) {
-      score -= 0.5;
-      reasoning.push("logical negation markers found");
+      score -= 0.4; // Strong penalty for logical markers
+      reasoning.push("logical negation markers found (strong counter-indicator)");
     }
+
+    // Step 3: Minor subjunctive adjustment (only if we have a primary trigger)
+    if (primaryTrigger && features.hasSubjunctive) {
+      score += 0.1; // Small boost for grammatical consistency
+      reasoning.push("subjunctive mood supports expletive context");
+    }
+
+    // Clamp score to valid range
+    score = Math.max(0.05, Math.min(0.95, score));
 
     const prediction = score > 0.5 ? 'expletive' : 'logical';
-    const confidence = Math.round(Math.min(Math.abs(score) * 100, 95));
+    const confidence = Math.round(Math.abs(score - 0.5) * 200); // Convert to percentage
 
     const predictionText = prediction === 'expletive' ? 
       "Removed 'ne' was likely expletive" : 
       "Removed 'ne' was likely logical";
 
     let output = `🎯 BINARY CLASSIFIER: ${predictionText} (${confidence}% confidence)\n`;
-    output += `   • Simple rule-based scoring (score: ${score.toFixed(2)})\n`;
+    output += `   • Decision score: ${score.toFixed(2)} (threshold: 0.5)\n`;
     
-    if (reasoning.length > 0) {
-      output += `   • Linguistic analysis: ${reasoning.join('; ')}\n`;
+    if (primaryTrigger) {
+      output += `   • Primary trigger: ${primaryTrigger}\n`;
     }
     
-    output += `   • Binary classifier using linguistic pattern weights`;
+    if (reasoning.length > 0) {
+      output += `   • Analysis: ${reasoning.join('; ')}\n`;
+    }
+    
+    output += `   • Balanced classifier: expletive triggers vs logical negation markers`;
 
     return output;
   };
