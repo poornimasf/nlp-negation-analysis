@@ -221,8 +221,8 @@ export default function SimpleNegationAnalyzer() {
     return Object.values(SUBJUNCTIVE_PATTERNS).some(pattern => pattern.test(text));
   };
 
-  // Calculate confidence based on linguistic features
-  const calculateConfidence = (text, triggerInfo) => {
+  // Calculate confidence based on linguistic features and LLM insights
+  const calculateConfidence = async (text, triggerInfo) => {
     let confidence = 0.5; // Base confidence
     
     // Strong indicators
@@ -230,70 +230,85 @@ export default function SimpleNegationAnalyzer() {
       confidence += 0.2; // Subjunctive is a strong indicator
     }
     
+    // Get LLM syntax analysis
+    try {
+      const syntaxAnalysis = await EnhancedPatternMatcher.analyzeSyntacticContext(text);
+      
+      if (syntaxAnalysis) {
+        // Adjust confidence based on LLM insights
+        confidence = (confidence + syntaxAnalysis.confidence) / 2;
+        
+        // Additional boost for strong LLM confidence
+        if (syntaxAnalysis.confidence > 0.8) {
+          confidence = Math.min(confidence + 0.1, 0.95);
+        }
+      }
+    } catch (error) {
+      console.error('LLM syntax analysis failed:', error);
+      // Continue with basic confidence calculation
+    }
+    
     // Trigger type confidence
     if (triggerInfo && triggerInfo.type) {
       if (triggerInfo.type === 'peur_que') {
-        // Fear expressions with 'que' are very reliable indicators
         confidence += 0.15;
         
-        // Check for complete construction
         if (text.match(/\b(?:j'ai|tu as|il a|elle a|nous avons|vous avez|ils ont)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e'](?!\s+pas)\s*/i)) {
           confidence += 0.05;
         }
         
-        // Check for subjunctive after que
         const queIndex = text.indexOf('que');
         if (queIndex !== -1) {
           const afterQue = text.slice(queIndex + 3);
           if (hasSubjunctive(afterQue)) {
-            confidence += 0.05; // Additional boost for subjunctive in correct position
+            confidence += 0.05;
           }
         }
       } else if (triggerInfo.type === 'avant') {
-        // Temporal expressions are also reliable
         confidence += 0.1;
         
-        // Additional confidence for precise temporal markers
         if (text.match(/\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e'](?!\s+pas)\s*/i)) {
           confidence += 0.05;
         }
         
-        // Check for subjunctive after que
         const queIndex = text.indexOf('que');
         if (queIndex !== -1) {
           const afterQue = text.slice(queIndex + 3);
           if (hasSubjunctive(afterQue)) {
-            confidence += 0.05; // Additional boost for subjunctive in correct position
+            confidence += 0.05;
           }
         }
       } else if (triggerInfo.type === 'peu_sen_faut') {
-        // Peu s'en faut expressions are strong indicators
         confidence += 0.15;
         
-        // Additional confidence for specific constructions
         if (text.match(/\bil\s+s['']en\s+faut/i)) {
-          confidence += 0.05; // Impersonal construction
+          confidence += 0.05;
         }
         if (text.match(/\b(?:très|si|tellement)\s+peu\s+s['']en/i)) {
-          confidence += 0.05; // Intensity modifiers
+          confidence += 0.05;
         }
         if (text.match(/\bs['']en\s+est\s+fallu/i)) {
-          confidence += 0.05; // Past tense
+          confidence += 0.05;
         }
       }
     }
     
+    // Include LLM validation if available
+    if (triggerInfo && triggerInfo.llmValidation) {
+      confidence = (confidence + triggerInfo.llmValidation.confidence) / 2;
+    }
+    
     // Context analysis
     if (!text.match(/\b(?:pas|point|plus|jamais|rien|personne|aucun[e]?|guère)\b/i)) {
-      confidence += 0.1; // No logical negation markers
+      confidence += 0.1;
     }
     
     // Sentence structure analysis
     if (text.match(/\bqu[e']\s+[^.!?]+$/i)) {
-      confidence += 0.05; // Proper complement clause structure
+      confidence += 0.05;
     }
     
-    return Math.min(confidence, 0.95); // Cap at 95% confidence
+    return Math.min(confidence, 0.95);
   };
 
   // Detect logical negation markers
@@ -302,7 +317,7 @@ export default function SimpleNegationAnalyzer() {
   };
 
   // Find expletive triggers with comprehensive pattern matching
-  const findExpletiveTrigger = (text) => {
+  const findExpletiveTrigger = async (text) => {
     const normalizedText = text.toLowerCase()
       .replace(/['']/g, "'") // Normalize apostrophes
       .replace(/\s+/g, ' ') // Normalize whitespace
@@ -310,27 +325,48 @@ export default function SimpleNegationAnalyzer() {
 
     console.log('Analyzing text:', normalizedText);
 
-    for (const [triggerType, patterns] of Object.entries(EXPLETIVE_PATTERNS)) {
-      console.log(`Checking ${triggerType} patterns...`);
-      for (const pattern of patterns) {
-        console.log('Testing pattern:', pattern.toString());
-        const match = normalizedText.match(pattern);
-        if (match) {
-          console.log('Found match:', match[0], 'for type:', triggerType);
-          const mappedType = mapTriggerType(triggerType);
-          console.log('Mapped type:', mappedType);
-          return {
-            type: triggerType,
-            mappedType: mappedType,
-            match: match[0].trim(),
-            position: match.index,
-            confidence: calculateTriggerConfidence(match[0], triggerType)
-          };
+    try {
+      const enhancedMatch = await EnhancedPatternMatcher.findExpletiveTrigger(
+        normalizedText,
+        EXPLETIVE_PATTERNS
+      );
+
+      if (!enhancedMatch) {
+        console.log('No trigger found');
+        return null;
+      }
+
+      console.log('Found enhanced match:', enhancedMatch);
+      const mappedType = mapTriggerType(enhancedMatch.type);
+      console.log('Mapped type:', mappedType);
+
+      // Include LLM insights in the result
+      return {
+        ...enhancedMatch,
+        mappedType,
+        llmValidation: enhancedMatch.llmValidation || null,
+        enhancedReasoning: enhancedMatch.enhancedReasoning || ''
+      };
+    } catch (error) {
+      console.error('Enhanced pattern matching failed:', error);
+      // Fallback to basic pattern matching
+      for (const [triggerType, patterns] of Object.entries(EXPLETIVE_PATTERNS)) {
+        for (const pattern of patterns) {
+          const match = normalizedText.match(pattern);
+          if (match) {
+            const mappedType = mapTriggerType(triggerType);
+            return {
+              type: triggerType,
+              mappedType,
+              match: match[0].trim(),
+              position: match.index,
+              confidence: calculateTriggerConfidence(match[0], triggerType)
+            };
+          }
         }
       }
+      return null;
     }
-    console.log('No trigger found');
-    return null;
   };
 
   // Calculate confidence based on trigger pattern specificity
