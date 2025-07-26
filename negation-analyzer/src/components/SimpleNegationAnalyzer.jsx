@@ -759,6 +759,36 @@ export default function SimpleNegationAnalyzer() {
   };
 
 
+  // Determine classification type for batch results
+  const determineClassification = (text) => {
+    const triggerInfo = findExpletiveTrigger(text);
+    const hasNe = hasNegation(text);
+    const hasLogical = hasLogicalNegation(text);
+    
+    if (!hasNe) {
+      return "No Negation";
+    }
+    
+    if (!useExpletiveLogic && !enableTrainingData) {
+      return hasLogical ? "Logical" : "Basic Negation";
+    }
+    
+    if (!useExpletiveLogic && enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
+      return "Pure Training";
+    }
+    
+    if (triggerInfo && !hasLogical) {
+      return useTrainingEnhancement && trainingData.length > 0 ? "Expletive (ML)" : "Expletive";
+    }
+    
+    if (hasLogical) {
+      return useTrainingEnhancement && trainingData.length > 0 ? "Logical (ML)" : "Logical";
+    }
+    
+    return "Uncertain";
+  };
+
+
   const predictRemovedNegationType = (text) => {
     // Initialize confidence scores
     let expletiveScore = 0;
@@ -866,15 +896,57 @@ export default function SimpleNegationAnalyzer() {
 
     const sentences = batchInput.split("\n").filter(line => line.trim());
     const results = sentences.map((sentence, index) => {
-      const prediction = predictRemovedNegationType(sentence.trim());
-      const analysisResult = formatPredictionResult(prediction);
+      const analysis = classifyNegation(sentence.trim());
+      const triggerInfo = findExpletiveTrigger(sentence.trim());
+      const hasNe = hasNegation(sentence.trim());
+      const hasSubj = hasSubjunctive(sentence.trim());
+      
+      // Build detailed reasoning
+      const reasoning = [];
+      
+      // Check for trigger patterns
+      if (triggerInfo) {
+        reasoning.push(`Found trigger pattern: "${triggerInfo.match}"`);
+        if (triggerInfo.type === 'peur') {
+          reasoning.push('Trigger indicates fear expression');
+        } else if (triggerInfo.type === 'avant') {
+          reasoning.push('Trigger indicates temporal expression');
+        }
+      }
+      
+      // Check for 'ne' presence
+      if (hasNe) {
+        reasoning.push('Contains "ne" negation marker');
+      }
+      
+      // Check for subjunctive
+      if (hasSubj) {
+        reasoning.push('Contains subjunctive verb form');
+      }
+      
+      // Check for training data matches if enabled
+      if (enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
+        const similarExamples = trainingData.filter(example => 
+          example.text.toLowerCase().includes(sentence.toLowerCase()) ||
+          sentence.toLowerCase().includes(example.text.toLowerCase())
+        );
+        if (similarExamples.length > 0) {
+          reasoning.push(`Found ${similarExamples.length} similar examples in training data`);
+        }
+      }
+      
+      // Determine confidence level
+      const confidence = calculateConfidence(sentence.trim(), triggerInfo);
+      reasoning.push(`Confidence level: ${Math.round(confidence * 100)}%`);
       
       return {
         id: index + 1,
         text: sentence.trim(),
         highlightedText: highlight(sentence.trim()),
-        label: analysisResult,
-        classification: prediction.type === 'expletive' ? 'Removed Expletive' : 'Removed Logical'
+        label: analysis,
+        classification: determineClassification(sentence.trim()),
+        reasoning: reasoning.join('\n'),
+        confidence: confidence
       };
     });
     setBatchResults(results);
