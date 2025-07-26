@@ -1367,28 +1367,22 @@ export default function SimpleNegationAnalyzer() {
     // Create workbook
     const wb = XLSX.utils.book_new();
     
-    // Prepare main results data
+    // Prepare main results data (removed Triggers and Analysis Mode columns)
     const resultsData = [
       // Header row
-      ['Sentence #', 'Text', 'Analysis Result', 'Prediction', 'Confidence', 'Triggers', 'Analysis Mode'],
+      ['Sentence #', 'Text', 'Analysis Result', 'Prediction', 'Confidence'],
       // Data rows
       ...batchResults.map(result => {
         // Extract confidence if available
         const confidenceMatch = result.label.match(/(\d+)%/);
         const confidence = confidenceMatch ? confidenceMatch[1] + '%' : 'N/A';
         
-        // Extract triggers if available
-        const triggerMatch = result.label.match(/Trigger: ([^,\n]+)/);
-        const triggers = triggerMatch ? triggerMatch[1] : 'None';
-        
         return [
           result.id,
           result.text,
           result.label,
           result.classification, // Use the direct classification field
-          confidence,
-          triggers,
-          analysisMode
+          confidence
         ];
       })
     ];
@@ -1396,15 +1390,13 @@ export default function SimpleNegationAnalyzer() {
     // Create main results worksheet
     const ws = XLSX.utils.aoa_to_sheet(resultsData);
     
-    // Set column widths
+    // Set column widths (updated for fewer columns)
     ws['!cols'] = [
       { wch: 10 },  // Sentence #
       { wch: 40 },  // Text
       { wch: 60 },  // Analysis Result
       { wch: 20 },  // Classification
-      { wch: 12 },  // Confidence
-      { wch: 15 },  // Triggers
-      { wch: 50 }   // Analysis Mode
+      { wch: 12 }   // Confidence
     ];
     
     // Apply formatting to header row
@@ -1474,7 +1466,7 @@ export default function SimpleNegationAnalyzer() {
     // Create summary statistics sheet
     const stats = calculateBatchStatistics();
     const summaryData = [
-      ['French Expletive Negation Analysis - Summary Statistics'],
+      ['French Negation Type Prediction - Summary Statistics'],
       [''],
       ['Generated:', new Date().toISOString()],
       ['Analysis Mode:', analysisMode],
@@ -1621,8 +1613,8 @@ export default function SimpleNegationAnalyzer() {
   };
 
   const downloadCSV = (filename, analysisMode) => {
-    // Prepare CSV headers
-    const headers = ['Sentence_Number', 'Text', 'Analysis_Result', 'Prediction', 'Confidence', 'Triggers_Found', 'Analysis_Mode'];
+    // Prepare CSV headers (removed Triggers_Found and Analysis_Mode)
+    const headers = ['Sentence_Number', 'Text', 'Analysis_Result', 'Prediction', 'Confidence'];
     
     // Process results into CSV format
     const csvData = batchResults.map(result => {
@@ -1630,18 +1622,12 @@ export default function SimpleNegationAnalyzer() {
       const confidenceMatch = result.label.match(/(\d+)%/);
       const confidence = confidenceMatch ? confidenceMatch[1] + '%' : 'N/A';
       
-      // Extract triggers if available
-      const triggerMatch = result.label.match(/Trigger: ([^,\n]+)/);
-      const triggers = triggerMatch ? triggerMatch[1] : 'None';
-      
       return [
         result.id,
         `"${result.text.replace(/"/g, '""')}"`, // Escape quotes in CSV
         `"${result.label.replace(/"/g, '""')}"`,
         result.classification, // Use the direct classification field
-        confidence,
-        triggers,
-        `"${analysisMode.replace(/"/g, '""')}"`
+        confidence
       ];
     });
     
@@ -1651,7 +1637,7 @@ export default function SimpleNegationAnalyzer() {
       .join('\n');
     
     // Add metadata header
-    const metadata = `# French Expletive Negation Analysis - Batch Results\n# Generated: ${new Date().toISOString()}\n# Analysis Mode: ${analysisMode}\n# Total Sentences: ${batchResults.length}\n#\n`;
+    const metadata = `# French Negation Type Prediction - Batch Results\n# Generated: ${new Date().toISOString()}\n# Total Sentences: ${batchResults.length}\n#\n`;
     
     downloadFile(csvContent, `${filename}.csv`, 'text/csv', metadata);
   };
@@ -1659,11 +1645,10 @@ export default function SimpleNegationAnalyzer() {
   const downloadJSON = (filename, analysisMode) => {
     const jsonData = {
       metadata: {
-        title: 'French Expletive Negation Analysis - Batch Results',
+        title: 'French Negation Type Prediction - Batch Results',
         generated: new Date().toISOString(),
-        analysisMode: analysisMode,
         totalSentences: batchResults.length,
-        version: '2.1.0'
+        version: '2.5.0'
       },
       results: batchResults.map(result => {
         // Extract detailed analysis from label
@@ -1676,8 +1661,7 @@ export default function SimpleNegationAnalyzer() {
           analysisResult: result.label,
           classification: {
             type: result.classification.toLowerCase().replace(/\s+/g, '_'),
-            confidence: confidenceMatch ? parseInt(confidenceMatch[1]) : null,
-            triggers: triggerMatch ? triggerMatch[1] : null
+            confidence: confidenceMatch ? parseInt(confidenceMatch[1]) : null
           },
           highlightedText: result.highlightedText
         };
@@ -1689,15 +1673,15 @@ export default function SimpleNegationAnalyzer() {
   };
 
   const downloadTXT = (filename, analysisMode) => {
-    let content = `French Expletive Negation Analysis - Batch Results\n`;
+    let content = `French Negation Type Prediction - Batch Results\n`;
     content += `Generated: ${new Date().toISOString()}\n`;
-    content += `Analysis Mode: ${analysisMode}\n`;
     content += `Total Sentences: ${batchResults.length}\n`;
     content += `${'='.repeat(60)}\n\n`;
     
     batchResults.forEach((result, index) => {
       content += `${index + 1}. Sentence #${result.id}\n`;
       content += `   Text: ${result.text}\n`;
+      content += `   Prediction: ${result.classification}\n`;
       content += `   Analysis: ${result.label}\n`;
       content += `   ${'─'.repeat(50)}\n\n`;
     });
