@@ -985,11 +985,16 @@ export default function SimpleNegationAnalyzer() {
     return ruleBasedResult + trainingResult;
   };
 
-  // Main classification function that uses feature flags independently
+  // Main classification function that uses either rule-based OR training data (no hybrid)
   const classifyNegation = async (text) => {
-    // Pure training-based analysis (training flag on, expletive flag off)
+    // Training-based analysis (training flag on, expletive flag off)
     if (!useExpletiveLogic && enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
       return classifyPureTraining(text);
+    }
+    
+    // Rule-based expletive logic (expletive flag on, training flag off)
+    if (useExpletiveLogic && !enableTrainingData) {
+      return await classifyExpletive(text);
     }
     
     // Basic logic only (both flags off)
@@ -997,19 +1002,11 @@ export default function SimpleNegationAnalyzer() {
       return classifyBasic(text);
     }
     
-    // Rule-based expletive logic only (expletive flag on, training flag off)
-    if (useExpletiveLogic && !enableTrainingData) {
-      return await classifyExpletive(text);
-    }
-    
-    // Hybrid: Training-enhanced expletive logic (both flags on)
-    if (useExpletiveLogic && enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
-      return await classifyWithTraining(text);
-    }
-    
-    // Fallback to appropriate base logic
+    // If both are enabled, prioritize rule-based (no hybrid)
     if (useExpletiveLogic) {
       return await classifyExpletive(text);
+    } else if (enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
+      return classifyPureTraining(text);
     } else {
       return classifyBasic(text);
     }
@@ -1718,14 +1715,12 @@ export default function SimpleNegationAnalyzer() {
         return "📚 Training Data Available - Upload data for pure ML-based removed 'ne' type prediction";
       }
     }
-    if (useExpletiveLogic && enableTrainingData) {
-      if (useTrainingEnhancement && trainingData.length > 0) {
-        return `🔄 Hybrid Analysis - French rules + CroissantLLM + ML from ${trainingData.length} examples for removed 'ne' prediction`;
-      } else {
-        return "🔄 Hybrid Mode Available - Upload data for combined rule-based + ML removed 'ne' prediction";
-      }
+    // If both are enabled, rule-based takes priority
+    if (useExpletiveLogic) {
+      return "🎯 Rule-Based Logic - French linguistic patterns + CroissantLLM for removed 'ne' prediction";
+    } else {
+      return "🤖 Training-Based Analysis - ML prediction from user examples";
     }
-    return "Unknown mode";
   };
 
   const getCurrentModeColor = () => {
@@ -1858,10 +1853,8 @@ export default function SimpleNegationAnalyzer() {
                 ? useTrainingEnhancement && trainingData.length > 0
                   ? "Pure machine learning prediction of removed 'ne' type using patterns from your uploaded examples only."
                   : "Training data analysis available - upload examples to predict removed 'ne' type using pure ML classification."
-                : useExpletiveLogic && enableTrainingData
-                  ? useTrainingEnhancement && trainingData.length > 0
-                    ? "Hybrid prediction combining French linguistic rules with your machine learning examples to classify removed 'ne' markers."
-                    : "Hybrid analysis mode available - upload training data for enhanced removed 'ne' type prediction."
+                : useExpletiveLogic
+                  ? "Rule-based prediction using French linguistic patterns and CroissantLLM enhancement."
                   : "Select your preferred approach for predicting whether removed 'ne' markers were expletive or logical."
           }
         </p>
@@ -1988,26 +1981,17 @@ export default function SimpleNegationAnalyzer() {
           </div>
         )}
 
-        {/* Hybrid Analysis Info Box */}
-        {useExpletiveLogic && enableTrainingData && (
-          <div className="info-box" style={{ 
-            backgroundColor: '#f3e5f5', 
-            padding: '15px', 
-            borderRadius: '8px', 
-            marginBottom: '20px',
-            border: '1px solid #9c27b0'
+          <div style={{ 
+            backgroundColor: '#e3f2fd', 
+            padding: '12px', 
+            borderRadius: '6px', 
+            marginBottom: '15px',
+            border: '1px solid #2196f3',
+            fontSize: '14px'
           }}>
-            <h4>🔄 Hybrid Prediction of Removed "Ne" Type:</h4>
-            <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-              <li><strong>Rule-based foundation</strong> with training data enhancement for removed "ne" prediction</li>
-              <li><strong>Confidence boosting</strong> from similar training examples</li>
-              <li><strong>Fallback logic</strong> when training data is insufficient</li>
-              <li>Best of both worlds: <strong>French linguistic rules + machine learning</strong></li>
-              <li><strong>CroissantLLM integration</strong> for context-aware French syntax analysis</li>
-            </ul>
-            <p><strong>Advantage:</strong> Combines linguistic expertise with data-driven improvements for accurate removed "ne" type prediction</p>
+            <strong>📋 Analysis Mode:</strong> Choose either Rule-Based Logic OR Training Data Analysis. 
+            If both are enabled, Rule-Based Logic takes priority.
           </div>
-        )}
       </div>
 
       {/* User Training Data Section - Completely User-Controlled */}
