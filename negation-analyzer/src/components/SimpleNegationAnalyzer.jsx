@@ -193,12 +193,7 @@ export default function SimpleNegationAnalyzer() {
   // Enhanced subjunctive detection
   const hasSubjunctive = (text) => {
     // Check each subjunctive pattern category
-    for (const [category, pattern] of Object.entries(SUBJUNCTIVE_PATTERNS)) {
-      if (pattern.test(text)) {
-        return true;
-      }
-    }
-    return false;
+    return Object.values(SUBJUNCTIVE_PATTERNS).some(pattern => pattern.test(text));
   };
 
   // Calculate confidence based on linguistic features
