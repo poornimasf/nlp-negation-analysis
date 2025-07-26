@@ -866,18 +866,19 @@ export default function SimpleNegationAnalyzer() {
   const determineClassification = (text) => {
     const analysis = classifyNegation(text);
     
+    // Check for strong expletive indicators
+    if (analysis.includes('Strong indicator for expletive negation') ||
+        analysis.includes('✅ EXPLETIVE NEGATION') || 
+        analysis.includes('🎯 TRAINING-ENHANCED: Expletive') ||
+        analysis.includes('🤖 PURE TRAINING: Likely had expletive')) {
+      return useTrainingEnhancement && trainingData.length > 0 ? "Expletive (ML)" : "Expletive";
+    }
+    
     // Check for logical negation
     if (analysis.includes('Logical negation detected') || 
         analysis.includes('🎯 TRAINING-ENHANCED: Logical') ||
         analysis.includes('🤖 PURE TRAINING: Likely had logical')) {
       return useTrainingEnhancement && trainingData.length > 0 ? "Logical (ML)" : "Logical";
-    }
-    
-    // Check for expletive negation
-    if (analysis.includes('✅ EXPLETIVE NEGATION') || 
-        analysis.includes('🎯 TRAINING-ENHANCED: Expletive') ||
-        analysis.includes('🤖 PURE TRAINING: Likely had expletive')) {
-      return useTrainingEnhancement && trainingData.length > 0 ? "Expletive (ML)" : "Expletive";
     }
     
     // Check for pure training mode
