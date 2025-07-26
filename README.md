@@ -12,14 +12,16 @@ A comprehensive linguistic analysis platform specializing in expletive vs logica
 
 ## Latest Updates (v2.2.0 - July 25, 2025)
 
-### Enhanced Pattern Detection
-- ✅ **Comprehensive "peur que" Detection**: All conjugations and constructions
+### Analysis Modes
+
+#### 1. Rule-Based Analysis
+- ✅ **Comprehensive "peur que" Detection**:
   - Complete "avoir peur que" conjugations
   - Prepositional forms (par/de/dans peur que)
   - Intensity modifiers (très/grand peur que)
   - Nominal and adjectival constructions
 
-- ✅ **Advanced "avant que" Analysis**: Rich temporal expressions
+- ✅ **Advanced "avant que" Analysis**:
   - Basic temporal markers
   - Time precision (juste/bien/peu avant que)
   - Complex temporal expressions
@@ -30,23 +32,43 @@ A comprehensive linguistic analysis platform specializing in expletive vs logica
   - Irregular subjunctive forms
   - Position-aware analysis after "que"
 
-- ✅ **Evidence-Based Confidence Scoring**:
-  - Pattern specificity weighting
-  - Subjunctive presence validation
-  - Complement clause analysis
-  - Context-aware confidence adjustments
+#### 2. Pure Training Analysis (Updated)
+- ✅ **True Example-Based Learning**:
+  - No rule-based interference
+  - Pure text similarity matching
+  - Context-aware analysis
+  - Transparent example references
+
+- ✅ **Similarity Measures**:
+  - Word overlap analysis
+  - Context matching
+  - Confidence based on similar examples
+  - Average similarity scoring
+
+- ✅ **Training Data Integration**:
+  - Uses only user-provided examples
+  - No predefined patterns
+  - No external datasets
+  - Clear example matching
+
+#### 3. Hybrid Analysis
+- ✅ **Combined Approach**:
+  - Rule-based foundation
+  - Training data enhancement
+  - Weighted confidence scoring
+  - Best of both methods
 
 ### Technical Improvements
-- Weighted scoring system for prediction confidence
-- Multi-factor analysis for negation type detection
-- Enhanced pattern recognition for French constructions
-- Improved result presentation and organization
+- Removed rule-based logic from pure training mode
+- Enhanced similarity matching algorithms
+- Improved confidence calculations
+- Better result presentation
 
 ## Quick Links
 
 ### Production Application
 - **URL**: https://main.d1gx30ivteuneq.amplifyapp.com/
-- **Status**: ✅ Active with enhanced pattern detection
+- **Status**: ✅ Active with enhanced analysis modes
 - **Last Updated**: July 25, 2025
 
 ### Development Setup

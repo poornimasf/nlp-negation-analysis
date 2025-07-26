@@ -7,10 +7,12 @@
 
 ## Latest Features
 
-### 1. Enhanced Pattern Detection System
-The system now includes comprehensive pattern detection for French expletive negation:
+### 1. Analysis Modes
 
-#### Peur Que Constructions
+#### Rule-Based Analysis
+The system includes comprehensive pattern detection for French expletive negation:
+
+##### Peur Que Constructions
 - All conjugations of "avoir peur que"
 - Prepositional forms:
   - par peur que
@@ -21,7 +23,7 @@ The system now includes comprehensive pattern detection for French expletive neg
   - grand peur que
 - Nominal/adjectival variations
 
-#### Avant Que Constructions
+##### Avant Que Constructions
 - Basic temporal markers
 - Time precision indicators:
   - juste avant que
@@ -30,7 +32,7 @@ The system now includes comprehensive pattern detection for French expletive neg
 - Complex temporal expressions
 - Compound constructions
 
-#### Subjunctive Detection
+##### Subjunctive Detection
 - Common verb forms:
   - être (sois, soit, soyons, etc.)
   - avoir (aie, ait, ayons, etc.)
@@ -38,28 +40,60 @@ The system now includes comprehensive pattern detection for French expletive neg
 - Irregular forms
 - Position-aware analysis after "que"
 
-#### Confidence Scoring
-- Pattern specificity weighting
-- Subjunctive presence validation
-- Complement clause analysis
-- Context-aware adjustments
+#### Pure Training Analysis (Updated)
+True example-based learning with no rule-based interference:
 
-### 2. User Interface Updates
-- Enhanced Rule-Based Logic description
-- Detailed evidence display
-- Confidence percentage indicators
-- Color-coded results
+##### Text Similarity Analysis
+- Word overlap detection
+- Context matching
+- No predefined patterns
+- Pure similarity scoring
 
-### 3. Results Display
-Example output format:
+##### Training Integration
+- Uses only user examples
+- No external datasets
+- No predefined rules
+- Transparent matching
+
+##### Confidence Calculation
+- Based on similar examples
+- Average similarity scoring
+- Example count weighting
+- Clear evidence display
+
+#### Hybrid Analysis
+Combines both approaches:
+- Rule-based foundation
+- Training enhancement
+- Weighted scoring
+- Best of both methods
+
+### 2. Results Display
+
+#### Rule-Based Mode
 ```
-🔍 PREDICTION: Removed EXPLETIVE negation (85% confidence)
-   • Found expletive trigger: peur que
-   • Subjunctive mood detected
-   • Complete complement clause structure
+✅ EXPLETIVE NEGATION - Trigger: peur que
+Evidence (85% confidence):
+  • Fear expression trigger
+  • Subjunctive mood detected
+  • Complete complement clause structure
 ```
 
-### 4. Export Capabilities
+#### Pure Training Mode
+```
+🤖 PURE TRAINING: Likely had expletive 'ne' (80% confidence)
+   • Based on 5 similar examples (75% avg similarity)
+   • Most similar to: "J'ai peur qu'il vienne"
+```
+
+#### Hybrid Mode
+```
+🎯 TRAINING-ENHANCED: Expletive 'ne' (90% confidence)
+   • Rule-based evidence: peur que + subjunctive
+   • Training data: 8 similar examples support this
+```
+
+### 3. Export Capabilities
 - **Excel**: Rich formatted spreadsheet with multiple sheets
 - **CSV**: Structured data for analysis
 - **JSON**: Complete data with metadata
@@ -67,7 +101,12 @@ Example output format:
 
 ## Recent Deployments
 
-### Job #209 (Latest)
+### Job #210 (Latest)
+- **Commit**: e4e6e697
+- **Changes**: Removed rule-based logic from pure training mode
+- **Status**: Successfully deployed
+
+### Job #209
 - **Commit**: 3ce2b741
 - **Changes**: Updated Rule-Based Logic description
 - **Status**: Successfully deployed
@@ -77,40 +116,35 @@ Example output format:
 - **Changes**: Fixed duplicate functions and patterns
 - **Status**: Successfully deployed
 
-### Job #207
-- **Commit**: 71397899
-- **Changes**: Enhanced rule-based logic with comprehensive patterns
-- **Status**: Successfully deployed
-
 ## Current System State
 
 ### Active Features
-- ✅ Enhanced pattern detection
-- ✅ Comprehensive subjunctive analysis
-- ✅ Evidence-based confidence scoring
+- ✅ Rule-based pattern detection
+- ✅ Pure training analysis (no rule interference)
+- ✅ Hybrid mode combining both approaches
 - ✅ Multiple export formats
 - ✅ Feature flags for analysis modes
 
 ### Analysis Modes
 1. **Basic Logic**: Simple negation detection
-2. **Rule-Based**: Enhanced pattern analysis with confidence scoring
-3. **Pure Training**: ML-based predictions
+2. **Rule-Based**: Pattern analysis with confidence scoring
+3. **Pure Training**: Example-based learning (no rules)
 4. **Hybrid**: Combined analysis approach
 
 ### Performance Metrics
 - Average response time: <500ms
 - Batch processing: ~100ms/sentence
-- Pattern detection accuracy: 85-95%
-- Training integration: 95%+
+- Rule-based accuracy: 85-95%
+- Training similarity matching: 70-90%
 
 ## Known Issues
 None currently reported
 
 ## Upcoming Changes
-- Additional pattern variations
-- Extended temporal expressions
+- Enhanced similarity algorithms
+- Additional training features
 - Performance optimizations
-- Enhanced training capabilities
+- Extended export options
 
 ## Rollback Information
 In case rollback is needed:
@@ -119,7 +153,7 @@ aws amplify start-job \
   --app-id d1gx30ivteuneq \
   --branch-name main \
   --job-type RETRY \
-  --job-id 208
+  --job-id 209
 ```
 
 ## Monitoring
