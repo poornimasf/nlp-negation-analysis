@@ -1710,23 +1710,6 @@ export default function SimpleNegationAnalyzer() {
           </div>
         </div>
 
-        <div style={{
-          backgroundColor: '#e3f2fd',
-          border: '1px solid #bbdefb',
-          borderRadius: '6px',
-          padding: '12px',
-          marginTop: '15px',
-          fontSize: '14px'
-        }}>
-          <strong>💡 Download Options:</strong>
-          <ul style={{ margin: '8px 0', paddingLeft: '20px' }}>
-            <li><strong>📊 Excel:</strong> Rich formatted spreadsheet with color-coded classifications, multiple sheets (results, statistics, user training data), and professional styling</li>
-            <li><strong>📋 CSV:</strong> Excel-compatible format with structured columns (sentence number, text, analysis, classification type, confidence, triggers)</li>
-            <li><strong>🔧 JSON:</strong> Structured data format for programming/research with detailed metadata and classification details</li>
-            <li><strong>📄 TXT:</strong> Human-readable report format perfect for documentation and sharing</li>
-          </ul>
-          <em>All formats include analysis mode, timestamp, and complete results. Training data sheets only include your uploaded examples for full transparency.</em>
-        </div>
 
         {batchResults.length > 0 && (
           <div className="result-section">
