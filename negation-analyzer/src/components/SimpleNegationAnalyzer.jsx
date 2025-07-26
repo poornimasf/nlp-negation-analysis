@@ -761,30 +761,40 @@ export default function SimpleNegationAnalyzer() {
 
   // Determine classification type for batch results
   const determineClassification = (text) => {
-    const triggerInfo = findExpletiveTrigger(text);
-    const hasNe = hasNegation(text);
-    const hasLogical = hasLogicalNegation(text);
+    const analysis = classifyNegation(text);
     
-    if (!hasNe) {
-      return "No Negation";
+    // Check for expletive negation
+    if (analysis.includes('✅ EXPLETIVE NEGATION') || 
+        analysis.includes('🎯 TRAINING-ENHANCED: Expletive') ||
+        analysis.includes('🤖 PURE TRAINING: Likely had expletive')) {
+      return useTrainingEnhancement && trainingData.length > 0 ? "Expletive (ML)" : "Expletive";
     }
     
-    if (!useExpletiveLogic && !enableTrainingData) {
-      return hasLogical ? "Logical" : "Basic Negation";
+    // Check for logical negation
+    if (analysis.includes('Logical negation detected') || 
+        analysis.includes('🎯 TRAINING-ENHANCED: Logical') ||
+        analysis.includes('🤖 PURE TRAINING: Likely had logical')) {
+      return useTrainingEnhancement && trainingData.length > 0 ? "Logical (ML)" : "Logical";
     }
     
+    // Check for pure training mode
     if (!useExpletiveLogic && enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
       return "Pure Training";
     }
     
-    if (triggerInfo && !hasLogical) {
-      return useTrainingEnhancement && trainingData.length > 0 ? "Expletive (ML)" : "Expletive";
+    // Check for absence of 'ne'
+    if (!analysis.toLowerCase().includes('ne')) {
+      return "No Negation";
     }
     
-    if (hasLogical) {
-      return useTrainingEnhancement && trainingData.length > 0 ? "Logical (ML)" : "Logical";
+    // Check for uncertain cases
+    if (analysis.includes('AMBIGUOUS') || 
+        analysis.includes('🤔 UNCERTAIN') ||
+        analysis.includes('Multiple possible interpretations')) {
+      return "Uncertain";
     }
     
+    // Default to Uncertain for any other case
     return "Uncertain";
   };
 
