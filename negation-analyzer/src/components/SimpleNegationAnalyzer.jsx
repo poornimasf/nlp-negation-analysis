@@ -407,8 +407,8 @@ export default function SimpleNegationAnalyzer() {
   };
 
   // Advanced expletive negation classification with detailed analysis
-  const classifyExpletive = (text) => {
-    const triggerInfo = findExpletiveTrigger(text);
+  const classifyExpletive = async (text) => {
+    const triggerInfo = await findExpletiveTrigger(text);
     const hasNe = hasNegation(text);
     const hasLogical = hasLogicalNegation(text);
     const hasSubj = hasSubjunctive(text);
@@ -449,7 +449,7 @@ export default function SimpleNegationAnalyzer() {
     // Analyze trigger pattern - but don't assume it means expletive
     details.push({
       aspect: "Potential Trigger",
-      finding: `Found ${triggerInfo.type === 'peur_que' ? 'fear expression' : 'temporal expression'} (${triggerInfo.match})`,
+      finding: `Found ${triggerInfo.type === 'peur_que' ? 'fear expression' : triggerInfo.type === 'peu_sen_faut' ? 'peu s\'en faut expression' : 'temporal expression'} (${triggerInfo.match})`,
       impact: "Requires additional evidence for expletive classification",
       confidence: 0.2
     });
@@ -914,9 +914,9 @@ export default function SimpleNegationAnalyzer() {
   };
 
   // Enhanced classification using training data (hybrid mode)
-  const classifyWithTraining = (text) => {
+  const classifyWithTraining = async (text) => {
     // Get rule-based analysis and format it
-    let ruleBasedResult = classifyExpletive(text);
+    let ruleBasedResult = await classifyExpletive(text);
     
     // Format rule-based result with a header
     ruleBasedResult = '📚 RULE-BASED ANALYSIS:\n' + ruleBasedResult.split('\n').map(line => {
@@ -933,7 +933,7 @@ export default function SimpleNegationAnalyzer() {
       return ruleBasedResult;
     }
 
-    const triggerInfo = findExpletiveTrigger(text);
+    const triggerInfo = await findExpletiveTrigger(text);
     
     if (!triggerInfo) {
       return ruleBasedResult;
@@ -942,6 +942,7 @@ export default function SimpleNegationAnalyzer() {
     // Map robust trigger to simple trigger for training data lookup
     let simpleTrigger = 'peur que'; // default
     if (triggerInfo.match.includes('avant')) simpleTrigger = 'avant que';
+    else if (triggerInfo.match.includes('peu s\'en faut')) simpleTrigger = 'peu s\'en faut';
     else if (triggerInfo.match.includes('crain')) simpleTrigger = 'craindre';
     else if (triggerInfo.match.includes('redout')) simpleTrigger = 'redouter';
     else if (triggerInfo.match.includes('dout')) simpleTrigger = 'douter';
@@ -981,7 +982,7 @@ export default function SimpleNegationAnalyzer() {
   };
 
   // Main classification function that uses feature flags independently
-  const classifyNegation = (text) => {
+  const classifyNegation = async (text) => {
     // Pure training-based analysis (training flag on, expletive flag off)
     if (!useExpletiveLogic && enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
       return classifyPureTraining(text);
@@ -994,17 +995,17 @@ export default function SimpleNegationAnalyzer() {
     
     // Rule-based expletive logic only (expletive flag on, training flag off)
     if (useExpletiveLogic && !enableTrainingData) {
-      return classifyExpletive(text);
+      return await classifyExpletive(text);
     }
     
     // Hybrid: Training-enhanced expletive logic (both flags on)
     if (useExpletiveLogic && enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
-      return classifyWithTraining(text);
+      return await classifyWithTraining(text);
     }
     
     // Fallback to appropriate base logic
     if (useExpletiveLogic) {
-      return classifyExpletive(text);
+      return await classifyExpletive(text);
     } else {
       return classifyBasic(text);
     }
@@ -1193,72 +1194,91 @@ export default function SimpleNegationAnalyzer() {
 
 
 
-  const handleBatchAnalyze = () => {
+  const handleBatchAnalyze = async () => {
     if (!batchInput.trim()) {
       setBatchResults([]);
       return;
     }
 
     const sentences = batchInput.split("\n").filter(line => line.trim());
-    const results = sentences.map((sentence, index) => {
-      const analysis = classifyNegation(sentence.trim());
-      const triggerInfo = findExpletiveTrigger(sentence.trim());
-      const hasNe = hasNegation(sentence.trim());
-      const hasSubj = hasSubjunctive(sentence.trim());
-      
-      // Build detailed reasoning
-      const reasoning = [];
-      
-      // Check for trigger patterns
-      if (triggerInfo && triggerInfo.match) {
-        const triggerType = triggerInfo.mappedType || mapTriggerType(triggerInfo.type);
-        reasoning.push(`Found trigger pattern: "${triggerInfo.match}" (${triggerType})`);
+    const results = [];
+    
+    for (let index = 0; index < sentences.length; index++) {
+      const sentence = sentences[index];
+      try {
+        const analysis = await classifyNegation(sentence.trim());
+        const triggerInfo = await findExpletiveTrigger(sentence.trim());
+        const hasNe = hasNegation(sentence.trim());
+        const hasSubj = hasSubjunctive(sentence.trim());
         
-        if (triggerInfo.type === 'peur_que') {
-          reasoning.push('Trigger indicates fear expression');
-        } else if (triggerInfo.type === 'avant') {
-          reasoning.push('Trigger indicates temporal expression');
-        } else if (triggerInfo.type === 'peu_sen_faut') {
-          reasoning.push('Trigger indicates expletive construction');
+        // Build detailed reasoning
+        const reasoning = [];
+        
+        // Check for trigger patterns
+        if (triggerInfo && triggerInfo.match) {
+          const triggerType = triggerInfo.mappedType || mapTriggerType(triggerInfo.type);
+          reasoning.push(`Found trigger pattern: "${triggerInfo.match}" (${triggerType})`);
+          
+          if (triggerInfo.type === 'peur_que') {
+            reasoning.push('Trigger indicates fear expression');
+          } else if (triggerInfo.type === 'avant') {
+            reasoning.push('Trigger indicates temporal expression');
+          } else if (triggerInfo.type === 'peu_sen_faut') {
+            reasoning.push('Trigger indicates expletive construction');
+          }
         }
-      }
-      
-      // Check for 'ne' presence
-      if (hasNe) {
-        reasoning.push('Contains "ne" negation marker');
-      }
-      
-      // Check for subjunctive
-      if (hasSubj) {
-        reasoning.push('Contains subjunctive verb form');
-      }
-      
-      // Check for training data matches if enabled
-      if (enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
-        const similarExamples = trainingData.filter(example => 
-          example.text.toLowerCase().includes(sentence.toLowerCase()) ||
-          sentence.toLowerCase().includes(example.text.toLowerCase())
-        );
-        if (similarExamples.length > 0) {
-          reasoning.push(`Found ${similarExamples.length} similar examples in training data`);
+        
+        // Check for 'ne' presence
+        if (hasNe) {
+          reasoning.push('Contains "ne" negation marker');
         }
+        
+        // Check for subjunctive
+        if (hasSubj) {
+          reasoning.push('Contains subjunctive verb form');
+        }
+        
+        // Check for training data matches if enabled
+        if (enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
+          const similarExamples = trainingData.filter(example => 
+            example.text.toLowerCase().includes(sentence.toLowerCase()) ||
+            sentence.toLowerCase().includes(example.text.toLowerCase())
+          );
+          if (similarExamples.length > 0) {
+            reasoning.push(`Found ${similarExamples.length} similar examples in training data`);
+          }
+        }
+        
+        // Determine confidence level
+        const confidence = await calculateConfidence(sentence.trim(), triggerInfo);
+        reasoning.push(`Confidence level: ${Math.round(confidence * 100)}%`);
+        
+        results.push({
+          id: index + 1,
+          text: sentence.trim(),
+          highlightedText: highlight(sentence.trim()),
+          label: analysis,
+          classification: determineClassification(sentence.trim()),
+          reasoning: reasoning.join('\n'),
+          confidence: confidence,
+          trigger: triggerInfo ? (triggerInfo.mappedType || mapTriggerType(triggerInfo.type)) : null
+        });
+      } catch (error) {
+        console.error(`Error processing sentence ${index + 1}:`, error);
+        // Add error result
+        results.push({
+          id: index + 1,
+          text: sentence.trim(),
+          highlightedText: sentence.trim(),
+          label: `Error: ${error.message}`,
+          classification: "Error",
+          reasoning: `Processing failed: ${error.message}`,
+          confidence: 0,
+          trigger: null
+        });
       }
-      
-      // Determine confidence level
-      const confidence = calculateConfidence(sentence.trim(), triggerInfo);
-      reasoning.push(`Confidence level: ${Math.round(confidence * 100)}%`);
-      
-      return {
-        id: index + 1,
-        text: sentence.trim(),
-        highlightedText: highlight(sentence.trim()),
-        label: analysis,
-        classification: determineClassification(sentence.trim()),
-        reasoning: reasoning.join('\n'),
-        confidence: confidence,
-        trigger: triggerInfo ? (triggerInfo.mappedType || mapTriggerType(triggerInfo.type)) : null
-      };
-    });
+    }
+    
     setBatchResults(results);
   };
 
