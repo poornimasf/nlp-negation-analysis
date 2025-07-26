@@ -89,20 +89,24 @@ export default function SimpleNegationAnalyzer() {
     // Peu s'en faut expressions
     peu_sen_faut: [
       // Basic construction
-      /\bpeu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+qu[e'](?!\s+pas)\s*/gi,
+      /\bpeu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+(?:que?|qu[''])\s*/gi,
       
       // Variations with intensifiers
-      /\b(?:très|si|tellement)\s+peu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+qu[e'](?!\s+pas)\s*/gi,
+      /\b(?:très|si|tellement)\s+peu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+(?:que?|qu[''])\s*/gi,
       
       // Impersonal constructions
-      /\bil\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+(?:de\s+)?peu\s+qu[e'](?!\s+pas)\s*/gi,
+      /\bil\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+(?:de\s+)?peu\s+(?:que?|qu[''])\s*/gi,
       
       // Question forms
-      /\bs['']en\s+(?:faut|fallait|faudra|faudrait)[-]t[-]il\s+(?:de\s+)?peu\s+qu[e'](?!\s+pas)\s*/gi,
+      /\bs['']en\s+(?:faut|fallait|faudra|faudrait)[-]?t[-]?il\s+(?:de\s+)?peu\s+(?:que?|qu[''])\s*/gi,
       
       // Temporal variations
-      /\bpeu\s+s['']en\s+est\s+fallu\s+qu[e'](?!\s+pas)\s*/gi,
-      /\bpeu\s+s['']en\s+serait\s+fallu\s+qu[e'](?!\s+pas)\s*/gi
+      /\bpeu\s+s['']en\s+est\s+fallu\s+(?:que?|qu[''])\s*/gi,
+      /\bpeu\s+s['']en\s+serait\s+fallu\s+(?:que?|qu[''])\s*/gi,
+      
+      // Additional variations
+      /\bpeu\s+s['']en\s+faut\s+(?:que?|qu[''])\s*/gi,
+      /\bil\s+s['']en\s+faut\s+de\s+peu\s+(?:que?|qu[''])\s*/gi
     ],
     
     // Fear verbs - comprehensive conjugations
@@ -288,11 +292,17 @@ export default function SimpleNegationAnalyzer() {
       .replace(/\s+/g, ' ') // Normalize whitespace
       .trim();
 
+    console.log('Analyzing text:', normalizedText);
+
     for (const [triggerType, patterns] of Object.entries(EXPLETIVE_PATTERNS)) {
+      console.log(`Checking ${triggerType} patterns...`);
       for (const pattern of patterns) {
+        console.log('Testing pattern:', pattern.toString());
         const match = normalizedText.match(pattern);
         if (match) {
+          console.log('Found match:', match[0], 'for type:', triggerType);
           const mappedType = mapTriggerType(triggerType);
+          console.log('Mapped type:', mappedType);
           return {
             type: triggerType,
             mappedType: mappedType,
@@ -303,6 +313,7 @@ export default function SimpleNegationAnalyzer() {
         }
       }
     }
+    console.log('No trigger found');
     return null;
   };
 
@@ -1058,34 +1069,37 @@ export default function SimpleNegationAnalyzer() {
   // Determine classification type for batch results
   const determineClassification = (text) => {
     const analysis = classifyNegation(text);
+    console.log('Analysis result:', analysis);
     
     // Get the first line which contains the main classification
     const firstLine = analysis.split('\n')[0];
+    console.log('First line:', firstLine);
     
     // Check for explicit logical negation detection
-    if (firstLine.startsWith('Logical negation detected')) {
+    if (firstLine.includes('Logical negation detected')) {
       return "Logical";
     }
     
     // Check for explicit expletive negation detection
-    if (firstLine.startsWith('✅ EXPLETIVE NEGATION') ||
-        firstLine.startsWith('LIKELY EXPLETIVE NEGATION')) {
+    if (firstLine.includes('✅ EXPLETIVE NEGATION') ||
+        firstLine.includes('LIKELY EXPLETIVE NEGATION') ||
+        firstLine.includes('peu s\'en faut')) {  // Added specific check for peu s'en faut
       return "Expletive";
     }
     
     // Check for ML-enhanced detections
-    if (firstLine.startsWith('🎯 TRAINING-ENHANCED: Logical') ||
-        firstLine.startsWith('🤖 PURE TRAINING: Likely had logical')) {
+    if (firstLine.includes('🎯 TRAINING-ENHANCED: Logical') ||
+        firstLine.includes('🤖 PURE TRAINING: Likely had logical')) {
       return useTrainingEnhancement && trainingData.length > 0 ? "Logical (ML)" : "Logical";
     }
     
-    if (firstLine.startsWith('🎯 TRAINING-ENHANCED: Expletive') ||
-        firstLine.startsWith('🤖 PURE TRAINING: Likely had expletive')) {
+    if (firstLine.includes('🎯 TRAINING-ENHANCED: Expletive') ||
+        firstLine.includes('🤖 PURE TRAINING: Likely had expletive')) {
       return useTrainingEnhancement && trainingData.length > 0 ? "Expletive (ML)" : "Expletive";
     }
     
     // Check for no negation cases
-    if (firstLine.startsWith('No negation markers found')) {
+    if (firstLine.includes('No negation markers found')) {
       return "No Negation";
     }
     
@@ -1106,6 +1120,13 @@ export default function SimpleNegationAnalyzer() {
           return "Logical (ML)";
         }
       }
+    }
+    
+    // Check for trigger patterns
+    const triggerInfo = findExpletiveTrigger(text);
+    if (triggerInfo && triggerInfo.type === 'peu_sen_faut') {
+      console.log('Found peu s\'en faut trigger:', triggerInfo);
+      return "Expletive";
     }
     
     // Default to Uncertain for any other case
