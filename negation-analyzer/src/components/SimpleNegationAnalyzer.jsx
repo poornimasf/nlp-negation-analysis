@@ -292,8 +292,10 @@ export default function SimpleNegationAnalyzer() {
       for (const pattern of patterns) {
         const match = normalizedText.match(pattern);
         if (match) {
+          const mappedType = mapTriggerType(triggerType);
           return {
             type: triggerType,
+            mappedType: mappedType,
             match: match[0].trim(),
             position: match.index,
             confidence: calculateTriggerConfidence(match[0], triggerType)
@@ -543,6 +545,16 @@ export default function SimpleNegationAnalyzer() {
 
   // Legacy trigger array for backward compatibility
   const TRIGGERS = ["peur que", "avant que", "peu s'en faut"];
+  
+  // Map trigger types to their simple forms
+  const mapTriggerType = (triggerType) => {
+    switch(triggerType) {
+      case 'peur_que': return 'peur que';
+      case 'avant': return 'avant que';
+      case 'peu_sen_faut': return 'peu s\'en faut';
+      default: return triggerType;
+    }
+  };
 
   const highlight = (text) => {
     let output = text;
@@ -1121,11 +1133,13 @@ export default function SimpleNegationAnalyzer() {
       
       // Check for trigger patterns
       if (triggerInfo) {
-        reasoning.push(`Found trigger pattern: "${triggerInfo.match}"`);
-        if (triggerInfo.type === 'peur') {
+        reasoning.push(`Found trigger pattern: "${triggerInfo.match}" (${triggerInfo.mappedType})`);
+        if (triggerInfo.type === 'peur_que') {
           reasoning.push('Trigger indicates fear expression');
         } else if (triggerInfo.type === 'avant') {
           reasoning.push('Trigger indicates temporal expression');
+        } else if (triggerInfo.type === 'peu_sen_faut') {
+          reasoning.push('Trigger indicates expletive construction');
         }
       }
       
@@ -1161,7 +1175,8 @@ export default function SimpleNegationAnalyzer() {
         label: analysis,
         classification: determineClassification(sentence.trim()),
         reasoning: reasoning.join('\n'),
-        confidence: confidence
+        confidence: confidence,
+        trigger: triggerInfo ? triggerInfo.mappedType : null
       };
     });
     setBatchResults(results);
