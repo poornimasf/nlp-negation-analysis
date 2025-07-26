@@ -478,6 +478,7 @@ export default function SimpleNegationAnalyzer() {
     return result.join('\n');
   };
 
+  // Format detailed result with consistent bullet points
   const formatDetailedResult = (classification, confidence, details) => {
     let result = [];
     
@@ -485,7 +486,7 @@ export default function SimpleNegationAnalyzer() {
     result.push(classification);
     result.push(`(${Math.round(confidence * 100)}% confidence)\n`);
     
-    // Add evidence as bullets
+    // Add evidence as bullets with proper indentation
     if (Array.isArray(details)) {
       details.forEach(d => {
         if (typeof d === 'string') {
@@ -493,7 +494,7 @@ export default function SimpleNegationAnalyzer() {
         } else {
           result.push(`• ${d.finding}`);
           if (d.impact && !d.impact.includes("additional evidence")) {
-            result.push(`  ${d.impact}`);
+            result.push(`  ↳ ${d.impact}`);
           }
         }
       });
@@ -689,8 +690,19 @@ export default function SimpleNegationAnalyzer() {
 
   // Enhanced classification using training data (hybrid mode)
   const classifyWithTraining = (text) => {
-    // Get rule-based analysis
-    const ruleBasedResult = classifyExpletive(text);
+    // Get rule-based analysis and format it
+    let ruleBasedResult = classifyExpletive(text);
+    
+    // Format rule-based result with a header
+    ruleBasedResult = '📚 RULE-BASED ANALYSIS:\n' + ruleBasedResult.split('\n').map(line => {
+      // Skip empty lines
+      if (!line.trim()) return '';
+      // Add bullet points to non-empty lines that don't start with special characters
+      if (!line.startsWith('✅') && !line.startsWith('•') && line.trim()) {
+        return '• ' + line;
+      }
+      return line;
+    }).join('\n');
     
     if (trainingData.length === 0) {
       return ruleBasedResult;
@@ -725,16 +737,22 @@ export default function SimpleNegationAnalyzer() {
     const totalCount = similarExamples.length;
     const confidence = Math.round((Math.max(expletiveCount, totalCount - expletiveCount) / totalCount) * 100);
 
-    // Format training-based result
-    let trainingResult;
+    // Format training-based result with detailed information
+    let trainingResult = '\n\n🤖 TRAINING DATA ANALYSIS:\n';
     if (expletiveCount > totalCount - expletiveCount) {
-      trainingResult = `🎯 TRAINING DATA SUGGESTS: Expletive (${confidence}% from ${totalCount} examples)`;
+      trainingResult += `• Prediction: Expletive\n`;
+      trainingResult += `• Confidence: ${confidence}%\n`;
+      trainingResult += `• Based on ${totalCount} similar examples\n`;
+      trainingResult += `• ${expletiveCount} examples classified as expletive`;
     } else {
-      trainingResult = `🎯 TRAINING DATA SUGGESTS: Logical (${confidence}% from ${totalCount} examples)`;
+      trainingResult += `• Prediction: Logical\n`;
+      trainingResult += `• Confidence: ${confidence}%\n`;
+      trainingResult += `• Based on ${totalCount} similar examples\n`;
+      trainingResult += `• ${totalCount - expletiveCount} examples classified as logical`;
     }
 
-    // Combine rule-based and training results
-    return ruleBasedResult + '\n\n' + trainingResult;
+    // Combine rule-based and training results with clear separation
+    return ruleBasedResult + trainingResult;
   };
 
   // Main classification function that uses feature flags independently
