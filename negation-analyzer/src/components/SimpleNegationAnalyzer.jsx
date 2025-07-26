@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 import * as XLSX from 'xlsx';
 import { LOGICAL_NEGATION_PATTERNS } from '../utils/patterns';
+import EnhancedPatternMatcher from '../utils/EnhancedPatternMatcher';
 
 export default function SimpleNegationAnalyzer() {
   // Basic state
