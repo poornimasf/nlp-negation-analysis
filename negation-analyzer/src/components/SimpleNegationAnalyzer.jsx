@@ -13,8 +13,8 @@ export default function SimpleNegationAnalyzer() {
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
 
   // Feature flags
-  const [useExpletiveLogic, setUseExpletiveLogic] = useState(true);
-  const [enableTrainingData, setEnableTrainingData] = useState(false);
+  const [useExpletiveLogic, setUseExpletiveLogic] = useState(false);
+  const [enableTrainingData, setEnableTrainingData] = useState(true);
   
   // Training data state
   const [trainingData, setTrainingData] = useState([]);
