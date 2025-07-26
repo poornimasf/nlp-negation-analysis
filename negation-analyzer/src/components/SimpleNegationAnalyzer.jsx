@@ -423,45 +423,83 @@ export default function SimpleNegationAnalyzer() {
 
     // Format detailed result
     let result = [];
-    result.push(`${classification} - Trigger: ${triggerInfo.match}`);
-    result.push(`\nAnalysis (${Math.round(confidence * 100)}% confidence):`);
+    
+    // Add classification without redundant trigger info
+    result.push(classification);
+    
+    // Add confidence on same line
+    result.push(`(${Math.round(confidence * 100)}% confidence)\n`);
     
     // Group details by confidence level
     const strongEvidence = details.filter(d => d.confidence >= 0.3);
     const moderateEvidence = details.filter(d => d.confidence >= 0.1 && d.confidence < 0.3);
     const weakEvidence = details.filter(d => d.confidence < 0.1);
 
+    // Format evidence sections without labels, just bullets
     if (strongEvidence.length > 0) {
-      result.push('\nStrong Evidence:');
       strongEvidence.forEach(d => {
-        result.push(`  • ${d.finding} (${d.impact})`);
+        result.push(`• ${d.finding}`);
+        if (d.impact !== "Requires additional evidence for expletive classification") {
+          result.push(`  ${d.impact}`);
+        }
       });
     }
 
     if (moderateEvidence.length > 0) {
-      result.push('\nSupporting Evidence:');
+      if (strongEvidence.length > 0) result.push('');  // Add spacing
       moderateEvidence.forEach(d => {
-        result.push(`  • ${d.finding} (${d.impact})`);
+        result.push(`• ${d.finding}`);
+        if (d.impact !== "Requires additional evidence for expletive classification") {
+          result.push(`  ${d.impact}`);
+        }
       });
     }
 
+    // Only include weak evidence if it adds meaningful information
     if (weakEvidence.length > 0) {
-      result.push('\nAdditional Factors:');
-      weakEvidence.forEach(d => {
-        result.push(`  • ${d.finding} (${d.impact})`);
-      });
+      const meaningfulWeak = weakEvidence.filter(d => 
+        !d.finding.includes("No 'ne'") && 
+        !d.finding.includes("Missing") &&
+        !d.finding.includes("not sufficient") &&
+        !d.impact.includes("additional evidence")
+      );
+      
+      if (meaningfulWeak.length > 0) {
+        if (strongEvidence.length > 0 || moderateEvidence.length > 0) result.push('');
+        meaningfulWeak.forEach(d => {
+          result.push(`• ${d.finding}`);
+          if (d.impact && !d.impact.includes("additional evidence")) {
+            result.push(`  ${d.impact}`);
+          }
+        });
+      }
     }
 
     return result.join('\n');
   };
 
-  const formatDetailedResult = (classification, confidence, evidence) => {
-    return [
-      classification,
-      `\nConfidence: ${Math.round(confidence * 100)}%`,
-      '\nEvidence:',
-      ...evidence.map(e => `  • ${e}`)
-    ].join('\n');
+  const formatDetailedResult = (classification, confidence, details) => {
+    let result = [];
+    
+    // Add classification and confidence
+    result.push(classification);
+    result.push(`(${Math.round(confidence * 100)}% confidence)\n`);
+    
+    // Add evidence as bullets
+    if (Array.isArray(details)) {
+      details.forEach(d => {
+        if (typeof d === 'string') {
+          result.push(`• ${d}`);
+        } else {
+          result.push(`• ${d.finding}`);
+          if (d.impact && !d.impact.includes("additional evidence")) {
+            result.push(`  ${d.impact}`);
+          }
+        }
+      });
+    }
+    
+    return result.join('\n');
   };
 
   // Legacy trigger array for backward compatibility
