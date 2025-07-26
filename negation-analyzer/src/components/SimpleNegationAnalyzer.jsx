@@ -1877,15 +1877,47 @@ export default function SimpleNegationAnalyzer() {
             marginBottom: '20px',
             border: '1px solid #4caf50'
           }}>
-            <h4>📋 Expected File Format (CSV or JSON):</h4>
-            <p><strong>CSV columns:</strong> text, has_expletive_ne, trigger, classification</p>
-            <p><strong>Example:</strong></p>
+            <h4>📋 Expected File Format (JSON):</h4>
+            <p><strong>Required fields:</strong> text, has_expletive_ne, trigger, classification</p>
+            <p><strong>Example JSON:</strong></p>
             <pre style={{ fontSize: '12px', backgroundColor: 'white', padding: '10px', borderRadius: '4px' }}>
-{`text,has_expletive_ne,trigger,classification
-"J'ai peur qu'il ne vienne",true,peur que,expletive
-"J'ai peur qu'il ne vienne pas",false,peur que,logical
-"Avant qu'elle ne parte",true,avant que,expletive`}
+{`{
+  "examples": [
+    {
+      "text": "J'ai peur qu'il ne vienne",
+      "has_expletive_ne": true,
+      "trigger": "peur que",
+      "classification": "expletive"
+    },
+    {
+      "text": "Avant qu'elle ne parte",
+      "has_expletive_ne": true,
+      "trigger": "avant que",
+      "classification": "expletive"
+    },
+    {
+      "text": "Peu s'en faut qu'il ne pleuve",
+      "has_expletive_ne": true,
+      "trigger": "peu s'en faut",
+      "classification": "expletive"
+    },
+    {
+      "text": "Il s'en faut de peu qu'elle ne vienne",
+      "has_expletive_ne": true,
+      "trigger": "peu s'en faut",
+      "classification": "expletive"
+    }
+  ]
+}`}
             </pre>
+            <div style={{ marginTop: '10px', fontSize: '13px', color: '#666' }}>
+              <strong>💡 Tips:</strong>
+              <ul style={{ marginTop: '5px', paddingLeft: '20px' }}>
+                <li>Supported triggers: "peur que", "avant que", "peu s'en faut"</li>
+                <li>has_expletive_ne: true/false indicates presence of expletive negation</li>
+                <li>classification: "expletive" or "logical"</li>
+              </ul>
+            </div>
           </div>
 
           <div className="form-group">
