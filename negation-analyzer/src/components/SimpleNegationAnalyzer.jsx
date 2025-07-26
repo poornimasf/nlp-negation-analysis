@@ -880,24 +880,30 @@ export default function SimpleNegationAnalyzer() {
   const determineClassification = (text) => {
     const analysis = classifyNegation(text);
     
-    // Check for strong expletive indicators
-    if (analysis.includes('Strong indicator for expletive negation') ||
-        analysis.includes('✅ EXPLETIVE NEGATION') || 
-        analysis.includes('🎯 TRAINING-ENHANCED: Expletive') ||
-        analysis.includes('🤖 PURE TRAINING: Likely had expletive')) {
-      return useTrainingEnhancement && trainingData.length > 0 ? "Expletive (ML)" : "Expletive";
+    // Check for explicit logical negation detection
+    if (analysis.includes('Logical negation detected')) {
+      return "Logical";
     }
     
-    // Check for logical negation
-    if (analysis.includes('Logical negation detected') || 
-        analysis.includes('🎯 TRAINING-ENHANCED: Logical') ||
+    // Check for explicit expletive negation detection
+    if (analysis.includes('✅ EXPLETIVE NEGATION')) {
+      return "Expletive";
+    }
+    
+    // Check for ML-enhanced detections
+    if (analysis.includes('🎯 TRAINING-ENHANCED: Logical') ||
         analysis.includes('🤖 PURE TRAINING: Likely had logical')) {
       return useTrainingEnhancement && trainingData.length > 0 ? "Logical (ML)" : "Logical";
     }
     
-    // Check for pure training mode
-    if (!useExpletiveLogic && enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
-      return "Pure Training";
+    if (analysis.includes('🎯 TRAINING-ENHANCED: Expletive') ||
+        analysis.includes('🤖 PURE TRAINING: Likely had expletive')) {
+      return useTrainingEnhancement && trainingData.length > 0 ? "Expletive (ML)" : "Expletive";
+    }
+    
+    // Check for potential expletive cases
+    if (analysis.includes('Potential expletive')) {
+      return "Potential";
     }
     
     // Check for absence of 'ne'
