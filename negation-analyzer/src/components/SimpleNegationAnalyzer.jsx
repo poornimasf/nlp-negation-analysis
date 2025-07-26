@@ -1715,59 +1715,6 @@ export default function SimpleNegationAnalyzer() {
             <p><strong>Advantage:</strong> Combines linguistic expertise with data-driven improvements</p>
           </div>
         )}
-
-        {/* Single Sentence Section */}
-        <div className="form-group">
-          <label htmlFor="sentence-input">Enter French Sentence:</label>
-          <div className="input-group">
-            <input
-              id="sentence-input"
-              type="text"
-              placeholder="e.g., J'ai peur qu'il ne vienne..."
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              className="input"
-            />
-            <button onClick={handleAnalyze} className="button">
-              Analyze
-            </button>
-          </div>
-        </div>
-
-        {result && (
-          <div className="result-section">
-            <h3>Analysis Result:</h3>
-            <p className="classification-result" style={{
-              padding: '15px',
-              backgroundColor: result.includes('Logical negation detected') || 
-                             result.includes('🎯 TRAINING-ENHANCED: Logical') || 
-                             result.includes('🤖 PURE TRAINING: Likely had logical') ? '#fff3cd' :
-                             result.includes('✅ EXPLETIVE NEGATION') || 
-                             result.includes('🎯 TRAINING-ENHANCED: Expletive') || 
-                             result.includes('🤖 PURE TRAINING: Likely had expletive') ? '#d4edda' : 
-                             '#f8f9fa',
-              border: `1px solid ${result.includes('Logical negation detected') || 
-                                  result.includes('🎯 TRAINING-ENHANCED: Logical') || 
-                                  result.includes('🤖 PURE TRAINING: Likely had logical') ? '#ffeaa7' :
-                                  result.includes('✅ EXPLETIVE NEGATION') || 
-                                  result.includes('🎯 TRAINING-ENHANCED: Expletive') || 
-                                  result.includes('🤖 PURE TRAINING: Likely had expletive') ? '#c3e6cb' : 
-                                  '#dee2e6'}`,
-              borderRadius: '8px',
-              fontWeight: result.includes('✅ EXPLETIVE NEGATION') || 
-                         result.includes('🎯 TRAINING-ENHANCED') || 
-                         result.includes('🤖 PURE TRAINING') ? 'bold' : 'normal'
-            }}>
-              {result}
-            </p>
-            {highlightedText && (
-              <>
-                <h3>Highlighted Sentence:</h3>
-                <p className="sentence-text" dangerouslySetInnerHTML={{ __html: highlightedText }}></p>
-              </>
-            )}
-          </div>
-        )}
       </div>
 
       {/* User Training Data Section - Completely User-Controlled */}
