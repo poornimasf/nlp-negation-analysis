@@ -880,41 +880,44 @@ export default function SimpleNegationAnalyzer() {
   const determineClassification = (text) => {
     const analysis = classifyNegation(text);
     
+    // Get the first line which contains the main classification
+    const firstLine = analysis.split('\n')[0];
+    
     // Check for explicit logical negation detection
-    if (analysis.includes('Logical negation detected')) {
+    if (firstLine.startsWith('Logical negation detected')) {
       return "Logical";
     }
     
     // Check for explicit expletive negation detection
-    if (analysis.includes('✅ EXPLETIVE NEGATION')) {
+    if (firstLine.startsWith('✅ EXPLETIVE NEGATION')) {
       return "Expletive";
     }
     
     // Check for ML-enhanced detections
-    if (analysis.includes('🎯 TRAINING-ENHANCED: Logical') ||
-        analysis.includes('🤖 PURE TRAINING: Likely had logical')) {
+    if (firstLine.startsWith('🎯 TRAINING-ENHANCED: Logical') ||
+        firstLine.startsWith('🤖 PURE TRAINING: Likely had logical')) {
       return useTrainingEnhancement && trainingData.length > 0 ? "Logical (ML)" : "Logical";
     }
     
-    if (analysis.includes('🎯 TRAINING-ENHANCED: Expletive') ||
-        analysis.includes('🤖 PURE TRAINING: Likely had expletive')) {
+    if (firstLine.startsWith('🎯 TRAINING-ENHANCED: Expletive') ||
+        firstLine.startsWith('🤖 PURE TRAINING: Likely had expletive')) {
       return useTrainingEnhancement && trainingData.length > 0 ? "Expletive (ML)" : "Expletive";
     }
     
     // Check for potential expletive cases
-    if (analysis.includes('Potential expletive')) {
+    if (firstLine.startsWith('Potential expletive')) {
       return "Potential";
     }
     
-    // Check for absence of 'ne'
-    if (!analysis.toLowerCase().includes('ne')) {
+    // Check for no negation cases
+    if (firstLine.startsWith('No negation markers found')) {
       return "No Negation";
     }
     
     // Check for uncertain cases
-    if (analysis.includes('AMBIGUOUS') || 
-        analysis.includes('🤔 UNCERTAIN') ||
-        analysis.includes('Multiple possible interpretations')) {
+    if (firstLine.includes('AMBIGUOUS') || 
+        firstLine.includes('🤔 UNCERTAIN') ||
+        firstLine.includes('Multiple possible interpretations')) {
       return "Uncertain";
     }
     
