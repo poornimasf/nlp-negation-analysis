@@ -534,13 +534,24 @@ export default function SimpleNegationAnalyzer() {
         impact: "Removed 'ne' was probably expletive",
         confidence: confidence
       });
-    } else {
-      classification = "UNCERTAIN - POSSIBLY LOGICAL";
-      confidence = 1 - supportingEvidence;
+    } else if (supportingEvidence >= 0.2) {
+      // Lower threshold - still lean toward logical but with less certainty
+      classification = "LIKELY LOGICAL NEGATION";
+      confidence = 0.7 - supportingEvidence; // Inverse confidence for logical
       details.push({
         aspect: "Final Classification",
-        finding: "Limited evidence for expletive negation",
-        impact: "Removed 'ne' might have been logical",
+        finding: "Limited expletive evidence found",
+        impact: "Removed 'ne' was probably logical",
+        confidence: confidence
+      });
+    } else {
+      // Very little evidence either way
+      classification = "LIKELY LOGICAL NEGATION";
+      confidence = 0.8; // Higher confidence for logical when no expletive triggers
+      details.push({
+        aspect: "Final Classification",
+        finding: "No significant expletive indicators",
+        impact: "Removed 'ne' was likely logical negation",
         confidence: confidence
       });
     }
@@ -1128,25 +1139,32 @@ export default function SimpleNegationAnalyzer() {
     console.log('First line:', firstLine);
     
     // Check for explicit logical negation detection
-    if (firstLine.includes('Logical negation detected')) {
+    if (firstLine.includes('Logical negation detected') ||
+        firstLine.includes('LIKELY LOGICAL NEGATION') ||
+        firstLine.includes('Removed \'ne\' was likely logical')) {
       return "Logical";
     }
     
-    // Check for explicit expletive negation detection
-    if (firstLine.includes('✅ EXPLETIVE NEGATION') ||
-        firstLine.includes('LIKELY EXPLETIVE NEGATION') ||
-        firstLine.includes('peu s\'en faut')) {  // Added specific check for peu s'en faut
+    // Check for explicit expletive negation detection (strong indicators)
+    if (firstLine.includes('✅ EXPLETIVE NEGATION')) {
+      return "Expletive";
+    }
+    
+    // Check for likely expletive indicators
+    if (firstLine.includes('LIKELY EXPLETIVE NEGATION') ||
+        firstLine.includes('Removed \'ne\' was likely expletive') ||
+        firstLine.includes('peu s\'en faut')) {
       return "Expletive";
     }
     
     // Check for ML-enhanced detections
     if (firstLine.includes('🎯 TRAINING-ENHANCED: Logical') ||
-        firstLine.includes('🤖 PURE TRAINING: Likely had logical')) {
+        firstLine.includes('🤖 PURE TRAINING: Removed \'ne\' was likely logical')) {
       return useTrainingEnhancement && trainingData.length > 0 ? "Logical (ML)" : "Logical";
     }
     
     if (firstLine.includes('🎯 TRAINING-ENHANCED: Expletive') ||
-        firstLine.includes('🤖 PURE TRAINING: Likely had expletive')) {
+        firstLine.includes('🤖 PURE TRAINING: Removed \'ne\' was likely expletive')) {
       return useTrainingEnhancement && trainingData.length > 0 ? "Expletive (ML)" : "Expletive";
     }
     
@@ -1155,37 +1173,64 @@ export default function SimpleNegationAnalyzer() {
       return "No Negation";
     }
     
-    // Check for uncertain cases
+    // Look deeper into the analysis for training data suggestions
+    if (analysis.includes('🤖 TRAINING DATA ANALYSIS:')) {
+      const lines = analysis.split('\n');
+      const trainingLine = lines.find(line => 
+        line.includes('Prediction: Removed \'ne\' was expletive') ||
+        line.includes('Prediction: Removed \'ne\' was logical')
+      );
+      
+      if (trainingLine) {
+        if (trainingLine.includes('expletive')) {
+          return "Expletive (ML)";
+        } else if (trainingLine.includes('logical')) {
+          return "Logical (ML)";
+        }
+      }
+    }
+    
+    // Check for moderate confidence predictions that should not be "Uncertain"
+    if (firstLine.includes('UNCERTAIN - POSSIBLY LOGICAL')) {
+      // If there's some evidence pointing to logical, classify as logical with lower confidence
+      return "Logical";
+    }
+    
+    // Check for trigger patterns even in uncertain cases
+    try {
+      const triggerInfo = await findExpletiveTrigger(text);
+      if (triggerInfo) {
+        // If we found a trigger pattern, lean toward expletive even if uncertain
+        if (triggerInfo.type === 'peur_que' || 
+            triggerInfo.type === 'avant' || 
+            triggerInfo.type === 'peu_sen_faut') {
+          console.log('Found trigger pattern, classifying as Expletive:', triggerInfo);
+          return "Expletive";
+        }
+      } else {
+        // No trigger found, more likely to be logical
+        return "Logical";
+      }
+    } catch (error) {
+      console.error('Error checking trigger patterns:', error);
+    }
+    
+    // Only use Uncertain for truly ambiguous cases
     if (firstLine.includes('AMBIGUOUS') || 
         firstLine.includes('🤔 UNCERTAIN') ||
         firstLine.includes('Multiple possible interpretations')) {
       return "Uncertain";
     }
     
-    // For hybrid analysis, check training data suggestion in later lines
-    if (analysis.includes('🎯 TRAINING DATA SUGGESTS:')) {
-      const trainingLine = analysis.split('\n').find(line => line.startsWith('🎯 TRAINING DATA SUGGESTS:'));
-      if (trainingLine) {
-        if (trainingLine.includes('Expletive')) {
-          return "Expletive (ML)";
-        } else if (trainingLine.includes('Logical')) {
-          return "Logical (ML)";
-        }
-      }
+    // Default fallback - if we can't determine, check for any indicators
+    const lowerAnalysis = analysis.toLowerCase();
+    if (lowerAnalysis.includes('expletive') && !lowerAnalysis.includes('not expletive')) {
+      return "Expletive";
+    } else if (lowerAnalysis.includes('logical') && !lowerAnalysis.includes('not logical')) {
+      return "Logical";
     }
     
-    // Check for trigger patterns
-    try {
-      const triggerInfo = await findExpletiveTrigger(text);
-      if (triggerInfo && triggerInfo.type === 'peu_sen_faut') {
-        console.log('Found peu s\'en faut trigger:', triggerInfo);
-        return "Expletive";
-      }
-    } catch (error) {
-      console.error('Error checking trigger patterns:', error);
-    }
-    
-    // Default to Uncertain for any other case
+    // Final fallback to Uncertain only if truly unclear
     return "Uncertain";
   };
 
