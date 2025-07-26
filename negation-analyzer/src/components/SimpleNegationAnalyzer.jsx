@@ -24,6 +24,7 @@ export default function SimpleNegationAnalyzer() {
     logicalExamples: 0,
     peurQueExamples: 0,
     avantQueExamples: 0,
+    peuSenFautExamples: 0,
     lastUpdated: null
   });
   const [uploadError, setUploadError] = useState(null);
@@ -731,6 +732,7 @@ export default function SimpleNegationAnalyzer() {
       if (detectedTrigger) {
         if (detectedTrigger.includes('peur')) simpleTrigger = 'peur que';
         else if (detectedTrigger.includes('avant')) simpleTrigger = 'avant que';
+        else if (detectedTrigger.includes('peu s\'en')) simpleTrigger = 'peu s\'en faut';
         else if (detectedTrigger.includes('crain')) simpleTrigger = 'craindre';
         else if (detectedTrigger.includes('redout')) simpleTrigger = 'redouter';
         else if (detectedTrigger.includes('dout')) simpleTrigger = 'douter';
@@ -760,6 +762,8 @@ export default function SimpleNegationAnalyzer() {
           stats.peurQueExamples++;
         } else if (detectedTrigger === 'avant que') {
           stats.avantQueExamples++;
+        } else if (detectedTrigger === 'peu s\'en faut') {
+          stats.peuSenFautExamples++;
         }
       }
     });
@@ -1922,6 +1926,7 @@ export default function SimpleNegationAnalyzer() {
                 <div>
                   <strong>"Peur que" Examples:</strong> {trainingStats.peurQueExamples}<br/>
                   <strong>"Avant que" Examples:</strong> {trainingStats.avantQueExamples}<br/>
+                  <strong>"Peu s'en faut" Examples:</strong> {trainingStats.peuSenFautExamples}<br/>
                   <strong>Last Updated:</strong> {new Date(trainingStats.lastUpdated).toLocaleString()}
                 </div>
               </div>
