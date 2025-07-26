@@ -12,12 +12,29 @@ A comprehensive linguistic analysis platform specializing in expletive vs logica
 
 ## Latest Updates (v2.2.0 - July 25, 2025)
 
-### New Features
-- ✅ **Batch Analysis Prediction**: New system for predicting removed negation types
-- ✅ **Evidence-Based Results**: Detailed supporting evidence for each prediction
-- ✅ **Confidence Scoring**: Percentage-based confidence for predictions
-- ✅ **Enhanced UI**: Updated color scheme and result presentation
-- ✅ **Export Improvements**: Rich formatted exports with prediction details
+### Enhanced Pattern Detection
+- ✅ **Comprehensive "peur que" Detection**: All conjugations and constructions
+  - Complete "avoir peur que" conjugations
+  - Prepositional forms (par/de/dans peur que)
+  - Intensity modifiers (très/grand peur que)
+  - Nominal and adjectival constructions
+
+- ✅ **Advanced "avant que" Analysis**: Rich temporal expressions
+  - Basic temporal markers
+  - Time precision (juste/bien/peu avant que)
+  - Complex temporal expressions
+  - Compound constructions
+
+- ✅ **Sophisticated Subjunctive Detection**:
+  - Common verb forms (être, avoir, aller)
+  - Irregular subjunctive forms
+  - Position-aware analysis after "que"
+
+- ✅ **Evidence-Based Confidence Scoring**:
+  - Pattern specificity weighting
+  - Subjunctive presence validation
+  - Complement clause analysis
+  - Context-aware confidence adjustments
 
 ### Technical Improvements
 - Weighted scoring system for prediction confidence
@@ -29,7 +46,7 @@ A comprehensive linguistic analysis platform specializing in expletive vs logica
 
 ### Production Application
 - **URL**: https://main.d1gx30ivteuneq.amplifyapp.com/
-- **Status**: ✅ Active with latest prediction system
+- **Status**: ✅ Active with enhanced pattern detection
 - **Last Updated**: July 25, 2025
 
 ### Development Setup

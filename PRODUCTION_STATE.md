@@ -7,27 +7,48 @@
 
 ## Latest Features
 
-### 1. Batch Analysis Prediction System
-The system now predicts whether removed negation was expletive or logical, rather than just detecting 'ne' presence.
+### 1. Enhanced Pattern Detection System
+The system now includes comprehensive pattern detection for French expletive negation:
 
-#### Key Components:
-- Multi-factor analysis for prediction
-- Confidence scoring (0-100%)
-- Evidence-based results
-- Color-coded classifications
+#### Peur Que Constructions
+- All conjugations of "avoir peur que"
+- Prepositional forms:
+  - par peur que
+  - de peur que
+  - dans peur que
+- Intensity modifiers:
+  - très grand peur que
+  - grand peur que
+- Nominal/adjectival variations
 
-#### Prediction Factors:
-1. Expletive triggers (peur que, craindre, etc.)
-2. Subjunctive mood detection
-3. Complement clause structure
-4. Logical context markers
-5. Verb tense/mood analysis
+#### Avant Que Constructions
+- Basic temporal markers
+- Time precision indicators:
+  - juste avant que
+  - bien avant que
+  - peu avant que
+- Complex temporal expressions
+- Compound constructions
+
+#### Subjunctive Detection
+- Common verb forms:
+  - être (sois, soit, soyons, etc.)
+  - avoir (aie, ait, ayons, etc.)
+  - aller (aille, aillent, etc.)
+- Irregular forms
+- Position-aware analysis after "que"
+
+#### Confidence Scoring
+- Pattern specificity weighting
+- Subjunctive presence validation
+- Complement clause analysis
+- Context-aware adjustments
 
 ### 2. User Interface Updates
-- Green color scheme for file format cards
-- Consistent styling across components
-- Enhanced result presentation
-- Improved visual hierarchy
+- Enhanced Rule-Based Logic description
+- Detailed evidence display
+- Confidence percentage indicators
+- Color-coded results
 
 ### 3. Results Display
 Example output format:
@@ -35,7 +56,7 @@ Example output format:
 🔍 PREDICTION: Removed EXPLETIVE negation (85% confidence)
    • Found expletive trigger: peur que
    • Subjunctive mood detected
-   • Complement clause structure verified
+   • Complete complement clause structure
 ```
 
 ### 4. Export Capabilities
@@ -46,55 +67,50 @@ Example output format:
 
 ## Recent Deployments
 
-### Job #204 (Latest)
-- **Commit**: f432e399
-- **Changes**: Updated batch analysis to predict removed negation type
+### Job #209 (Latest)
+- **Commit**: 3ce2b741
+- **Changes**: Updated Rule-Based Logic description
 - **Status**: Successfully deployed
 
-### Job #203
-- **Commit**: fed28ea8
-- **Changes**: Updated Expected File Format Card to green color scheme
+### Job #208
+- **Commit**: 1123fb8d
+- **Changes**: Fixed duplicate functions and patterns
 - **Status**: Successfully deployed
 
-### Job #202
-- **Commit**: 29153c5e
-- **Changes**: Added feature flags and analysis modes
-- **Status**: Successfully deployed
-
-### Job #201
-- **Commit**: 175859b0
-- **Changes**: Removed "French Expletive Negation Detection System" text
+### Job #207
+- **Commit**: 71397899
+- **Changes**: Enhanced rule-based logic with comprehensive patterns
 - **Status**: Successfully deployed
 
 ## Current System State
 
 ### Active Features
-- ✅ Single sentence analysis
-- ✅ Batch analysis with prediction
-- ✅ Training data management
+- ✅ Enhanced pattern detection
+- ✅ Comprehensive subjunctive analysis
+- ✅ Evidence-based confidence scoring
 - ✅ Multiple export formats
 - ✅ Feature flags for analysis modes
 
 ### Analysis Modes
 1. **Basic Logic**: Simple negation detection
-2. **Rule-Based**: Expletive trigger analysis
+2. **Rule-Based**: Enhanced pattern analysis with confidence scoring
 3. **Pure Training**: ML-based predictions
 4. **Hybrid**: Combined analysis approach
 
 ### Performance Metrics
 - Average response time: <500ms
 - Batch processing: ~100ms/sentence
-- Prediction accuracy: 85-95%
+- Pattern detection accuracy: 85-95%
 - Training integration: 95%+
 
 ## Known Issues
 None currently reported
 
 ## Upcoming Changes
-- Enhanced pattern recognition
-- Additional export formats
+- Additional pattern variations
+- Extended temporal expressions
 - Performance optimizations
-- Extended training capabilities
+- Enhanced training capabilities
 
 ## Rollback Information
 In case rollback is needed:
@@ -103,7 +119,7 @@ aws amplify start-job \
   --app-id d1gx30ivteuneq \
   --branch-name main \
   --job-type RETRY \
-  --job-id 203
+  --job-id 208
 ```
 
 ## Monitoring
