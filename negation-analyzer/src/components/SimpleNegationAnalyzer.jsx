@@ -15,6 +15,7 @@ export default function SimpleNegationAnalyzer() {
   // Feature flags
   const [useExpletiveLogic, setUseExpletiveLogic] = useState(false);
   const [enableTrainingData, setEnableTrainingData] = useState(true);
+  const [useBinaryClassifier, setUseBinaryClassifier] = useState(false);
   
   // Training data state
   const [trainingData, setTrainingData] = useState([]);
@@ -197,6 +198,65 @@ export default function SimpleNegationAnalyzer() {
     
     // Common irregular verbs in subjunctive
     irregulars: /\b(?:veuille|veuilles|veuille|voulions|vouliez|veuillent|doive|doives|doive|devions|deviez|doivent)\b/gi
+  };
+
+  // Simple binary classifier for comparison with k-NN
+  const classifyWithBinaryClassifier = (text) => {
+    if (trainingData.length === 0) {
+      return "No training data available for binary classifier.";
+    }
+
+    // Simple feature extraction
+    const features = {
+      hasPeurQue: /\b(peur|crainte)\s+que?\b/i.test(text),
+      hasAvantQue: /\bavant\s+que?\b/i.test(text),
+      hasPeuSenFaut: /\b(peu\s+s'en\s+faut|s'en\s+faut)/i.test(text),
+      hasSubjunctive: hasSubjunctive(text),
+      hasNegationMarkers: /\b(pas|jamais|plus|rien|personne)\b/i.test(text)
+    };
+
+    // Simple scoring based on linguistic patterns
+    let score = 0;
+    let reasoning = [];
+
+    if (features.hasPeurQue) {
+      score += 0.8;
+      reasoning.push("'peur que' construction detected");
+    }
+    if (features.hasAvantQue) {
+      score += 0.7;
+      reasoning.push("'avant que' temporal construction");
+    }
+    if (features.hasPeuSenFaut) {
+      score += 0.9;
+      reasoning.push("'peu s'en faut' construction");
+    }
+    if (features.hasSubjunctive) {
+      score += 0.3;
+      reasoning.push("subjunctive mood present");
+    }
+    if (features.hasNegationMarkers) {
+      score -= 0.5;
+      reasoning.push("logical negation markers found");
+    }
+
+    const prediction = score > 0.5 ? 'expletive' : 'logical';
+    const confidence = Math.round(Math.min(Math.abs(score) * 100, 95));
+
+    const predictionText = prediction === 'expletive' ? 
+      "Removed 'ne' was likely expletive" : 
+      "Removed 'ne' was likely logical";
+
+    let output = `🎯 BINARY CLASSIFIER: ${predictionText} (${confidence}% confidence)\n`;
+    output += `   • Simple rule-based scoring (score: ${score.toFixed(2)})\n`;
+    
+    if (reasoning.length > 0) {
+      output += `   • Linguistic analysis: ${reasoning.join('; ')}\n`;
+    }
+    
+    output += `   • Binary classifier using linguistic pattern weights`;
+
+    return output;
   };
 
   // Enhanced negation detection with context awareness
@@ -989,7 +1049,8 @@ export default function SimpleNegationAnalyzer() {
   const classifyNegation = async (text) => {
     // Training-based analysis (training flag on, expletive flag off)
     if (!useExpletiveLogic && enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
-      return classifyPureTraining(text);
+      // Use binary classifier if enabled, otherwise use standard training
+      return useBinaryClassifier ? classifyWithBinaryClassifier(text) : classifyPureTraining(text);
     }
     
     // Rule-based expletive logic (expletive flag on, training flag off)
@@ -1006,7 +1067,7 @@ export default function SimpleNegationAnalyzer() {
     if (useExpletiveLogic) {
       return await classifyExpletive(text);
     } else if (enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
-      return classifyPureTraining(text);
+      return useBinaryClassifier ? classifyWithBinaryClassifier(text) : classifyPureTraining(text);
     } else {
       return classifyBasic(text);
     }
@@ -1138,12 +1199,14 @@ export default function SimpleNegationAnalyzer() {
     // Check for explicit logical negation detection
     if (firstLine.includes('Logical negation detected') ||
         firstLine.includes('LIKELY LOGICAL NEGATION') ||
-        firstLine.includes('Removed \'ne\' was likely logical')) {
+        firstLine.includes('Removed \'ne\' was likely logical') ||
+        firstLine.includes('🎯 BINARY CLASSIFIER') && firstLine.includes('likely logical')) {
       return "Logical";
     }
     
     // Check for explicit expletive negation detection (strong indicators)
-    if (firstLine.includes('✅ EXPLETIVE NEGATION')) {
+    if (firstLine.includes('✅ EXPLETIVE NEGATION') ||
+        firstLine.includes('🎯 BINARY CLASSIFIER') && firstLine.includes('likely expletive')) {
       return "Expletive";
     }
     
@@ -1710,7 +1773,8 @@ export default function SimpleNegationAnalyzer() {
     }
     if (!useExpletiveLogic && enableTrainingData) {
       if (useTrainingEnhancement && trainingData.length > 0) {
-        return `🤖 Pure Training-Based Analysis - ML prediction of removed 'ne' type from ${trainingData.length} user examples`;
+        const methodType = useBinaryClassifier ? "Binary Classifier (rule-based scoring)" : "k-NN (similarity matching)";
+        return `🤖 Pure Training-Based Analysis - ${methodType} prediction of removed 'ne' type from ${trainingData.length} user examples`;
       } else {
         return "📚 Training Data Available - Upload data for pure ML-based removed 'ne' type prediction";
       }
@@ -1799,29 +1863,64 @@ export default function SimpleNegationAnalyzer() {
           
           {/* Training Enhancement Toggle */}
           {enableTrainingData && (
-            <label style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: 'bold',
-              color: '#4caf50',
-              marginLeft: '20px'
-            }}>
-              <input
-                type="checkbox"
-                checked={useTrainingEnhancement}
-                onChange={(e) => setUseTrainingEnhancement(e.target.checked)}
-                disabled={trainingData.length === 0}
-                style={{ 
-                  marginRight: '10px', 
-                  transform: 'scale(1.0)',
-                  cursor: trainingData.length === 0 ? 'not-allowed' : 'pointer'
-                }}
-              />
-              {useTrainingEnhancement ? '🎯 Training Enhancement ACTIVE' : '🎯 Training Enhancement INACTIVE'}
-              {trainingData.length === 0 && ' (No training data loaded)'}
-            </label>
+            <>
+              <label style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: 'bold',
+                color: '#4caf50',
+                marginLeft: '20px'
+              }}>
+                <input
+                  type="checkbox"
+                  checked={useTrainingEnhancement}
+                  onChange={(e) => setUseTrainingEnhancement(e.target.checked)}
+                  disabled={trainingData.length === 0}
+                  style={{ 
+                    marginRight: '10px', 
+                    transform: 'scale(1.0)',
+                    cursor: trainingData.length === 0 ? 'not-allowed' : 'pointer'
+                  }}
+                />
+                {useTrainingEnhancement ? '🎯 Training Enhancement ACTIVE' : '🎯 Training Enhancement INACTIVE'}
+                {trainingData.length === 0 && ' (No training data loaded)'}
+              </label>
+
+              {/* Binary Classifier Toggle */}
+              {useTrainingEnhancement && trainingData.length > 0 && (
+                <label style={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  color: '#e53e3e',
+                  marginLeft: '40px',
+                  marginTop: '8px'
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={useBinaryClassifier}
+                    onChange={(e) => setUseBinaryClassifier(e.target.checked)}
+                    style={{ 
+                      marginRight: '10px', 
+                      transform: 'scale(0.9)',
+                      cursor: 'pointer'
+                    }}
+                  />
+                  {useBinaryClassifier ? '🎯 Binary Classifier ACTIVE' : '🎯 Binary Classifier INACTIVE'}
+                  <span style={{ 
+                    fontSize: '12px', 
+                    color: '#718096',
+                    fontStyle: 'italic',
+                    marginLeft: '8px'
+                  }}>
+                    (Rule-based scoring vs k-NN)
+                  </span>
+                </label>
+              )}
+            </>
           )}
           
           {/* Current Analysis Mode Display */}
