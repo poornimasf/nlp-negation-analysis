@@ -1650,8 +1650,7 @@ export default function SimpleNegationAnalyzer() {
 
   return (
     <div className="container">
-      <div className="card">
-        
+      <div className="card" style={{ marginTop: '20px' }}>
         {/* Feature Flag Toggles */}
         <div style={{ 
           backgroundColor: '#e3f2fd', 
