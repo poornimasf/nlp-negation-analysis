@@ -32,15 +32,59 @@ export default function SimpleNegationAnalyzer() {
   const EXPLETIVE_PATTERNS = {
     // Fear expressions - all variations and conjugations
     peur: [
-      /\b(?:j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont|elles ont)\s+(?:grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
-      /\b(?:par|de|dans\s+la)\s+peur\s+qu[e']?\s*/gi,
-      /\bpeur\s+qu[e']?\s*/gi
+      // Standard avoir peur constructions
+      /\b(?:j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont|elles ont)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
+      /\b(?:j'avais|tu avais|il avait|elle avait|on avait|nous avions|vous aviez|ils avaient|elles avaient)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
+      /\b(?:j'aurai|tu auras|il aura|elle aura|on aura|nous aurons|vous aurez|ils auront|elles auront)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
+      /\b(?:j'aurais|tu aurais|il aurait|elle aurait|on aurait|nous aurions|vous auriez|ils auraient|elles auraient)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
+      
+      // Prepositional constructions
+      /\b(?:par|de|dans|avec|sous)\s+(?:la\s+|une\s+)?(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
+      /\b(?:en ayant|ayant)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']?\s*/gi,
+      
+      // Direct peur que constructions
+      /\bpeur\s+qu[e']?\s*/gi,
+      
+      // Faire peur constructions
+      /\b(?:ça|cela)\s+(?:me|te|lui|nous|vous|leur)\s+fait\s+peur\s+qu[e']?\s*/gi,
+      /\b(?:me|te|lui|nous|vous|leur)\s+faisant\s+peur\s+qu[e']?\s*/gi,
+      
+      // Adjectival constructions
+      /\b(?:je suis|tu es|il est|elle est|on est|nous sommes|vous êtes|ils sont|elles sont)\s+apeuré[e]?s?\s+qu[e']?\s*/gi,
+      
+      // Nominal constructions
+      /\bla\s+peur\s+(?:intense\s+|terrible\s+|horrible\s+)?qu[e']?\s*/gi,
+      
+      // Intensity modifiers
+      /\b(?:tellement|si|très|fort)\s+peur\s+qu[e']?\s*/gi
     ],
     
     // Before expressions - temporal constructions
     avant: [
+      // Basic temporal constructions
       /\bavant\s+qu[e']?\s*/gi,
-      /\b(?:juste|bien)\s+avant\s+qu[e']?\s*/gi
+      /\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e']?\s*/gi,
+      
+      // Prepositional phrases
+      /\bd'avant\s+qu[e']?\s*/gi,
+      /\bpeu\s+de\s+temps\s+avant\s+qu[e']?\s*/gi,
+      
+      // Temporal precision
+      /\b(?:quelques?|plusieurs|deux|trois|quatre|cinq)\s+(?:minutes?|heures?|jours?|semaines?|mois|ans?)\s+avant\s+qu[e']?\s*/gi,
+      
+      // Complex temporal expressions
+      /\b(?:la\s+veille|le\s+jour|la\s+semaine|le\s+mois|l'année)\s+(?:d'|de\s+)?avant\s+qu[e']?\s*/gi,
+      
+      // Immediate anteriority
+      /\b(?:tout|juste|immédiatement|directement)\s+avant\s+qu[e']?\s*/gi,
+      
+      // Relative time expressions
+      /\bpeu\s+(?:de\s+temps\s+)?avant\s+qu[e']?\s*/gi,
+      /\b(?:bien|très|assez)\s+avant\s+qu[e']?\s*/gi,
+      
+      // Compound constructions
+      /\b(?:un\s+moment|un\s+instant)\s+avant\s+qu[e']?\s*/gi,
+      /\b(?:la\s+période|l'époque)\s+(?:d'|de\s+)?avant\s+qu[e']?\s*/gi
     ],
     
     // Fear verbs - comprehensive conjugations
@@ -94,16 +138,111 @@ export default function SimpleNegationAnalyzer() {
     /\bn'(?:pas|plus|jamais|rien|personne|aucun|guère)\b/gi
   ];
 
-  // Subjunctive verb forms that often appear with expletive "ne"
-  const SUBJUNCTIVE_PATTERNS = [
-    /\b(?:soit|soient|ait|aient|vienne|viennent|comprenne|comprennent|sache|sachent|puisse|puissent|veuille|veuillent|fasse|fassent|dise|disent|parte|partent)\b/gi
-  ];
+  // Comprehensive subjunctive patterns commonly used with expletive ne
+  const SUBJUNCTIVE_PATTERNS = {
+    // être - to be
+    etre: /\b(?:sois|soit|soyons|soyez|soient)\b/gi,
+    
+    // avoir - to have
+    avoir: /\b(?:aie|aies|ait|ayons|ayez|aient)\b/gi,
+    
+    // aller - to go
+    aller: /\b(?:aille|ailles|aille|allions|alliez|aillent)\b/gi,
+    
+    // venir - to come
+    venir: /\b(?:vienne|viennes|vienne|venions|veniez|viennent)\b/gi,
+    
+    // faire - to do/make
+    faire: /\b(?:fasse|fasses|fasse|fassions|fassiez|fassent)\b/gi,
+    
+    // dire - to say
+    dire: /\b(?:dise|dises|dise|disions|disiez|disent)\b/gi,
+    
+    // pouvoir - can/to be able
+    pouvoir: /\b(?:puisse|puisses|puisse|puissions|puissiez|puissent)\b/gi,
+    
+    // savoir - to know
+    savoir: /\b(?:sache|saches|sache|sachions|sachiez|sachent)\b/gi,
+    
+    // prendre - to take
+    prendre: /\b(?:prenne|prennes|prenne|prenions|preniez|prennent)\b/gi,
+    
+    // voir - to see
+    voir: /\b(?:voie|voies|voie|voyions|voyiez|voient)\b/gi,
+    
+    // mettre - to put
+    mettre: /\b(?:mette|mettes|mette|mettions|mettiez|mettent)\b/gi,
+    
+    // Common irregular verbs in subjunctive
+    irregulars: /\b(?:veuille|veuilles|veuille|voulions|vouliez|veuillent|doive|doives|doive|devions|deviez|doivent)\b/gi
+  };
 
   // Enhanced negation detection with context awareness
   const hasNegation = (text) => {
     // Look for "ne" with proper word boundaries and context
     const nePattern = /\b(?:ne|n')\b/gi;
-    return nePattern.test(text);
+    const matches = text.match(nePattern);
+    
+    if (!matches) return false;
+    
+    // Check for logical negation markers near each "ne"
+    const logicalMarkers = /\b(?:pas|point|plus|jamais|rien|personne|aucun[e]?|guère|nullement)\b/gi;
+    const textAfterNe = text.slice(text.indexOf(matches[0]));
+    
+    // If there's a logical marker within reasonable distance of "ne", it's likely logical negation
+    return !logicalMarkers.test(textAfterNe.split(/[.!?;]/)[0]);
+  };
+
+  // Enhanced subjunctive detection
+  const hasSubjunctive = (text) => {
+    // Check each subjunctive pattern category
+    for (const [category, pattern] of Object.entries(SUBJUNCTIVE_PATTERNS)) {
+      if (pattern.test(text)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Calculate confidence based on linguistic features
+  const calculateConfidence = (text, triggerInfo) => {
+    let confidence = 0.5; // Base confidence
+    
+    // Strong indicators
+    if (hasSubjunctive(text)) {
+      confidence += 0.2; // Subjunctive is a strong indicator
+    }
+    
+    // Trigger type confidence
+    if (triggerInfo.type === 'peur') {
+      // Fear expressions are very reliable indicators
+      confidence += 0.15;
+      
+      // Additional confidence for formal constructions
+      if (text.match(/\b(?:j'ai|tu as|il a|elle a|nous avons|vous avez|ils ont)\s+(?:grand[e]?\s+)?peur\s+qu[e']?\s*/i)) {
+        confidence += 0.05;
+      }
+    } else if (triggerInfo.type === 'avant') {
+      // Temporal expressions are also reliable
+      confidence += 0.1;
+      
+      // Additional confidence for precise temporal markers
+      if (text.match(/\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e']?\s*/i)) {
+        confidence += 0.05;
+      }
+    }
+    
+    // Context analysis
+    if (!text.match(/\b(?:pas|point|plus|jamais|rien|personne|aucun[e]?|guère)\b/i)) {
+      confidence += 0.1; // No logical negation markers
+    }
+    
+    // Sentence structure analysis
+    if (text.match(/\bque?\s+[^.!?]+$/i)) {
+      confidence += 0.05; // Proper complement clause structure
+    }
+    
+    return Math.min(confidence, 0.95); // Cap at 95% confidence
   };
 
   // Detect logical negation markers
@@ -184,34 +323,59 @@ export default function SimpleNegationAnalyzer() {
       return `Found '${triggerInfo.match}' trigger but no 'ne' detected. Incomplete expletive construction.`;
     }
 
-    // Check for logical vs expletive negation
-    if (hasLogical) {
-      const confidence = Math.round(triggerInfo.confidence * 100);
-      return `Logical negation detected - Trigger: ${triggerInfo.match}, 'ne' found with logical markers (${confidence}% trigger confidence)`;
-    }
-
-    // Pure expletive negation detected
-    const complementClause = extractComplementClause(text, triggerInfo);
-    let confidence = triggerInfo.confidence;
-    
-    // Boost confidence with subjunctive
-    if (hasSubj) {
-      confidence = Math.min(confidence + 0.1, 0.98);
-    }
-    
-    // Boost confidence with proper complement structure
-    if (complementClause && complementClause.length > 3) {
-      confidence = Math.min(confidence + 0.05, 0.98);
-    }
-
+    // Calculate confidence
+    const confidence = calculateConfidence(text, triggerInfo);
     const confidencePercent = Math.round(confidence * 100);
-    let result = `✅ EXPLETIVE NEGATION - Trigger: ${triggerInfo.match}, Expletive 'ne' found without logical negation markers (${confidencePercent}% confidence)`;
+
+    // Build detailed analysis
+    let result = [];
     
-    if (hasSubj) {
-      result += ", subjunctive mood detected";
+    // Main classification
+    if (hasLogical) {
+      result.push(`Logical negation detected - Trigger: ${triggerInfo.match}, 'ne' found with logical markers`);
+    } else {
+      result.push(`✅ EXPLETIVE NEGATION - Trigger: ${triggerInfo.match}`);
     }
     
-    return result;
+    // Supporting evidence
+    let evidence = [];
+    
+    // Trigger analysis
+    if (triggerInfo.type === 'peur') {
+      evidence.push("Fear expression trigger");
+      if (text.match(/\b(?:grand[e]?\s+)?peur\b/i)) {
+        evidence.push("Intensified fear construction");
+      }
+    } else if (triggerInfo.type === 'avant') {
+      evidence.push("Temporal expression trigger");
+      if (text.match(/\b(?:juste|bien|peu|longtemps)\s+avant\b/i)) {
+        evidence.push("Precise temporal marker");
+      }
+    }
+    
+    // Mood analysis
+    if (hasSubj) {
+      evidence.push("Subjunctive mood detected");
+      // Identify specific subjunctive form
+      for (const [category, pattern] of Object.entries(SUBJUNCTIVE_PATTERNS)) {
+        if (pattern.test(text)) {
+          evidence.push(`Subjunctive form of '${category}'`);
+          break;
+        }
+      }
+    }
+    
+    // Structure analysis
+    const complementClause = extractComplementClause(text, triggerInfo);
+    if (complementClause) {
+      evidence.push("Complete complement clause structure");
+    }
+    
+    // Combine results
+    result.push(`Evidence (${confidencePercent}% confidence):`);
+    evidence.forEach(e => result.push(`  • ${e}`));
+    
+    return result.join("\n");
   };
 
   // Legacy trigger array for backward compatibility
