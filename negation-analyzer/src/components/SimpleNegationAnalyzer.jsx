@@ -1071,7 +1071,7 @@ export default function SimpleNegationAnalyzer() {
   return (
     <div className="container">
       <div className="card">
-        <h2 className="title">🔬 French Negation Analysis</h2>
+        <h2 className="title">🔬 French Expletive Negation System</h2>
         
         {/* Feature Flag Toggles */}
         <div style={{ 
