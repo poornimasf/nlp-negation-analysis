@@ -995,7 +995,7 @@ export default function SimpleNegationAnalyzer() {
     // Prepare main results data
     const resultsData = [
       // Header row
-      ['Sentence #', 'Text', 'Analysis Result', 'Classification', 'Confidence', 'Triggers', 'Analysis Mode'],
+      ['Sentence #', 'Text', 'Analysis Result', 'Trigger Indicator', 'Confidence', 'Triggers', 'Analysis Mode'],
       // Data rows
       ...batchResults.map(result => {
         // Extract confidence if available
@@ -1247,7 +1247,7 @@ export default function SimpleNegationAnalyzer() {
 
   const downloadCSV = (filename, analysisMode) => {
     // Prepare CSV headers
-    const headers = ['Sentence_Number', 'Text', 'Analysis_Result', 'Classification_Type', 'Confidence', 'Triggers_Found', 'Analysis_Mode'];
+    const headers = ['Sentence_Number', 'Text', 'Analysis_Result', 'Trigger_Indicator', 'Confidence', 'Triggers_Found', 'Analysis_Mode'];
     
     // Process results into CSV format
     const csvData = batchResults.map(result => {
@@ -1918,7 +1918,7 @@ export default function SimpleNegationAnalyzer() {
                         minWidth: '120px'
                       }}
                     >
-                      🏷️ Classification{getSortIcon('classification')}
+                      🎯 Trigger Indicator{getSortIcon('classification')}
                     </th>
                     <th 
                       onClick={() => handleSort('analysis')}
@@ -2033,7 +2033,7 @@ export default function SimpleNegationAnalyzer() {
               fontSize: '0.9em',
               color: '#6c757d'
             }}>
-              💡 <strong>Tip:</strong> Click on column headers to sort the results. The Classification column shows color-coded badges for easy identification: 
+              💡 <strong>Tip:</strong> Click on column headers to sort the results. The Trigger Indicator column shows color-coded badges for easy identification: 
               <span style={{color: '#155724'}}>🟢 Expletive</span> (including ML predictions), 
               <span style={{color: '#856404'}}>🟡 Logical</span> (including ML predictions), 
               <span style={{color: '#6a1b9a'}}>🟣 Pure Training</span> (uncertain ML predictions). 
