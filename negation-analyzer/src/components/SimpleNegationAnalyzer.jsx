@@ -320,22 +320,26 @@ export default function SimpleNegationAnalyzer() {
     let confidence = 0;
     let evidence = [];
     let details = [];
-    
+
+    // First check for logical negation patterns
+    if (hasLogical) {
+      classification = "Logical negation detected";
+      confidence = 0.85;
+      details.push({
+        aspect: "Negation Type",
+        finding: "Found 'ne' with logical markers",
+        impact: "Clear indication of logical negation",
+        confidence: 0.85
+      });
+      return formatDetailedResult(classification, confidence, details);
+    }
+
     // No trigger found
     if (!triggerInfo) {
       if (hasNe) {
-        if (hasLogical) {
-          classification = "Logical negation detected";
-          confidence = 0.85;
-          evidence = [
-            "Found 'ne' with logical markers",
-            `Logical markers: ${text.match(/\b(?:pas|point|plus|jamais|rien|personne|aucun[e]?|guère)\b/gi)?.join(', ')}`
-          ];
-        } else {
-          classification = "Negation found, but no expletive triggers detected";
-          confidence = 0.70;
-          evidence = ["Found 'ne' without expletive triggers or logical markers"];
-        }
+        classification = "Negation found, but no expletive triggers detected";
+        confidence = 0.70;
+        evidence = ["Found 'ne' without expletive triggers or logical markers"];
       } else {
         classification = "No negation markers found";
         confidence = 0.90;
@@ -344,104 +348,76 @@ export default function SimpleNegationAnalyzer() {
       return formatDetailedResult(classification, confidence, evidence);
     }
 
-    // Analyze trigger pattern
-    let triggerConfidence = 0;
-    if (triggerInfo.type === 'peur_que') {
-      triggerConfidence = 0.4;
-      details.push({
-        aspect: "Trigger Type",
-        finding: "Fear expression (peur que)",
-        impact: "Strong indicator for expletive negation",
-        confidence: 0.4
-      });
-    } else if (triggerInfo.type === 'avant') {
-      triggerConfidence = 0.35;
-      details.push({
-        aspect: "Trigger Type",
-        finding: "Temporal expression (avant que)",
-        impact: "Moderate to strong indicator for expletive negation",
-        confidence: 0.35
-      });
-    }
+    // Analyze trigger pattern - but don't assume it means expletive
+    details.push({
+      aspect: "Potential Trigger",
+      finding: `Found ${triggerInfo.type === 'peur_que' ? 'fear expression' : 'temporal expression'} (${triggerInfo.match})`,
+      impact: "Requires additional evidence for expletive classification",
+      confidence: 0.2
+    });
 
-    // Analyze trigger completeness
-    if (text.match(/\b(?:j'ai|tu as|il a|elle a|nous avons|vous avez|ils ont)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e'](?!\s+pas)\s*/i)) {
-      triggerConfidence += 0.1;
-      details.push({
-        aspect: "Construction Completeness",
-        finding: "Complete fear expression with subject and verb",
-        impact: "Strengthens expletive interpretation",
-        confidence: 0.1
-      });
-    }
+    // Check for supporting evidence
+    let supportingEvidence = 0;
 
-    // Analyze mood
-    if (hasSubj) {
-      triggerConfidence += 0.2;
+    // Check for 'ne' presence
+    if (hasNe) {
+      supportingEvidence += 0.2;
       details.push({
-        aspect: "Verbal Mood",
-        finding: "Subjunctive mood detected",
-        impact: "Strong support for expletive negation",
+        aspect: "Negation Marker",
+        finding: "Found 'ne' without logical markers",
+        impact: "Necessary but not sufficient for expletive negation",
         confidence: 0.2
       });
+    }
 
-      // Check position of subjunctive
+    // Check for subjunctive mood
+    if (hasSubj) {
+      // Only count subjunctive if it's after the trigger
       const triggerIndex = text.indexOf(triggerInfo.match);
       if (triggerIndex !== -1) {
         const afterTrigger = text.slice(triggerIndex + triggerInfo.match.length);
         if (hasSubjunctive(afterTrigger)) {
-          triggerConfidence += 0.1;
+          supportingEvidence += 0.2;
           details.push({
-            aspect: "Mood Position",
-            finding: "Subjunctive follows trigger directly",
-            impact: "Optimal position for expletive negation",
-            confidence: 0.1
+            aspect: "Verbal Mood",
+            finding: "Subjunctive follows trigger",
+            impact: "Supporting evidence for expletive construction",
+            confidence: 0.2
           });
         }
       }
     }
 
-    // Analyze negation markers
-    if (hasNe) {
-      if (hasLogical) {
-        classification = "Logical negation detected";
-        confidence = 0.85;
-        details.push({
-          aspect: "Negation Type",
-          finding: "Found 'ne' with logical markers",
-          impact: "Indicates logical rather than expletive negation",
-          confidence: 0.85
-        });
-      } else {
-        classification = "✅ EXPLETIVE NEGATION";
-        confidence = Math.min(0.95, triggerConfidence + 0.3); // Base 0.3 for having 'ne' without logical markers
-        details.push({
-          aspect: "Negation Type",
-          finding: "Pure 'ne' without logical markers",
-          impact: "Strong support for expletive negation",
-          confidence: 0.3
-        });
-      }
-    } else {
-      classification = "Missing 'ne'";
-      confidence = triggerConfidence;
+    // Check for complete construction
+    const complementClause = extractComplementClause(text, triggerInfo);
+    if (complementClause) {
+      supportingEvidence += 0.1;
       details.push({
-        aspect: "Negation Marker",
-        finding: "No 'ne' detected",
-        impact: "Potential missing expletive negation",
-        confidence: triggerConfidence
+        aspect: "Clause Structure",
+        finding: "Complete complement clause structure",
+        impact: "Supports potential expletive construction",
+        confidence: 0.1
       });
     }
 
-    // Analyze complement clause
-    const complementClause = extractComplementClause(text, triggerInfo);
-    if (complementClause) {
-      confidence = Math.min(0.95, confidence + 0.05);
+    // Make classification decision based on cumulative evidence
+    if (supportingEvidence >= 0.4) {
+      classification = "✅ EXPLETIVE NEGATION";
+      confidence = Math.min(0.9, 0.6 + supportingEvidence);
       details.push({
-        aspect: "Clause Structure",
-        finding: "Complete complement clause",
-        impact: "Supports expletive negation structure",
-        confidence: 0.05
+        aspect: "Final Classification",
+        finding: "Multiple supporting factors present",
+        impact: "Sufficient evidence for expletive negation",
+        confidence: confidence
+      });
+    } else {
+      classification = "Potential expletive construction";
+      confidence = 0.5 + supportingEvidence;
+      details.push({
+        aspect: "Final Classification",
+        finding: "Insufficient supporting evidence",
+        impact: "Cannot confidently classify as expletive negation",
+        confidence: confidence
       });
     }
 
