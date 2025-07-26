@@ -1,6 +1,6 @@
 # French Negation Type Prediction System
 
-A comprehensive linguistic analysis platform specializing in predicting whether removed "ne" markers were expletive or logical negation, enhanced with cloud-based machine learning capabilities.
+A specialized linguistic analysis platform for predicting whether removed "ne" markers in French sentences were expletive or logical negation, enhanced with CroissantLLM AI capabilities.
 
 ## Documentation Structure
 
@@ -10,13 +10,14 @@ A comprehensive linguistic analysis platform specializing in predicting whether 
 - [Update Process](negation-analyzer/UPDATE_CHECKLIST.md) - Comprehensive testing and deployment checklist
 - [Analysis Modes](negation-analyzer/ANALYSIS_MODES.md) - Detailed description of analysis modes and features
 
-## Latest Updates (v2.5.0 - July 26, 2025)
+## Latest Updates (v2.6.0 - July 26, 2025)
 
 ### Major Changes
-- 🎯 **Context-Aware Task**: System now predicts type of removed "ne" markers (expletive vs logical)
-- 🤖 **CroissantLLM Integration**: French-specific LLM for syntax-aware analysis
-- 🔄 **Enhanced Trigger Detection**: Comprehensive support for "peur que", "avant que", and "peu s'en faut" patterns
-- 📊 **Improved Confidence Scoring**: Based on trigger patterns and subjunctive mood rather than "ne" presence
+- 🎯 **Simplified Analysis Modes**: Removed hybrid option - now either Rule-Based OR Training Data analysis
+- 🤖 **Enhanced CroissantLLM Integration**: Context-aware French syntax analysis for removed "ne" prediction
+- 📊 **Improved Classification Logic**: More sensitive to "likely" indicators, reduced "Uncertain" classifications
+- 🔄 **Better Loading Experience**: Real-time progress tracking for batch analysis
+- 📥 **Streamlined Exports**: Removed trigger and analysis mode columns from downloads
 
 ### Analysis Task
 The system analyzes French sentences where "ne" markers have been removed and predicts whether the missing "ne" was:
@@ -25,14 +26,7 @@ The system analyzes French sentences where "ne" markers have been removed and pr
 
 ### Analysis Modes
 
-#### 1. Training Data Analysis (Default)
-- ✅ **Example-Based Learning**:
-  - Text similarity matching for removed "ne" prediction
-  - Confidence scoring based on similar examples
-  - Transparent example references
-  - Pure ML-based decisions
-
-#### 2. Rule-Based Analysis (Optional)
+#### 1. Rule-Based Analysis
 - ✅ **French Linguistic Pattern Detection**:
   - "peur que" constructions → predicts expletive
   - "avant que" temporal expressions → predicts expletive
@@ -41,17 +35,22 @@ The system analyzes French sentences where "ne" markers have been removed and pr
   - CroissantLLM syntax validation
   - Context-aware confidence scoring
 
-#### 3. Hybrid Analysis
-- ✅ **Combined Approach**:
-  - Rule-based pattern foundation
-  - Training data enhancement
-  - CroissantLLM French syntax analysis
-  - Weighted confidence scoring
+#### 2. Training Data Analysis
+- ✅ **Example-Based Learning**:
+  - Text similarity matching for removed "ne" prediction
+  - Confidence scoring based on similar examples
+  - Transparent example references
+  - Pure ML-based decisions from user data
+
+#### 3. Priority System
+- **Either/Or Logic**: Choose Rule-Based OR Training Data analysis
+- **Clear Hierarchy**: If both enabled, Rule-Based takes priority
+- **No Hybrid Mode**: Simplified, predictable behavior
 
 ### Trigger Patterns for Expletive Prediction
 - ✅ **"Peur que" Constructions**:
   - "J'ai peur qu'il vienne" → Expletive (removed "ne" was expletive)
-  - Prepositional forms, intensity modifiers
+  - All conjugations, prepositional forms, intensity modifiers
   
 - ✅ **"Avant que" Expressions**:
   - "Avant qu'elle parte" → Expletive (removed "ne" was expletive)
@@ -65,7 +64,8 @@ The system analyzes French sentences where "ne" markers have been removed and pr
 - Context-aware CroissantLLM prompts for removed "ne" prediction
 - Enhanced pattern matching without "ne" dependency
 - Improved confidence calculations based on trigger + subjunctive
-- Rich export options (Excel, CSV, JSON, TXT)
+- Real-time batch processing with progress indicators
+- Streamlined export formats (Excel, CSV, JSON, TXT)
 
 ## Quick Links
 
@@ -83,9 +83,24 @@ git clone <repository-url>
 cd negation-analyzer
 npm install
 
+# Set up environment variables
+echo "REACT_APP_HF_TOKEN=your_huggingface_token" > .env
+
 # Start development server
 npm start
 ```
+
+### Environment Setup
+1. Get your Hugging Face API token:
+   - Go to https://huggingface.co/settings/tokens
+   - Create a new token with read access
+   - Copy the token
+
+2. Set up environment variables:
+   ```bash
+   cd negation-analyzer
+   echo "REACT_APP_HF_TOKEN=your_token_here" > .env
+   ```
 
 ### Deployment
 ```bash
@@ -93,6 +108,50 @@ npm start
 cd negation-analyzer
 npm run build
 aws amplify start-job --app-id d1gx30ivteuneq --branch-name main
+```
+
+## Key Features
+
+### Batch Processing
+- Analyze multiple sentences simultaneously
+- Real-time progress tracking with loading indicators
+- Error handling with detailed reporting
+- Support for large datasets
+
+### Export Options
+Download results in multiple formats:
+- **Excel**: Formatted spreadsheets with summary statistics
+- **CSV**: Excel-compatible data for analysis
+- **JSON**: Structured data for programmatic use
+- **TXT**: Human-readable reports
+
+### Training Data Management
+- Upload CSV/JSON files with annotated examples
+- Preview and validate training data
+- Support for multiple trigger types
+- Statistics and quality metrics
+
+### CroissantLLM Integration
+- French-specific language model
+- Context-aware analysis of removed "ne" scenarios
+- Syntax validation and confidence enhancement
+- Graceful fallback to rule-based analysis
+
+## Usage Examples
+
+### Input Format
+```
+J'ai peur qu'il vienne
+Avant qu'elle parte
+Peu s'en faut qu'il réussisse
+```
+
+### Expected Output
+```
+Sentence: J'ai peur qu'il vienne
+Prediction: Expletive
+Confidence: 85%
+Analysis: Found "peur que" trigger pattern with subjunctive mood
 ```
 
 ## Support and Resources
@@ -113,29 +172,3 @@ aws amplify start-job --app-id d1gx30ivteuneq --branch-name main
 - Error tracking and logging active
 
 For detailed implementation and deployment information, please refer to the documentation files in the negation-analyzer/ directory.
-### Environment Setup
-
-1. Get your Hugging Face API token:
-   - Go to https://huggingface.co/settings/tokens
-   - Create a new token with read access
-   - Copy the token
-
-2. Set up environment variables:
-   ```bash
-   # Create .env file
-   cd negation-analyzer
-   echo "REACT_APP_HF_TOKEN=your_token_here" > .env
-   ```
-
-3. Install dependencies:
-   ```bash
-   cd negation-analyzer
-   npm install
-   ```
-
-4. Start development server:
-   ```bash
-   npm start
-   ```
-
-Note: Replace `your_token_here` with your actual Hugging Face API token.
