@@ -1468,11 +1468,42 @@ export default function SimpleNegationAnalyzer() {
           }}>
             <h4>🎯 Rule-Based Expletive Logic:</h4>
             <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-              <li><strong>"peur que"</strong> (fear that) + expletive "ne"</li>
-              <li><strong>"avant que"</strong> (before) + expletive "ne"</li>
-              <li>Logical negation detection with markers</li>
+              <li><strong>"peur que" constructions:</strong>
+                <ul>
+                  <li>All conjugations of "avoir peur que"</li>
+                  <li>Prepositional forms (par/de/dans peur que)</li>
+                  <li>Intensity modifiers (très/grand peur que)</li>
+                </ul>
+              </li>
+              <li><strong>"avant que" constructions:</strong>
+                <ul>
+                  <li>Basic temporal markers</li>
+                  <li>Time precision (juste/bien/peu avant que)</li>
+                  <li>Complex temporal expressions</li>
+                </ul>
+              </li>
+              <li><strong>Subjunctive detection:</strong>
+                <ul>
+                  <li>Common verbs (être, avoir, aller)</li>
+                  <li>Irregular forms</li>
+                  <li>Position after "que"</li>
+                </ul>
+              </li>
+              <li><strong>Confidence scoring based on:</strong>
+                <ul>
+                  <li>Trigger type and completeness</li>
+                  <li>Subjunctive presence</li>
+                  <li>Complement clause structure</li>
+                </ul>
+              </li>
             </ul>
-            <p><strong>Example:</strong> "J'ai peur qu'il ne vienne" (expletive) vs "J'ai peur qu'il ne vienne pas" (logical)</p>
+            <p><strong>Examples:</strong></p>
+            <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
+              <li>"J'ai peur qu'il ne vienne" (expletive)</li>
+              <li>"J'ai grand peur qu'il ne soit malade" (expletive with intensity)</li>
+              <li>"Avant qu'il ne parte" (temporal expletive)</li>
+              <li>"J'ai peur qu'il ne vienne pas" (logical negation)</li>
+            </ul>
           </div>
         )}
 
