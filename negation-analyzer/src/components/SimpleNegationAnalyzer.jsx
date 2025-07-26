@@ -199,6 +199,10 @@ export default function SimpleNegationAnalyzer() {
 
   // Enhanced negation detection with context awareness
   const hasNegation = (text) => {
+    if (!text || typeof text !== 'string') {
+      return false;
+    }
+    
     // Look for "ne" with proper word boundaries and context
     const nePattern = /\b(?:ne|n')\b/gi;
     const matches = text.match(nePattern);
@@ -215,6 +219,10 @@ export default function SimpleNegationAnalyzer() {
 
   // Enhanced subjunctive detection
   const hasSubjunctive = (text) => {
+    if (!text || typeof text !== 'string') {
+      return false;
+    }
+    
     // Check each subjunctive pattern category
     return Object.values(SUBJUNCTIVE_PATTERNS).some(pattern => pattern.test(text));
   };
@@ -311,11 +319,20 @@ export default function SimpleNegationAnalyzer() {
 
   // Detect logical negation markers
   const hasLogicalNegation = (text) => {
+    if (!text || typeof text !== 'string') {
+      return false;
+    }
+    
     return LOGICAL_MARKERS.some(pattern => pattern.test(text));
   };
 
   // Find expletive triggers with comprehensive pattern matching
   const findExpletiveTrigger = async (text) => {
+    if (!text || typeof text !== 'string') {
+      console.log('Invalid text input:', text);
+      return null;
+    }
+
     const normalizedText = text.toLowerCase()
       .replace(/['']/g, "'") // Normalize apostrophes
       .replace(/\s+/g, ' ') // Normalize whitespace
@@ -350,16 +367,21 @@ export default function SimpleNegationAnalyzer() {
       // Fallback to basic pattern matching
       for (const [triggerType, patterns] of Object.entries(EXPLETIVE_PATTERNS)) {
         for (const pattern of patterns) {
-          const match = normalizedText.match(pattern);
-          if (match) {
-            const mappedType = mapTriggerType(triggerType);
-            return {
-              type: triggerType,
-              mappedType,
-              match: match[0].trim(),
-              position: match.index,
-              confidence: calculateTriggerConfidence(match[0], triggerType)
-            };
+          try {
+            const match = normalizedText.match(pattern);
+            if (match) {
+              const mappedType = mapTriggerType(triggerType);
+              return {
+                type: triggerType,
+                mappedType,
+                match: match[0].trim(),
+                position: match.index,
+                confidence: calculateTriggerConfidence(match[0], triggerType)
+              };
+            }
+          } catch (patternError) {
+            console.error('Pattern matching error:', patternError);
+            continue;
           }
         }
       }
@@ -622,14 +644,29 @@ export default function SimpleNegationAnalyzer() {
   };
 
   const highlight = (text) => {
+    if (!text || typeof text !== 'string') {
+      return '';
+    }
+    
     let output = text;
     
     // Highlight expletive triggers using the robust pattern matching
-    const triggerInfo = findExpletiveTrigger(text);
-    if (triggerInfo) {
-      const escapedMatch = triggerInfo.match.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const triggerRegex = new RegExp(`(${escapedMatch})`, 'gi');
-      output = output.replace(triggerRegex, '<span class="highlight-yellow">$1</span>');
+    try {
+      // Since findExpletiveTrigger is async, we'll skip LLM highlighting for now
+      // and just do basic pattern highlighting
+      for (const [triggerType, patterns] of Object.entries(EXPLETIVE_PATTERNS)) {
+        for (const pattern of patterns) {
+          const match = text.match(pattern);
+          if (match) {
+            const escapedMatch = match[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const triggerRegex = new RegExp(`(${escapedMatch})`, 'gi');
+            output = output.replace(triggerRegex, '<span class="highlight-yellow">$1</span>');
+            break;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error in trigger highlighting:', error);
     }
     
     // Highlight "ne" and "n'"
@@ -637,12 +674,16 @@ export default function SimpleNegationAnalyzer() {
     
     // Highlight logical negation markers in red
     LOGICAL_MARKERS.forEach(pattern => {
-      const matches = [...text.matchAll(pattern)];
-      matches.forEach(match => {
-        const escapedMatch = match[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const markerRegex = new RegExp(`(${escapedMatch})`, 'gi');
-        output = output.replace(markerRegex, '<span class="highlight-red">$1</span>');
-      });
+      try {
+        const matches = [...text.matchAll(pattern)];
+        matches.forEach(match => {
+          const escapedMatch = match[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const markerRegex = new RegExp(`(${escapedMatch})`, 'gi');
+          output = output.replace(markerRegex, '<span class="highlight-red">$1</span>');
+        });
+      } catch (error) {
+        console.error('Error in logical marker highlighting:', error);
+      }
     });
     
     return output;
