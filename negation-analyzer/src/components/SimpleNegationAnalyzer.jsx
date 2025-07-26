@@ -231,38 +231,54 @@ export default function SimpleNegationAnalyzer() {
     }
     
     // Trigger type confidence
-    if (triggerInfo.type === 'peur_que') {
-      // Fear expressions with 'que' are very reliable indicators
-      confidence += 0.15;
-      
-      // Check for complete construction
-      if (text.match(/\b(?:j'ai|tu as|il a|elle a|nous avons|vous avez|ils ont)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e'](?!\s+pas)\s*/i)) {
-        confidence += 0.05;
-      }
-      
-      // Check for subjunctive after que
-      const queIndex = text.indexOf('que');
-      if (queIndex !== -1) {
-        const afterQue = text.slice(queIndex + 3);
-        if (hasSubjunctive(afterQue)) {
-          confidence += 0.05; // Additional boost for subjunctive in correct position
+    if (triggerInfo && triggerInfo.type) {
+      if (triggerInfo.type === 'peur_que') {
+        // Fear expressions with 'que' are very reliable indicators
+        confidence += 0.15;
+        
+        // Check for complete construction
+        if (text.match(/\b(?:j'ai|tu as|il a|elle a|nous avons|vous avez|ils ont)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e'](?!\s+pas)\s*/i)) {
+          confidence += 0.05;
         }
-      }
-    } else if (triggerInfo.type === 'avant') {
-      // Temporal expressions are also reliable
-      confidence += 0.1;
-      
-      // Additional confidence for precise temporal markers
-      if (text.match(/\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e'](?!\s+pas)\s*/i)) {
-        confidence += 0.05;
-      }
-      
-      // Check for subjunctive after que
-      const queIndex = text.indexOf('que');
-      if (queIndex !== -1) {
-        const afterQue = text.slice(queIndex + 3);
-        if (hasSubjunctive(afterQue)) {
-          confidence += 0.05; // Additional boost for subjunctive in correct position
+        
+        // Check for subjunctive after que
+        const queIndex = text.indexOf('que');
+        if (queIndex !== -1) {
+          const afterQue = text.slice(queIndex + 3);
+          if (hasSubjunctive(afterQue)) {
+            confidence += 0.05; // Additional boost for subjunctive in correct position
+          }
+        }
+      } else if (triggerInfo.type === 'avant') {
+        // Temporal expressions are also reliable
+        confidence += 0.1;
+        
+        // Additional confidence for precise temporal markers
+        if (text.match(/\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e'](?!\s+pas)\s*/i)) {
+          confidence += 0.05;
+        }
+        
+        // Check for subjunctive after que
+        const queIndex = text.indexOf('que');
+        if (queIndex !== -1) {
+          const afterQue = text.slice(queIndex + 3);
+          if (hasSubjunctive(afterQue)) {
+            confidence += 0.05; // Additional boost for subjunctive in correct position
+          }
+        }
+      } else if (triggerInfo.type === 'peu_sen_faut') {
+        // Peu s'en faut expressions are strong indicators
+        confidence += 0.15;
+        
+        // Additional confidence for specific constructions
+        if (text.match(/\bil\s+s['']en\s+faut/i)) {
+          confidence += 0.05; // Impersonal construction
+        }
+        if (text.match(/\b(?:très|si|tellement)\s+peu\s+s['']en/i)) {
+          confidence += 0.05; // Intensity modifiers
+        }
+        if (text.match(/\bs['']en\s+est\s+fallu/i)) {
+          confidence += 0.05; // Past tense
         }
       }
     }
@@ -319,6 +335,10 @@ export default function SimpleNegationAnalyzer() {
 
   // Calculate confidence based on trigger pattern specificity
   const calculateTriggerConfidence = (matchedText, triggerType) => {
+    if (!matchedText || !triggerType) {
+      return 0.5; // Default confidence if missing information
+    }
+
     let confidence = 0.7; // Base confidence
     
     // Higher confidence for more specific patterns
@@ -1153,8 +1173,10 @@ export default function SimpleNegationAnalyzer() {
       const reasoning = [];
       
       // Check for trigger patterns
-      if (triggerInfo) {
-        reasoning.push(`Found trigger pattern: "${triggerInfo.match}" (${triggerInfo.mappedType})`);
+      if (triggerInfo && triggerInfo.match) {
+        const triggerType = triggerInfo.mappedType || mapTriggerType(triggerInfo.type);
+        reasoning.push(`Found trigger pattern: "${triggerInfo.match}" (${triggerType})`);
+        
         if (triggerInfo.type === 'peur_que') {
           reasoning.push('Trigger indicates fear expression');
         } else if (triggerInfo.type === 'avant') {
@@ -1197,7 +1219,7 @@ export default function SimpleNegationAnalyzer() {
         classification: determineClassification(sentence.trim()),
         reasoning: reasoning.join('\n'),
         confidence: confidence,
-        trigger: triggerInfo ? triggerInfo.mappedType : null
+        trigger: triggerInfo ? (triggerInfo.mappedType || mapTriggerType(triggerInfo.type)) : null
       };
     });
     setBatchResults(results);
