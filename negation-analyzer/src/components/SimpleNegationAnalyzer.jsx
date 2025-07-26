@@ -377,15 +377,6 @@ export default function SimpleNegationAnalyzer() {
     return Math.min(confidence, 0.95);
   };
 
-  // Detect logical negation markers
-  const hasLogicalNegation = (text) => {
-    if (!text || typeof text !== 'string') {
-      return false;
-    }
-    
-    return LOGICAL_MARKERS.some(pattern => pattern.test(text));
-  };
-
   // Find expletive triggers with comprehensive pattern matching
   const findExpletiveTrigger = async (text) => {
     if (!text || typeof text !== 'string') {
@@ -474,16 +465,6 @@ export default function SimpleNegationAnalyzer() {
   };
 
 
-
-  // Extract complement clause after trigger
-  const extractComplementClause = (text, triggerMatch) => {
-    if (!triggerMatch) return null;
-    
-    const afterTrigger = text.substring(triggerMatch.position + triggerMatch.match.length);
-    // Look for the clause until punctuation or conjunction
-    const clauseMatch = afterTrigger.match(/^[^.!?;]+/);
-    return clauseMatch ? clauseMatch[0].trim() : null;
-  };
 
   // Advanced expletive negation classification for removed 'ne' prediction
   const classifyExpletive = async (text) => {
@@ -975,76 +956,6 @@ export default function SimpleNegationAnalyzer() {
     setUploadError(null);
   };
 
-  // Enhanced classification using training data for removed 'ne' prediction (hybrid mode)
-  const classifyWithTraining = async (text) => {
-    // Get rule-based analysis for removed 'ne' prediction
-    let ruleBasedResult = await classifyExpletive(text);
-    
-    // Format rule-based result with a header
-    ruleBasedResult = '📚 RULE-BASED ANALYSIS:\n' + ruleBasedResult.split('\n').map(line => {
-      // Skip empty lines
-      if (!line.trim()) return '';
-      // Add bullet points to non-empty lines that don't start with special characters
-      if (!line.startsWith('✅') && !line.startsWith('•') && line.trim()) {
-        return '• ' + line;
-      }
-      return line;
-    }).join('\n');
-    
-    if (trainingData.length === 0) {
-      return ruleBasedResult;
-    }
-
-    const triggerInfo = await findExpletiveTrigger(text);
-    
-    if (!triggerInfo) {
-      return ruleBasedResult + '\n\n🤖 TRAINING DATA: No trigger detected - cannot match with training examples';
-    }
-
-    // Map robust trigger to simple trigger for training data lookup (removed 'ne' context)
-    let simpleTrigger = 'peur que'; // default
-    if (triggerInfo.match.includes('avant')) simpleTrigger = 'avant que';
-    else if (triggerInfo.match.includes('peu s\'en faut') || triggerInfo.match.includes('s\'en faut')) simpleTrigger = 'peu s\'en faut';
-    else if (triggerInfo.match.includes('crain')) simpleTrigger = 'craindre';
-    else if (triggerInfo.match.includes('redout')) simpleTrigger = 'redouter';
-    else if (triggerInfo.match.includes('dout')) simpleTrigger = 'douter';
-    else if (triggerInfo.match.includes('évit')) simpleTrigger = 'éviter';
-    else if (triggerInfo.match.includes('empêch')) simpleTrigger = 'empêcher';
-
-    // Find similar examples in training data for removed 'ne' prediction
-    const similarExamples = trainingData.filter(item => 
-      item.trigger === simpleTrigger || 
-      (item.trigger && item.trigger.includes(simpleTrigger.split(' ')[0]))
-    );
-
-    if (similarExamples.length === 0) {
-      return ruleBasedResult + `\n\n🤖 TRAINING DATA: No examples found for "${simpleTrigger}" trigger pattern`;
-    }
-
-    const expletiveCount = similarExamples.filter(item => item.has_expletive_ne).length;
-    const totalCount = similarExamples.length;
-    const confidence = Math.round((Math.max(expletiveCount, totalCount - expletiveCount) / totalCount) * 100);
-
-    // Format training-based result with detailed information for removed 'ne' prediction
-    let trainingResult = '\n\n🤖 TRAINING DATA ANALYSIS:\n';
-    if (expletiveCount > totalCount - expletiveCount) {
-      trainingResult += `• Prediction: Removed 'ne' was expletive\n`;
-      trainingResult += `• Confidence: ${confidence}%\n`;
-      trainingResult += `• Based on ${totalCount} similar "${simpleTrigger}" examples\n`;
-      trainingResult += `• ${expletiveCount}/${totalCount} examples had expletive 'ne'\n`;
-      trainingResult += `• Training data supports expletive classification for this construction`;
-    } else {
-      trainingResult += `• Prediction: Removed 'ne' was logical\n`;
-      trainingResult += `• Confidence: ${confidence}%\n`;
-      trainingResult += `• Based on ${totalCount} similar "${simpleTrigger}" examples\n`;
-      trainingResult += `• ${totalCount - expletiveCount}/${totalCount} examples had logical 'ne'\n`;
-      trainingResult += `• Training data suggests logical negation for this construction`;
-    }
-
-    // Combine rule-based and training results with clear separation
-    return ruleBasedResult + trainingResult;
-  };
-
   // Main classification function that uses either rule-based OR training data (no hybrid)
   const classifyNegation = async (text) => {
     // Training-based analysis (training flag on, expletive flag off)
@@ -1200,13 +1111,13 @@ export default function SimpleNegationAnalyzer() {
     if (firstLine.includes('Logical negation detected') ||
         firstLine.includes('LIKELY LOGICAL NEGATION') ||
         firstLine.includes('Removed \'ne\' was likely logical') ||
-        firstLine.includes('🎯 BINARY CLASSIFIER') && firstLine.includes('likely logical')) {
+        (firstLine.includes('🎯 BINARY CLASSIFIER') && firstLine.includes('likely logical'))) {
       return "Logical";
     }
     
     // Check for explicit expletive negation detection (strong indicators)
     if (firstLine.includes('✅ EXPLETIVE NEGATION') ||
-        firstLine.includes('🎯 BINARY CLASSIFIER') && firstLine.includes('likely expletive')) {
+        (firstLine.includes('🎯 BINARY CLASSIFIER') && firstLine.includes('likely expletive'))) {
       return "Expletive";
     }
     
@@ -1324,8 +1235,8 @@ export default function SimpleNegationAnalyzer() {
           
           // Check for trigger patterns
           if (triggerInfo && triggerInfo.match) {
-            const triggerType = triggerInfo.mappedType || mapTriggerType(triggerInfo.type);
-            reasoning.push(`Found trigger pattern: "${triggerInfo.match}" (${triggerType})`);
+            const mappedType = triggerInfo.mappedType || mapTriggerType(triggerInfo.type);
+            reasoning.push(`Found trigger pattern: "${triggerInfo.match}" (${mappedType})`);
             
             if (triggerInfo.type === 'peur_que') {
               reasoning.push('Trigger indicates fear expression');
@@ -1713,7 +1624,6 @@ export default function SimpleNegationAnalyzer() {
       results: batchResults.map(result => {
         // Extract detailed analysis from label
         const confidenceMatch = result.label.match(/(\d+)%/);
-        const triggerMatch = result.label.match(/Trigger: ([^,\n]+)/);
         
         return {
           sentenceNumber: result.id,
