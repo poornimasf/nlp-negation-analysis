@@ -687,18 +687,19 @@ export default function SimpleNegationAnalyzer() {
     setUploadError(null);
   };
 
-  // Enhanced classification using training data (simplified version)
+  // Enhanced classification using training data (hybrid mode)
   const classifyWithTraining = (text) => {
-    const baseResult = classifyExpletive(text);
+    // Get rule-based analysis
+    const ruleBasedResult = classifyExpletive(text);
     
     if (trainingData.length === 0) {
-      return baseResult;
+      return ruleBasedResult;
     }
 
     const triggerInfo = findExpletiveTrigger(text);
     
     if (!triggerInfo) {
-      return baseResult;
+      return ruleBasedResult;
     }
 
     // Map robust trigger to simple trigger for training data lookup
@@ -717,20 +718,23 @@ export default function SimpleNegationAnalyzer() {
     );
 
     if (similarExamples.length === 0) {
-      return baseResult + " (No training examples for this trigger)";
+      return ruleBasedResult;
     }
 
     const expletiveCount = similarExamples.filter(item => item.has_expletive_ne).length;
     const totalCount = similarExamples.length;
     const confidence = Math.round((Math.max(expletiveCount, totalCount - expletiveCount) / totalCount) * 100);
 
-    if (baseResult.includes('✅ EXPLETIVE NEGATION')) {
-      return `🎯 TRAINING-ENHANCED: '${triggerInfo.match}' + expletive 'ne' (${confidence}% confidence from ${totalCount} training examples)`;
-    } else if (baseResult.includes('logical negation')) {
-      return `🎯 TRAINING-ENHANCED: '${triggerInfo.match}' + logical negation (${confidence}% confidence from ${totalCount} training examples)`;
+    // Format training-based result
+    let trainingResult;
+    if (expletiveCount > totalCount - expletiveCount) {
+      trainingResult = `🎯 TRAINING DATA SUGGESTS: Expletive (${confidence}% from ${totalCount} examples)`;
+    } else {
+      trainingResult = `🎯 TRAINING DATA SUGGESTS: Logical (${confidence}% from ${totalCount} examples)`;
     }
 
-    return baseResult + ` (Enhanced with ${totalCount} training examples)`;
+    // Combine rule-based and training results
+    return ruleBasedResult + '\n\n' + trainingResult;
   };
 
   // Main classification function that uses feature flags independently
@@ -919,6 +923,18 @@ export default function SimpleNegationAnalyzer() {
         firstLine.includes('🤔 UNCERTAIN') ||
         firstLine.includes('Multiple possible interpretations')) {
       return "Uncertain";
+    }
+    
+    // For hybrid analysis, check training data suggestion in later lines
+    if (analysis.includes('🎯 TRAINING DATA SUGGESTS:')) {
+      const trainingLine = analysis.split('\n').find(line => line.startsWith('🎯 TRAINING DATA SUGGESTS:'));
+      if (trainingLine) {
+        if (trainingLine.includes('Expletive')) {
+          return "Expletive (ML)";
+        } else if (trainingLine.includes('Logical')) {
+          return "Logical (ML)";
+        }
+      }
     }
     
     // Default to Uncertain for any other case
