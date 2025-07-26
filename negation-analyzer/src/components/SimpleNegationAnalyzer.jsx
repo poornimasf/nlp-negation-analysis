@@ -1669,12 +1669,24 @@ export default function SimpleNegationAnalyzer() {
             <h3>Analysis Result:</h3>
             <p className="classification-result" style={{
               padding: '15px',
-              backgroundColor: result.includes('✅ EXPLETIVE NEGATION') || result.includes('🎯 TRAINING-ENHANCED') || result.includes('🤖 PURE TRAINING') ? '#d4edda' : 
-                             result.includes('Negation detected') ? '#fff3cd' : '#f8f9fa',
-              border: `1px solid ${result.includes('✅ EXPLETIVE NEGATION') || result.includes('🎯 TRAINING-ENHANCED') || result.includes('🤖 PURE TRAINING') ? '#c3e6cb' : 
-                                  result.includes('Negation detected') ? '#ffeaa7' : '#dee2e6'}`,
+              backgroundColor: result.includes('Logical negation detected') || 
+                             result.includes('🎯 TRAINING-ENHANCED: Logical') || 
+                             result.includes('🤖 PURE TRAINING: Likely had logical') ? '#fff3cd' :
+                             result.includes('✅ EXPLETIVE NEGATION') || 
+                             result.includes('🎯 TRAINING-ENHANCED: Expletive') || 
+                             result.includes('🤖 PURE TRAINING: Likely had expletive') ? '#d4edda' : 
+                             '#f8f9fa',
+              border: `1px solid ${result.includes('Logical negation detected') || 
+                                  result.includes('🎯 TRAINING-ENHANCED: Logical') || 
+                                  result.includes('🤖 PURE TRAINING: Likely had logical') ? '#ffeaa7' :
+                                  result.includes('✅ EXPLETIVE NEGATION') || 
+                                  result.includes('🎯 TRAINING-ENHANCED: Expletive') || 
+                                  result.includes('🤖 PURE TRAINING: Likely had expletive') ? '#c3e6cb' : 
+                                  '#dee2e6'}`,
               borderRadius: '8px',
-              fontWeight: result.includes('✅ EXPLETIVE NEGATION') || result.includes('🎯 TRAINING-ENHANCED') || result.includes('🤖 PURE TRAINING') ? 'bold' : 'normal'
+              fontWeight: result.includes('✅ EXPLETIVE NEGATION') || 
+                         result.includes('🎯 TRAINING-ENHANCED') || 
+                         result.includes('🤖 PURE TRAINING') ? 'bold' : 'normal'
             }}>
               {result}
             </p>
@@ -2002,12 +2014,24 @@ export default function SimpleNegationAnalyzer() {
                       }}>
                         <span style={{
                           padding: '4px 8px',
-                          backgroundColor: label.includes('✅ EXPLETIVE NEGATION') || label.includes('🎯 TRAINING-ENHANCED') || label.includes('🤖 PURE TRAINING') ? '#d4edda' : 
-                                          label.includes('Negation detected') ? '#fff3cd' : 'transparent',
-                          border: `1px solid ${label.includes('✅ EXPLETIVE NEGATION') || label.includes('🎯 TRAINING-ENHANCED') || label.includes('🤖 PURE TRAINING') ? '#c3e6cb' : 
-                                              label.includes('Negation detected') ? '#ffeaa7' : 'transparent'}`,
+                          backgroundColor: label.includes('Logical negation detected') || 
+                                        label.includes('🎯 TRAINING-ENHANCED: Logical') || 
+                                        label.includes('🤖 PURE TRAINING: Likely had logical') ? '#fff3cd' : 
+                                        label.includes('✅ EXPLETIVE NEGATION') || 
+                                        label.includes('🎯 TRAINING-ENHANCED: Expletive') || 
+                                        label.includes('🤖 PURE TRAINING: Likely had expletive') ? '#d4edda' : 
+                                        'transparent',
+                          border: `1px solid ${label.includes('Logical negation detected') || 
+                                              label.includes('🎯 TRAINING-ENHANCED: Logical') || 
+                                              label.includes('🤖 PURE TRAINING: Likely had logical') ? '#ffeaa7' :
+                                              label.includes('✅ EXPLETIVE NEGATION') || 
+                                              label.includes('🎯 TRAINING-ENHANCED: Expletive') || 
+                                              label.includes('🤖 PURE TRAINING: Likely had expletive') ? '#c3e6cb' : 
+                                              'transparent'}`,
                           borderRadius: '4px',
-                          fontWeight: label.includes('✅ EXPLETIVE NEGATION') || label.includes('🎯 TRAINING-ENHANCED') || label.includes('🤖 PURE TRAINING') ? 'bold' : 'normal',
+                          fontWeight: label.includes('✅ EXPLETIVE NEGATION') || 
+                                    label.includes('🎯 TRAINING-ENHANCED') || 
+                                    label.includes('🤖 PURE TRAINING') ? 'bold' : 'normal',
                           fontSize: '0.9em'
                         }}>
                           {label}
