@@ -657,58 +657,52 @@ export default function SimpleNegationAnalyzer() {
       return "No training data available for pure training-based analysis.";
     }
 
-    const triggerInfo = findExpletiveTrigger(text);
-    
-    if (!triggerInfo) {
-      return "No supported expletive triggers found for training-based analysis.";
-    }
+    // Simple text normalization
+    const normalizedText = text.toLowerCase()
+      .replace(/['']/g, "'")
+      .replace(/\s+/g, ' ')
+      .trim();
 
-    // Map robust trigger to simple trigger for training data lookup
-    let simpleTrigger = 'peur que'; // default
-    if (triggerInfo.match.includes('avant')) simpleTrigger = 'avant que';
-    else if (triggerInfo.match.includes('crain')) simpleTrigger = 'craindre';
-    else if (triggerInfo.match.includes('redout')) simpleTrigger = 'redouter';
-    else if (triggerInfo.match.includes('dout')) simpleTrigger = 'douter';
-    else if (triggerInfo.match.includes('évit')) simpleTrigger = 'éviter';
-    else if (triggerInfo.match.includes('empêch')) simpleTrigger = 'empêcher';
-
-    // Find similar examples in training data
-    const similarExamples = trainingData.filter(item => 
-      item.trigger === simpleTrigger ||
-      (item.trigger && item.trigger.includes(simpleTrigger.split(' ')[0]))
-    );
-
-    if (similarExamples.length === 0) {
-      return `No training examples found for '${triggerInfo.match}' trigger.`;
-    }
-
-    // Simple similarity matching based on text content
-    const lowerText = text.toLowerCase();
-    const textWords = lowerText.split(/\s+/);
-    const scoredExamples = similarExamples.map(item => {
-      const exampleWords = item.text.toLowerCase().split(/\s+/);
-      const commonWords = textWords.filter(word => exampleWords.includes(word)).length;
-      const similarity = commonWords / Math.max(textWords.length, exampleWords.length);
+    // Find similar examples based purely on text similarity
+    const scoredExamples = trainingData.map(item => {
+      const exampleText = item.text.toLowerCase();
+      const words = normalizedText.split(/\s+/);
+      const exampleWords = exampleText.split(/\s+/);
+      
+      // Calculate word overlap
+      const commonWords = words.filter(word => exampleWords.includes(word));
+      const similarity = commonWords.length / Math.max(words.length, exampleWords.length);
+      
       return { ...item, similarity };
     }).sort((a, b) => b.similarity - a.similarity);
 
+    // Get top matches with good similarity
     const topMatches = scoredExamples.slice(0, 5).filter(item => item.similarity > 0.3);
     
     if (topMatches.length === 0) {
-      return `Training data available for '${triggerInfo.match}' but no similar examples found (${similarExamples.length} total examples).`;
+      return "No similar examples found in training data.";
     }
 
-    // Calculate prediction based on training data
+    // Calculate prediction based purely on training examples
     const expletiveCount = topMatches.filter(item => item.has_expletive_ne).length;
     const totalCount = topMatches.length;
     const confidence = Math.round((Math.max(expletiveCount, totalCount - expletiveCount) / totalCount) * 100);
-    
     const avgSimilarity = Math.round((topMatches.reduce((sum, item) => sum + item.similarity, 0) / totalCount) * 100);
 
+    // Most similar example for reference
+    const bestMatch = topMatches[0];
+    const similarityPhrase = bestMatch.similarity > 0.7 ? "very similar to" : 
+                            bestMatch.similarity > 0.5 ? "similar to" : 
+                            "somewhat similar to";
+
     if (expletiveCount > totalCount - expletiveCount) {
-      return `🤖 PURE TRAINING: '${triggerInfo.match}' + expletive 'ne' predicted (${confidence}% confidence, ${avgSimilarity}% similarity, ${totalCount} examples)`;
+      return `🤖 PURE TRAINING: Likely had expletive 'ne' (${confidence}% confidence)\n` +
+             `   • Based on ${totalCount} similar examples (${avgSimilarity}% avg similarity)\n` +
+             `   • Most ${similarityPhrase}: "${bestMatch.text}"`;
     } else {
-      return `🤖 PURE TRAINING: '${triggerInfo.match}' + logical negation predicted (${confidence}% confidence, ${avgSimilarity}% similarity, ${totalCount} examples)`;
+      return `🤖 PURE TRAINING: Likely had logical negation (${confidence}% confidence)\n` +
+             `   • Based on ${totalCount} similar examples (${avgSimilarity}% avg similarity)\n` +
+             `   • Most ${similarityPhrase}: "${bestMatch.text}"`;
     }
   };
 
@@ -1518,12 +1512,40 @@ export default function SimpleNegationAnalyzer() {
           }}>
             <h4>🤖 Pure Training-Based Analysis:</h4>
             <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-              <li><strong>Machine learning only</strong> - no rule-based logic interference</li>
-              <li><strong>Pattern matching</strong> with your uploaded training examples</li>
-              <li><strong>Similarity scoring</strong> and confidence percentages from user data</li>
-              <li>Uses <strong>only your examples</strong> - no external datasets</li>
+              <li><strong>Text Similarity Only</strong>
+                <ul>
+                  <li>No rule-based pattern matching</li>
+                  <li>No predefined triggers or patterns</li>
+                  <li>Pure example-based learning</li>
+                </ul>
+              </li>
+              <li><strong>Similarity Measures</strong>
+                <ul>
+                  <li>Word overlap analysis</li>
+                  <li>Context matching</li>
+                  <li>Confidence based on similar examples</li>
+                </ul>
+              </li>
+              <li><strong>Training Data Usage</strong>
+                <ul>
+                  <li>Uses only your examples</li>
+                  <li>No external patterns or rules</li>
+                  <li>Transparent example matching</li>
+                </ul>
+              </li>
             </ul>
-            <p><strong>Advantage:</strong> Pure data-driven predictions from your training data only</p>
+            <p><strong>Example Output:</strong></p>
+            <pre style={{ 
+              fontSize: '12px', 
+              backgroundColor: 'white', 
+              padding: '10px', 
+              borderRadius: '4px',
+              margin: '5px 0'
+            }}>
+{`🤖 PURE TRAINING: Likely had expletive 'ne' (80% confidence)
+   • Based on 5 similar examples (75% avg similarity)
+   • Most similar to: "J'ai peur qu'il vienne"`}
+            </pre>
           </div>
         )}
 
