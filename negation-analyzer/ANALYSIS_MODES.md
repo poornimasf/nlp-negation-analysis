@@ -1,217 +1,189 @@
-# Analysis Modes
+# Analysis Modes Documentation
 
 ## Overview
+The system provides three distinct analysis modes for detecting and classifying expletive negation in French texts. By default, the system uses Training Data Analysis mode, with optional Rule-Based Analysis that can be enabled for a hybrid approach.
 
-The Expletive Negation Analysis System offers three distinct analysis modes, each with its own strengths and use cases. Users can select the most appropriate mode based on their needs and available training data.
+## 1. Training Data Analysis (Default Mode)
+Training Data Analysis is enabled by default and provides a pure machine learning approach to negation classification.
 
-## 1. Rule-Based Analysis 📚
+### Key Features
+- ✅ Pure example-based learning
+- ✅ No predefined rules or patterns
+- ✅ Transparent decision making
+- ✅ Confidence scoring based on example similarity
 
-### Description
-Pure pattern-matching and linguistic rule-based analysis without machine learning enhancement.
+### How It Works
+1. Text similarity matching with training examples
+2. Confidence calculation based on:
+   - Word overlap percentage
+   - Context similarity
+   - Number of matching examples
+3. Classification based on similar examples
+4. Detailed reasoning provided for each decision
 
-### Features
-- ✅ **Comprehensive Pattern Detection**
-  - Complete trigger phrase matching
-  - Conjugation variations
-  - Contextual analysis
-  - Position-aware matching
+### Best For
+- Research with custom examples
+- Novel constructions
+- Corpus-based analysis
+- Pattern discovery
 
-- 🎯 **Trigger Patterns**
-  - "peur que" constructions
-    - avoir peur que variations
-    - Prepositional forms (par/de/dans peur que)
-    - Intensity modifiers (très/grand peur que)
-  - "avant que" constructions
-    - Basic temporal markers
-    - Time precision modifiers
-    - Complex temporal expressions
-  - Additional verb patterns
-    - craindre que
-    - redouter que
-    - douter que
-    - éviter que
-    - empêcher que
+## 2. Rule-Based Analysis (Optional)
+Rule-Based Analysis can be enabled when needed, providing pattern-based detection of expletive negation triggers.
 
-- 📊 **Confidence Scoring**
-  - Base confidence: 0.5
-  - Trigger presence: +0.2
-  - Subjunctive detection: +0.2
-  - Complete construction: +0.1
-  - Maximum score: 0.95
+### Supported Patterns
+1. **"Peur que" Constructions**
+   - Basic forms
+   - Prepositional variations
+   - Intensity modifiers
 
-### Output Format
-```
-📚 RULE-BASED ANALYSIS:
-✅ EXPLETIVE NEGATION
-(85% confidence)
-• Found trigger pattern: "peur que"
-  ↳ Fear expression indicates expletive
-• Contains "ne" without logical markers
-  ↳ Supporting evidence for expletive
-• Subjunctive follows trigger
-  ↳ Additional confirmation
-```
+2. **"Avant que" Expressions**
+   - Basic temporal markers
+   - Time precision variations
+   - Complex temporal phrases
 
-## 2. Pure Training Analysis 🤖
+3. **"Peu s'en faut" Patterns**
+   - Basic: "peu s'en faut que"
+   - Impersonal: "il s'en faut de peu que"
+   - Question form: "s'en faut-il de peu que"
+   - Temporal variations
+   - With intensifiers
 
-### Description
-Relies solely on user-provided training examples for classification, without using predefined rules.
+### Confidence Scoring
+- Base confidence: 0.7
+- Impersonal construction bonus: +0.1
+- Intensity modifiers bonus: +0.05
+- Past/conditional forms bonus: +0.05
+- Maximum confidence cap: 0.95
 
-### Features
-- 📚 **Training Data Processing**
-  - JSON format support
-  - Automatic validation
-  - Example quality checking
-  - Statistics generation
+### Best For
+- Known pattern detection
+- Traditional linguistic analysis
+- High-precision requirements
+- Teaching/learning contexts
 
-- 🔍 **Text Similarity Analysis**
-  - Word overlap calculation
-  - Context matching
-  - Pattern recognition
-  - Example-based learning
-
-- 📊 **Confidence Calculation**
-  - Based on similar examples
-  - Weighted by similarity score
-  - Example count consideration
-  - Clear confidence reporting
-
-### Output Format
-```
-🤖 TRAINING DATA ANALYSIS:
-• Prediction: Expletive
-• Confidence: 80%
-• Based on 5 similar examples
-• 4 examples classified as expletive
-```
-
-## 3. Hybrid Analysis 🔄
-
-### Description
-Combines rule-based analysis with training data enhancement for maximum accuracy.
+## 3. Hybrid Analysis
+When both modes are enabled, the system provides a comprehensive hybrid analysis.
 
 ### Features
-- 🎯 **Dual Analysis Pipeline**
-  - Rule-based foundation
-  - Training data enhancement
-  - Clear section separation
-  - Weighted confidence scoring
+1. **Combined Analysis**
+   - Rule-based pattern detection
+   - Training data enhancement
+   - Confidence merging
+   - Detailed evidence reporting
 
-- 📊 **Enhanced Confidence**
-  - Rule-based base score
-  - Training data boost
-  - Combined confidence calculation
-  - Transparent scoring breakdown
+2. **Weighted Decisions**
+   - Pattern confidence (40%)
+   - Training data confidence (40%)
+   - Supporting evidence (20%)
 
-- 🔍 **Comprehensive Evidence**
-  - Pattern matching results
-  - Similar example matches
-  - Supporting evidence details
-  - Confidence explanations
+3. **Enhanced Reporting**
+   - Pattern matches
+   - Similar examples
+   - Confidence breakdown
+   - Supporting evidence
 
-### Output Format
-```
-📚 RULE-BASED ANALYSIS:
-✅ EXPLETIVE NEGATION
-(85% confidence)
-• Found trigger pattern: "peur que"
-  ↳ Fear expression indicates expletive
-• Contains "ne" without logical markers
-  ↳ Supporting evidence for expletive
+### Best For
+- Research applications
+- High-stakes analysis
+- Comprehensive studies
+- Maximum accuracy requirements
 
-🤖 TRAINING DATA ANALYSIS:
-• Prediction: Expletive
-• Confidence: 90%
-• Based on 15 similar examples
-• 12 examples classified as expletive
-```
+## Usage Guidelines
 
-## Classification Levels
+### Choosing the Right Mode
 
-### Strong Evidence (High Confidence)
-- "✅ EXPLETIVE NEGATION"
-- Confidence >= 80%
-- Multiple supporting factors
-- Clear pattern matches
+1. **Use Default Training Data Analysis When**:
+   - Working with a specific corpus
+   - Discovering new patterns
+   - Analyzing non-standard constructions
+   - Building custom classifications
 
-### Moderate Evidence (Medium Confidence)
-- "LIKELY EXPLETIVE NEGATION"
-- Confidence 60-79%
-- Some supporting evidence
-- Partial pattern matches
-
-### Limited Evidence (Low Confidence)
-- "UNCERTAIN CLASSIFICATION"
-- Confidence < 60%
-- Limited supporting evidence
-- Unclear patterns
-
-## Export Options
-
-### Excel Export
-- Multiple sheets
-- Color-coded results
-- Statistical summaries
-- Training data analysis
-
-### CSV Export
-- Basic format
-- Wide compatibility
-- Essential fields
-- Plain text results
-
-### JSON Export
-- Complete data structure
-- Metadata included
-- Confidence scores
-- Full analysis details
-
-### Text Export
-- Human-readable format
-- Numbered entries
-- Formatted analysis
-- Clear sections
-
-## Best Practices
-
-### Mode Selection
-1. **Use Rule-Based When:**
-   - No training data available
-   - Need consistent pattern matching
+2. **Enable Rule-Based Analysis When**:
    - Working with standard constructions
+   - Teaching/learning contexts
+   - Need pattern-specific detection
+   - Want traditional linguistic analysis
 
-2. **Use Pure Training When:**
-   - Large training dataset available
-   - Working with unique patterns
-   - Need example-based learning
+3. **Use Hybrid Analysis When**:
+   - Maximum accuracy is required
+   - Working on research publications
+   - Need comprehensive evidence
+   - Want both pattern and example-based insights
 
-3. **Use Hybrid When:**
-   - Both rules and training data available
-   - Need maximum accuracy
-   - Want comprehensive analysis
+### Configuration Tips
 
-### Training Data
-- Maintain high-quality examples
-- Regular dataset updates
-- Validate new entries
-- Monitor performance
+1. **Training Data Mode**:
+   - Upload representative examples
+   - Include varied constructions
+   - Maintain balanced datasets
+   - Regular updates recommended
 
-### Analysis Review
-- Check confidence scores
-- Review evidence details
-- Compare mode results
-- Monitor accuracy
+2. **Rule-Based Mode**:
+   - Review pattern documentation
+   - Check confidence thresholds
+   - Consider context requirements
+   - Test with standard examples
 
-## Future Enhancements
+3. **Hybrid Mode**:
+   - Configure weight balance
+   - Review both pattern and training data
+   - Monitor confidence scores
+   - Regular validation recommended
 
-### Planned Features
-- Enhanced pattern matching
-- Additional trigger types
-- Improved confidence scoring
-- Advanced export options
+## Technical Details
 
-### Upcoming Improvements
-- Better similarity matching
-- More detailed analysis
-- Enhanced visualization
-- Performance optimization
+### Confidence Calculation
+
+1. **Training Data Analysis**:
+```javascript
+confidence = (matchingExamples / totalExamples) * 
+            (similarityScore) * 
+            (1 + supportingEvidence)
+```
+
+2. **Rule-Based Analysis**:
+```javascript
+confidence = baseConfidence +
+            patternBonus +
+            constructionBonus +
+            contextBonus
+```
+
+3. **Hybrid Analysis**:
+```javascript
+confidence = (trainingConfidence * 0.4) +
+            (patternConfidence * 0.4) +
+            (supportingEvidence * 0.2)
+```
+
+### Performance Considerations
+
+1. **Training Data Analysis**:
+   - O(n) complexity for similarity matching
+   - Scales with training data size
+   - Caching recommended for large datasets
+
+2. **Rule-Based Analysis**:
+   - O(1) complexity for pattern matching
+   - Constant performance
+   - Minimal resource requirements
+
+3. **Hybrid Analysis**:
+   - Combines both complexities
+   - Higher resource usage
+   - Caching strongly recommended
+
+## Updates and Maintenance
+
+### Regular Tasks
+1. Update training data
+2. Validate pattern effectiveness
+3. Monitor confidence distributions
+4. Review classification accuracy
+
+### Version History
+- v2.4.0: Added "peu s'en faut" patterns, changed default to Training Data Analysis
+- v2.3.0: Enhanced batch processing
+- v2.2.0: Added training data support
+- v2.1.0: Enhanced pattern detection
+- v2.0.0: Initial release with dual modes

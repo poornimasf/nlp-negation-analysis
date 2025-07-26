@@ -10,41 +10,60 @@ A comprehensive linguistic analysis platform specializing in expletive vs logica
 - [Update Process](negation-analyzer/UPDATE_CHECKLIST.md) - Comprehensive testing and deployment checklist
 - [Analysis Modes](negation-analyzer/ANALYSIS_MODES.md) - Detailed description of analysis modes and features
 
-## Latest Updates (v2.3.0 - July 26, 2025)
+## Latest Updates (v2.4.0 - July 26, 2025)
 
 ### Major Changes
-- ✨ **Streamlined Interface**: Removed single sentence analysis in favor of efficient batch processing
-- 🔄 **Enhanced Hybrid Analysis**: Improved integration of rule-based and training data results
-- 📊 **Better Result Formatting**: Clearer separation between rule-based and training analysis
-- 🎯 **Refined Classifications**: Updated "Potential" cases to show clearer confidence levels
+- ✨ **Enhanced Trigger Detection**: Added comprehensive support for "peu s'en faut" patterns
+- 🔄 **Default Analysis Mode**: Training Data Analysis enabled by default, Rule-Based Logic optional
+- 📊 **Improved Batch Processing**: Enhanced support for all trigger patterns
+- 🎯 **Refined Classifications**: Updated confidence scoring for all trigger types
 
 ### Analysis Modes
 
-#### 1. Rule-Based Analysis
-- ✅ **Comprehensive Pattern Detection**:
-  - Complete trigger pattern matching
-  - Advanced subjunctive analysis
-  - Confidence-based classification
-  - Detailed evidence reporting
-
-#### 2. Pure Training Analysis
+#### 1. Training Data Analysis (Default)
 - ✅ **Example-Based Learning**:
   - Text similarity matching
   - Confidence scoring
   - Transparent example references
   - Pure ML-based decisions
 
+#### 2. Rule-Based Analysis (Optional)
+- ✅ **Comprehensive Pattern Detection**:
+  - "peur que" constructions
+  - "avant que" temporal expressions
+  - "peu s'en faut" patterns
+  - Advanced subjunctive analysis
+  - Confidence-based classification
+  - Detailed evidence reporting
+
 #### 3. Hybrid Analysis
 - ✅ **Combined Approach**:
-  - Rule-based foundation
-  - Training data enhancement
+  - Training data foundation
+  - Rule-based enhancement
   - Clear section separation
   - Weighted confidence scoring
 
+### Trigger Patterns
+- ✅ **"Peur que" Constructions**:
+  - Basic: "avoir peur que"
+  - Prepositional: "de/par peur que"
+  - Intensity modifiers
+  
+- ✅ **"Avant que" Expressions**:
+  - Basic temporal markers
+  - Time precision variations
+  - Complex temporal phrases
+  
+- ✅ **"Peu s'en faut" Patterns**:
+  - Basic: "peu s'en faut que"
+  - Impersonal: "il s'en faut de peu que"
+  - Question form: "s'en faut-il de peu que"
+  - Temporal: "peu s'en est fallu que"
+  - With intensifiers: "très/si/tellement peu s'en faut que"
+
 ### Technical Improvements
-- Improved classification messaging
-- Enhanced result formatting
-- Better confidence calculations
+- Enhanced pattern matching for all trigger types
+- Improved confidence calculations
 - Streamlined batch processing
 - Rich export options (Excel, CSV, JSON, TXT)
 
