@@ -10,66 +10,50 @@ A comprehensive linguistic analysis platform specializing in expletive vs logica
 - [Update Process](negation-analyzer/UPDATE_CHECKLIST.md) - Comprehensive testing and deployment checklist
 - [Analysis Modes](negation-analyzer/ANALYSIS_MODES.md) - Detailed description of analysis modes and features
 
-## Latest Updates (v2.2.0 - July 25, 2025)
+## Latest Updates (v2.3.0 - July 26, 2025)
+
+### Major Changes
+- ✨ **Streamlined Interface**: Removed single sentence analysis in favor of efficient batch processing
+- 🔄 **Enhanced Hybrid Analysis**: Improved integration of rule-based and training data results
+- 📊 **Better Result Formatting**: Clearer separation between rule-based and training analysis
+- 🎯 **Refined Classifications**: Updated "Potential" cases to show clearer confidence levels
 
 ### Analysis Modes
 
 #### 1. Rule-Based Analysis
-- ✅ **Comprehensive "peur que" Detection**:
-  - Complete "avoir peur que" conjugations
-  - Prepositional forms (par/de/dans peur que)
-  - Intensity modifiers (très/grand peur que)
-  - Nominal and adjectival constructions
+- ✅ **Comprehensive Pattern Detection**:
+  - Complete trigger pattern matching
+  - Advanced subjunctive analysis
+  - Confidence-based classification
+  - Detailed evidence reporting
 
-- ✅ **Advanced "avant que" Analysis**:
-  - Basic temporal markers
-  - Time precision (juste/bien/peu avant que)
-  - Complex temporal expressions
-  - Compound constructions
-
-- ✅ **Sophisticated Subjunctive Detection**:
-  - Common verb forms (être, avoir, aller)
-  - Irregular subjunctive forms
-  - Position-aware analysis after "que"
-
-#### 2. Pure Training Analysis (Updated)
-- ✅ **True Example-Based Learning**:
-  - No rule-based interference
-  - Pure text similarity matching
-  - Context-aware analysis
+#### 2. Pure Training Analysis
+- ✅ **Example-Based Learning**:
+  - Text similarity matching
+  - Confidence scoring
   - Transparent example references
-
-- ✅ **Similarity Measures**:
-  - Word overlap analysis
-  - Context matching
-  - Confidence based on similar examples
-  - Average similarity scoring
-
-- ✅ **Training Data Integration**:
-  - Uses only user-provided examples
-  - No predefined patterns
-  - No external datasets
-  - Clear example matching
+  - Pure ML-based decisions
 
 #### 3. Hybrid Analysis
 - ✅ **Combined Approach**:
   - Rule-based foundation
   - Training data enhancement
+  - Clear section separation
   - Weighted confidence scoring
-  - Best of both methods
 
 ### Technical Improvements
-- Removed rule-based logic from pure training mode
-- Enhanced similarity matching algorithms
-- Improved confidence calculations
-- Better result presentation
+- Improved classification messaging
+- Enhanced result formatting
+- Better confidence calculations
+- Streamlined batch processing
+- Rich export options (Excel, CSV, JSON, TXT)
 
 ## Quick Links
 
 ### Production Application
 - **URL**: https://main.d1gx30ivteuneq.amplifyapp.com/
 - **Status**: ✅ Active with enhanced analysis modes
-- **Last Updated**: July 25, 2025
+- **Last Updated**: July 26, 2025
 
 ### Development Setup
 ```bash

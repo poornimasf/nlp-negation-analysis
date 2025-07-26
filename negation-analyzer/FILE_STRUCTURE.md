@@ -1,71 +1,169 @@
-# Production File Structure and Update Guide
+# File Structure and Implementation Guide
 
-## Repository Structure
+## Project Organization
 
 ```
-main/                                  # Root directory
-├── README.md                         # System overview and features
-├── PRODUCTION_STATE.md               # Current deployment status
-├── ANALYSIS_MODES.md                 # Core functionality documentation
-│
-└── negation-analyzer/                # Implementation directory
-    ├── README.md                     # Implementation details
-    ├── FILE_STRUCTURE.md             # This file - implementation guide
-    ├── UPDATE_CHECKLIST.md          # Testing and deployment procedures
-    ├── src/
-    │   ├── components/
-    │   │   ├── SimpleNegationAnalyzer.jsx    # Main application component
-    │   │   └── NegationAnalyzer.css          # Styling for the application
-    │   ├── App.js                            # Root React component
-    │   ├── index.js                          # Application entry point
-    │   └── index.css                         # Global styles
-    ├── public/                               # Static assets
-    ├── amplify/                              # AWS Amplify configuration
-    │   └── backend/                          # Backend configuration
-    ├── amplify.yml                           # Amplify build configuration
-    └── package.json                          # Project dependencies
+negation-analyzer/
+├── src/
+│   ├── components/
+│   │   ├── SimpleNegationAnalyzer.jsx    # Main analysis component
+│   │   └── NegationAnalyzer.css          # Component styles
+│   ├── utils/
+│   │   └── patterns.js                   # Regex patterns and triggers
+│   └── App.js                            # Root application component
+├── public/
+│   └── index.html                        # HTML template
+└── package.json                          # Dependencies and scripts
 ```
 
-## Documentation Organization
+## Key Components
 
-### Root Directory Documentation
-1. **README.md**
-   - System overview
-   - Latest features
-   - Quick links
-   - Documentation structure
+### SimpleNegationAnalyzer.jsx
+Primary component handling negation analysis with the following key features:
 
-2. **PRODUCTION_STATE.md**
-   - Current version
-   - Deployment status
-   - System state
-   - Known issues
+#### Analysis Modes
+1. **Rule-Based Analysis**
+   - Pattern matching for expletive triggers
+   - Subjunctive form detection
+   - Confidence scoring system
 
-3. **ANALYSIS_MODES.md**
-   - Analysis modes description
-   - Classification system
-   - Performance considerations
-   - Best practices
+2. **Pure Training Analysis**
+   - Text similarity comparison
+   - Example-based classification
+   - Confidence calculation from matches
 
-### Implementation Directory Documentation
-1. **README.md**
-   - Technical implementation
-   - Development setup
-   - Code examples
-   - Performance optimization
+3. **Hybrid Analysis**
+   - Combined rule-based and training analysis
+   - Enhanced confidence scoring
+   - Clear section separation in results
 
-2. **FILE_STRUCTURE.md**
-   - File organization
-   - Update procedures
-   - Code structure
-   - Implementation guide
+#### Core Functions
+- `classifyNegation()`: Main classification dispatcher
+- `classifyExpletive()`: Rule-based analysis
+- `classifyWithTraining()`: Training-enhanced analysis
+- `determineClassification()`: Final classification logic
 
-3. **UPDATE_CHECKLIST.md**
-   - Testing procedures
-   - Deployment steps
-   - Verification process
-   - Quality checks
+#### Data Processing
+- `processTrainingData()`: Training data validation and processing
+- `calculateConfidence()`: Multi-factor confidence scoring
+- `formatDetailedResult()`: Result formatting with sections
 
-## Key Files and Their Purposes
+#### Batch Processing
+- `handleBatchAnalyze()`: Batch text processing
+- `downloadBatchResults()`: Multiple export formats
+- `sortResults()`: Result sorting and organization
 
-[Rest of the file content remains the same...]
+### patterns.js
+Contains regex patterns for:
+- Expletive triggers (peur que, avant que)
+- Subjunctive forms
+- Logical negation markers
+
+## Implementation Details
+
+### Analysis Pipeline
+1. Text input processing
+2. Pattern matching and trigger detection
+3. Subjunctive analysis
+4. Training data comparison (if enabled)
+5. Confidence calculation
+6. Result formatting and display
+
+### Classification Logic
+```javascript
+if (hasStrongEvidence) {
+  return "✅ EXPLETIVE NEGATION";
+} else if (hasModerateEvidence) {
+  return "LIKELY EXPLETIVE NEGATION";
+} else {
+  return "UNCERTAIN CLASSIFICATION";
+}
+```
+
+### Confidence Scoring
+- Base confidence: 0.5
+- Trigger presence: +0.2
+- Subjunctive: +0.2
+- Complete construction: +0.1
+- Training match: Up to +0.2
+
+### Result Formatting
+```javascript
+{
+  classification: "EXPLETIVE NEGATION",
+  confidence: 0.85,
+  evidence: [
+    "Found trigger pattern: 'peur que'",
+    "Contains subjunctive form",
+    "Training data match: 90%"
+  ]
+}
+```
+
+## Export Formats
+
+### Excel Export
+- Multiple sheets (Results, Summary, Training Stats)
+- Color-coded classifications
+- Detailed statistics and analysis
+
+### CSV Export
+- Basic format for compatibility
+- All essential fields included
+- Analysis results in plain text
+
+### JSON Export
+- Complete data structure
+- Includes metadata and confidence scores
+- Full analysis details
+
+### Text Export
+- Human-readable format
+- Numbered entries
+- Formatted analysis results
+
+## Best Practices
+
+### Pattern Matching
+- Use complete trigger phrases
+- Include variations and conjugations
+- Consider context and position
+
+### Confidence Calculation
+- Multiple evidence sources
+- Weighted scoring system
+- Clear confidence thresholds
+
+### Training Data
+- Validate format and content
+- Process incrementally
+- Maintain example quality
+
+### Result Display
+- Clear section separation
+- Consistent formatting
+- Informative confidence levels
+
+## Performance Considerations
+
+### Optimization
+- Cached pattern compilation
+- Efficient text processing
+- Batch operation priority
+
+### Memory Management
+- Training data chunking
+- Result set pagination
+- Export file size limits
+
+## Future Enhancements
+
+### Planned Features
+- Enhanced pattern matching
+- Additional export formats
+- Advanced confidence scoring
+
+### Maintenance
+- Regular pattern updates
+- Performance monitoring
+- Documentation updates
