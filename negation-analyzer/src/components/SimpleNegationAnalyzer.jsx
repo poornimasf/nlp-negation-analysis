@@ -6,10 +6,7 @@ import EnhancedPatternMatcher from '../utils/EnhancedPatternMatcher';
 
 export default function SimpleNegationAnalyzer() {
   // Basic state
-  const [inputText, setInputText] = useState("");
   const [batchInput, setBatchInput] = useState("");
-  const [result, setResult] = useState(null);
-  const [highlightedText, setHighlightedText] = useState("");
   const [batchResults, setBatchResults] = useState([]);
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
 
@@ -1111,22 +1108,11 @@ export default function SimpleNegationAnalyzer() {
   };
 
   // Event handlers
-  const handleAnalyze = () => {
-    if (!inputText.trim()) {
-      setResult("Please enter a sentence to analyze.");
-      setHighlightedText("");
-      return;
-    }
-    
-    const classification = classifyNegation(inputText);
-    setResult(classification);
-    setHighlightedText(highlight(inputText));
-  };
 
 
   // Determine classification type for batch results
-  const determineClassification = (text) => {
-    const analysis = classifyNegation(text);
+  const determineClassification = async (text) => {
+    const analysis = await classifyNegation(text);
     console.log('Analysis result:', analysis);
     
     // Get the first line which contains the main classification
@@ -1181,10 +1167,14 @@ export default function SimpleNegationAnalyzer() {
     }
     
     // Check for trigger patterns
-    const triggerInfo = findExpletiveTrigger(text);
-    if (triggerInfo && triggerInfo.type === 'peu_sen_faut') {
-      console.log('Found peu s\'en faut trigger:', triggerInfo);
-      return "Expletive";
+    try {
+      const triggerInfo = await findExpletiveTrigger(text);
+      if (triggerInfo && triggerInfo.type === 'peu_sen_faut') {
+        console.log('Found peu s\'en faut trigger:', triggerInfo);
+        return "Expletive";
+      }
+    } catch (error) {
+      console.error('Error checking trigger patterns:', error);
     }
     
     // Default to Uncertain for any other case
@@ -1258,7 +1248,7 @@ export default function SimpleNegationAnalyzer() {
           text: sentence.trim(),
           highlightedText: highlight(sentence.trim()),
           label: analysis,
-          classification: determineClassification(sentence.trim()),
+          classification: await determineClassification(sentence.trim()),
           reasoning: reasoning.join('\n'),
           confidence: confidence,
           trigger: triggerInfo ? (triggerInfo.mappedType || mapTriggerType(triggerInfo.type)) : null
