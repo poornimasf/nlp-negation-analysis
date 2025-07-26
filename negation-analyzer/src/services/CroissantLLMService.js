@@ -6,14 +6,16 @@ const hf = new HfInference(process.env.REACT_APP_HF_TOKEN);
 class CroissantLLMService {
     static async analyzeSyntax(text) {
         try {
-            const prompt = `Analyse la structure syntaxique de cette phrase et identifie les marqueurs de négation expletive:
+            const prompt = `Cette phrase avait un marqueur "ne" qui a été supprimé. Analyse la structure syntaxique et détermine si ce "ne" manquant était une négation expletive ou logique:
             "${text}"
             
+            Contexte: Le "ne" a été retiré de cette phrase. Votre tâche est de prédire son type.
+            
             Format de réponse souhaité:
-            1. Structure syntaxique
-            2. Marqueurs de négation
-            3. Confiance (0-1)
-            4. Justification`;
+            1. Type de négation (expletive/logique)
+            2. Confiance (0-1)
+            3. Justification syntaxique
+            4. Indices linguistiques`;
 
             const response = await hf.textGeneration({
                 model: MODEL_ID,
@@ -37,16 +39,17 @@ class CroissantLLMService {
         try {
             // Extract structured information from the response
             const lines = text.split('\n');
-            const structure = lines.find(l => l.includes('Structure'))?.split(':')[1]?.trim();
-            const markers = lines.find(l => l.includes('Marqueurs'))?.split(':')[1]?.trim();
+            const typeMatch = lines.find(l => l.includes('Type'))?.split(':')[1]?.trim().toLowerCase();
+            const isExpletive = typeMatch?.includes('expletive') || typeMatch?.includes('explétive');
             const confidence = parseFloat(lines.find(l => l.includes('Confiance'))?.split(':')[1]?.trim()) || 0;
             const justification = lines.find(l => l.includes('Justification'))?.split(':')[1]?.trim();
+            const indices = lines.find(l => l.includes('Indices'))?.split(':')[1]?.trim();
 
             return {
-                structure,
-                markers,
+                isExpletive,
                 confidence,
                 justification,
+                indices,
                 rawResponse: text
             };
         } catch (error) {
@@ -57,14 +60,16 @@ class CroissantLLMService {
 
     static async validatePattern(text, pattern) {
         try {
-            const prompt = `Vérifie si cette phrase contient le motif "${pattern}" et analyse sa validité syntaxique:
+            const prompt = `Cette phrase avait un "ne" supprimé. Vérifie si le motif "${pattern}" indique une négation expletive:
             "${text}"
             
+            Contexte: Un "ne" manque dans cette phrase. Le motif "${pattern}" suggère-t-il que ce "ne" était expletif?
+            
             Format de réponse souhaité:
-            1. Motif trouvé (oui/non)
-            2. Position du motif
-            3. Validité syntaxique (0-1)
-            4. Justification`;
+            1. Motif expletif (oui/non)
+            2. Validité syntaxique (0-1)
+            3. Justification
+            4. Mode verbal attendu`;
 
             const response = await hf.textGeneration({
                 model: MODEL_ID,
@@ -87,16 +92,17 @@ class CroissantLLMService {
     static parseValidationResponse(text) {
         try {
             const lines = text.split('\n');
-            const found = lines.find(l => l.includes('Motif trouvé'))?.split(':')[1]?.trim().toLowerCase() === 'oui';
-            const position = lines.find(l => l.includes('Position'))?.split(':')[1]?.trim();
+            const expletiveMatch = lines.find(l => l.includes('Motif expletif'))?.split(':')[1]?.trim().toLowerCase();
+            const isExpletive = expletiveMatch === 'oui' || expletiveMatch?.includes('oui');
             const validity = parseFloat(lines.find(l => l.includes('Validité'))?.split(':')[1]?.trim()) || 0;
             const justification = lines.find(l => l.includes('Justification'))?.split(':')[1]?.trim();
+            const mood = lines.find(l => l.includes('Mode'))?.split(':')[1]?.trim();
 
             return {
-                found,
-                position,
+                isExpletive,
                 validity,
                 justification,
+                expectedMood: mood,
                 rawResponse: text
             };
         } catch (error) {
@@ -107,16 +113,18 @@ class CroissantLLMService {
 
     static async enhanceConfidence(text, initialConfidence, evidence) {
         try {
-            const prompt = `Analyse cette phrase et ajuste le score de confiance pour la négation expletive:
+            const prompt = `Cette phrase avait un "ne" supprimé. Analyse et ajuste le score de confiance pour prédire si ce "ne" était expletif:
             "${text}"
             
             Score initial: ${initialConfidence}
             Evidence actuelle: ${evidence}
             
+            Contexte: Nous prédisons le type d'un "ne" manquant.
+            
             Format de réponse souhaité:
             1. Score ajusté (0-1)
             2. Justification
-            3. Suggestions d'amélioration`;
+            3. Facteurs décisifs`;
 
             const response = await hf.textGeneration({
                 model: MODEL_ID,
@@ -141,12 +149,12 @@ class CroissantLLMService {
             const lines = text.split('\n');
             const adjustedScore = parseFloat(lines.find(l => l.includes('Score'))?.split(':')[1]?.trim()) || 0;
             const justification = lines.find(l => l.includes('Justification'))?.split(':')[1]?.trim();
-            const suggestions = lines.find(l => l.includes('Suggestions'))?.split(':')[1]?.trim();
+            const factors = lines.find(l => l.includes('Facteurs'))?.split(':')[1]?.trim();
 
             return {
                 adjustedScore,
                 justification,
-                suggestions,
+                decisiveFactors: factors,
                 rawResponse: text
             };
         } catch (error) {
