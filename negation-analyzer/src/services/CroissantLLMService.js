@@ -2,7 +2,9 @@ import { HfInference } from '@huggingface/inference';
 
 class CroissantLLMService {
     static instance = null;
-    static MODEL_ID = 'mistralai/Mistral-7B-Instruct-v0.3';  // Using Mistral for reliable access
+    static MODEL_ID = 'https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud';  // Custom endpoint
+    static MAX_RETRIES = 3;
+    static RETRY_DELAY = 1000; // 1 second
 
     static async getInstance() {
         if (!this.instance) {
@@ -19,29 +21,30 @@ class CroissantLLMService {
         try {
             const hf = await this.getInstance();
             
-            const prompt = `<s>[INST] Analyze this French sentence where a 'ne' has been removed. Determine if the missing 'ne' was an expletive or logical negation:
-
+            const prompt = `Cette phrase avait un 'ne' qui a été supprimé. Analyse la structure syntaxique et détermine si ce 'ne' manquant était une négation expletive ou logique:
 '${text}'
 
-Please provide your analysis in French following this format:
+Format de réponse souhaité:
 1. Type de négation (expletive/logique)
 2. Confiance (0-1)
 3. Justification syntaxique
-4. Indices linguistiques [/INST]</s>`;
+4. Indices linguistiques`;
 
-            const response = await hf.textGeneration({
-                model: this.MODEL_ID,
-                inputs: prompt,
-                parameters: {
-                    max_new_tokens: 512,
-                    temperature: 0.1,
-                    top_p: 0.95,
-                    return_full_text: false
-                }
+            const response = await this._retryOperation(async () => {
+                return await hf.textGeneration({
+                    model: this.MODEL_ID,
+                    inputs: prompt,
+                    parameters: {
+                        max_new_tokens: 256,
+                        temperature: 0.1,
+                        top_p: 0.95
+                    }
+                });
             });
 
             return this.parseResponse(response.generated_text);
         } catch (error) {
+            console.error('Syntax analysis failed:', error);
             throw error;
         }
     }
@@ -50,31 +53,32 @@ Please provide your analysis in French following this format:
         try {
             const hf = await this.getInstance();
             
-            const prompt = `<s>[INST] Analyze this French sentence where a 'ne' has been removed. Check if the pattern '${pattern}' indicates an expletive negation:
-
+            const prompt = `Cette phrase avait un 'ne' supprimé. Vérifie si le motif '${pattern}' indique une négation expletive:
 '${text}'
 
-Context: A 'ne' is missing from this sentence. Does the pattern '${pattern}' suggest it was an expletive 'ne'?
+Contexte: Un 'ne' manque dans cette phrase. Le motif '${pattern}' suggère-t-il que ce 'ne' était expletif?
 
-Please respond in French following this format:
+Format de réponse souhaité:
 1. Motif expletif (oui/non)
 2. Validité syntaxique (0-1)
 3. Justification
-4. Mode verbal attendu [/INST]</s>`;
+4. Mode verbal attendu`;
 
-            const response = await hf.textGeneration({
-                model: this.MODEL_ID,
-                inputs: prompt,
-                parameters: {
-                    max_new_tokens: 512,
-                    temperature: 0.1,
-                    top_p: 0.95,
-                    return_full_text: false
-                }
+            const response = await this._retryOperation(async () => {
+                return await hf.textGeneration({
+                    model: this.MODEL_ID,
+                    inputs: prompt,
+                    parameters: {
+                        max_new_tokens: 256,
+                        temperature: 0.1,
+                        top_p: 0.95
+                    }
+                });
             });
 
             return this.parseValidationResponse(response.generated_text);
         } catch (error) {
+            console.error('Pattern validation failed:', error);
             throw error;
         }
     }
@@ -83,33 +87,50 @@ Please respond in French following this format:
         try {
             const hf = await this.getInstance();
             
-            const prompt = `<s>[INST] Analyze this French sentence where a 'ne' has been removed and adjust the confidence score for predicting if it was an expletive negation:
-
+            const prompt = `Cette phrase avait un 'ne' supprimé. Analyse et ajuste le score de confiance pour prédire si ce 'ne' était expletif:
 '${text}'
 
-Initial score: ${initialConfidence}
-Current evidence: ${evidence}
+Score initial: ${initialConfidence}
+Evidence actuelle: ${evidence}
 
-Please respond in French following this format:
+Format de réponse souhaité:
 1. Score ajusté (0-1)
 2. Justification
-3. Facteurs décisifs [/INST]</s>`;
+3. Facteurs décisifs`;
 
-            const response = await hf.textGeneration({
-                model: this.MODEL_ID,
-                inputs: prompt,
-                parameters: {
-                    max_new_tokens: 512,
-                    temperature: 0.1,
-                    top_p: 0.95,
-                    return_full_text: false
-                }
+            const response = await this._retryOperation(async () => {
+                return await hf.textGeneration({
+                    model: this.MODEL_ID,
+                    inputs: prompt,
+                    parameters: {
+                        max_new_tokens: 256,
+                        temperature: 0.1,
+                        top_p: 0.95
+                    }
+                });
             });
 
             return this.parseConfidenceResponse(response.generated_text);
         } catch (error) {
+            console.error('Confidence enhancement failed:', error);
             throw error;
         }
+    }
+
+    static async _retryOperation(operation) {
+        let lastError;
+        for (let i = 0; i < this.MAX_RETRIES; i++) {
+            try {
+                return await operation();
+            } catch (error) {
+                console.warn(`Attempt ${i + 1} failed:`, error);
+                lastError = error;
+                if (i < this.MAX_RETRIES - 1) {
+                    await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY * (i + 1)));
+                }
+            }
+        }
+        throw lastError;
     }
 
     static parseResponse(text) {
