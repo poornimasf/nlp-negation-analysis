@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 import './NegationAnalyzer.css';
+import ClassifierFactory from '../utils/ClassifierFactory';
+import { getAvailableAnalysisModes } from '../utils/AnalysisModes';
+import { isFeatureEnabled } from '../config/featureFlags';
+import ClassifierFactory from '../utils/ClassifierFactory';
+import { ANALYSIS_MODES } from '../utils/AnalysisModes';
 
 export default function NegationAnalyzer() {
   // State definitions
@@ -9,6 +14,7 @@ export default function NegationAnalyzer() {
   const [highlightedText, setHighlightedText] = useState("");
   const [batchResults, setBatchResults] = useState([]);
   const [trainingData, setTrainingData] = useState([]);
+  const [analysisMode, setAnalysisMode] = useState('RULE_BASED');
   const [trainingStats, setTrainingStats] = useState({
     totalExamples: 0,
     withoutNe: 0,
@@ -180,21 +186,38 @@ export default function NegationAnalyzer() {
   };
 
   // Event handlers
-  const handleAnalyze = () => {
-    const classification = enhancedClassifyNegation(inputText);
-    setResult(classification);
-    setHighlightedText(highlight(inputText));
+  const handleAnalyze = async () => {
+    try {
+      const classifier = await ClassifierFactory.createClassifier(analysisMode, trainingData);
+      const classification = await classifier.classifyNegation(inputText);
+      setResult(classification.classification);
+      setHighlightedText(highlight(inputText));
+    } catch (error) {
+      console.error('Error during analysis:', error);
+      setResult('Error during analysis. Please try again.');
+    }
   };
 
-  const handleBatchAnalyze = () => {
-    const sentences = batchInput.split("\n").filter(Boolean);
-    const results = sentences.map((sentence, index) => ({
-      id: index + 1,
-      text: sentence,
-      highlightedText: highlight(sentence),
-      label: enhancedClassifyNegation(sentence),
-    }));
-    setBatchResults(results);
+  const handleBatchAnalyze = async () => {
+    try {
+      const classifier = await ClassifierFactory.createClassifier(analysisMode, trainingData);
+      const sentences = batchInput.split("\n").filter(Boolean);
+      const results = await Promise.all(sentences.map(async (sentence, index) => {
+        const classification = await classifier.classifyNegation(sentence);
+        return {
+          id: index + 1,
+          text: sentence,
+          highlightedText: highlight(sentence),
+          label: classification.classification,
+          confidence: classification.confidence,
+          evidence: classification.evidence
+        };
+      }));
+      setBatchResults(results);
+    } catch (error) {
+      console.error('Error during batch analysis:', error);
+      setBatchResults([]);
+    }
   };
 
   const handleFileUpload = async (event) => {
@@ -345,6 +368,26 @@ export default function NegationAnalyzer() {
       <div className="card">
         <h2 className="title">🔬 Expletive Negation Inference</h2>
         <p>Infer whether a French sentence originally contained expletive negation ("ne") based on linguistic patterns, even when "ne" has been removed or never existed.</p>
+
+        {/* Analysis Mode Selection */}
+        <div className="form-group">
+          <label htmlFor="analysis-mode">Analysis Mode:</label>
+          <select
+            id="analysis-mode"
+            value={analysisMode}
+            onChange={(e) => setAnalysisMode(e.target.value)}
+            className="input"
+          >
+            {getAvailableAnalysisModes().map(mode => (
+              <option key={mode.id} value={mode.id} title={mode.description}>
+                {mode.label}
+              </option>
+            ))}
+          </select>
+          <p className="mode-description">
+            {getAvailableAnalysisModes().find(mode => mode.id === analysisMode)?.description}
+          </p>
+        </div>
 
         {/* Single Sentence Section */}
         <div className="form-group">

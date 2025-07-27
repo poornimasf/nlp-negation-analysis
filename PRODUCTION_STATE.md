@@ -25,7 +25,13 @@ The French Negation Type Prediction System is a specialized linguistic analysis 
    - User-provided example learning
    - Transparent decision making
 
-3. **Priority System**
+3. **CamemBERT Analysis (Beta)**
+   - Deep learning-based French language analysis
+   - Direct negation type classification
+   - Confidence scoring with pattern validation
+   - Available through feature flag: REACT_APP_ENABLE_CAMEMBERT
+
+4. **Priority System**
    - Either/or logic (no hybrid mode)
    - Rule-based takes priority when both enabled
    - Clear user interface indicators
@@ -97,6 +103,7 @@ The French Negation Type Prediction System is a specialized linguistic analysis 
 
 ### Environment Variables
 - **REACT_APP_HF_TOKEN**: Hugging Face API token for CroissantLLM
+- **REACT_APP_ENABLE_CAMEMBERT**: Feature flag for CamemBERT analysis mode
 - **Build Settings**: Automatic deployment on git push
 - **Domain**: Custom domain with SSL certificate
 
