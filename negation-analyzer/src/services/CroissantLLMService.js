@@ -2,7 +2,7 @@ import { HfInference } from '@huggingface/inference';
 
 class CroissantLLMService {
     static instance = null;
-    static MODEL_ID = 'mistralai/Mistral-7B-Instruct-v0.2';  // Updated to available model
+    static MODEL_ID = 'mistralai/Mistral-7B-Instruct-v0.3';  // Updated to latest Mistral version
 
     static async getInstance() {
         if (!this.instance) {
