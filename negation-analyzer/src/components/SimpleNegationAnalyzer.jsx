@@ -16,6 +16,10 @@ export default function SimpleNegationAnalyzer() {
   const [useExpletiveLogic, setUseExpletiveLogic] = useState(false);
   const [enableTrainingData, setEnableTrainingData] = useState(true);
   
+  // UI state for collapsible info boxes
+  const [infoBoxExpanded, setInfoBoxExpanded] = useState(false);
+  const [trainingInfoExpanded, setTrainingInfoExpanded] = useState(false);
+  
   // Training data state
   const [trainingData, setTrainingData] = useState([]);
   const [trainingStats, setTrainingStats] = useState({
@@ -1787,123 +1791,185 @@ export default function SimpleNegationAnalyzer() {
         
         {/* Basic Logic Info Box */}
         {!useExpletiveLogic && !enableTrainingData && (
-          <div className="info-box" style={{ 
+          <div style={{ 
             backgroundColor: '#fff3cd', 
-            padding: '15px', 
+            border: '1px solid #ffeaa7',
             borderRadius: '8px', 
             marginBottom: '20px',
-            border: '1px solid #ffeaa7'
+            overflow: 'hidden'
           }}>
-            <h4>📝 Basic Logic Predicts:</h4>
-            <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-              <li>Type of <strong>removed "ne"</strong> markers</li>
-              <li>Uses trigger patterns: <strong>peur que, avant que, peu s'en faut</strong></li>
-              <li>Considers subjunctive mood placement</li>
-              <li>No advanced linguistic analysis</li>
-            </ul>
-            <p><strong>Task:</strong> Given "J'ai peur qu'il vienne" (ne removed), predict if the missing "ne" was expletive or logical</p>
+            <div 
+              onClick={() => setInfoBoxExpanded(!infoBoxExpanded)}
+              style={{
+                padding: '12px 15px',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: '#fff3cd',
+                borderBottom: infoBoxExpanded ? '1px solid #ffeaa7' : 'none'
+              }}
+            >
+              <h4 style={{ margin: 0, fontSize: '14px' }}>📝 Basic Logic Predicts</h4>
+              <span style={{ fontSize: '12px', color: '#856404' }}>
+                {infoBoxExpanded ? '▼ Hide Details' : '▶ Show Details'}
+              </span>
+            </div>
+            {infoBoxExpanded && (
+              <div style={{ padding: '15px' }}>
+                <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
+                  <li>Type of <strong>removed "ne"</strong> markers</li>
+                  <li>Uses trigger patterns: <strong>peur que, avant que, peu s'en faut</strong></li>
+                  <li>Considers subjunctive mood placement</li>
+                  <li>No advanced linguistic analysis</li>
+                </ul>
+                <p><strong>Task:</strong> Given "J'ai peur qu'il vienne" (ne removed), predict if the missing "ne" was expletive or logical</p>
+              </div>
+            )}
           </div>
         )}
 
         {/* Rule-Based Logic Info Box */}
         {useExpletiveLogic && !enableTrainingData && (
-          <div className="info-box" style={{ 
+          <div style={{ 
             backgroundColor: '#e3f2fd', 
-            padding: '15px', 
+            border: '1px solid #2196f3',
             borderRadius: '8px', 
             marginBottom: '20px',
-            border: '1px solid #2196f3'
+            overflow: 'hidden'
           }}>
-            <h4>🎯 Rule-Based Prediction of Removed "Ne" Type:</h4>
-            <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-              <li><strong>"peur que" constructions:</strong>
-                <ul>
-                  <li>All conjugations of "avoir peur que"</li>
-                  <li>Prepositional forms (par/de/dans peur que)</li>
-                  <li>Intensity modifiers (très/grand peur que)</li>
-                  <li>→ Predicts removed "ne" was <strong>expletive</strong></li>
+            <div 
+              onClick={() => setInfoBoxExpanded(!infoBoxExpanded)}
+              style={{
+                padding: '12px 15px',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: '#e3f2fd',
+                borderBottom: infoBoxExpanded ? '1px solid #2196f3' : 'none'
+              }}
+            >
+              <h4 style={{ margin: 0, fontSize: '14px' }}>🎯 Rule-Based Prediction of Removed "Ne" Type</h4>
+              <span style={{ fontSize: '12px', color: '#1565c0' }}>
+                {infoBoxExpanded ? '▼ Hide Details' : '▶ Show Details'}
+              </span>
+            </div>
+            {infoBoxExpanded && (
+              <div style={{ padding: '15px' }}>
+                <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
+                  <li><strong>"peur que" constructions:</strong>
+                    <ul>
+                      <li>All conjugations of "avoir peur que"</li>
+                      <li>Prepositional forms (par/de/dans peur que)</li>
+                      <li>Intensity modifiers (très/grand peur que)</li>
+                      <li>→ Predicts removed "ne" was <strong>expletive</strong></li>
+                    </ul>
+                  </li>
+                  <li><strong>"avant que" constructions:</strong>
+                    <ul>
+                      <li>Basic temporal markers</li>
+                      <li>Time precision (juste/bien/peu avant que)</li>
+                      <li>Complex temporal expressions</li>
+                      <li>→ Predicts removed "ne" was <strong>expletive</strong></li>
+                    </ul>
+                  </li>
+                  <li><strong>"peu s'en faut" constructions:</strong>
+                    <ul>
+                      <li>Basic: "peu s'en faut que"</li>
+                      <li>Impersonal: "il s'en faut de peu que"</li>
+                      <li>With intensifiers and temporal variations</li>
+                      <li>→ Predicts removed "ne" was <strong>expletive</strong></li>
+                    </ul>
+                  </li>
+                  <li><strong>Enhanced with CroissantLLM:</strong>
+                    <ul>
+                      <li>French syntax validation</li>
+                      <li>Context-aware confidence scoring</li>
+                      <li>Subjunctive mood analysis</li>
+                    </ul>
+                  </li>
                 </ul>
-              </li>
-              <li><strong>"avant que" constructions:</strong>
-                <ul>
-                  <li>Basic temporal markers</li>
-                  <li>Time precision (juste/bien/peu avant que)</li>
-                  <li>Complex temporal expressions</li>
-                  <li>→ Predicts removed "ne" was <strong>expletive</strong></li>
+                <p><strong>Examples:</strong></p>
+                <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
+                  <li>"J'ai peur qu'il vienne" → <strong>Expletive</strong> (removed "ne" was expletive)</li>
+                  <li>"Avant qu'elle parte" → <strong>Expletive</strong> (removed "ne" was expletive)</li>
+                  <li>"Peu s'en faut qu'il réussisse" → <strong>Expletive</strong> (removed "ne" was expletive)</li>
                 </ul>
-              </li>
-              <li><strong>"peu s'en faut" constructions:</strong>
-                <ul>
-                  <li>Basic: "peu s'en faut que"</li>
-                  <li>Impersonal: "il s'en faut de peu que"</li>
-                  <li>With intensifiers and temporal variations</li>
-                  <li>→ Predicts removed "ne" was <strong>expletive</strong></li>
-                </ul>
-              </li>
-              <li><strong>Enhanced with CroissantLLM:</strong>
-                <ul>
-                  <li>French syntax validation</li>
-                  <li>Context-aware confidence scoring</li>
-                  <li>Subjunctive mood analysis</li>
-                </ul>
-              </li>
-            </ul>
-            <p><strong>Examples:</strong></p>
-            <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
-              <li>"J'ai peur qu'il vienne" → <strong>Expletive</strong> (removed "ne" was expletive)</li>
-              <li>"Avant qu'elle parte" → <strong>Expletive</strong> (removed "ne" was expletive)</li>
-              <li>"Peu s'en faut qu'il réussisse" → <strong>Expletive</strong> (removed "ne" was expletive)</li>
-            </ul>
+              </div>
+            )}
           </div>
         )}
 
         {/* Pure Training Logic Info Box */}
         {!useExpletiveLogic && enableTrainingData && (
-          <div className="info-box" style={{ 
+          <div style={{ 
             backgroundColor: '#e8f5e8', 
-            padding: '15px', 
+            border: '1px solid #4caf50',
             borderRadius: '8px', 
             marginBottom: '20px',
-            border: '1px solid #4caf50'
+            overflow: 'hidden'
           }}>
-            <h4>🤖 Pure Training-Based Prediction of Removed "Ne" Type:</h4>
-            <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-              <li><strong>Text Similarity Only</strong>
-                <ul>
-                  <li>No rule-based pattern matching</li>
-                  <li>No predefined triggers or patterns</li>
-                  <li>Pure example-based learning</li>
-                  <li>Predicts removed "ne" type from similar examples</li>
+            <div 
+              onClick={() => setInfoBoxExpanded(!infoBoxExpanded)}
+              style={{
+                padding: '12px 15px',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: '#e8f5e8',
+                borderBottom: infoBoxExpanded ? '1px solid #4caf50' : 'none'
+              }}
+            >
+              <h4 style={{ margin: 0, fontSize: '14px' }}>🤖 Binary Classifier Training-Based Prediction</h4>
+              <span style={{ fontSize: '12px', color: '#2e7d32' }}>
+                {infoBoxExpanded ? '▼ Hide Details' : '▶ Show Details'}
+              </span>
+            </div>
+            {infoBoxExpanded && (
+              <div style={{ padding: '15px' }}>
+                <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
+                  <li><strong>Binary Classifier Method</strong>
+                    <ul>
+                      <li>Rule-based pattern detection (peur que, avant que, peu s'en faut)</li>
+                      <li>Logical negation marker analysis</li>
+                      <li>Balanced scoring with training data context</li>
+                      <li>Predicts removed "ne" type with linguistic intelligence</li>
+                    </ul>
+                  </li>
+                  <li><strong>Linguistic Features</strong>
+                    <ul>
+                      <li>Mutually exclusive trigger patterns</li>
+                      <li>Strong logical negation detection</li>
+                      <li>Subjunctive mood analysis</li>
+                    </ul>
+                  </li>
+                  <li><strong>Training Data Integration</strong>
+                    <ul>
+                      <li>Uses your examples for context</li>
+                      <li>Combines rules with training patterns</li>
+                      <li>Transparent linguistic reasoning</li>
+                      <li>Better accuracy than pure similarity matching</li>
+                    </ul>
+                  </li>
                 </ul>
-              </li>
-              <li><strong>Similarity Measures</strong>
-                <ul>
-                  <li>Word overlap analysis</li>
-                  <li>Context matching</li>
-                  <li>Confidence based on similar examples</li>
-                </ul>
-              </li>
-              <li><strong>Training Data Usage</strong>
-                <ul>
-                  <li>Uses only your examples</li>
-                  <li>No external patterns or rules</li>
-                  <li>Transparent example matching</li>
-                  <li>Learns patterns of removed "ne" classification</li>
-                </ul>
-              </li>
-            </ul>
-            <p><strong>Example Output:</strong></p>
-            <pre style={{ 
-              fontSize: '12px', 
-              backgroundColor: 'white', 
-              padding: '10px', 
-              borderRadius: '4px',
-              margin: '5px 0'
-            }}>
-{`🤖 PURE TRAINING: Removed 'ne' was likely expletive (80% confidence)
-   • Based on 5 similar examples (75% avg similarity)
-   • Most similar to: "J'ai peur qu'il vienne"`}
-            </pre>
+                <p><strong>Example Output:</strong></p>
+                <pre style={{ 
+                  fontSize: '12px', 
+                  backgroundColor: 'white', 
+                  padding: '10px', 
+                  borderRadius: '4px',
+                  margin: '5px 0'
+                }}>
+{`🎯 BINARY CLASSIFIER: Removed 'ne' was likely expletive (85% confidence)
+   • Decision score: 0.75 (threshold: 0.5)
+   • Primary trigger: peur que
+   • Analysis: 'peur que' construction detected; subjunctive mood supports expletive context
+   • Balanced classifier: expletive triggers vs logical negation markers`}
+                </pre>
+              </div>
+            )}
           </div>
         )}
 
@@ -1938,17 +2004,35 @@ export default function SimpleNegationAnalyzer() {
           </div>
           <p>Upload training examples for {useExpletiveLogic ? 'enhanced' : 'pure'} machine learning-based prediction of removed "ne" type (expletive vs logical).</p>
           
-          <div className="info-box" style={{ 
+          <div style={{ 
             backgroundColor: '#e8f5e8', 
-            padding: '15px', 
+            border: '1px solid #4caf50',
             borderRadius: '8px', 
             marginBottom: '20px',
-            border: '1px solid #4caf50'
+            overflow: 'hidden'
           }}>
-            <h4>📋 Expected File Format (JSON):</h4>
-            <p><strong>Required fields:</strong> text, has_expletive_ne, trigger, classification</p>
-            <p><strong>Example JSON:</strong></p>
-            <pre style={{ fontSize: '12px', backgroundColor: 'white', padding: '10px', borderRadius: '4px' }}>
+            <div 
+              onClick={() => setTrainingInfoExpanded(!trainingInfoExpanded)}
+              style={{
+                padding: '12px 15px',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: '#e8f5e8',
+                borderBottom: trainingInfoExpanded ? '1px solid #4caf50' : 'none'
+              }}
+            >
+              <h4 style={{ margin: 0, fontSize: '14px' }}>📋 Expected File Format (JSON)</h4>
+              <span style={{ fontSize: '12px', color: '#2e7d32' }}>
+                {trainingInfoExpanded ? '▼ Hide Format' : '▶ Show Format'}
+              </span>
+            </div>
+            {trainingInfoExpanded && (
+              <div style={{ padding: '15px' }}>
+                <p><strong>Required fields:</strong> text, has_expletive_ne, trigger, classification</p>
+                <p><strong>Example JSON:</strong></p>
+                <pre style={{ fontSize: '12px', backgroundColor: 'white', padding: '10px', borderRadius: '4px' }}>
 {`{
   "examples": [
     {
@@ -1977,15 +2061,17 @@ export default function SimpleNegationAnalyzer() {
     }
   ]
 }`}
-            </pre>
-            <div style={{ marginTop: '10px', fontSize: '13px', color: '#666' }}>
-              <strong>💡 Tips:</strong>
-              <ul style={{ marginTop: '5px', paddingLeft: '20px' }}>
-                <li>Supported triggers: "peur que", "avant que", "peu s'en faut"</li>
-                <li>has_expletive_ne: true/false indicates presence of expletive negation</li>
-                <li>classification: "expletive" or "logical"</li>
-              </ul>
-            </div>
+                </pre>
+                <div style={{ marginTop: '10px', fontSize: '13px', color: '#666' }}>
+                  <strong>💡 Tips:</strong>
+                  <ul style={{ marginTop: '5px', paddingLeft: '20px' }}>
+                    <li>Supported triggers: "peur que", "avant que", "peu s'en faut"</li>
+                    <li>has_expletive_ne: true/false indicates presence of expletive negation</li>
+                    <li>classification: "expletive" or "logical"</li>
+                  </ul>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="form-group">
