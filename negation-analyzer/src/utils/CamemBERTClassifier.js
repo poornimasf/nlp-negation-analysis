@@ -8,7 +8,7 @@ class CamemBERTClassifier {
         }
         this.inference = new HfInference(token);
         this.initialized = false;
-        this.modelName = 'facebook/camembert-base';  // Updated to full model identifier
+        this.modelName = 'almanach/camembert-base';  // Updated to almanach version
         this.maxRetries = 3;
         this.retryDelay = 1000; // 1 second
     }
