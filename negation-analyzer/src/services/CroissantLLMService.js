@@ -2,7 +2,7 @@ import { HfInference } from '@huggingface/inference';
 
 class CroissantLLMService {
     static instance = null;
-    static MODEL_ID = 'croissantllm/CroissantLLMChat-v0.1';
+    static MODEL_ID = 'mistralai/Mistral-7B-Instruct-v0.2';  // Updated to available model
 
     static async getInstance() {
         if (!this.instance) {
@@ -19,22 +19,24 @@ class CroissantLLMService {
         try {
             const hf = await this.getInstance();
             
-            const prompt = `Cette phrase avait un 'ne' qui a été supprimé. Analyse la structure syntaxique et détermine si ce 'ne' manquant était une négation expletive ou logique:
+            const prompt = `<s>[INST] Analyze this French sentence where a 'ne' has been removed. Determine if the missing 'ne' was an expletive or logical negation:
+
 '${text}'
 
-Format de réponse souhaité:
+Please provide your analysis in French following this format:
 1. Type de négation (expletive/logique)
 2. Confiance (0-1)
 3. Justification syntaxique
-4. Indices linguistiques`;
+4. Indices linguistiques [/INST]</s>`;
 
             const response = await hf.textGeneration({
                 model: this.MODEL_ID,
                 inputs: prompt,
                 parameters: {
-                    max_new_tokens: 256,
+                    max_new_tokens: 512,
                     temperature: 0.1,
-                    top_p: 0.95
+                    top_p: 0.95,
+                    return_full_text: false
                 }
             });
 
@@ -48,24 +50,26 @@ Format de réponse souhaité:
         try {
             const hf = await this.getInstance();
             
-            const prompt = `Cette phrase avait un 'ne' supprimé. Vérifie si le motif '${pattern}' indique une négation expletive:
+            const prompt = `<s>[INST] Analyze this French sentence where a 'ne' has been removed. Check if the pattern '${pattern}' indicates an expletive negation:
+
 '${text}'
 
-Contexte: Un 'ne' manque dans cette phrase. Le motif '${pattern}' suggère-t-il que ce 'ne' était expletif?
+Context: A 'ne' is missing from this sentence. Does the pattern '${pattern}' suggest it was an expletive 'ne'?
 
-Format de réponse souhaité:
+Please respond in French following this format:
 1. Motif expletif (oui/non)
 2. Validité syntaxique (0-1)
 3. Justification
-4. Mode verbal attendu`;
+4. Mode verbal attendu [/INST]</s>`;
 
             const response = await hf.textGeneration({
                 model: this.MODEL_ID,
                 inputs: prompt,
                 parameters: {
-                    max_new_tokens: 256,
+                    max_new_tokens: 512,
                     temperature: 0.1,
-                    top_p: 0.95
+                    top_p: 0.95,
+                    return_full_text: false
                 }
             });
 
@@ -79,24 +83,26 @@ Format de réponse souhaité:
         try {
             const hf = await this.getInstance();
             
-            const prompt = `Cette phrase avait un 'ne' supprimé. Analyse et ajuste le score de confiance pour prédire si ce 'ne' était expletif:
+            const prompt = `<s>[INST] Analyze this French sentence where a 'ne' has been removed and adjust the confidence score for predicting if it was an expletive negation:
+
 '${text}'
 
-Score initial: ${initialConfidence}
-Evidence actuelle: ${evidence}
+Initial score: ${initialConfidence}
+Current evidence: ${evidence}
 
-Format de réponse souhaité:
+Please respond in French following this format:
 1. Score ajusté (0-1)
 2. Justification
-3. Facteurs décisifs`;
+3. Facteurs décisifs [/INST]</s>`;
 
             const response = await hf.textGeneration({
                 model: this.MODEL_ID,
                 inputs: prompt,
                 parameters: {
-                    max_new_tokens: 256,
+                    max_new_tokens: 512,
                     temperature: 0.1,
-                    top_p: 0.95
+                    top_p: 0.95,
+                    return_full_text: false
                 }
             });
 
@@ -127,6 +133,7 @@ Format de réponse souhaité:
                 rawResponse: text
             };
         } catch (error) {
+            console.error('Error parsing response:', error);
             return null;
         }
     }
@@ -152,6 +159,7 @@ Format de réponse souhaité:
                 rawResponse: text
             };
         } catch (error) {
+            console.error('Error parsing validation response:', error);
             return null;
         }
     }
@@ -174,6 +182,7 @@ Format de réponse souhaité:
                 rawResponse: text
             };
         } catch (error) {
+            console.error('Error parsing confidence response:', error);
             return null;
         }
     }
