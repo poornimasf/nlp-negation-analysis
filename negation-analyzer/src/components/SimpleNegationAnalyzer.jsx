@@ -989,31 +989,54 @@ export default function SimpleNegationAnalyzer() {
           return classifyBasic(text);
           
         case 'CAMEMBERT':
-          const classifier = new CamemBERTClassifier();
-          const result = await classifier.classifyNegation(text);
-          
-          // Format the result to match our expected output format
-          let output = [];
-          
-          // Add main classification with confidence
-          output.push(`${result.classification} NEGATION`);
-          output.push(`(${Math.round(result.confidence * 100)}% confidence)\n`);
-          
-          // Add evidence section
-          output.push('🔍 ANALYSIS DETAILS:');
-          output.push(`• ${result.evidence}`);
-          
-          // Add pattern analysis if available
-          if (result.evidence.includes('patterns detected')) {
-            output.push('• Pattern validation supports classification');
+          try {
+            const classifier = new CamemBERTClassifier();
+            const result = await classifier.classifyNegation(text);
+            
+            // Format the result to match our expected output format
+            let output = [];
+            
+            // Add main classification with confidence
+            output.push(`${result.classification} NEGATION`);
+            output.push(`(${Math.round(result.confidence * 100)}% confidence)\n`);
+            
+            // Add evidence section
+            output.push('🔍 ANALYSIS DETAILS:');
+            output.push(`• ${result.evidence}`);
+            
+            // Add pattern analysis if available
+            if (result.evidence.includes('patterns detected')) {
+              output.push('• Pattern validation supports classification');
+            }
+            
+            // Add model information
+            output.push('\n🤖 MODEL INFORMATION:');
+            output.push('• Using CamemBERT base model');
+            output.push('• Combined neural + pattern analysis');
+            
+            return output.join('\n');
+          } catch (error) {
+            console.error('CamemBERT Error:', error);
+            
+            // Format error message for display
+            let errorMessage = '❌ CamemBERT Analysis Error:\n';
+            
+            if (error.message.includes('Missing HF_TOKEN')) {
+              errorMessage += '• Hugging Face token not configured\n';
+              errorMessage += '• Please set REACT_APP_HF_TOKEN in environment variables';
+            } else if (error.message.includes('Invalid Hugging Face token')) {
+              errorMessage += '• Invalid Hugging Face token\n';
+              errorMessage += '• Please check your REACT_APP_HF_TOKEN';
+            } else if (error.message.includes('Model not found')) {
+              errorMessage += '• CamemBERT model not available\n';
+              errorMessage += '• Please check model configuration';
+            } else {
+              errorMessage += `• ${error.message}\n`;
+              errorMessage += '• Please check console for details';
+            }
+            
+            return errorMessage;
           }
-          
-          // Add model information
-          output.push('\n🤖 MODEL INFORMATION:');
-          output.push('• Using CamemBERT base model');
-          output.push('• Combined neural + pattern analysis');
-          
-          return output.join('\n');
           
         default:
           return classifyBasic(text);

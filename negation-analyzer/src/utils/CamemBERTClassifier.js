@@ -2,24 +2,46 @@ import { HfInference } from '@huggingface/inference';
 
 class CamemBERTClassifier {
     constructor() {
-        this.inference = new HfInference(process.env.REACT_APP_HF_TOKEN);
-        this.initialized = false;
-        this.modelName = 'camembert-base';
+        // Check for token
+        const token = process.env.REACT_APP_HF_TOKEN;
+        if (!token) {
+            console.error('No Hugging Face token found in environment variables');
+            throw new Error('Missing HF_TOKEN - Please ensure REACT_APP_HF_TOKEN is set in environment variables');
+        }
+
+        try {
+            this.inference = new HfInference(token);
+            this.initialized = false;
+            this.modelName = 'camembert-base';
+        } catch (error) {
+            console.error('Error creating HfInference instance:', error);
+            throw new Error('Failed to initialize Hugging Face inference client');
+        }
     }
 
     async initialize() {
         if (!this.initialized) {
             try {
+                console.log('Initializing CamemBERT with model:', this.modelName);
+                
                 // Test connection with a simple inference
-                await this.inference.textClassification({
+                const testResult = await this.inference.textClassification({
                     model: this.modelName,
                     inputs: "Test connection"
                 });
+
+                console.log('CamemBERT test inference result:', testResult);
                 this.initialized = true;
                 console.log('CamemBERT initialized successfully');
             } catch (error) {
                 console.error('Failed to initialize CamemBERT:', error);
-                throw new Error('CamemBERT initialization failed');
+                if (error.message.includes('401')) {
+                    throw new Error('Invalid Hugging Face token - Please check your REACT_APP_HF_TOKEN');
+                } else if (error.message.includes('404')) {
+                    throw new Error('Model not found - Please check if camembert-base is available');
+                } else {
+                    throw new Error(`CamemBERT initialization failed: ${error.message}`);
+                }
             }
         }
     }
