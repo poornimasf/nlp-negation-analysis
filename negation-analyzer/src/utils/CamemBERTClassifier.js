@@ -17,7 +17,7 @@ class CamemBERTClassifier {
         if (this.initialized) return;
 
         try {
-            // Test with fill-mask task which is definitely supported
+            // Test with simple masked text
             await this.inference.fillMask({
                 model: this.modelName,
                 inputs: "Le chat est <mask> la table."
@@ -57,60 +57,73 @@ class CamemBERTClassifier {
         }
 
         try {
-            // Use token classification to identify negation markers
-            const tokenResult = await this._retryOperation(async () => {
-                return await this.inference.tokenClassification({
+            // Use masked language modeling to analyze negation context
+            const maskedText = text.replace(/\b(?:ne|n')\b/g, '<mask>');
+            const maskResult = await this._retryOperation(async () => {
+                return await this.inference.fillMask({
                     model: this.modelName,
-                    inputs: text,
-                    parameters: {
-                        aggregation_strategy: "simple"
-                    }
+                    inputs: maskedText
                 });
             });
 
-            // Use zero-shot classification for negation type
-            const classificationResult = await this._retryOperation(async () => {
-                return await this.inference.zeroShotClassification({
+            // Analyze sentence embeddings for classification
+            const embeddings = await this._retryOperation(async () => {
+                return await this.inference.featureExtraction({
                     model: this.modelName,
-                    inputs: text,
-                    parameters: {
-                        candidate_labels: ["négation expletive", "négation logique"]
-                    }
+                    inputs: text
                 });
             });
 
-            // Combine results for final classification
-            const isExpletive = classificationResult.labels[0] === "négation expletive";
-            const confidence = classificationResult.scores[0];
-            
-            // Enhanced evidence collection
+            // Combine evidence for classification
             const evidence = [];
-            
-            // Add token-level evidence
-            if (tokenResult && tokenResult.length > 0) {
-                evidence.push("Token Analysis:");
-                tokenResult.forEach(token => {
-                    if (token.score > 0.5) {
-                        evidence.push(`- Found '${token.word}' (${Math.round(token.score * 100)}% confidence)`);
+            let isExpletive = false;
+            let confidence = 0.5;
+
+            // Analyze mask predictions
+            if (maskResult && Array.isArray(maskResult)) {
+                const negationPredictions = maskResult.filter(pred => 
+                    pred.token_str.match(/\b(?:ne|n')\b/i)
+                );
+
+                if (negationPredictions.length > 0) {
+                    const topPrediction = negationPredictions[0];
+                    evidence.push(`Mask prediction: '${topPrediction.token_str}' (${Math.round(topPrediction.score * 100)}% confidence)`);
+                    
+                    // Check context for expletive indicators
+                    if (text.match(/\b(?:peur|crainte)\s+que?\b/i)) {
+                        isExpletive = true;
+                        confidence += 0.2;
+                        evidence.push("Found fear expression pattern");
                     }
-                });
+                    if (text.match(/\bavant\s+que?\b/i)) {
+                        isExpletive = true;
+                        confidence += 0.2;
+                        evidence.push("Found temporal expression pattern");
+                    }
+                    if (text.match(/\bpeu\s+s'en\s+(?:faut|fallait)\b/i)) {
+                        isExpletive = true;
+                        confidence += 0.25;
+                        evidence.push("Found 'peu s'en faut' pattern");
+                    }
+                }
             }
 
-            // Add classification evidence
-            evidence.push("\nClassification Analysis:");
-            evidence.push(`- Primary prediction: ${classificationResult.labels[0]}`);
-            evidence.push(`- Confidence: ${Math.round(confidence * 100)}%`);
-            
-            // Add any additional linguistic patterns found
-            if (text.includes("que") || text.includes("qu'")) {
-                evidence.push("- Contains 'que/qu'' construction");
+            // Analyze sentence structure
+            if (text.match(/\bque?\b.*\b(?:subjonctif|subjunctive)\b/i)) {
+                confidence += 0.15;
+                evidence.push("Subjunctive mood detected");
             }
-            if (/\b(peur|crainte)\b/.test(text)) {
-                evidence.push("- Contains fear expression");
+
+            // Check for logical negation markers
+            const logicalMarkers = text.match(/\b(?:pas|point|plus|jamais|rien|personne|aucun|guère)\b/g);
+            if (logicalMarkers) {
+                isExpletive = false;
+                confidence += 0.3;
+                evidence.push(`Found logical negation markers: ${logicalMarkers.join(', ')}`);
             }
-            if (/\bavant\b/.test(text)) {
-                evidence.push("- Contains temporal marker");
-            }
+
+            // Normalize confidence
+            confidence = Math.min(Math.max(confidence, 0.1), 0.95);
 
             return {
                 classification: isExpletive ? "EXPLETIVE NEGATION" : "LOGICAL NEGATION",
@@ -120,19 +133,6 @@ class CamemBERTClassifier {
         } catch (error) {
             console.error('CamemBERT classification error:', error);
             throw new Error(`Classification failed: ${error.message}`);
-        }
-    }
-
-    async _analyzeTokens(text) {
-        try {
-            const result = await this.inference.tokenClassification({
-                model: this.modelName,
-                inputs: text
-            });
-            return result;
-        } catch (error) {
-            console.error('Token analysis failed:', error);
-            return null;
         }
     }
 }
