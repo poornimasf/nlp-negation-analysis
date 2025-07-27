@@ -8,7 +8,7 @@ class CamemBERTClassifier {
         }
         this.inference = new HfInference(token);
         this.initialized = false;
-        this.modelName = 'almanach/camembert-base';  // Updated to almanach version
+        this.modelName = 'https://blw2gc8euan45k1a.us-east-1.aws.endpoints.huggingface.cloud';  // Custom AWS endpoint
         this.maxRetries = 3;
         this.retryDelay = 1000; // 1 second
     }
@@ -17,10 +17,12 @@ class CamemBERTClassifier {
         if (this.initialized) return;
 
         try {
-            // Test with simple masked text
-            await this.inference.fillMask({
-                model: this.modelName,
-                inputs: "Le chat est <mask> la table."
+            // Test with simple text classification
+            await this._retryOperation(async () => {
+                return await this.inference.textClassification({
+                    model: this.modelName,
+                    inputs: "Test de connexion."
+                });
             });
             
             this.initialized = true;
@@ -57,73 +59,59 @@ class CamemBERTClassifier {
         }
 
         try {
-            // Use masked language modeling to analyze negation context
-            const maskedText = text.replace(/\b(?:ne|n')\b/g, '<mask>');
-            const maskResult = await this._retryOperation(async () => {
-                return await this.inference.fillMask({
+            // Use text classification for negation type
+            const result = await this._retryOperation(async () => {
+                return await this.inference.textClassification({
                     model: this.modelName,
-                    inputs: maskedText
+                    inputs: text,
+                    parameters: {
+                        candidate_labels: ["négation expletive", "négation logique"]
+                    }
                 });
             });
 
-            // Analyze sentence embeddings for classification
-            const embeddings = await this._retryOperation(async () => {
-                return await this.inference.featureExtraction({
-                    model: this.modelName,
-                    inputs: text
-                });
-            });
-
-            // Combine evidence for classification
+            // Analyze the results
             const evidence = [];
             let isExpletive = false;
             let confidence = 0.5;
 
-            // Analyze mask predictions
-            if (maskResult && Array.isArray(maskResult)) {
-                const negationPredictions = maskResult.filter(pred => 
-                    pred.token_str.match(/\b(?:ne|n')\b/i)
-                );
-
-                if (negationPredictions.length > 0) {
-                    const topPrediction = negationPredictions[0];
-                    evidence.push(`Mask prediction: '${topPrediction.token_str}' (${Math.round(topPrediction.score * 100)}% confidence)`);
-                    
-                    // Check context for expletive indicators
-                    if (text.match(/\b(?:peur|crainte)\s+que?\b/i)) {
-                        isExpletive = true;
-                        confidence += 0.2;
-                        evidence.push("Found fear expression pattern");
-                    }
-                    if (text.match(/\bavant\s+que?\b/i)) {
-                        isExpletive = true;
-                        confidence += 0.2;
-                        evidence.push("Found temporal expression pattern");
-                    }
-                    if (text.match(/\bpeu\s+s'en\s+(?:faut|fallait)\b/i)) {
-                        isExpletive = true;
-                        confidence += 0.25;
-                        evidence.push("Found 'peu s'en faut' pattern");
-                    }
-                }
+            if (result && result.labels) {
+                const primaryLabel = result.labels[0];
+                isExpletive = primaryLabel === "négation expletive";
+                confidence = result.scores[0];
+                evidence.push(`Classification principale: ${primaryLabel} (${Math.round(confidence * 100)}% confiance)`);
             }
 
-            // Analyze sentence structure
-            if (text.match(/\bque?\b.*\b(?:subjonctif|subjunctive)\b/i)) {
-                confidence += 0.15;
-                evidence.push("Subjunctive mood detected");
+            // Add pattern-based evidence
+            if (text.match(/\b(?:peur|crainte)\s+que?\b/i)) {
+                isExpletive = true;
+                confidence = Math.min(confidence + 0.2, 0.95);
+                evidence.push("Motif trouvé: expression de peur");
+            }
+            if (text.match(/\bavant\s+que?\b/i)) {
+                isExpletive = true;
+                confidence = Math.min(confidence + 0.2, 0.95);
+                evidence.push("Motif trouvé: expression temporelle");
+            }
+            if (text.match(/\bpeu\s+s'en\s+(?:faut|fallait)\b/i)) {
+                isExpletive = true;
+                confidence = Math.min(confidence + 0.25, 0.95);
+                evidence.push("Motif trouvé: 'peu s'en faut'");
+            }
+
+            // Check for subjunctive mood
+            if (text.match(/\b(?:soit|sois|soyons|soyez|soient|fasse|fasses|fassions|fassiez|fassent)\b/i)) {
+                confidence = Math.min(confidence + 0.15, 0.95);
+                evidence.push("Mode subjonctif détecté");
             }
 
             // Check for logical negation markers
             const logicalMarkers = text.match(/\b(?:pas|point|plus|jamais|rien|personne|aucun|guère)\b/g);
             if (logicalMarkers) {
                 isExpletive = false;
-                confidence += 0.3;
-                evidence.push(`Found logical negation markers: ${logicalMarkers.join(', ')}`);
+                confidence = Math.max(confidence + 0.3, 0.95);
+                evidence.push(`Marqueurs de négation logique trouvés: ${logicalMarkers.join(', ')}`);
             }
-
-            // Normalize confidence
-            confidence = Math.min(Math.max(confidence, 0.1), 0.95);
 
             return {
                 classification: isExpletive ? "EXPLETIVE NEGATION" : "LOGICAL NEGATION",
