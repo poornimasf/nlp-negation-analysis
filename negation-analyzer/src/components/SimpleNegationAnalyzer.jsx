@@ -1139,9 +1139,9 @@ export default function SimpleNegationAnalyzer() {
       return;
     }
 
-    // Prevent batch analysis if neither analysis mode is selected
-    if (!useExpletiveLogic && !enableTrainingData) {
-      alert('Please select an analysis mode (Rule-Based Expletive Logic or Training Data Analysis) before running batch analysis.');
+    // Prevent batch analysis if no mode is selected
+    if (!analysisMode) {
+      alert('Please select an analysis mode before running batch analysis.');
       return;
     }
 
@@ -1189,7 +1189,7 @@ export default function SimpleNegationAnalyzer() {
           }
           
           // Check for training data matches if enabled
-          if (enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
+          if (analysisMode === 'TRAINING_DATA' && useTrainingEnhancement && trainingData.length > 0) {
             const similarExamples = trainingData.filter(example => 
               example.text.toLowerCase().includes(sentence.toLowerCase()) ||
               sentence.toLowerCase().includes(example.text.toLowerCase())
@@ -1410,7 +1410,7 @@ export default function SimpleNegationAnalyzer() {
     XLSX.utils.book_append_sheet(wb, summaryWs, "Summary Statistics");
     
     // Create detailed breakdown sheet if user training data is available
-    if (enableTrainingData && trainingData.length > 0) {
+    if (analysisMode === 'TRAINING_DATA' && trainingData.length > 0) {
       const userTrainingStatsData = [
         ['User Training Data Analysis'],
         [''],
@@ -1685,47 +1685,7 @@ export default function SimpleNegationAnalyzer() {
         </div>
 
         {/* Mode-specific Info Boxes */}
-        {!useExpletiveLogic && !enableTrainingData && (
-          <div style={{ 
-            backgroundColor: '#fff3cd', 
-            border: '1px solid #ffeaa7',
-            borderRadius: '8px', 
-            marginBottom: '20px',
-            overflow: 'hidden'
-          }}>
-            <div 
-              onClick={() => setInfoBoxExpanded(!infoBoxExpanded)}
-              style={{
-                padding: '12px 15px',
-                cursor: 'pointer',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                backgroundColor: '#fff3cd',
-                borderBottom: infoBoxExpanded ? '1px solid #ffeaa7' : 'none'
-              }}
-            >
-              <h4 style={{ margin: 0, fontSize: '14px' }}>📝 Basic Logic Predicts</h4>
-              <span style={{ fontSize: '12px', color: '#856404' }}>
-                {infoBoxExpanded ? '▼ Hide Details' : '▶ Show Details'}
-              </span>
-            </div>
-            {infoBoxExpanded && (
-              <div style={{ padding: '15px' }}>
-                <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-                  <li>Type of <strong>removed "ne"</strong> markers</li>
-                  <li>Uses trigger patterns: <strong>peur que, avant que, peu s'en faut</strong></li>
-                  <li>Considers subjunctive mood placement</li>
-                  <li>No advanced linguistic analysis</li>
-                </ul>
-                <p><strong>Task:</strong> Given "J'ai peur qu'il vienne" (ne removed), predict if the missing "ne" was expletive or logical</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Rule-Based Logic Info Box */}
-        {useExpletiveLogic && !enableTrainingData && (
+        {analysisMode === 'RULE_BASED' && (
           <div style={{ 
             backgroundColor: '#e3f2fd', 
             border: '1px solid #2196f3',
@@ -1745,7 +1705,7 @@ export default function SimpleNegationAnalyzer() {
                 borderBottom: infoBoxExpanded ? '1px solid #2196f3' : 'none'
               }}
             >
-              <h4 style={{ margin: 0, fontSize: '14px' }}>🎯 Rule-Based Prediction of Removed "Ne" Type</h4>
+              <h4 style={{ margin: 0, fontSize: '14px' }}>🎯 Rule-Based Analysis with CroissantLLM</h4>
               <span style={{ fontSize: '12px', color: '#1565c0' }}>
                 {infoBoxExpanded ? '▼ Hide Details' : '▶ Show Details'}
               </span>
@@ -1753,54 +1713,20 @@ export default function SimpleNegationAnalyzer() {
             {infoBoxExpanded && (
               <div style={{ padding: '15px' }}>
                 <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-                  <li><strong>"peur que" constructions:</strong>
-                    <ul>
-                      <li>All conjugations of "avoir peur que"</li>
-                      <li>Prepositional forms (par/de/dans peur que)</li>
-                      <li>Intensity modifiers (très/grand peur que)</li>
-                      <li>→ Predicts removed "ne" was <strong>expletive</strong></li>
-                    </ul>
-                  </li>
-                  <li><strong>"avant que" constructions:</strong>
-                    <ul>
-                      <li>Basic temporal markers</li>
-                      <li>Time precision (juste/bien/peu avant que)</li>
-                      <li>Complex temporal expressions</li>
-                      <li>→ Predicts removed "ne" was <strong>expletive</strong></li>
-                    </ul>
-                  </li>
-                  <li><strong>"peu s'en faut" constructions:</strong>
-                    <ul>
-                      <li>Basic: "peu s'en faut que"</li>
-                      <li>Impersonal: "il s'en faut de peu que"</li>
-                      <li>With intensifiers and temporal variations</li>
-                      <li>→ Predicts removed "ne" was <strong>expletive</strong></li>
-                    </ul>
-                  </li>
-                  <li><strong>Enhanced with CroissantLLM:</strong>
-                    <ul>
-                      <li>French syntax validation</li>
-                      <li>Context-aware confidence scoring</li>
-                      <li>Subjunctive mood analysis</li>
-                    </ul>
-                  </li>
-                </ul>
-                <p><strong>Examples:</strong></p>
-                <ul style={{ margin: '5px 0', paddingLeft: '20px' }}>
-                  <li>"J'ai peur qu'il vienne" → <strong>Expletive</strong> (removed "ne" was expletive)</li>
-                  <li>"Avant qu'elle parte" → <strong>Expletive</strong> (removed "ne" was expletive)</li>
-                  <li>"Peu s'en faut qu'il réussisse" → <strong>Expletive</strong> (removed "ne" was expletive)</li>
+                  <li>French linguistic pattern detection</li>
+                  <li>CroissantLLM syntax validation</li>
+                  <li>Confidence scoring system</li>
+                  <li>Pattern-based evidence collection</li>
                 </ul>
               </div>
             )}
           </div>
         )}
 
-        {/* Pure Training Logic Info Box */}
-        {!useExpletiveLogic && enableTrainingData && (
+        {analysisMode === 'TRAINING_DATA' && (
           <div style={{ 
-            backgroundColor: '#e3f2fd', 
-            border: '1px solid #2196f3',
+            backgroundColor: '#e8f5e8', 
+            border: '1px solid #4caf50',
             borderRadius: '8px', 
             marginBottom: '20px',
             overflow: 'hidden'
@@ -1813,72 +1739,61 @@ export default function SimpleNegationAnalyzer() {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                backgroundColor: '#e3f2fd',
-                borderBottom: infoBoxExpanded ? '1px solid #2196f3' : 'none'
+                backgroundColor: '#e8f5e8',
+                borderBottom: infoBoxExpanded ? '1px solid #4caf50' : 'none'
               }}
             >
-              <h4 style={{ margin: 0, fontSize: '14px' }}>🤖 Binary Classifier Training-Based Prediction</h4>
-              <span style={{ fontSize: '12px', color: '#1976d2' }}>
+              <h4 style={{ margin: 0, fontSize: '14px' }}>📚 Training Data Analysis</h4>
+              <span style={{ fontSize: '12px', color: '#2e7d32' }}>
                 {infoBoxExpanded ? '▼ Hide Details' : '▶ Show Details'}
               </span>
             </div>
             {infoBoxExpanded && (
               <div style={{ padding: '15px' }}>
                 <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-                  <li><strong>Data-Driven Classification</strong>
-                    <ul>
-                      <li>Learns patterns from your training examples</li>
-                      <li>No pre-assumed trigger associations</li>
-                      <li>Statistical analysis of pattern distribution</li>
-                      <li>Cross-validation for reliability assessment</li>
-                    </ul>
-                  </li>
-                  <li><strong>Pattern Analysis</strong>
-                    <ul>
-                      <li>Trigger pattern statistics (peur que, avant que, peu s'en faut)</li>
-                      <li>Contextual feature correlation</li>
-                      <li>Confidence calibration</li>
-                      <li>Detailed performance metrics</li>
-                    </ul>
-                  </li>
-                  <li><strong>Validation & Metrics</strong>
-                    <ul>
-                      <li>K-fold cross-validation</li>
-                      <li>Precision, recall, and F1 scores</li>
-                      <li>Confidence calibration assessment</li>
-                      <li>Trigger-specific reliability metrics</li>
-                    </ul>
-                  </li>
+                  <li>Machine learning from your examples</li>
+                  <li>Pattern matching with confidence scoring</li>
+                  <li>Example-based classification</li>
+                  <li>Transparent decision making</li>
                 </ul>
-                <p><strong>Example Output:</strong></p>
-                <pre style={{ 
-                  fontSize: '12px', 
-                  backgroundColor: 'white', 
-                  padding: '10px', 
-                  borderRadius: '4px',
-                  margin: '5px 0'
-                }}>
-{`📊 STATISTICAL ANALYSIS
-• Based on 45 relevant examples
-• Pattern distribution: "peur que" (40%), "avant que" (35%), "peu s'en faut" (25%)
+              </div>
+            )}
+          </div>
+        )}
 
-🔍 PATTERN ANALYSIS
-• "peur que" in training data:
-  ↳ 18 examples: 12 expletive (66.7%), 6 logical (33.3%)
-  ↳ Example: "J'ai peur qu'il vienne"
-
-🎯 PROBABILITY CALCULATION
-• Final probability: 67.5%
-• Components:
-  ↳ Pattern statistics: 66.7% (weight: 0.4)
-  ↳ Contextual features: 70% (weight: 0.3)
-  ↳ Similar examples: 65% (weight: 0.3)
-
-⚖️ VALIDATION METRICS
-• Accuracy: 82.5% ±3.2%
-• F1 Score: 82.0%
-• Confidence calibration: 89.5%`}
-                </pre>
+        {analysisMode === 'CAMEMBERT' && (
+          <div style={{ 
+            backgroundColor: '#f3e5f5', 
+            border: '1px solid #9c27b0',
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            overflow: 'hidden'
+          }}>
+            <div 
+              onClick={() => setInfoBoxExpanded(!infoBoxExpanded)}
+              style={{
+                padding: '12px 15px',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: '#f3e5f5',
+                borderBottom: infoBoxExpanded ? '1px solid #9c27b0' : 'none'
+              }}
+            >
+              <h4 style={{ margin: 0, fontSize: '14px' }}>🤖 CamemBERT Analysis (Beta)</h4>
+              <span style={{ fontSize: '12px', color: '#6a1b9a' }}>
+                {infoBoxExpanded ? '▼ Hide Details' : '▶ Show Details'}
+              </span>
+            </div>
+            {infoBoxExpanded && (
+              <div style={{ padding: '15px' }}>
+                <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
+                  <li>Deep learning model for French</li>
+                  <li>Neural network classification</li>
+                  <li>Pattern validation support</li>
+                  <li>Confidence scoring system</li>
+                </ul>
               </div>
             )}
           </div>
@@ -1886,8 +1801,8 @@ export default function SimpleNegationAnalyzer() {
 
       </div>
 
-      {/* User Training Data Section - Completely User-Controlled */}
-      {enableTrainingData && (
+      {/* Training Data Management Section */}
+      {analysisMode === 'TRAINING_DATA' && (
         <div className="card">
           <h3 className="title">📚 User Training Data Management</h3>
           <div style={{
