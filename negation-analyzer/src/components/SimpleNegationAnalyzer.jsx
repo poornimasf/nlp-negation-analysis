@@ -1790,7 +1790,7 @@ export default function SimpleNegationAnalyzer() {
               : !useExpletiveLogic && enableTrainingData
                 ? useTrainingEnhancement && trainingData.length > 0
                   ? "Pure machine learning prediction of removed 'ne' type using patterns from your uploaded examples only."
-                  : "Training data analysis available - upload examples to predict removed 'ne' type using pure ML classification."
+                  : "Training data analysis enabled - ready for your uploaded examples."
                 : useExpletiveLogic
                   ? "Rule-based prediction using French linguistic patterns and CroissantLLM enhancement."
                   : "Select your preferred approach for predicting whether removed 'ne' markers were expletive or logical."
