@@ -1,3 +1,4 @@
+import BalancedNegationClassifier from "../utils/BalancedNegationClassifier";
 import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 import * as XLSX from 'xlsx';
