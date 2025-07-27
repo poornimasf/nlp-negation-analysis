@@ -1684,13 +1684,6 @@ export default function SimpleNegationAnalyzer() {
           border: '2px solid #2196f3'
         }}>
           <h4>🚩 Analysis Mode (Select One):</h4>
-          <div style={{ 
-            marginBottom: '15px',
-            fontSize: '14px',
-            color: '#666'
-          }}>
-            <strong>📋 Analysis Mode:</strong> Choose one analysis method. Both options cannot be enabled simultaneously.
-          </div>
           
           {/* Rule-Based Logic Radio Button */}
           <label style={{ 
