@@ -2,7 +2,6 @@ import { HfInference } from '@huggingface/inference';
 
 class CamemBERTClassifier {
     constructor() {
-        // Check for token
         const token = process.env.REACT_APP_HF_TOKEN;
         if (!token) {
             console.error('No Hugging Face token found in environment variables');
@@ -12,51 +11,94 @@ class CamemBERTClassifier {
         try {
             this.inference = new HfInference(token);
             this.initialized = false;
-            this.modelName = 'camembert-base';
+            this.modelName = 'jean-baptiste/camembert-ner';  // Updated to a specific CamemBERT model
+            this.maxRetries = 3;
+            this.retryDelay = 1000; // 1 second
         } catch (error) {
             console.error('Error creating HfInference instance:', error);
             throw new Error('Failed to initialize Hugging Face inference client');
         }
     }
 
-    async initialize() {
-        if (!this.initialized) {
+    async _retryOperation(operation) {
+        let lastError;
+        for (let i = 0; i < this.maxRetries; i++) {
             try {
-                console.log('Initializing CamemBERT with model:', this.modelName);
-                
-                // Test connection with a simple inference
-                const testResult = await this.inference.textClassification({
-                    model: this.modelName,
-                    inputs: "Test connection"
-                });
-
-                console.log('CamemBERT test inference result:', testResult);
-                this.initialized = true;
-                console.log('CamemBERT initialized successfully');
+                return await operation();
             } catch (error) {
-                console.error('Failed to initialize CamemBERT:', error);
-                if (error.message.includes('401')) {
-                    throw new Error('Invalid Hugging Face token - Please check your REACT_APP_HF_TOKEN');
-                } else if (error.message.includes('404')) {
-                    throw new Error('Model not found - Please check if camembert-base is available');
-                } else {
-                    throw new Error(`CamemBERT initialization failed: ${error.message}`);
+                console.warn(\`Attempt \${i + 1} failed: \${error.message}\`);
+                lastError = error;
+                if (i < this.maxRetries - 1) {
+                    await new Promise(resolve => setTimeout(resolve, this.retryDelay * (i + 1)));
                 }
+            }
+        }
+        throw lastError;
+    }
+
+    async initialize() {
+        if (this.initialized) return;
+
+        try {
+            console.log('Initializing CamemBERT with model:', this.modelName);
+            
+            // Test connection with a simple inference
+            const testResult = await this._retryOperation(async () => {
+                return await this.inference.tokenClassification({
+                    model: this.modelName,
+                    inputs: "Test de connexion."
+                });
+            });
+
+            if (!testResult) {
+                throw new Error('No response from model test');
+            }
+
+            console.log('CamemBERT test inference result:', testResult);
+            this.initialized = true;
+            console.log('CamemBERT initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize CamemBERT:', error);
+            
+            // Provide more specific error messages
+            if (error.message.includes('401')) {
+                throw new Error('Invalid Hugging Face token - Please check your REACT_APP_HF_TOKEN');
+            } else if (error.message.includes('404')) {
+                throw new Error('Model not found - Please check model availability');
+            } else if (error.message.includes('429')) {
+                throw new Error('Rate limit exceeded - Please try again later');
+            } else if (error.message.includes('503')) {
+                throw new Error('Model is currently unavailable - Please try again later');
+            } else {
+                throw new Error(\`CamemBERT initialization failed: \${error.message}\`);
             }
         }
     }
 
     async classifyNegation(text) {
+        if (!text) {
+            throw new Error('No text provided for classification');
+        }
+
         if (!this.initialized) {
             await this.initialize();
         }
 
         try {
             // First, analyze the text for negation presence
-            const result = await this.inference.textClassification({
-                model: this.modelName,
-                inputs: text
+            const result = await this._retryOperation(async () => {
+                return await this.inference.tokenClassification({
+                    model: this.modelName,
+                    inputs: text,
+                    parameters: {
+                        aggregation_strategy: "simple"
+                    }
+                });
             });
+
+            if (!result) {
+                throw new Error('No response from model');
+            }
 
             // Extract patterns that might indicate expletive negation
             const hasExpletivePatterns = this._checkExpletivePatterns(text);
@@ -64,7 +106,7 @@ class CamemBERTClassifier {
             
             // Combine model prediction with pattern analysis
             const classification = this._determineClassification(
-                result[0],
+                result,
                 hasExpletivePatterns,
                 hasLogicalPatterns
             );
@@ -76,11 +118,15 @@ class CamemBERTClassifier {
             };
         } catch (error) {
             console.error('Error during CamemBERT classification:', error);
-            return {
-                classification: 'UNCERTAIN',
-                confidence: 0,
-                evidence: 'Error during model prediction: ' + error.message
-            };
+            
+            // Provide more specific error messages
+            if (error.message.includes('rate limit')) {
+                throw new Error('Rate limit exceeded - Please try again later');
+            } else if (error.message.includes('model is currently loading')) {
+                throw new Error('Model is loading - Please try again in a few seconds');
+            } else {
+                throw new Error(\`Classification failed: \${error.message}\`);
+            }
         }
     }
 
@@ -101,41 +147,56 @@ class CamemBERTClassifier {
     }
 
     _determineClassification(modelResult, hasExpletivePatterns, hasLogicalPatterns) {
-        const score = modelResult.score;
-        const label = modelResult.label;
+        // Process token classification results
+        const entities = modelResult;
+        let negationScore = 0;
+        let evidence = [];
 
-        // Combine model prediction with pattern analysis
-        if (score < 0.6) {
-            return {
-                type: 'UNCERTAIN',
-                confidence: score,
-                evidence: `Low confidence prediction (${(score * 100).toFixed(1)}%)`
-            };
+        // Analyze token classifications
+        if (entities && entities.length > 0) {
+            entities.forEach(entity => {
+                if (entity.entity_group === 'B-NEGATION' || entity.entity_group === 'I-NEGATION') {
+                    negationScore += entity.score;
+                    evidence.push(\`Found negation marker: "\${entity.word}" (score: \${entity.score.toFixed(2)})\`);
+                }
+            });
         }
 
-        // Strong pattern indicators take precedence
-        if (hasExpletivePatterns && !hasLogicalPatterns) {
-            return {
-                type: 'EXPLETIVE',
-                confidence: Math.max(score, 0.8),
-                evidence: 'Expletive negation patterns detected with high confidence'
-            };
+        // Normalize negation score
+        negationScore = negationScore > 0 ? negationScore / entities.length : 0;
+
+        // Combine with pattern evidence
+        if (hasExpletivePatterns) {
+            negationScore += 0.3;
+            evidence.push('Expletive negation pattern detected');
+        }
+        if (hasLogicalPatterns) {
+            negationScore -= 0.3;
+            evidence.push('Logical negation pattern detected');
         }
 
-        if (hasLogicalPatterns && !hasExpletivePatterns) {
-            return {
-                type: 'LOGICAL',
-                confidence: Math.max(score, 0.8),
-                evidence: 'Logical negation patterns detected with high confidence'
-            };
+        // Determine classification
+        let type;
+        let confidence;
+
+        if (negationScore < 0.4) {
+            type = 'LOGICAL';
+            confidence = 1 - negationScore;
+            evidence.push('Strong indicators of logical negation');
+        } else if (negationScore > 0.6) {
+            type = 'EXPLETIVE';
+            confidence = negationScore;
+            evidence.push('Strong indicators of expletive negation');
+        } else {
+            type = 'UNCERTAIN';
+            confidence = 0.5;
+            evidence.push('Mixed or unclear indicators');
         }
 
-        // If both or no patterns found, rely more on model prediction
-        const predictedType = label.includes('NEGATIVE') ? 'LOGICAL' : 'EXPLETIVE';
         return {
-            type: predictedType,
-            confidence: score,
-            evidence: `Model prediction: ${predictedType} (${(score * 100).toFixed(1)}% confidence)`
+            type,
+            confidence: Math.min(Math.max(confidence, 0), 0.95),
+            evidence: evidence.join('\n')
         };
     }
 
@@ -150,10 +211,11 @@ class CamemBERTClassifier {
                 const result = await this.classifyNegation(text);
                 results.push(result);
             } catch (error) {
+                console.error(\`Batch classification error for text: \${text}\`, error);
                 results.push({
-                    classification: 'UNCERTAIN',
+                    classification: 'ERROR',
                     confidence: 0,
-                    evidence: 'Error during analysis: ' + error.message
+                    evidence: \`Classification error: \${error.message}\`
                 });
             }
         }
