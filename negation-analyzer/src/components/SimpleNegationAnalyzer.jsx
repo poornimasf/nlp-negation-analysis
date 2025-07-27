@@ -977,23 +977,50 @@ export default function SimpleNegationAnalyzer() {
 
   // Main classification function that uses the selected analysis mode
   const classifyNegation = async (text) => {
-    switch (analysisMode) {
-      case 'RULE_BASED':
-        return await classifyExpletive(text);
-        
-      case 'TRAINING_DATA':
-        if (useTrainingEnhancement && trainingData.length > 0) {
-          return classifyWithBinaryClassifier(text);
-        }
-        return classifyBasic(text);
-        
-      case 'CAMEMBERT':
-        const classifier = new CamemBERTClassifier();
-        const result = await classifier.classifyNegation(text);
-        return `${result.classification} (${Math.round(result.confidence * 100)}% confidence)\n${result.evidence}`;
-        
-      default:
-        return classifyBasic(text);
+    try {
+      switch (analysisMode) {
+        case 'RULE_BASED':
+          return await classifyExpletive(text);
+          
+        case 'TRAINING_DATA':
+          if (useTrainingEnhancement && trainingData.length > 0) {
+            return classifyWithBinaryClassifier(text);
+          }
+          return classifyBasic(text);
+          
+        case 'CAMEMBERT':
+          const classifier = new CamemBERTClassifier();
+          const result = await classifier.classifyNegation(text);
+          
+          // Format the result to match our expected output format
+          let output = [];
+          
+          // Add main classification with confidence
+          output.push(`${result.classification} NEGATION`);
+          output.push(`(${Math.round(result.confidence * 100)}% confidence)\n`);
+          
+          // Add evidence section
+          output.push('🔍 ANALYSIS DETAILS:');
+          output.push(`• ${result.evidence}`);
+          
+          // Add pattern analysis if available
+          if (result.evidence.includes('patterns detected')) {
+            output.push('• Pattern validation supports classification');
+          }
+          
+          // Add model information
+          output.push('\n🤖 MODEL INFORMATION:');
+          output.push('• Using CamemBERT base model');
+          output.push('• Combined neural + pattern analysis');
+          
+          return output.join('\n');
+          
+        default:
+          return classifyBasic(text);
+      }
+    } catch (error) {
+      console.error('Error during classification:', error);
+      return `Error during analysis: ${error.message}`;
     }
   };
 
@@ -1053,7 +1080,20 @@ export default function SimpleNegationAnalyzer() {
     const firstLine = analysis.split('\n')[0];
     console.log('First line:', firstLine);
     
-    // Check for explicit logical negation detection
+    // Handle CamemBERT results
+    if (analysisMode === 'CAMEMBERT') {
+      if (firstLine.includes('EXPLETIVE NEGATION')) {
+        return 'Expletive';
+      }
+      if (firstLine.includes('LOGICAL NEGATION')) {
+        return 'Logical';
+      }
+      if (firstLine.includes('UNCERTAIN')) {
+        return 'Uncertain';
+      }
+    }
+    
+    // Handle other modes
     if (firstLine.includes('Logical negation detected') ||
         firstLine.includes('LIKELY LOGICAL NEGATION') ||
         firstLine.includes('Removed \'ne\' was likely logical') ||
@@ -1061,20 +1101,17 @@ export default function SimpleNegationAnalyzer() {
       return "Logical";
     }
     
-    // Check for explicit expletive negation detection (strong indicators)
     if (firstLine.includes('✅ EXPLETIVE NEGATION') ||
         (firstLine.includes('🎯 BINARY CLASSIFIER') && firstLine.includes('likely expletive'))) {
       return "Expletive";
     }
     
-    // Check for likely expletive indicators
     if (firstLine.includes('LIKELY EXPLETIVE NEGATION') ||
         firstLine.includes('Removed \'ne\' was likely expletive') ||
         firstLine.includes('peu s\'en faut')) {
       return "Expletive";
     }
     
-    // Check for ML-enhanced detections
     if (firstLine.includes('🎯 TRAINING-ENHANCED: Logical') ||
         firstLine.includes('🤖 PURE TRAINING: Removed \'ne\' was likely logical')) {
       return useTrainingEnhancement && trainingData.length > 0 ? "Logical (ML)" : "Logical";
@@ -1085,69 +1122,11 @@ export default function SimpleNegationAnalyzer() {
       return useTrainingEnhancement && trainingData.length > 0 ? "Expletive (ML)" : "Expletive";
     }
     
-    // Check for no negation cases
     if (firstLine.includes('No negation markers found')) {
       return "No Negation";
     }
     
-    // Look deeper into the analysis for training data suggestions
-    if (analysis.includes('🤖 TRAINING DATA ANALYSIS:')) {
-      const lines = analysis.split('\n');
-      const trainingLine = lines.find(line => 
-        line.includes('Prediction: Removed \'ne\' was expletive') ||
-        line.includes('Prediction: Removed \'ne\' was logical')
-      );
-      
-      if (trainingLine) {
-        if (trainingLine.includes('expletive')) {
-          return "Expletive (ML)";
-        } else if (trainingLine.includes('logical')) {
-          return "Logical (ML)";
-        }
-      }
-    }
-    
-    // Check for moderate confidence predictions that should not be "Uncertain"
-    if (firstLine.includes('UNCERTAIN - POSSIBLY LOGICAL')) {
-      // If there's some evidence pointing to logical, classify as logical with lower confidence
-      return "Logical";
-    }
-    
-    // Check for trigger patterns even in uncertain cases
-    try {
-      const triggerInfo = await findExpletiveTrigger(text);
-      if (triggerInfo) {
-        // If we found a trigger pattern, lean toward expletive even if uncertain
-        if (triggerInfo.type === 'peur_que' || 
-            triggerInfo.type === 'avant' || 
-            triggerInfo.type === 'peu_sen_faut') {
-          console.log('Found trigger pattern, classifying as Expletive:', triggerInfo);
-          return "Expletive";
-        }
-      } else {
-        // No trigger found, more likely to be logical
-        return "Logical";
-      }
-    } catch (error) {
-      console.error('Error checking trigger patterns:', error);
-    }
-    
-    // Only use Uncertain for truly ambiguous cases
-    if (firstLine.includes('AMBIGUOUS') || 
-        firstLine.includes('🤔 UNCERTAIN') ||
-        firstLine.includes('Multiple possible interpretations')) {
-      return "Uncertain";
-    }
-    
-    // Default fallback - if we can't determine, check for any indicators
-    const lowerAnalysis = analysis.toLowerCase();
-    if (lowerAnalysis.includes('expletive') && !lowerAnalysis.includes('not expletive')) {
-      return "Expletive";
-    } else if (lowerAnalysis.includes('logical') && !lowerAnalysis.includes('not logical')) {
-      return "Logical";
-    }
-    
-    // Final fallback to Uncertain only if truly unclear
+    // Default to Uncertain for unclear cases
     return "Uncertain";
   };
 
