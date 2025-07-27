@@ -1,6 +1,6 @@
 import { ANALYSIS_MODES } from './AnalysisModes';
 import { isFeatureEnabled } from '../config/featureFlags';
-import EnhancedPatternMatcher from './EnhancedPatternMatcher';
+import ImprovedFrenchNegationClassifier from './ImprovedFrenchNegationClassifier';
 import BinaryClassifier from './BinaryClassifier';
 import CamemBERTClassifier from './CamemBERTClassifier';
 
@@ -8,14 +8,16 @@ class ClassifierFactory {
     static async createClassifier(mode, trainingData = null) {
         switch (mode) {
             case ANALYSIS_MODES.RULE_BASED:
-                return new EnhancedPatternMatcher();
+                const classifier = new ImprovedFrenchNegationClassifier();
+                await classifier.initialize();
+                return classifier;
                 
             case ANALYSIS_MODES.TRAINING_DATA:
-                const classifier = new BinaryClassifier();
+                const binaryClassifier = new BinaryClassifier();
                 if (trainingData) {
-                    await classifier.train(trainingData);
+                    await binaryClassifier.train(trainingData);
                 }
-                return classifier;
+                return binaryClassifier;
                 
             case ANALYSIS_MODES.CAMEMBERT:
                 if (!isFeatureEnabled('ENABLE_CAMEMBERT')) {
@@ -26,7 +28,7 @@ class ClassifierFactory {
                 return camembert;
                 
             default:
-                throw new Error(`Unknown analysis mode: ${mode}`);
+                throw new Error(\`Unknown analysis mode: \${mode}\`);
         }
     }
 }
