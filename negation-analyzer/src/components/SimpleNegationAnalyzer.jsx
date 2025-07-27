@@ -1683,8 +1683,7 @@ export default function SimpleNegationAnalyzer() {
             fontSize: '14px',
             color: '#666'
           }}>
-            <strong>📋 Analysis Mode:</strong> Choose either Rule-Based Logic OR Training Data Analysis. 
-            If both are enabled, Rule-Based Logic takes priority.
+            <strong>📋 Analysis Mode:</strong> Training Data Analysis is selected by default. Choose either; if both are enabled, then rule-based logic takes priority.
           </div>
           
           {/* Expletive Logic Toggle */}
