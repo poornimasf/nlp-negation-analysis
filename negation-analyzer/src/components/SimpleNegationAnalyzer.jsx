@@ -310,90 +310,136 @@ export default function SimpleNegationAnalyzer() {
 
   // Calculate confidence based on linguistic features and LLM insights (for removed 'ne' prediction)
   const calculateConfidence = async (text, triggerInfo) => {
-    let confidence = 0.3; // Lower base confidence since we're predicting removed 'ne'
+    let confidence = 0.2; // Start with lower base confidence
+    let evidencePoints = [];
     
-    // Primary indicator: Trigger pattern presence
+    // Primary indicator: Trigger pattern presence with more nuanced scoring
     if (triggerInfo && triggerInfo.type) {
       if (triggerInfo.type === 'peur_que') {
-        confidence += 0.4; // Strong indicator for expletive
+        confidence += 0.25; // Base score for fear expression
+        evidencePoints.push("Fear expression trigger");
         
         // Additional confidence for complete fear constructions
         if (text.match(/\b(?:j'ai|tu as|il a|elle a|nous avons|vous avez|ils ont)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']/i)) {
-          confidence += 0.1;
+          confidence += 0.15;
+          evidencePoints.push("Complete fear construction");
         }
       } else if (triggerInfo.type === 'avant') {
-        confidence += 0.3; // Good indicator for expletive
+        confidence += 0.2; // Base score for temporal expression
+        evidencePoints.push("Temporal expression trigger");
         
         // Additional confidence for precise temporal markers
         if (text.match(/\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e']/i)) {
-          confidence += 0.1;
+          confidence += 0.15;
+          evidencePoints.push("Precise temporal marker");
         }
       } else if (triggerInfo.type === 'peu_sen_faut') {
-        confidence += 0.4; // Strong indicator for expletive
+        confidence += 0.3; // Base score for peu s'en faut
+        evidencePoints.push("Peu s'en faut expression");
         
         // Additional confidence for specific constructions
         if (text.match(/\bil\s+s['']en\s+faut/i)) {
-          confidence += 0.1;
+          confidence += 0.15;
+          evidencePoints.push("Impersonal construction");
         }
         if (text.match(/\b(?:très|si|tellement)\s+peu\s+s['']en/i)) {
-          confidence += 0.05;
+          confidence += 0.1;
+          evidencePoints.push("Intensity modifier");
         }
       }
     }
     
-    // Secondary indicator: Subjunctive mood (strong indicator for expletive context)
+    // Secondary indicator: Subjunctive mood with more precise analysis
     if (hasSubjunctive(text)) {
-      confidence += 0.2;
-      
       // Check if subjunctive appears after trigger pattern
       if (triggerInfo) {
         const queIndex = text.indexOf('que');
         if (queIndex !== -1) {
           const afterQue = text.slice(queIndex + 3);
           if (hasSubjunctive(afterQue)) {
-            confidence += 0.1; // Bonus for proper subjunctive placement
+            confidence += 0.2; // Higher bonus for proper subjunctive placement
+            evidencePoints.push("Properly placed subjunctive");
+          } else {
+            confidence += 0.1; // Lower bonus for subjunctive elsewhere
+            evidencePoints.push("Subjunctive present but misplaced");
           }
         }
+      } else {
+        confidence += 0.05; // Minimal bonus when no trigger
+        evidencePoints.push("Subjunctive without trigger");
       }
     }
     
-    // Get LLM syntax analysis for removed 'ne' prediction
+    // Get LLM syntax analysis for removed 'ne' prediction with more balanced weighting
     try {
       const syntaxAnalysis = await EnhancedPatternMatcher.analyzeSyntacticContext(text);
       
       if (syntaxAnalysis) {
-        // Weight LLM analysis heavily since it's context-aware
-        confidence = (confidence * 0.6) + (syntaxAnalysis.confidence * 0.4);
+        // Weight LLM analysis more heavily for uncertain cases
+        if (confidence < 0.6) {
+          confidence = (confidence * 0.4) + (syntaxAnalysis.confidence * 0.6);
+          evidencePoints.push("Heavy LLM influence due to uncertain pattern analysis");
+        } else {
+          confidence = (confidence * 0.7) + (syntaxAnalysis.confidence * 0.3);
+          evidencePoints.push("Moderate LLM influence with strong pattern evidence");
+        }
         
-        // Additional boost for high LLM confidence in expletive prediction
+        // Additional evidence based on LLM confidence
         if (syntaxAnalysis.isExpletive && syntaxAnalysis.confidence > 0.8) {
           confidence = Math.min(confidence + 0.1, 0.95);
+          evidencePoints.push("High-confidence LLM expletive prediction");
+        } else if (!syntaxAnalysis.isExpletive && syntaxAnalysis.confidence > 0.8) {
+          confidence = Math.max(confidence - 0.1, 0.05);
+          evidencePoints.push("High-confidence LLM logical prediction");
         }
       }
     } catch (error) {
       console.error('LLM syntax analysis failed:', error);
-      // Continue with rule-based confidence
+      evidencePoints.push("LLM analysis unavailable");
     }
     
-    // Include LLM validation if available
+    // Include LLM validation with more nuanced impact
     if (triggerInfo && triggerInfo.llmValidation) {
       if (triggerInfo.llmValidation.isExpletive) {
-        confidence = (confidence + triggerInfo.llmValidation.confidence) / 2;
+        if (triggerInfo.llmValidation.confidence > 0.8) {
+          confidence = (confidence * 0.6) + (triggerInfo.llmValidation.confidence * 0.4);
+          evidencePoints.push("Strong LLM validation for expletive");
+        } else {
+          confidence = (confidence * 0.8) + (triggerInfo.llmValidation.confidence * 0.2);
+          evidencePoints.push("Moderate LLM validation for expletive");
+        }
       } else {
-        // LLM suggests logical negation
-        confidence = confidence * 0.5; // Reduce confidence for expletive
+        // LLM suggests logical negation - reduce confidence more significantly
+        confidence = confidence * 0.6;
+        evidencePoints.push("LLM contradicts expletive classification");
       }
     }
     
     // Sentence structure analysis (complement clause structure)
     if (text.match(/\bqu[e']\s+[^.!?]+$/i)) {
-      confidence += 0.05; // Proper complement clause structure
+      confidence += 0.05;
+      evidencePoints.push("Proper complement clause structure");
     }
     
-    // Note: We no longer check for absence of logical markers since 'ne' was removed
-    // The task is specifically to predict the type of the removed 'ne'
+    // Counter-indicators for expletive negation
+    const hasLogicalIndicators = /\b(?:pas|point|plus|jamais|rien|personne|aucun[e]?|guère|nullement)\b/i.test(text);
+    if (hasLogicalIndicators) {
+      confidence = Math.max(confidence - 0.3, 0.05);
+      evidencePoints.push("Presence of logical negation markers");
+    }
     
-    return Math.min(confidence, 0.95);
+    // Final confidence adjustment based on cumulative evidence
+    const evidenceCount = evidencePoints.length;
+    if (evidenceCount >= 4) {
+      confidence = Math.min(confidence + 0.1, 0.95);
+    } else if (evidenceCount <= 1) {
+      confidence = Math.max(confidence - 0.1, 0.05);
+    }
+    
+    // Log evidence points for debugging
+    console.log('Evidence points:', evidencePoints.join(', '));
+    
+    return confidence;
   };
 
   // Find expletive triggers with comprehensive pattern matching
@@ -575,29 +621,43 @@ export default function SimpleNegationAnalyzer() {
       }
     }
 
-    // Make classification decision
-    if (supportingEvidence >= 0.7) {
+    // Make classification decision with more balanced thresholds
+    if (supportingEvidence >= 0.85) {
       classification = "✅ EXPLETIVE NEGATION";
       confidence = Math.min(0.95, supportingEvidence);
       details.push({
         aspect: "Final Classification",
         finding: "Strong evidence for expletive negation",
-        impact: "Removed 'ne' was likely expletive",
+        impact: "Removed 'ne' was very likely expletive",
         confidence: confidence
       });
-    } else if (supportingEvidence >= 0.4) {
+    } else if (supportingEvidence >= 0.7) {
       classification = "LIKELY EXPLETIVE NEGATION";
       confidence = supportingEvidence;
       details.push({
         aspect: "Final Classification",
-        finding: "Moderate evidence for expletive negation",
+        finding: "Good evidence for expletive negation",
         impact: "Removed 'ne' was probably expletive",
         confidence: confidence
       });
-    } else if (supportingEvidence >= 0.2) {
-      // Lower threshold - still lean toward logical but with less certainty
+    } else if (supportingEvidence >= 0.5) {
+      // Uncertain zone - lean based on additional evidence
+      if (triggerInfo && triggerInfo.llmValidation && triggerInfo.llmValidation.isExpletive) {
+        classification = "LIKELY EXPLETIVE NEGATION";
+        confidence = 0.6;
+      } else {
+        classification = "LIKELY LOGICAL NEGATION";
+        confidence = 0.6;
+      }
+      details.push({
+        aspect: "Final Classification",
+        finding: "Mixed evidence found",
+        impact: confidence > 0.5 ? "Slight lean towards expletive" : "Slight lean towards logical",
+        confidence: confidence
+      });
+    } else if (supportingEvidence >= 0.3) {
       classification = "LIKELY LOGICAL NEGATION";
-      confidence = 0.7 - supportingEvidence; // Inverse confidence for logical
+      confidence = 0.7;
       details.push({
         aspect: "Final Classification",
         finding: "Limited expletive evidence found",
@@ -605,13 +665,12 @@ export default function SimpleNegationAnalyzer() {
         confidence: confidence
       });
     } else {
-      // Very little evidence either way
       classification = "LIKELY LOGICAL NEGATION";
-      confidence = 0.8; // Higher confidence for logical when no expletive triggers
+      confidence = 0.85;
       details.push({
         aspect: "Final Classification",
         finding: "No significant expletive indicators",
-        impact: "Removed 'ne' was likely logical negation",
+        impact: "Removed 'ne' was very likely logical negation",
         confidence: confidence
       });
     }
