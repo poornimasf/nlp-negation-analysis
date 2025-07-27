@@ -2,7 +2,7 @@ import { HfInference } from '@huggingface/inference';
 
 class CamemBERTClassifier {
     constructor() {
-        this.inference = new HfInference(process.env.REACT_APP_HF_API_KEY);
+        this.inference = new HfInference(process.env.REACT_APP_HF_TOKEN);  // Use existing token
         this.initialized = false;
         this.modelName = 'camembert-base';
     }
