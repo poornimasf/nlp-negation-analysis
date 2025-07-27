@@ -11,7 +11,7 @@ class CamemBERTClassifier {
         try {
             this.inference = new HfInference(token);
             this.initialized = false;
-            this.modelName = 'jean-baptiste/camembert-ner';  // Updated to a specific CamemBERT model
+            this.modelName = 'camembert-base';
             this.maxRetries = 3;
             this.retryDelay = 1000; // 1 second
         } catch (error) {
@@ -20,27 +20,11 @@ class CamemBERTClassifier {
         }
     }
 
-    async _retryOperation(operation) {
-        let lastError;
-        for (let i = 0; i < this.maxRetries; i++) {
-            try {
-                return await operation();
-            } catch (error) {
-                console.warn(\`Attempt \${i + 1} failed: \${error.message}\`);
-                lastError = error;
-                if (i < this.maxRetries - 1) {
-                    await new Promise(resolve => setTimeout(resolve, this.retryDelay * (i + 1)));
-                }
-            }
-        }
-        throw lastError;
-    }
-
     async _validateToken() {
         try {
             const response = await fetch('https://huggingface.co/api/whoami', {
                 headers: {
-                    'Authorization': \`Bearer \${process.env.REACT_APP_HF_TOKEN}\`
+                    Authorization: `Bearer ${process.env.REACT_APP_HF_TOKEN}`
                 }
             });
 
@@ -50,7 +34,7 @@ class CamemBERTClassifier {
                 } else if (response.status === 403) {
                     throw new Error('Token does not have required permissions. Please ensure read access is enabled.');
                 } else {
-                    throw new Error(\`Token validation failed with status \${response.status}\`);
+                    throw new Error(`Token validation failed with status ${response.status}`);
                 }
             }
 
@@ -59,8 +43,24 @@ class CamemBERTClassifier {
             return true;
         } catch (error) {
             console.error('Token validation failed:', error);
-            throw new Error(\`Token validation failed: \${error.message}\`);
+            throw new Error(`Token validation failed: ${error.message}`);
         }
+    }
+
+    async _retryOperation(operation) {
+        let lastError;
+        for (let i = 0; i < this.maxRetries; i++) {
+            try {
+                return await operation();
+            } catch (error) {
+                console.warn(`Attempt ${i + 1} failed: ${error.message}`);
+                lastError = error;
+                if (i < this.maxRetries - 1) {
+                    await new Promise(resolve => setTimeout(resolve, this.retryDelay * (i + 1)));
+                }
+            }
+        }
+        throw lastError;
     }
 
     async initialize() {
@@ -74,9 +74,9 @@ class CamemBERTClassifier {
             
             // Test connection with a simple inference
             const testResult = await this._retryOperation(async () => {
-                return await this.inference.tokenClassification({
+                return await this.inference.textClassification({
                     model: this.modelName,
-                    inputs: "Test de connexion."
+                    inputs: 'Test de connexion.'
                 });
             });
 
@@ -90,7 +90,6 @@ class CamemBERTClassifier {
         } catch (error) {
             console.error('Failed to initialize CamemBERT:', error);
             
-            // Provide more specific error messages
             if (error.message.includes('401')) {
                 throw new Error('Invalid Hugging Face token - Please check your REACT_APP_HF_TOKEN');
             } else if (error.message.includes('404')) {
@@ -100,7 +99,7 @@ class CamemBERTClassifier {
             } else if (error.message.includes('503')) {
                 throw new Error('Model is currently unavailable - Please try again later');
             } else {
-                throw new Error(\`CamemBERT initialization failed: \${error.message}\`);
+                throw new Error(`CamemBERT initialization failed: ${error.message}`);
             }
         }
     }
@@ -117,11 +116,11 @@ class CamemBERTClassifier {
         try {
             // First, analyze the text for negation presence
             const result = await this._retryOperation(async () => {
-                return await this.inference.tokenClassification({
+                return await this.inference.textClassification({
                     model: this.modelName,
                     inputs: text,
                     parameters: {
-                        aggregation_strategy: "simple"
+                        aggregation_strategy: 'simple'
                     }
                 });
             });
@@ -149,13 +148,12 @@ class CamemBERTClassifier {
         } catch (error) {
             console.error('Error during CamemBERT classification:', error);
             
-            // Provide more specific error messages
             if (error.message.includes('rate limit')) {
                 throw new Error('Rate limit exceeded - Please try again later');
             } else if (error.message.includes('model is currently loading')) {
                 throw new Error('Model is loading - Please try again in a few seconds');
             } else {
-                throw new Error(\`Classification failed: \${error.message}\`);
+                throw new Error(`Classification failed: ${error.message}`);
             }
         }
     }
@@ -187,7 +185,7 @@ class CamemBERTClassifier {
             entities.forEach(entity => {
                 if (entity.entity_group === 'B-NEGATION' || entity.entity_group === 'I-NEGATION') {
                     negationScore += entity.score;
-                    evidence.push(\`Found negation marker: "\${entity.word}" (score: \${entity.score.toFixed(2)})\`);
+                    evidence.push(`Found negation marker: '${entity.word}' (score: ${entity.score.toFixed(2)})`);
                 }
             });
         }
@@ -241,11 +239,11 @@ class CamemBERTClassifier {
                 const result = await this.classifyNegation(text);
                 results.push(result);
             } catch (error) {
-                console.error(\`Batch classification error for text: \${text}\`, error);
+                console.error(`Batch classification error for text: ${text}`, error);
                 results.push({
                     classification: 'ERROR',
                     confidence: 0,
-                    evidence: \`Classification error: \${error.message}\`
+                    evidence: `Classification error: ${error.message}`
                 });
             }
         }

@@ -15,13 +15,12 @@ class CroissantLLMService {
 
             try {
                 this.instance = new HfInference(token);
-                // Test the connection
                 await this._testConnection();
                 console.log('CroissantLLM service initialized successfully');
             } catch (error) {
                 console.error('Failed to initialize CroissantLLM service:', error);
                 this.instance = null;
-                throw new Error(\`CroissantLLM initialization failed: \${error.message}\`);
+                throw new Error(`CroissantLLM initialization failed: ${error.message}`);
             }
         }
         return this.instance;
@@ -43,7 +42,7 @@ class CroissantLLMService {
                 throw new Error('No response from model');
             }
         } catch (error) {
-            throw new Error(\`Connection test failed: \${error.message}\`);
+            throw new Error(`Connection test failed: ${error.message}`);
         }
     }
 
@@ -53,7 +52,7 @@ class CroissantLLMService {
             try {
                 return await operation();
             } catch (error) {
-                console.warn(\`Attempt \${i + 1} failed: \${error.message}\`);
+                console.warn(`Attempt ${i + 1} failed: ${error.message}`);
                 lastError = error;
                 if (i < retries - 1) {
                     await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY * (i + 1)));
@@ -67,16 +66,16 @@ class CroissantLLMService {
         try {
             const hf = await this.getInstance();
             
-            const prompt = \`Cette phrase avait un marqueur "ne" qui a été supprimé. Analyse la structure syntaxique et détermine si ce "ne" manquant était une négation expletive ou logique:
-            "\${text}"
-            
-            Contexte: Le "ne" a été retiré de cette phrase. Votre tâche est de prédire son type.
-            
-            Format de réponse souhaité:
-            1. Type de négation (expletive/logique)
-            2. Confiance (0-1)
-            3. Justification syntaxique
-            4. Indices linguistiques\`;
+            const prompt = `Cette phrase avait un 'ne' qui a été supprimé. Analyse la structure syntaxique et détermine si ce 'ne' manquant était une négation expletive ou logique:
+'${text}'
+
+Contexte: Le 'ne' a été retiré de cette phrase. Votre tâche est de prédire son type.
+
+Format de réponse souhaité:
+1. Type de négation (expletive/logique)
+2. Confiance (0-1)
+3. Justification syntaxique
+4. Indices linguistiques`;
 
             const response = await this._retryOperation(async () => {
                 return await hf.textGeneration({
@@ -84,7 +83,7 @@ class CroissantLLMService {
                     inputs: prompt,
                     parameters: {
                         max_new_tokens: 256,
-                        temperature: 0.1, // Reduced for more consistent results
+                        temperature: 0.1,
                         top_p: 0.95,
                         repetition_penalty: 1.15
                     }
@@ -94,7 +93,7 @@ class CroissantLLMService {
             return this.parseResponse(response.generated_text);
         } catch (error) {
             console.error('CroissantLLM analysis failed:', error);
-            throw error; // Let caller handle the error
+            throw error;
         }
     }
 
@@ -105,44 +104,22 @@ class CroissantLLMService {
 
         try {
             const lines = text.split('\n');
-            
-            // Extract type with validation
-            const typeLine = lines.find(l => l.includes('Type'));
-            if (!typeLine) throw new Error('No type found in response');
-            
-            const typeMatch = typeLine.split(':')[1]?.trim().toLowerCase();
-            if (!typeMatch) throw new Error('Invalid type format in response');
-            
-            const isExpletive = typeMatch.includes('expletive') || typeMatch.includes('explétive');
-            const isLogical = typeMatch.includes('logique');
-            
-            if (!isExpletive && !isLogical) {
-                throw new Error(\`Invalid negation type: \${typeMatch}\`);
-            }
-
-            // Extract confidence with validation
-            const confidenceLine = lines.find(l => l.includes('Confiance'));
-            if (!confidenceLine) throw new Error('No confidence found in response');
-            
-            const confidence = parseFloat(confidenceLine.split(':')[1]?.trim());
-            if (isNaN(confidence) || confidence < 0 || confidence > 1) {
-                throw new Error(\`Invalid confidence value: \${confidence}\`);
-            }
-
-            // Extract other fields
+            const typeMatch = lines.find(l => l.includes('Type'))?.split(':')[1]?.trim().toLowerCase();
+            const isExpletive = typeMatch?.includes('expletive') || typeMatch?.includes('expletif');
+            const confidence = parseFloat(lines.find(l => l.includes('Confiance'))?.split(':')[1]?.trim()) || 0;
             const justification = lines.find(l => l.includes('Justification'))?.split(':')[1]?.trim();
             const indices = lines.find(l => l.includes('Indices'))?.split(':')[1]?.trim();
 
             return {
                 isExpletive,
                 confidence,
-                justification: justification || 'No justification provided',
-                indices: indices || 'No indices provided',
+                justification,
+                indices,
                 rawResponse: text
             };
         } catch (error) {
             console.error('Failed to parse LLM response:', error);
-            throw new Error(\`Failed to parse model response: \${error.message}\`);
+            return null;
         }
     }
 
@@ -150,16 +127,16 @@ class CroissantLLMService {
         try {
             const hf = await this.getInstance();
             
-            const prompt = \`Cette phrase avait un "ne" supprimé. Vérifie si le motif "\${pattern}" indique une négation expletive:
-            "\${text}"
-            
-            Contexte: Un "ne" manque dans cette phrase. Le motif "\${pattern}" suggère-t-il que ce "ne" était expletif?
-            
-            Format de réponse souhaité:
-            1. Motif expletif (oui/non)
-            2. Validité syntaxique (0-1)
-            3. Justification
-            4. Mode verbal attendu\`;
+            const prompt = `Cette phrase avait un 'ne' supprimé. Vérifie si le motif '${pattern}' indique une négation expletive:
+'${text}'
+
+Contexte: Un 'ne' manque dans cette phrase. Le motif '${pattern}' suggère-t-il que ce 'ne' était expletif?
+
+Format de réponse souhaité:
+1. Motif expletif (oui/non)
+2. Validité syntaxique (0-1)
+3. Justification
+4. Mode verbal attendu`;
 
             const response = await this._retryOperation(async () => {
                 return await hf.textGeneration({
@@ -188,39 +165,22 @@ class CroissantLLMService {
 
         try {
             const lines = text.split('\n');
-            
-            // Extract expletive status with validation
-            const expletiveLine = lines.find(l => l.includes('Motif expletif'));
-            if (!expletiveLine) throw new Error('No expletive status found in response');
-            
-            const expletiveMatch = expletiveLine.split(':')[1]?.trim().toLowerCase();
-            if (!expletiveMatch) throw new Error('Invalid expletive status format');
-            
-            const isExpletive = expletiveMatch === 'oui' || expletiveMatch.includes('oui');
-
-            // Extract validity with validation
-            const validityLine = lines.find(l => l.includes('Validité'));
-            if (!validityLine) throw new Error('No validity found in response');
-            
-            const validity = parseFloat(validityLine.split(':')[1]?.trim());
-            if (isNaN(validity) || validity < 0 || validity > 1) {
-                throw new Error(\`Invalid validity value: \${validity}\`);
-            }
-
-            // Extract other fields
+            const expletiveMatch = lines.find(l => l.includes('Motif expletif'))?.split(':')[1]?.trim().toLowerCase();
+            const isExpletive = expletiveMatch === 'oui' || expletiveMatch?.includes('oui');
+            const validity = parseFloat(lines.find(l => l.includes('Validité'))?.split(':')[1]?.trim()) || 0;
             const justification = lines.find(l => l.includes('Justification'))?.split(':')[1]?.trim();
             const mood = lines.find(l => l.includes('Mode'))?.split(':')[1]?.trim();
 
             return {
                 isExpletive,
                 validity,
-                justification: justification || 'No justification provided',
-                expectedMood: mood || 'No mood specified',
+                justification,
+                expectedMood: mood,
                 rawResponse: text
             };
         } catch (error) {
             console.error('Failed to parse validation response:', error);
-            throw new Error(\`Failed to parse validation response: \${error.message}\`);
+            return null;
         }
     }
 
@@ -228,18 +188,18 @@ class CroissantLLMService {
         try {
             const hf = await this.getInstance();
             
-            const prompt = \`Cette phrase avait un "ne" supprimé. Analyse et ajuste le score de confiance pour prédire si ce "ne" était expletif:
-            "\${text}"
-            
-            Score initial: \${initialConfidence}
-            Evidence actuelle: \${evidence}
-            
-            Contexte: Nous prédisons le type d'un "ne" manquant.
-            
-            Format de réponse souhaité:
-            1. Score ajusté (0-1)
-            2. Justification
-            3. Facteurs décisifs\`;
+            const prompt = `Cette phrase avait un 'ne' supprimé. Analyse et ajuste le score de confiance pour prédire si ce 'ne' était expletif:
+'${text}'
+
+Score initial: ${initialConfidence}
+Evidence actuelle: ${evidence}
+
+Contexte: Nous prédisons le type d'un 'ne' manquant.
+
+Format de réponse souhaité:
+1. Score ajusté (0-1)
+2. Justification
+3. Facteurs décisifs`;
 
             const response = await this._retryOperation(async () => {
                 return await hf.textGeneration({
@@ -268,29 +228,19 @@ class CroissantLLMService {
 
         try {
             const lines = text.split('\n');
-            
-            // Extract score with validation
-            const scoreLine = lines.find(l => l.includes('Score'));
-            if (!scoreLine) throw new Error('No score found in response');
-            
-            const adjustedScore = parseFloat(scoreLine.split(':')[1]?.trim());
-            if (isNaN(adjustedScore) || adjustedScore < 0 || adjustedScore > 1) {
-                throw new Error(\`Invalid adjusted score: \${adjustedScore}\`);
-            }
-
-            // Extract other fields
+            const adjustedScore = parseFloat(lines.find(l => l.includes('Score'))?.split(':')[1]?.trim()) || 0;
             const justification = lines.find(l => l.includes('Justification'))?.split(':')[1]?.trim();
             const factors = lines.find(l => l.includes('Facteurs'))?.split(':')[1]?.trim();
 
             return {
                 adjustedScore,
-                justification: justification || 'No justification provided',
-                decisiveFactors: factors || 'No factors specified',
+                justification,
+                decisiveFactors: factors,
                 rawResponse: text
             };
         } catch (error) {
             console.error('Failed to parse confidence response:', error);
-            throw new Error(\`Failed to parse confidence response: \${error.message}\`);
+            return null;
         }
     }
 }
