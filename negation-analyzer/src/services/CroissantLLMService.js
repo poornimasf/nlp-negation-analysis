@@ -2,7 +2,8 @@ import { HfInference } from '@huggingface/inference';
 
 class CroissantLLMService {
     static instance = null;
-    static MODEL_ID = 'https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud';  // Custom endpoint
+    static MODEL_ID = 'croissantllm';  // Model identifier
+    static ENDPOINT_URL = 'https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud';  // Custom endpoint
     static MAX_RETRIES = 3;
     static RETRY_DELAY = 1000; // 1 second
 
@@ -33,6 +34,7 @@ Format de réponse souhaité:
             const response = await this._retryOperation(async () => {
                 return await hf.textGeneration({
                     model: this.MODEL_ID,
+                    endpointUrl: this.ENDPOINT_URL,
                     inputs: prompt,
                     parameters: {
                         max_new_tokens: 256,
@@ -67,6 +69,7 @@ Format de réponse souhaité:
             const response = await this._retryOperation(async () => {
                 return await hf.textGeneration({
                     model: this.MODEL_ID,
+                    endpointUrl: this.ENDPOINT_URL,
                     inputs: prompt,
                     parameters: {
                         max_new_tokens: 256,
@@ -101,6 +104,7 @@ Format de réponse souhaité:
             const response = await this._retryOperation(async () => {
                 return await hf.textGeneration({
                     model: this.MODEL_ID,
+                    endpointUrl: this.ENDPOINT_URL,
                     inputs: prompt,
                     parameters: {
                         max_new_tokens: 256,
