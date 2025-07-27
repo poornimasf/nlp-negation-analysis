@@ -1678,6 +1678,14 @@ export default function SimpleNegationAnalyzer() {
           border: '2px solid #2196f3'
         }}>
           <h4>🚩 Analysis Mode (Independent Flags):</h4>
+          <div style={{ 
+            marginBottom: '15px',
+            fontSize: '14px',
+            color: '#666'
+          }}>
+            <strong>📋 Analysis Mode:</strong> Choose either Rule-Based Logic OR Training Data Analysis. 
+            If both are enabled, Rule-Based Logic takes priority.
+          </div>
           
           {/* Expletive Logic Toggle */}
           <label style={{ 
@@ -1973,17 +1981,6 @@ export default function SimpleNegationAnalyzer() {
           </div>
         )}
 
-          <div style={{ 
-            backgroundColor: '#e3f2fd', 
-            padding: '12px', 
-            borderRadius: '6px', 
-            marginBottom: '15px',
-            border: '1px solid #2196f3',
-            fontSize: '14px'
-          }}>
-            <strong>📋 Analysis Mode:</strong> Choose either Rule-Based Logic OR Training Data Analysis. 
-            If both are enabled, Rule-Based Logic takes priority.
-          </div>
       </div>
 
       {/* User Training Data Section - Completely User-Controlled */}
