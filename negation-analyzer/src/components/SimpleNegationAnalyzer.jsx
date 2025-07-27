@@ -1996,8 +1996,7 @@ export default function SimpleNegationAnalyzer() {
             fontSize: '14px'
           }}>
             <strong>🎯 Complete User Control:</strong> Upload your own training examples to enhance analysis accuracy. 
-            The system uses ONLY your uploaded data - no hidden datasets or external training sources. 
-            Perfect for custom research with your specific linguistic examples.
+            The system uses ONLY your uploaded data - no hidden datasets or external training sources.
           </div>
           
           <div style={{ 
