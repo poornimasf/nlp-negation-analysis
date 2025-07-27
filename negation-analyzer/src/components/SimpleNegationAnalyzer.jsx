@@ -32,7 +32,6 @@ export default function SimpleNegationAnalyzer() {
     lastUpdated: null
   });
   const [uploadError, setUploadError] = useState(null);
-  const [useTrainingEnhancement, setUseTrainingEnhancement] = useState(false);
 
   // Comprehensive French expletive negation triggers with variations
   const EXPLETIVE_PATTERNS = {
@@ -1628,42 +1627,32 @@ export default function SimpleNegationAnalyzer() {
 
   // Helper functions for UI mode display
   const getCurrentModeDescription = () => {
-    if (!useExpletiveLogic && !enableTrainingData) {
-      return "📝 Basic Logic Only - Simple trigger detection to predict removed 'ne' type";
-    }
-    if (useExpletiveLogic && !enableTrainingData) {
-      return "🎯 Rule-Based Logic Only - French linguistic patterns + CroissantLLM for removed 'ne' prediction";
-    }
-    if (!useExpletiveLogic && enableTrainingData) {
-      if (useTrainingEnhancement && trainingData.length > 0) {
-        const methodType = "Binary Classifier (rule-based scoring)";
-        return `🤖 Pure Training-Based Analysis - ${methodType} prediction of removed 'ne' type from ${trainingData.length} user examples`;
-      } else {
-        return "📚 Training Data Available - Upload data for pure ML-based removed 'ne' type prediction";
-      }
-    }
-    // If both are enabled, rule-based takes priority
-    if (useExpletiveLogic) {
-      return "🎯 Rule-Based Logic - French linguistic patterns + CroissantLLM for removed 'ne' prediction";
-    } else {
-      return "🤖 Training-Based Analysis - ML prediction from user examples";
+    switch (analysisMode) {
+      case 'RULE_BASED':
+        return "🎯 Rule-Based Logic - French linguistic patterns + CroissantLLM for removed 'ne' prediction";
+      case 'TRAINING_DATA':
+        if (useTrainingEnhancement && trainingData.length > 0) {
+          return `🤖 Pure Training-Based Analysis - Binary Classifier prediction from ${trainingData.length} user examples`;
+        }
+        return "📚 Training Data Available - Upload data for ML-based prediction";
+      case 'CAMEMBERT':
+        return "🤖 CamemBERT Analysis (Beta) - Deep learning model for French negation";
+      default:
+        return "Please select an analysis mode to begin.";
     }
   };
 
   const getCurrentModeColor = () => {
-    if (!useExpletiveLogic && !enableTrainingData) {
-      return "#ff9800"; // Orange for basic
+    switch (analysisMode) {
+      case 'RULE_BASED':
+        return "#2196f3"; // Blue for rule-based
+      case 'TRAINING_DATA':
+        return "#4caf50"; // Green for training data
+      case 'CAMEMBERT':
+        return "#9c27b0"; // Purple for CamemBERT
+      default:
+        return "#666";
     }
-    if (useExpletiveLogic && !enableTrainingData) {
-      return "#2196f3"; // Blue for rule-based
-    }
-    if (!useExpletiveLogic && enableTrainingData) {
-      return "#4caf50"; // Green for pure training
-    }
-    if (useExpletiveLogic && enableTrainingData) {
-      return "#9c27b0"; // Purple for hybrid
-    }
-    return "#666";
   };
 
   return (
