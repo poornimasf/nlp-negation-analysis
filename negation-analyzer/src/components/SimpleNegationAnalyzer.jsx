@@ -1167,6 +1167,12 @@ export default function SimpleNegationAnalyzer() {
       return;
     }
 
+    // Prevent batch analysis if neither analysis mode is selected
+    if (!useExpletiveLogic && !enableTrainingData) {
+      alert('Please select an analysis mode (Rule-Based Expletive Logic or Training Data Analysis) before running batch analysis.');
+      return;
+    }
+
     setBatchLoading(true);
     const sentences = batchInput.split("\n").filter(line => line.trim());
     setBatchProgress({ current: 0, total: sentences.length });
@@ -1677,16 +1683,16 @@ export default function SimpleNegationAnalyzer() {
           marginBottom: '20px',
           border: '2px solid #2196f3'
         }}>
-          <h4>🚩 Analysis Mode (Independent Flags):</h4>
+          <h4>🚩 Analysis Mode (Select One):</h4>
           <div style={{ 
             marginBottom: '15px',
             fontSize: '14px',
             color: '#666'
           }}>
-            <strong>📋 Analysis Mode:</strong> Training Data Analysis is selected by default. Choose either; if both are enabled, then rule-based logic takes priority.
+            <strong>📋 Analysis Mode:</strong> Choose one analysis method. Both options cannot be enabled simultaneously.
           </div>
           
-          {/* Expletive Logic Toggle */}
+          {/* Rule-Based Logic Radio Button */}
           <label style={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -1696,19 +1702,23 @@ export default function SimpleNegationAnalyzer() {
             marginBottom: '10px'
           }}>
             <input
-              type="checkbox"
-              checked={useExpletiveLogic}
-              onChange={(e) => setUseExpletiveLogic(e.target.checked)}
+              type="radio"
+              name="analysisMode"
+              checked={useExpletiveLogic && !enableTrainingData}
+              onChange={() => {
+                setUseExpletiveLogic(true);
+                setEnableTrainingData(false);
+              }}
               style={{ 
                 marginRight: '10px', 
                 transform: 'scale(1.2)',
                 cursor: 'pointer'
               }}
             />
-            {useExpletiveLogic ? '✅ Rule-Based Expletive Logic ENABLED' : '❌ Rule-Based Expletive Logic DISABLED'}
+            {useExpletiveLogic && !enableTrainingData ? '✅ Rule-Based Expletive Logic SELECTED' : '⚪ Rule-Based Expletive Logic'}
           </label>
           
-          {/* Training Data Toggle - Now Independent */}
+          {/* Training Data Analysis Radio Button */}
           <label style={{ 
             display: 'flex', 
             alignItems: 'center', 
@@ -1719,20 +1729,24 @@ export default function SimpleNegationAnalyzer() {
             marginBottom: '10px'
           }}>
             <input
-              type="checkbox"
-              checked={enableTrainingData}
-              onChange={(e) => setEnableTrainingData(e.target.checked)}
+              type="radio"
+              name="analysisMode"
+              checked={enableTrainingData && !useExpletiveLogic}
+              onChange={() => {
+                setEnableTrainingData(true);
+                setUseExpletiveLogic(false);
+              }}
               style={{ 
                 marginRight: '10px', 
                 transform: 'scale(1.2)',
                 cursor: 'pointer'
               }}
             />
-            {enableTrainingData ? '📚 Training Data Analysis ENABLED' : '📚 Training Data Analysis DISABLED'}
+            {enableTrainingData && !useExpletiveLogic ? '📚 Training Data Analysis SELECTED' : '⚪ Training Data Analysis'}
           </label>
           
-          {/* Training Enhancement Toggle */}
-          {enableTrainingData && (
+          {/* Training Enhancement Toggle - Only show when Training Data is selected */}
+          {enableTrainingData && !useExpletiveLogic && (
             <>
               <label style={{ 
                 display: 'flex', 
@@ -1783,16 +1797,14 @@ export default function SimpleNegationAnalyzer() {
 
         <p>
           {!useExpletiveLogic && !enableTrainingData 
-            ? "Basic analysis - detects trigger patterns and predicts whether removed 'ne' markers were logical or expletive."
+            ? "Please select an analysis mode above to begin analyzing removed 'ne' markers."
             : useExpletiveLogic && !enableTrainingData
               ? "Rule-based prediction of removed 'ne' type using French linguistic patterns for 'peur que', 'avant que', and 'peu s'en faut' constructions."
               : !useExpletiveLogic && enableTrainingData
                 ? useTrainingEnhancement && trainingData.length > 0
                   ? "Pure machine learning prediction of removed 'ne' type using patterns from your uploaded examples only."
                   : "Training data analysis enabled - ready for your uploaded examples."
-                : useExpletiveLogic
-                  ? "Rule-based prediction using French linguistic patterns and CroissantLLM enhancement."
-                  : "Select your preferred approach for predicting whether removed 'ne' markers were expletive or logical."
+                : "Select an analysis mode above to begin."
           }
         </p>
         
@@ -2239,14 +2251,14 @@ export default function SimpleNegationAnalyzer() {
             <button 
               onClick={handleBatchAnalyze} 
               className="button"
-              disabled={batchLoading}
+              disabled={batchLoading || (!useExpletiveLogic && !enableTrainingData)}
               style={{
-                backgroundColor: batchLoading ? '#ccc' : '#3182ce',
-                cursor: batchLoading ? 'not-allowed' : 'pointer',
-                opacity: batchLoading ? 0.7 : 1
+                backgroundColor: (batchLoading || (!useExpletiveLogic && !enableTrainingData)) ? '#ccc' : '#3182ce',
+                cursor: (batchLoading || (!useExpletiveLogic && !enableTrainingData)) ? 'not-allowed' : 'pointer',
+                opacity: (batchLoading || (!useExpletiveLogic && !enableTrainingData)) ? 0.7 : 1
               }}
             >
-              {batchLoading ? '🔄 Processing...' : 'Analyze Batch'}
+              {batchLoading ? '🔄 Processing...' : (!useExpletiveLogic && !enableTrainingData) ? '⚠️ Select Analysis Mode' : 'Analyze Batch'}
             </button>
           </div>
         </div>
