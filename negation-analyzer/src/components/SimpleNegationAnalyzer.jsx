@@ -15,7 +15,6 @@ export default function SimpleNegationAnalyzer() {
   // Feature flags
   const [useExpletiveLogic, setUseExpletiveLogic] = useState(false);
   const [enableTrainingData, setEnableTrainingData] = useState(true);
-  const [useBinaryClassifier, setUseBinaryClassifier] = useState(false);
   
   // Training data state
   const [trainingData, setTrainingData] = useState([]);
@@ -200,7 +199,7 @@ export default function SimpleNegationAnalyzer() {
     irregulars: /\b(?:veuille|veuilles|veuille|voulions|vouliez|veuillent|doive|doives|doive|devions|deviez|doivent)\b/gi
   };
 
-  // Simple binary classifier for comparison with k-NN
+  // Binary classifier for training data analysis
   const classifyWithBinaryClassifier = (text) => {
     if (trainingData.length === 0) {
       return "No training data available for binary classifier.";
@@ -977,8 +976,8 @@ export default function SimpleNegationAnalyzer() {
   const classifyNegation = async (text) => {
     // Training-based analysis (training flag on, expletive flag off)
     if (!useExpletiveLogic && enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
-      // Use binary classifier if enabled, otherwise use standard training
-      return useBinaryClassifier ? classifyWithBinaryClassifier(text) : classifyPureTraining(text);
+      // Always use binary classifier for training data analysis
+      return classifyWithBinaryClassifier(text);
     }
     
     // Rule-based expletive logic (expletive flag on, training flag off)
@@ -995,76 +994,9 @@ export default function SimpleNegationAnalyzer() {
     if (useExpletiveLogic) {
       return await classifyExpletive(text);
     } else if (enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
-      return useBinaryClassifier ? classifyWithBinaryClassifier(text) : classifyPureTraining(text);
+      return classifyWithBinaryClassifier(text);
     } else {
       return classifyBasic(text);
-    }
-  };
-
-  // Pure training-based classification for removed 'ne' type prediction
-  const classifyPureTraining = (text) => {
-    if (trainingData.length === 0) {
-      return "No training data available for removed 'ne' type prediction.";
-    }
-
-    // Simple text normalization
-    const normalizedText = text.toLowerCase()
-      .replace(/['']/g, "'")
-      .replace(/\s+/g, ' ')
-      .trim();
-
-    // Find similar examples based on text similarity for removed 'ne' prediction
-    const scoredExamples = trainingData.map(item => {
-      const exampleText = item.text.toLowerCase();
-      const words = normalizedText.split(/\s+/);
-      const exampleWords = exampleText.split(/\s+/);
-      
-      // Calculate word overlap
-      const commonWords = words.filter(word => exampleWords.includes(word));
-      const similarity = commonWords.length / Math.max(words.length, exampleWords.length);
-      
-      // Boost similarity for trigger pattern matches (important for removed 'ne' prediction)
-      let triggerBoost = 0;
-      const triggers = ['peur', 'avant', 'peu s\'en faut', 'craindre', 'redouter'];
-      triggers.forEach(trigger => {
-        if (normalizedText.includes(trigger) && exampleText.includes(trigger)) {
-          triggerBoost += 0.2; // Significant boost for matching trigger patterns
-        }
-      });
-      
-      return { ...item, similarity: Math.min(similarity + triggerBoost, 1.0) };
-    }).sort((a, b) => b.similarity - a.similarity);
-
-    // Get top matches with good similarity
-    const topMatches = scoredExamples.slice(0, 5).filter(item => item.similarity > 0.3);
-    
-    if (topMatches.length === 0) {
-      return "No similar examples found in training data for removed 'ne' type prediction.";
-    }
-
-    // Calculate prediction based on training examples of removed 'ne' classification
-    const expletiveCount = topMatches.filter(item => item.has_expletive_ne).length;
-    const totalCount = topMatches.length;
-    const confidence = Math.round((Math.max(expletiveCount, totalCount - expletiveCount) / totalCount) * 100);
-    const avgSimilarity = Math.round((topMatches.reduce((sum, item) => sum + item.similarity, 0) / totalCount) * 100);
-
-    // Most similar example for reference
-    const bestMatch = topMatches[0];
-    const similarityPhrase = bestMatch.similarity > 0.7 ? "very similar to" : 
-                            bestMatch.similarity > 0.5 ? "similar to" : 
-                            "somewhat similar to";
-
-    // Format result with context about removed 'ne' prediction
-    if (expletiveCount > totalCount - expletiveCount) {
-      return `🤖 PURE TRAINING: Removed 'ne' was likely expletive (${confidence}% confidence)\n` +
-             `   • Based on ${totalCount} similar examples (${avgSimilarity}% avg similarity)\n` +
-             `   • Most ${similarityPhrase}: "${bestMatch.text}"\n` +
-             `   • Training data suggests expletive context for this construction`;
-    } else {
-      return `🤖 PURE TRAINING: Removed 'ne' was likely logical (${confidence}% confidence)\n` +
-             `   • Based on ${totalCount} similar examples (${avgSimilarity}% avg similarity)\n` +
-             `   • Most ${similarityPhrase}: "${bestMatch.text}"\n` +
-             `   • Training data suggests logical negation context`;
     }
   };
 
@@ -1700,7 +1632,7 @@ export default function SimpleNegationAnalyzer() {
     }
     if (!useExpletiveLogic && enableTrainingData) {
       if (useTrainingEnhancement && trainingData.length > 0) {
-        const methodType = useBinaryClassifier ? "Binary Classifier (rule-based scoring)" : "k-NN (similarity matching)";
+        const methodType = "Binary Classifier (rule-based scoring)";
         return `🤖 Pure Training-Based Analysis - ${methodType} prediction of removed 'ne' type from ${trainingData.length} user examples`;
       } else {
         return "📚 Training Data Available - Upload data for pure ML-based removed 'ne' type prediction";
@@ -1815,38 +1747,6 @@ export default function SimpleNegationAnalyzer() {
                 {trainingData.length === 0 && ' (No training data loaded)'}
               </label>
 
-              {/* Binary Classifier Toggle */}
-              {useTrainingEnhancement && trainingData.length > 0 && (
-                <label style={{ 
-                  display: 'flex', 
-                  alignItems: 'center',
-                  fontSize: '14px',
-                  fontWeight: 'bold',
-                  color: '#e53e3e',
-                  marginLeft: '40px',
-                  marginTop: '8px'
-                }}>
-                  <input
-                    type="checkbox"
-                    checked={useBinaryClassifier}
-                    onChange={(e) => setUseBinaryClassifier(e.target.checked)}
-                    style={{ 
-                      marginRight: '10px', 
-                      transform: 'scale(0.9)',
-                      cursor: 'pointer'
-                    }}
-                  />
-                  {useBinaryClassifier ? '🎯 Binary Classifier ACTIVE' : '🎯 Binary Classifier INACTIVE'}
-                  <span style={{ 
-                    fontSize: '12px', 
-                    color: '#718096',
-                    fontStyle: 'italic',
-                    marginLeft: '8px'
-                  }}>
-                    (Rule-based scoring vs k-NN)
-                  </span>
-                </label>
-              )}
             </>
           )}
           
