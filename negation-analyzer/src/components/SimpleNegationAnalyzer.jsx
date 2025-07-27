@@ -1999,7 +1999,6 @@ export default function SimpleNegationAnalyzer() {
             The system uses ONLY your uploaded data - no hidden datasets or external training sources. 
             Perfect for custom research with your specific linguistic examples.
           </div>
-          <p>Upload training examples for {useExpletiveLogic ? 'enhanced' : 'pure'} machine learning-based prediction of removed "ne" type (expletive vs logical).</p>
           
           <div style={{ 
             backgroundColor: '#e8f5e8', 
