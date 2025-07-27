@@ -13,6 +13,7 @@ class ImprovedFrenchNegationClassifier {
         
         // Comprehensive French patterns
         this.patterns = {
+            // Expletive negation patterns
             expletive_triggers: [
                 // Fear expressions
                 /\b(?:avoir\s+)?peur\s+que?\b/i,
@@ -29,26 +30,63 @@ class ImprovedFrenchNegationClassifier {
                 /\bempêcher\s+que?\b/i
             ],
             
-            logical_markers: [
-                // Standard negation
-                /\b(?:pas|point|plus|jamais|rien|personne|aucun[e]?|guère|nullement)\b/i,
+            // Logical negation patterns
+            logical_markers: {
+                // Standard negation particles
+                particles: [
+                    /\bpas\b/i,
+                    /\bpoint\b/i,
+                    /\bplus\b/i,
+                    /\bjamais\b/i,
+                    /\bguère\b/i,
+                    /\bnullement\b/i
+                ],
+                
+                // Negative pronouns and determiners
+                pronouns: [
+                    /\bpersonne\b/i,
+                    /\baucun(?:e)?\b/i,
+                    /\bnul(?:le)?\b/i,
+                    /\brien\b/i
+                ],
                 
                 // Compound negation
-                /\bni\b.*\bni\b/i,
-                /\bsans\b.*\bni\b/i,
+                compound: [
+                    /\bni\b.*\bni\b/i,
+                    /\bsans\b.*\bni\b/i,
+                    /\bne\b.*\bque?\b.*\bseulement\b/i
+                ],
+                
+                // Negative verbs and expressions
+                expressions: [
+                    /\b(?:ne\s+)?(?:sais|peux|veux|dois)\s+pas\b/i,
+                    /\b(?:ne\s+)?(?:fait|fais|font|faisons|faites)\s+(?:pas|plus|rien)\b/i,
+                    /\b(?:ne\s+)?(?:est|sont|était|étaient)\s+(?:pas|plus|jamais)\b/i
+                ],
                 
                 // Restrictive expressions
-                /\bque?\b.*\bseulement\b/i,
-                /\bseulement\b.*\bque?\b/i
-            ],
+                restrictive: [
+                    /\bne\b.*\bque\b/i,
+                    /\bseulement\b/i,
+                    /\buniquement\b/i
+                ]
+            },
             
-            subjunctive_triggers: [
-                // Common subjunctive verbs
-                /\b(?:soit|ait|fasse|vienne|puisse|sache|veuille|doive)\b/i,
+            // Verb forms and moods
+            verb_forms: {
+                // Subjunctive (often with expletive)
+                subjunctive: [
+                    /\b(?:soit|ait|fasse|vienne|puisse|sache|veuille|doive)\b/i,
+                    /\b(?:sois|aie|fasse|vienne|puisse|sache|veuille|doive)\s+(?:été|eu|fait|venu)\b/i
+                ],
                 
-                // Compound subjunctive
-                /\b(?:sois|aie|fasse|vienne|puisse|sache|veuille|doive)\s+(?:été|eu|fait|venu)\b/i
-            ]
+                // Indicative (often with logical)
+                indicative: [
+                    /\b(?:est|sont|était|étaient|sera|seront)\b/i,
+                    /\b(?:a|ont|avait|avaient|aura|auront)\b/i,
+                    /\b(?:fait|font|faisait|faisaient|fera|feront)\b/i
+                ]
+            }
         };
     }
 
@@ -104,95 +142,150 @@ class ImprovedFrenchNegationClassifier {
 
     _analyzePatterns(text) {
         const evidence = {
-            expletiveTriggers: [],
-            logicalMarkers: [],
-            subjunctiveForms: [],
-            confidence: 0,
-            reasoning: []
+            expletiveEvidence: {
+                triggers: [],
+                score: 0,
+                reasoning: []
+            },
+            logicalEvidence: {
+                markers: [],
+                score: 0,
+                reasoning: []
+            },
+            verbForms: {
+                forms: [],
+                score: 0,
+                reasoning: []
+            }
         };
 
         // Check expletive triggers
         this.patterns.expletive_triggers.forEach(pattern => {
             const match = text.match(pattern);
             if (match) {
-                evidence.expletiveTriggers.push({
+                evidence.expletiveEvidence.triggers.push({
                     pattern: match[0],
                     context: text.slice(
                         Math.max(0, match.index - 20),
                         Math.min(text.length, match.index + match[0].length + 20)
                     )
                 });
+                evidence.expletiveEvidence.score += 0.3;
+                evidence.expletiveEvidence.reasoning.push(
+                    \`Found expletive trigger: "\${match[0]}"\`
+                );
             }
         });
 
         // Check logical markers
-        this.patterns.logical_markers.forEach(pattern => {
-            const match = text.match(pattern);
-            if (match) {
-                evidence.logicalMarkers.push({
-                    pattern: match[0],
-                    context: text.slice(
-                        Math.max(0, match.index - 20),
-                        Math.min(text.length, match.index + match[0].length + 20)
-                    )
-                });
-            }
+        Object.entries(this.patterns.logical_markers).forEach(([type, patterns]) => {
+            patterns.forEach(pattern => {
+                const match = text.match(pattern);
+                if (match) {
+                    evidence.logicalEvidence.markers.push({
+                        type,
+                        pattern: match[0],
+                        context: text.slice(
+                            Math.max(0, match.index - 20),
+                            Math.min(text.length, match.index + match[0].length + 20)
+                        )
+                    });
+                    
+                    // Weight different types of logical markers
+                    let score = 0;
+                    switch(type) {
+                        case 'particles':
+                            score = 0.4; // Strong indicators like "pas", "point"
+                            break;
+                        case 'pronouns':
+                            score = 0.35; // Clear indicators like "personne", "rien"
+                            break;
+                        case 'compound':
+                            score = 0.45; // Very strong indicators like "ni...ni"
+                            break;
+                        case 'expressions':
+                            score = 0.3; // Common negative expressions
+                            break;
+                        case 'restrictive':
+                            score = 0.25; // Weaker indicators
+                            break;
+                        default:
+                            score = 0.2;
+                    }
+                    
+                    evidence.logicalEvidence.score += score;
+                    evidence.logicalEvidence.reasoning.push(
+                        \`Found \${type} negation: "\${match[0]}"\`
+                    );
+                }
+            });
         });
 
-        // Check subjunctive forms
-        this.patterns.subjunctive_triggers.forEach(pattern => {
-            const match = text.match(pattern);
-            if (match) {
-                evidence.subjunctiveForms.push({
-                    form: match[0],
-                    context: text.slice(
-                        Math.max(0, match.index - 20),
-                        Math.min(text.length, match.index + match[0].length + 20)
-                    )
-                });
-            }
+        // Check verb forms
+        Object.entries(this.patterns.verb_forms).forEach(([mood, patterns]) => {
+            patterns.forEach(pattern => {
+                const match = text.match(pattern);
+                if (match) {
+                    evidence.verbForms.forms.push({
+                        mood,
+                        form: match[0],
+                        context: text.slice(
+                            Math.max(0, match.index - 20),
+                            Math.min(text.length, match.index + match[0].length + 20)
+                        )
+                    });
+                    
+                    // Weight verb moods
+                    if (mood === 'subjunctive') {
+                        evidence.expletiveEvidence.score += 0.2;
+                        evidence.verbForms.reasoning.push(
+                            \`Found subjunctive form: "\${match[0]}" (supports expletive)\`
+                        );
+                    } else if (mood === 'indicative') {
+                        evidence.logicalEvidence.score += 0.15;
+                        evidence.verbForms.reasoning.push(
+                            \`Found indicative form: "\${match[0]}" (supports logical)\`
+                        );
+                    }
+                }
+            });
         });
 
-        // Calculate initial confidence
-        if (evidence.expletiveTriggers.length > 0) {
-            evidence.confidence += 0.4;
-            evidence.reasoning.push('Found expletive trigger pattern(s)');
-        }
-        
-        if (evidence.logicalMarkers.length > 0) {
-            evidence.confidence -= 0.3;
-            evidence.reasoning.push('Found logical negation marker(s)');
-        }
-        
-        if (evidence.subjunctiveForms.length > 0) {
-            evidence.confidence += 0.2;
-            evidence.reasoning.push('Found subjunctive form(s)');
-        }
+        // Cap scores at 0.95
+        evidence.expletiveEvidence.score = Math.min(evidence.expletiveEvidence.score, 0.95);
+        evidence.logicalEvidence.score = Math.min(evidence.logicalEvidence.score, 0.95);
 
         return evidence;
     }
 
-    async _getLLMPrediction(text, patternEvidence) {
+    async _getLLMPrediction(text, evidence) {
         const prompt = \`Analysez cette phrase française pour déterminer si un "ne" manquant était expletif ou logique.
 
 Phrase: "\${text}"
 
-Contexte trouvé:
-${patternEvidence.expletiveTriggers.length > 0 ? '- Déclencheurs expletifs: ' + patternEvidence.expletiveTriggers.map(t => t.pattern).join(', ') : ''}
-${patternEvidence.logicalMarkers.length > 0 ? '- Marqueurs logiques: ' + patternEvidence.logicalMarkers.map(m => m.pattern).join(', ') : ''}
-${patternEvidence.subjunctiveForms.length > 0 ? '- Formes du subjonctif: ' + patternEvidence.subjunctiveForms.map(f => f.form).join(', ') : ''}
+Indices trouvés:
+${evidence.expletiveEvidence.triggers.length > 0 ? 
+  '- Déclencheurs expletifs: ' + evidence.expletiveEvidence.triggers.map(t => t.pattern).join(', ') : ''}
+${evidence.logicalEvidence.markers.length > 0 ? 
+  '- Marqueurs de négation logique: ' + evidence.logicalEvidence.markers.map(m => m.pattern).join(', ') : ''}
+${evidence.verbForms.forms.length > 0 ? 
+  '- Formes verbales: ' + evidence.verbForms.forms.map(f => \`\${f.form} (\${f.mood})\`).join(', ') : ''}
 
-Instructions:
+Instructions détaillées:
 1. Analysez la structure syntaxique complète
-2. Considérez le contexte sémantique
-3. Évaluez la présence de déclencheurs expletifs
-4. Vérifiez les marqueurs de négation logique
-5. Examinez le mode verbal
+2. Identifiez le type de négation:
+   - Négation LOGIQUE: exprime une vraie négation (ex: ne...pas)
+   - Négation EXPLETIVE: ne facultatif qui n'exprime pas une vraie négation
+3. Considérez:
+   - Les marqueurs de négation logique (pas, point, jamais, etc.)
+   - Les déclencheurs expletifs (peur que, avant que, etc.)
+   - Le mode verbal (subjonctif vs indicatif)
+   - Le contexte sémantique complet
 
 Format de réponse:
-Type: [EXPLETIF/LOGIQUE]
+Type: [LOGIQUE/EXPLETIF]
 Confiance: [0-1]
-Indices: [liste d'indices]
+Indices: [liste d'indices trouvés]
 Justification: [explication détaillée]\`;
 
         const response = await this.inference.textGeneration({
@@ -216,6 +309,7 @@ Justification: [explication détaillée]\`;
             // Extract type
             const typeMatch = lines.find(l => l.toLowerCase().includes('type:'))?.split(':')[1]?.trim().toLowerCase();
             const isExpletive = typeMatch?.includes('expletif') || typeMatch?.includes('explétif');
+            const isLogical = typeMatch?.includes('logique');
             
             // Extract confidence
             const confidenceMatch = lines.find(l => l.toLowerCase().includes('confiance:'))?.split(':')[1]?.trim();
@@ -228,8 +322,13 @@ Justification: [explication détaillée]\`;
             // Extract reasoning
             const justificationMatch = lines.find(l => l.toLowerCase().includes('justification:'))?.split(':')[1]?.trim();
             
+            // Determine type with clear default
+            let type = 'UNCERTAIN';
+            if (isExpletive) type = 'EXPLETIVE';
+            else if (isLogical) type = 'LOGICAL';
+            
             return {
-                type: isExpletive ? 'EXPLETIVE' : 'LOGICAL',
+                type,
                 confidence,
                 indices,
                 justification: justificationMatch || '',
@@ -247,54 +346,66 @@ Justification: [explication détaillée]\`;
         }
     }
 
-    _combineEvidence(llmResult, patternEvidence) {
-        // Weight factors
+    _combineEvidence(llmResult, evidence) {
+        // Weight factors for different evidence types
         const weights = {
-            llm: 0.5,
-            patterns: 0.3,
-            subjunctive: 0.2
+            llm: 0.4,
+            patterns: 0.4,
+            verbForms: 0.2
         };
 
-        // Calculate combined confidence
-        let combinedConfidence = (
-            llmResult.confidence * weights.llm +
-            patternEvidence.confidence * weights.patterns
+        // Calculate scores for each type
+        const expletiveScore = (
+            (llmResult.type === 'EXPLETIVE' ? llmResult.confidence : 0) * weights.llm +
+            evidence.expletiveEvidence.score * weights.patterns
         );
 
-        // Adjust for agreement between LLM and patterns
-        const llmSupportsExpletive = llmResult.type === 'EXPLETIVE';
-        const patternsSupportsExpletive = patternEvidence.confidence > 0;
+        const logicalScore = (
+            (llmResult.type === 'LOGICAL' ? llmResult.confidence : 0) * weights.llm +
+            evidence.logicalEvidence.score * weights.patterns
+        );
+
+        // Determine classification and confidence
+        let classification, confidence;
         
-        if (llmSupportsExpletive === patternsSupportsExpletive) {
-            combinedConfidence += 0.1; // Boost confidence when evidence agrees
+        if (Math.abs(expletiveScore - logicalScore) < 0.2) {
+            // Scores are too close - mark as uncertain
+            classification = 'UNCERTAIN';
+            confidence = Math.max(expletiveScore, logicalScore);
+        } else if (expletiveScore > logicalScore) {
+            classification = 'EXPLETIVE';
+            confidence = expletiveScore;
+        } else {
+            classification = 'LOGICAL';
+            confidence = logicalScore;
         }
 
         // Cap confidence
-        combinedConfidence = Math.min(Math.max(combinedConfidence, 0), 0.95);
+        confidence = Math.min(Math.max(confidence, 0), 0.95);
 
         // Collect all evidence
-        const evidence = [
-            ...patternEvidence.reasoning,
+        const allEvidence = [
+            // Model evidence
             \`Model prediction: \${llmResult.type} (\${Math.round(llmResult.confidence * 100)}% confidence)\`,
-            ...llmResult.indices
-        ];
-
-        // Determine final classification
-        let classification;
-        if (combinedConfidence < 0.4) {
-            classification = 'UNCERTAIN';
-        } else {
-            classification = llmResult.type; // Trust model's binary decision
-        }
+            llmResult.justification,
+            
+            // Pattern evidence
+            ...evidence.expletiveEvidence.reasoning,
+            ...evidence.logicalEvidence.reasoning,
+            ...evidence.verbForms.reasoning,
+            
+            // Final confidence
+            \`Combined confidence: \${Math.round(confidence * 100)}%\`
+        ].filter(Boolean);
 
         return {
             classification,
-            confidence: combinedConfidence,
-            evidence: evidence.join('\n'),
+            confidence,
+            evidence: allEvidence.join('\n'),
             details: {
                 llmAnalysis: llmResult,
-                patternAnalysis: patternEvidence,
-                combinedConfidence
+                patternAnalysis: evidence,
+                combinedConfidence: confidence
             }
         };
     }
