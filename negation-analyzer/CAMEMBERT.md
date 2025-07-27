@@ -28,7 +28,7 @@ CamemBERT is a state-of-the-art French language model integrated into the negati
 ### Environment Variables
 ```bash
 # Required environment variables
-REACT_APP_HF_TOKEN=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
+REACT_APP_HF_TOKEN=your_huggingface_token_here
 REACT_APP_ENABLE_CAMEMBERT=true
 ```
 
