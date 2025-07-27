@@ -9,7 +9,12 @@ negation-analyzer/
 │   │   ├── SimpleNegationAnalyzer.jsx    # Main analysis component
 │   │   └── NegationAnalyzer.css          # Component styles
 │   ├── utils/
-│   │   └── patterns.js                   # Regex patterns and triggers
+│   │   ├── patterns.js                   # Regex patterns and triggers
+│   │   ├── CamemBERTClassifier.js        # Deep learning classifier
+│   │   ├── ClassifierFactory.js          # Analysis mode factory
+│   │   └── AnalysisModes.js              # Mode definitions
+│   ├── config/
+│   │   └── featureFlags.js               # Feature flag configuration
 │   └── App.js                            # Root application component
 ├── public/
 │   └── index.html                        # HTML template
@@ -24,68 +29,82 @@ Primary component handling negation analysis with the following key features:
 #### Analysis Modes
 1. **Rule-Based Analysis**
    - Pattern matching for expletive triggers
-   - Subjunctive form detection
+   - CroissantLLM syntax validation
    - Confidence scoring system
 
-2. **Pure Training Analysis**
+2. **Training Data Analysis**
    - Text similarity comparison
    - Example-based classification
    - Confidence calculation from matches
 
-3. **Hybrid Analysis**
-   - Combined rule-based and training analysis
-   - Enhanced confidence scoring
-   - Clear section separation in results
+3. **CamemBERT Analysis (Beta)**
+   - Deep learning model integration
+   - Neural classification with pattern validation
+   - Confidence scoring with evidence collection
 
 #### Core Functions
 - `classifyNegation()`: Main classification dispatcher
 - `classifyExpletive()`: Rule-based analysis
-- `classifyWithTraining()`: Training-enhanced analysis
+- `classifyWithTraining()`: Training-based analysis
 - `determineClassification()`: Final classification logic
 
-#### Data Processing
-- `processTrainingData()`: Training data validation and processing
-- `calculateConfidence()`: Multi-factor confidence scoring
-- `formatDetailedResult()`: Result formatting with sections
+### CamemBERTClassifier.js
+Deep learning classifier implementation:
+- Hugging Face inference integration
+- Error handling and validation
+- Pattern-enhanced predictions
+- Confidence scoring system
 
-#### Batch Processing
-- `handleBatchAnalyze()`: Batch text processing
-- `downloadBatchResults()`: Multiple export formats
-- `sortResults()`: Result sorting and organization
+### ClassifierFactory.js
+Factory pattern for classifier instantiation:
+- Mode-based classifier selection
+- Initialization handling
+- Error management
+- Feature flag integration
 
-### patterns.js
-Contains regex patterns for:
-- Expletive triggers (peur que, avant que)
-- Subjunctive forms
-- Logical negation markers
+### AnalysisModes.js
+Analysis mode configuration:
+- Mode definitions and descriptions
+- Feature flag integration
+- Available modes management
+- Mode-specific documentation
+
+### featureFlags.js
+Feature flag management:
+- CamemBERT feature flag
+- Environment variable integration
+- Flag validation
+- Default configurations
 
 ## Implementation Details
 
 ### Analysis Pipeline
-1. Text input processing
-2. Pattern matching and trigger detection
-3. Subjunctive analysis
-4. Training data comparison (if enabled)
-5. Confidence calculation
-6. Result formatting and display
+1. Analysis mode selection
+2. Classifier instantiation via factory
+3. Text input processing
+4. Mode-specific analysis:
+   - Rule-based: Pattern matching and CroissantLLM validation
+   - Training: Example comparison and confidence scoring
+   - CamemBERT: Deep learning prediction with pattern validation
+5. Result formatting and display
 
 ### Classification Logic
 ```javascript
-if (hasStrongEvidence) {
-  return "✅ EXPLETIVE NEGATION";
-} else if (hasModerateEvidence) {
-  return "LIKELY EXPLETIVE NEGATION";
-} else {
-  return "UNCERTAIN CLASSIFICATION";
+switch (analysisMode) {
+  case 'RULE_BASED':
+    return await classifyExpletive(text);
+  case 'TRAINING_DATA':
+    return await classifyWithTraining(text);
+  case 'CAMEMBERT':
+    return await classifyWithCamemBERT(text);
 }
 ```
 
 ### Confidence Scoring
-- Base confidence: 0.5
-- Trigger presence: +0.2
-- Subjunctive: +0.2
-- Complete construction: +0.1
-- Training match: Up to +0.2
+Each mode has its own confidence calculation:
+- Rule-based: Pattern strength and validation
+- Training: Example similarity and count
+- CamemBERT: Model confidence with pattern validation
 
 ### Result Formatting
 ```javascript
@@ -93,77 +112,55 @@ if (hasStrongEvidence) {
   classification: "EXPLETIVE NEGATION",
   confidence: 0.85,
   evidence: [
-    "Found trigger pattern: 'peur que'",
-    "Contains subjunctive form",
-    "Training data match: 90%"
+    "Model prediction: Expletive (85% confidence)",
+    "Pattern validation: expletive trigger found",
+    "Supporting evidence: subjunctive form"
   ]
 }
 ```
 
-## Export Formats
+## Environment Setup
 
-### Excel Export
-- Multiple sheets (Results, Summary, Training Stats)
-- Color-coded classifications
-- Detailed statistics and analysis
+### Required Variables
+- REACT_APP_HF_TOKEN: Hugging Face API token
+- REACT_APP_ENABLE_CAMEMBERT: Feature flag for CamemBERT
 
-### CSV Export
-- Basic format for compatibility
-- All essential fields included
-- Analysis results in plain text
-
-### JSON Export
-- Complete data structure
-- Includes metadata and confidence scores
-- Full analysis details
-
-### Text Export
-- Human-readable format
-- Numbered entries
-- Formatted analysis results
+### Error Handling
+- Token validation
+- Model availability checks
+- API error management
+- User-friendly error messages
 
 ## Best Practices
 
-### Pattern Matching
-- Use complete trigger phrases
-- Include variations and conjugations
-- Consider context and position
+### Mode Selection
+- Use appropriate mode for use case
+- Consider performance implications
+- Monitor confidence scores
+- Validate results across modes
 
-### Confidence Calculation
-- Multiple evidence sources
-- Weighted scoring system
-- Clear confidence thresholds
+### Error Management
+- Graceful degradation
+- Clear error messages
+- Detailed logging
+- Recovery strategies
 
-### Training Data
-- Validate format and content
-- Process incrementally
-- Maintain example quality
-
-### Result Display
-- Clear section separation
-- Consistent formatting
-- Informative confidence levels
-
-## Performance Considerations
-
-### Optimization
-- Cached pattern compilation
-- Efficient text processing
-- Batch operation priority
-
-### Memory Management
-- Training data chunking
-- Result set pagination
-- Export file size limits
+### Performance
+- Cached model initialization
+- Efficient batch processing
+- Resource management
+- Progress tracking
 
 ## Future Enhancements
 
 ### Planned Features
-- Enhanced pattern matching
-- Additional export formats
-- Advanced confidence scoring
+- Model performance optimization
+- Additional language models
+- Enhanced pattern validation
+- Improved confidence scoring
 
 ### Maintenance
-- Regular pattern updates
+- Regular model updates
 - Performance monitoring
+- Error tracking
 - Documentation updates
