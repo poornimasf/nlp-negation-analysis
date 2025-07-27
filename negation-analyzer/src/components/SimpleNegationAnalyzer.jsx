@@ -1942,27 +1942,28 @@ export default function SimpleNegationAnalyzer() {
             {infoBoxExpanded && (
               <div style={{ padding: '15px' }}>
                 <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-                  <li><strong>Binary Classifier Method</strong>
+                  <li><strong>Data-Driven Classification</strong>
                     <ul>
-                      <li>Rule-based pattern detection (peur que, avant que, peu s'en faut)</li>
-                      <li>Logical negation marker analysis</li>
-                      <li>Balanced scoring with training data context</li>
-                      <li>Predicts removed "ne" type with linguistic intelligence</li>
+                      <li>Learns patterns from your training examples</li>
+                      <li>No pre-assumed trigger associations</li>
+                      <li>Statistical analysis of pattern distribution</li>
+                      <li>Cross-validation for reliability assessment</li>
                     </ul>
                   </li>
-                  <li><strong>Linguistic Features</strong>
+                  <li><strong>Pattern Analysis</strong>
                     <ul>
-                      <li>Mutually exclusive trigger patterns</li>
-                      <li>Strong logical negation detection</li>
-                      <li>Subjunctive mood analysis</li>
+                      <li>Trigger pattern statistics (peur que, avant que, peu s'en faut)</li>
+                      <li>Contextual feature correlation</li>
+                      <li>Confidence calibration</li>
+                      <li>Detailed performance metrics</li>
                     </ul>
                   </li>
-                  <li><strong>Training Data Integration</strong>
+                  <li><strong>Validation & Metrics</strong>
                     <ul>
-                      <li>Uses your examples for context</li>
-                      <li>Combines rules with training patterns</li>
-                      <li>Transparent linguistic reasoning</li>
-                      <li>Better accuracy than pure similarity matching</li>
+                      <li>K-fold cross-validation</li>
+                      <li>Precision, recall, and F1 scores</li>
+                      <li>Confidence calibration assessment</li>
+                      <li>Trigger-specific reliability metrics</li>
                     </ul>
                   </li>
                 </ul>
@@ -1974,11 +1975,26 @@ export default function SimpleNegationAnalyzer() {
                   borderRadius: '4px',
                   margin: '5px 0'
                 }}>
-{`🎯 BINARY CLASSIFIER: Removed 'ne' was likely expletive (85% confidence)
-   • Decision score: 0.75 (threshold: 0.5)
-   • Primary trigger: peur que
-   • Analysis: 'peur que' construction detected; subjunctive mood supports expletive context
-   • Balanced classifier: expletive triggers vs logical negation markers`}
+{`📊 STATISTICAL ANALYSIS
+• Based on 45 relevant examples
+• Pattern distribution: "peur que" (40%), "avant que" (35%), "peu s'en faut" (25%)
+
+🔍 PATTERN ANALYSIS
+• "peur que" in training data:
+  ↳ 18 examples: 12 expletive (66.7%), 6 logical (33.3%)
+  ↳ Example: "J'ai peur qu'il vienne"
+
+🎯 PROBABILITY CALCULATION
+• Final probability: 67.5%
+• Components:
+  ↳ Pattern statistics: 66.7% (weight: 0.4)
+  ↳ Contextual features: 70% (weight: 0.3)
+  ↳ Similar examples: 65% (weight: 0.3)
+
+⚖️ VALIDATION METRICS
+• Accuracy: 82.5% ±3.2%
+• F1 Score: 82.0%
+• Confidence calibration: 89.5%`}
                 </pre>
               </div>
             )}
