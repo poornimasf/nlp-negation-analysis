@@ -1911,8 +1911,8 @@ export default function SimpleNegationAnalyzer() {
         {/* Pure Training Logic Info Box */}
         {!useExpletiveLogic && enableTrainingData && (
           <div style={{ 
-            backgroundColor: '#e8f5e8', 
-            border: '1px solid #4caf50',
+            backgroundColor: '#e3f2fd', 
+            border: '1px solid #2196f3',
             borderRadius: '8px', 
             marginBottom: '20px',
             overflow: 'hidden'
@@ -1925,12 +1925,12 @@ export default function SimpleNegationAnalyzer() {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                backgroundColor: '#e8f5e8',
-                borderBottom: infoBoxExpanded ? '1px solid #4caf50' : 'none'
+                backgroundColor: '#e3f2fd',
+                borderBottom: infoBoxExpanded ? '1px solid #2196f3' : 'none'
               }}
             >
               <h4 style={{ margin: 0, fontSize: '14px' }}>🤖 Binary Classifier Training-Based Prediction</h4>
-              <span style={{ fontSize: '12px', color: '#2e7d32' }}>
+              <span style={{ fontSize: '12px', color: '#1976d2' }}>
                 {infoBoxExpanded ? '▼ Hide Details' : '▶ Show Details'}
               </span>
             </div>
