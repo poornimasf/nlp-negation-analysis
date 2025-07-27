@@ -1,0 +1,53 @@
+2025-07-27T20:41:41.095Z [INFO]: # Build environment configured with Standard build compute type: 8GiB Memory, 4vCPUs, 128GB Disk Space
+2025-07-27T20:41:41.510Z [INFO]: # Cloning repository: git@github.com:poornimasf/main.git
+2025-07-27T20:41:45.802Z [INFO]: 
+2025-07-27T20:41:45.877Z [INFO]: Cloning into 'main'...
+                                 Updating files:  72% (31281/43207)Updating files:  73% (31542/43207)Updating files:  74% (31974/43207)Updating files:  75% (32406/43207)Updating files:  76% (32838/43207)Updating files:  77% (33270/43207)Updating files:  78% (33702/43207)Updating files:  79% (34134/43207)Updating files:  80% (34566/43207)Updating files:  81% (34998/43207)Updating files:  82% (35430/43207)Updating files:  83% (35862/43207)Updating files:  84% (36294/43207)Updating files:  85% (36726/43207)Updating files:  86% (37159/43207)Updating files:  87% (37591/43207)Updating files:  88% (38023/43207)Updating files:  89% (38455/43207)Updating files:  90% (38887/43207)Updating files:  91% (39319/43207)Updating files:  92% (39751/43207)Updating files:  93% (40183/43207)Updating files:  94% (40615/43207)Updating files:  95% (41047/43207)Updating files:  96% (41479/43207)Updating files:  97% (41911/43207)Updating files:  98% (42343/43207)Updating files:  99% (42775/43207)Updating files: 100% (43207/43207)Updating files: 100% (43207/43207), done.
+2025-07-27T20:41:45.877Z [INFO]: # Switching to commit: 55d25cc999d37890886aed63ea53bd85e3189485
+2025-07-27T20:41:46.318Z [INFO]: Note: switching to '55d25cc999d37890886aed63ea53bd85e3189485'.
+                                 You are in 'detached HEAD' state. You can look around, make experimental
+                                 changes and commit them, and you can discard any commits you make in this
+                                 state without impacting any branches by switching back to a branch.
+                                 If you want to create a new branch to retain commits you create, you may
+                                 do so (now or later) by using -c with the switch command. Example:
+                                 git switch -c <new-branch-name>
+                                 Or undo this operation with:
+                                 git switch -
+                                 Turn off this advice by setting config variable advice.detachedHead to false
+                                 HEAD is now at 55d25cc9 fix: Use existing HF token for CamemBERT
+2025-07-27T20:41:46.372Z [INFO]: Successfully cleaned up Git credentials
+2025-07-27T20:41:46.372Z [INFO]: # Checking for Git submodules at: /codebuild/output/src3650865563/src/main/.gitmodules
+2025-07-27T20:41:46.378Z [INFO]: # Retrieving environment cache...
+2025-07-27T20:41:46.439Z [INFO]: # Retrieved environment cache
+2025-07-27T20:41:46.439Z [INFO]: ---- Setting Up SSM Secrets ----
+2025-07-27T20:41:46.439Z [INFO]: SSM params {"Path":"/amplify/d1gx30ivteuneq/main/","WithDecryption":true}
+2025-07-27T20:41:46.477Z [WARNING]: !Failed to set up process.env.secrets
+2025-07-27T20:41:47.420Z [INFO]: # No package override configuration found.
+2025-07-27T20:41:47.423Z [INFO]: # Retrieving cache...
+2025-07-27T20:41:51.861Z [INFO]: # Extracting cache...
+2025-07-27T20:42:05.999Z [INFO]: # Extraction completed
+2025-07-27T20:42:06.098Z [INFO]: # Retrieved cache
+2025-07-27T20:42:10.478Z [INFO]: ## Starting Backend Build
+                                 ## Checking for associated backend environment...
+                                 ## No backend environment association found, continuing...
+                                 ## Completed Backend Build
+2025-07-27T20:42:10.482Z [INFO]: {"backendDuration": 0}
+                                 ## Starting Frontend Build
+                                 # Starting phase: preBuild
+                                 # Executing command: cd negation-analyzer
+2025-07-27T20:42:10.516Z [INFO]: # Executing command: npm ci
+2025-07-27T20:42:24.958Z [WARNING]: npm error code E404
+                                    npm error 404 Not Found - GET https://registry.npmjs.org/@transformers%2fcore - Not found
+2025-07-27T20:42:24.962Z [WARNING]: npm error 404
+                                    npm error 404  '@transformers/core@^7.25.0' is not in this registry.
+                                    npm error 404
+                                    npm error 404 Note that you can also install from a
+                                    npm error 404 tarball, folder, http url, or git url.
+                                    npm error A complete log of this run can be found in: /root/.npm/_logs/2025-07-27T20_42_13_738Z-debug-0.log
+2025-07-27T20:42:25.071Z [ERROR]: !!! Build failed
+2025-07-27T20:42:25.071Z [ERROR]: !!! Error: Command failed with exit code 1
+2025-07-27T20:42:25.071Z [INFO]: # Starting environment caching...
+2025-07-27T20:42:25.071Z [INFO]: # Uploading environment cache artifact...
+2025-07-27T20:42:25.146Z [INFO]: # Uploaded environment cache artifact
+2025-07-27T20:42:25.146Z [INFO]: # Environment caching completed
+
