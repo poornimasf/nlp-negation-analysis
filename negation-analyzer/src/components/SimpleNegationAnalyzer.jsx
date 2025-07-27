@@ -2372,13 +2372,13 @@ export default function SimpleNegationAnalyzer() {
               <span style={{color: '#155724'}}>🟢 Expletive</span> (including ML predictions), 
               <span style={{color: '#856404'}}>🟡 Logical</span> (including ML predictions), 
               <span style={{color: '#6a1b9a'}}>🟣 Pure Training</span> (uncertain ML predictions). 
-              {!useExpletiveLogic && !enableTrainingData
-                ? "Analysis results show basic negation detection."
-                : useExpletiveLogic && !enableTrainingData
-                  ? "Analysis results show rule-based expletive negation detection."
-                  : !useExpletiveLogic && enableTrainingData
-                    ? "Analysis results show pure training-based predictions from your data."
-                    : "Analysis results show hybrid rule-based analysis (enhanced with training data when available)."
+              {analysisMode === 'RULE_BASED'
+                ? "Analysis results show rule-based predictions with CroissantLLM."
+                : analysisMode === 'TRAINING_DATA'
+                  ? "Analysis results show predictions based on your training data."
+                  : analysisMode === 'CAMEMBERT'
+                    ? "Analysis results show CamemBERT deep learning predictions."
+                    : "Please select an analysis mode."
               }
             </div>
           </div>
