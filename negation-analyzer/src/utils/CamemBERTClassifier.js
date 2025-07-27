@@ -36,10 +36,40 @@ class CamemBERTClassifier {
         throw lastError;
     }
 
+    async _validateToken() {
+        try {
+            const response = await fetch('https://huggingface.co/api/whoami', {
+                headers: {
+                    'Authorization': \`Bearer \${process.env.REACT_APP_HF_TOKEN}\`
+                }
+            });
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    throw new Error('Invalid Hugging Face token. Please check your REACT_APP_HF_TOKEN.');
+                } else if (response.status === 403) {
+                    throw new Error('Token does not have required permissions. Please ensure read access is enabled.');
+                } else {
+                    throw new Error(\`Token validation failed with status \${response.status}\`);
+                }
+            }
+
+            const data = await response.json();
+            console.log('Token validated successfully for user:', data.name);
+            return true;
+        } catch (error) {
+            console.error('Token validation failed:', error);
+            throw new Error(\`Token validation failed: \${error.message}\`);
+        }
+    }
+
     async initialize() {
         if (this.initialized) return;
 
         try {
+            console.log('Validating Hugging Face token...');
+            await this._validateToken();
+            
             console.log('Initializing CamemBERT with model:', this.modelName);
             
             // Test connection with a simple inference
