@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 import ClassifierFactory from '../utils/ClassifierFactory';
 import { getAvailableAnalysisModes } from '../utils/AnalysisModes';
-import { isFeatureEnabled } from '../config/featureFlags';
-import ClassifierFactory from '../utils/ClassifierFactory';
-import { ANALYSIS_MODES } from '../utils/AnalysisModes';
 
 export default function NegationAnalyzer() {
   // State definitions

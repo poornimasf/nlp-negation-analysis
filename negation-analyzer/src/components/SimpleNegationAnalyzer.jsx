@@ -3,6 +3,8 @@ import './NegationAnalyzer.css';
 import * as XLSX from 'xlsx';
 import { LOGICAL_NEGATION_PATTERNS } from '../utils/patterns';
 import EnhancedPatternMatcher from '../utils/EnhancedPatternMatcher';
+import CamemBERTClassifier from '../utils/CamemBERTClassifier';
+import { isFeatureEnabled } from '../config/featureFlags';
 
 export default function SimpleNegationAnalyzer() {
   // Basic state
@@ -13,12 +15,8 @@ export default function SimpleNegationAnalyzer() {
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
 
   // Feature flags
-  const [useExpletiveLogic, setUseExpletiveLogic] = useState(false);
-  const [enableTrainingData, setEnableTrainingData] = useState(true);
-  
-  // UI state for collapsible info boxes
-  const [infoBoxExpanded, setInfoBoxExpanded] = useState(false);
-  const [trainingInfoExpanded, setTrainingInfoExpanded] = useState(false);
+  const [analysisMode, setAnalysisMode] = useState('RULE_BASED');
+  const [useTrainingEnhancement, setUseTrainingEnhancement] = useState(false);
   
   // Training data state
   const [trainingData, setTrainingData] = useState([]);
@@ -976,31 +974,25 @@ export default function SimpleNegationAnalyzer() {
     setUploadError(null);
   };
 
-  // Main classification function that uses either rule-based OR training data (no hybrid)
+  // Main classification function that uses the selected analysis mode
   const classifyNegation = async (text) => {
-    // Training-based analysis (training flag on, expletive flag off)
-    if (!useExpletiveLogic && enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
-      // Always use binary classifier for training data analysis
-      return classifyWithBinaryClassifier(text);
-    }
-    
-    // Rule-based expletive logic (expletive flag on, training flag off)
-    if (useExpletiveLogic && !enableTrainingData) {
-      return await classifyExpletive(text);
-    }
-    
-    // Basic logic only (both flags off)
-    if (!useExpletiveLogic && !enableTrainingData) {
-      return classifyBasic(text);
-    }
-    
-    // If both are enabled, prioritize rule-based (no hybrid)
-    if (useExpletiveLogic) {
-      return await classifyExpletive(text);
-    } else if (enableTrainingData && useTrainingEnhancement && trainingData.length > 0) {
-      return classifyWithBinaryClassifier(text);
-    } else {
-      return classifyBasic(text);
+    switch (analysisMode) {
+      case 'RULE_BASED':
+        return await classifyExpletive(text);
+        
+      case 'TRAINING_DATA':
+        if (useTrainingEnhancement && trainingData.length > 0) {
+          return classifyWithBinaryClassifier(text);
+        }
+        return classifyBasic(text);
+        
+      case 'CAMEMBERT':
+        const classifier = new CamemBERTClassifier();
+        const result = await classifier.classifyNegation(text);
+        return `${result.classification} (${Math.round(result.confidence * 100)}% confidence)\n${result.evidence}`;
+        
+      default:
+        return classifyBasic(text);
     }
   };
 
@@ -1675,7 +1667,7 @@ export default function SimpleNegationAnalyzer() {
   return (
     <div className="container">
       <div className="card" style={{ marginTop: '20px' }}>
-        {/* Feature Flag Toggles */}
+        {/* Analysis Mode Selection */}
         <div style={{ 
           backgroundColor: '#e3f2fd', 
           padding: '15px', 
@@ -1683,125 +1675,46 @@ export default function SimpleNegationAnalyzer() {
           marginBottom: '20px',
           border: '2px solid #2196f3'
         }}>
-          <h4>🚩 Analysis Mode (Select One):</h4>
+          <h4>🔍 Analysis Mode:</h4>
+          <select
+            value={analysisMode}
+            onChange={(e) => setAnalysisMode(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '8px',
+              marginBottom: '10px',
+              borderRadius: '4px',
+              border: '1px solid #2196f3',
+              fontSize: '16px'
+            }}
+          >
+            <option value="RULE_BASED">Rule-Based Analysis (CroissantLLM)</option>
+            <option value="TRAINING_DATA">Training Data Analysis</option>
+            {isFeatureEnabled('ENABLE_CAMEMBERT') && (
+              <option value="CAMEMBERT">CamemBERT Analysis (Beta)</option>
+            )}
+          </select>
           
-          {/* Rule-Based Logic Radio Button */}
-          <label style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            marginBottom: '10px'
-          }}>
-            <input
-              type="radio"
-              name="analysisMode"
-              checked={useExpletiveLogic && !enableTrainingData}
-              onChange={() => {
-                setUseExpletiveLogic(true);
-                setEnableTrainingData(false);
-              }}
-              style={{ 
-                marginRight: '10px', 
-                transform: 'scale(1.2)',
-                cursor: 'pointer'
-              }}
-            />
-            {useExpletiveLogic && !enableTrainingData ? '✅ Rule-Based Expletive Logic SELECTED' : '⚪ Rule-Based Expletive Logic'}
-          </label>
-          
-          {/* Training Data Analysis Radio Button */}
-          <label style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            cursor: 'pointer',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            color: '#1976d2',
-            marginBottom: '10px'
-          }}>
-            <input
-              type="radio"
-              name="analysisMode"
-              checked={enableTrainingData && !useExpletiveLogic}
-              onChange={() => {
-                setEnableTrainingData(true);
-                setUseExpletiveLogic(false);
-              }}
-              style={{ 
-                marginRight: '10px', 
-                transform: 'scale(1.2)',
-                cursor: 'pointer'
-              }}
-            />
-            {enableTrainingData && !useExpletiveLogic ? '📚 Training Data Analysis SELECTED' : '⚪ Training Data Analysis'}
-          </label>
-          
-          {/* Training Enhancement Toggle - Only show when Training Data is selected */}
-          {enableTrainingData && !useExpletiveLogic && (
-            <>
-              <label style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                color: '#4caf50',
-                marginLeft: '20px'
-              }}>
-                <input
-                  type="checkbox"
-                  checked={useTrainingEnhancement}
-                  onChange={(e) => setUseTrainingEnhancement(e.target.checked)}
-                  disabled={trainingData.length === 0}
-                  style={{ 
-                    marginRight: '10px', 
-                    transform: 'scale(1.0)',
-                    cursor: trainingData.length === 0 ? 'not-allowed' : 'pointer'
-                  }}
-                />
-                {useTrainingEnhancement ? '🎯 Training Enhancement ACTIVE' : '🎯 Training Enhancement INACTIVE'}
-                {trainingData.length === 0 && ' (No training data loaded)'}
-              </label>
-
-            </>
-          )}
-          
-          {/* Current Analysis Mode Display */}
-          <div style={{ 
-            marginTop: '15px', 
+          <p style={{ 
+            marginTop: '10px',
             padding: '10px',
             backgroundColor: 'rgba(255,255,255,0.7)',
             borderRadius: '4px',
             border: '1px solid #2196f3'
           }}>
-            <strong>🎯 Current Analysis Mode:</strong>
-            <div style={{ 
-              marginTop: '5px', 
-              fontSize: '14px', 
-              fontWeight: 'bold',
-              color: getCurrentModeColor()
-            }}>
-              {getCurrentModeDescription()}
-            </div>
-          </div>
+            {analysisMode === 'RULE_BASED' && (
+              "🎯 Rule-based analysis with CroissantLLM for French syntax validation"
+            )}
+            {analysisMode === 'TRAINING_DATA' && (
+              "📚 Machine learning analysis based on your training examples"
+            )}
+            {analysisMode === 'CAMEMBERT' && (
+              "🤖 Deep learning analysis using CamemBERT model (Beta)"
+            )}
+          </p>
         </div>
 
-        <p>
-          {!useExpletiveLogic && !enableTrainingData 
-            ? "Please select an analysis mode above to begin analyzing removed 'ne' markers."
-            : useExpletiveLogic && !enableTrainingData
-              ? "Rule-based analysis mode selected."
-              : !useExpletiveLogic && enableTrainingData
-                ? useTrainingEnhancement && trainingData.length > 0
-                  ? "Pure machine learning prediction of removed 'ne' type using patterns from your uploaded examples only."
-                  : "Training data analysis mode selected."
-                : "Select an analysis mode above to begin."
-          }
-        </p>
-        
-        {/* Basic Logic Info Box */}
+        {/* Mode-specific Info Boxes */}
         {!useExpletiveLogic && !enableTrainingData && (
           <div style={{ 
             backgroundColor: '#fff3cd', 
