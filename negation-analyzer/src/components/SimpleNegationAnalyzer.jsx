@@ -1792,11 +1792,11 @@ export default function SimpleNegationAnalyzer() {
           {!useExpletiveLogic && !enableTrainingData 
             ? "Please select an analysis mode above to begin analyzing removed 'ne' markers."
             : useExpletiveLogic && !enableTrainingData
-              ? "Rule-based prediction of removed 'ne' type using French linguistic patterns for 'peur que', 'avant que', and 'peu s'en faut' constructions."
+              ? "Rule-based analysis mode selected."
               : !useExpletiveLogic && enableTrainingData
                 ? useTrainingEnhancement && trainingData.length > 0
                   ? "Pure machine learning prediction of removed 'ne' type using patterns from your uploaded examples only."
-                  : "Training data analysis enabled - ready for your uploaded examples."
+                  : "Training data analysis mode selected."
                 : "Select an analysis mode above to begin."
           }
         </p>
