@@ -1644,18 +1644,6 @@ export default function SimpleNegationAnalyzer() {
     }
   };
 
-  const getCurrentModeColor = () => {
-    switch (analysisMode) {
-      case 'RULE_BASED':
-        return "#2196f3"; // Blue for rule-based
-      case 'TRAINING_DATA':
-        return "#4caf50"; // Green for training data
-      case 'CAMEMBERT':
-        return "#9c27b0"; // Purple for CamemBERT
-      default:
-        return "#666";
-    }
-  };
 
   return (
     <div className="container">

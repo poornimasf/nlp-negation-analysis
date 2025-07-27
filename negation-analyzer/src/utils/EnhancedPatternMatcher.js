@@ -121,14 +121,14 @@ class EnhancedPatternMatcher {
         // Use class patterns if none provided
         const patternsToUse = patterns || this.EXPLETIVE_PATTERNS;
 
-        for (const [triggerType, patternList] of Object.entries(patternsToUse)) {
+        for (const [type, patternList] of Object.entries(patternsToUse)) {
             for (const pattern of patternList) {
                 try {
                     const match = normalizedText.match(pattern);
                     if (match) {
-                        const confidenceResult = this.calculateBasicConfidence(match[0], triggerType);
+                        const confidenceResult = this.calculateBasicConfidence(match[0], type);
                         return {
-                            type: triggerType,
+                            type,
                             match: match[0].trim(),
                             position: match.index,
                             confidence: confidenceResult.score,
