@@ -7,16 +7,18 @@ import CamemBERTClassifier from '../utils/CamemBERTClassifier';
 import { isFeatureEnabled } from '../config/featureFlags';
 
 export default function SimpleNegationAnalyzer() {
-  // Basic state
+  // State definitions
   const [batchInput, setBatchInput] = useState("");
   const [batchResults, setBatchResults] = useState([]);
   const [batchLoading, setBatchLoading] = useState(false);
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
-
-  // Feature flags
   const [analysisMode, setAnalysisMode] = useState('RULE_BASED');
   const [useTrainingEnhancement, setUseTrainingEnhancement] = useState(false);
+  
+  // UI state for collapsible info boxes
+  const [infoBoxExpanded, setInfoBoxExpanded] = useState(false);
+  const [trainingInfoExpanded, setTrainingInfoExpanded] = useState(false);
   
   // Training data state
   const [trainingData, setTrainingData] = useState([]);
@@ -2173,14 +2175,14 @@ export default function SimpleNegationAnalyzer() {
             <button 
               onClick={handleBatchAnalyze} 
               className="button"
-              disabled={batchLoading || (!useExpletiveLogic && !enableTrainingData)}
+              disabled={batchLoading || !analysisMode}
               style={{
-                backgroundColor: (batchLoading || (!useExpletiveLogic && !enableTrainingData)) ? '#ccc' : '#3182ce',
-                cursor: (batchLoading || (!useExpletiveLogic && !enableTrainingData)) ? 'not-allowed' : 'pointer',
-                opacity: (batchLoading || (!useExpletiveLogic && !enableTrainingData)) ? 0.7 : 1
+                backgroundColor: (batchLoading || !analysisMode) ? '#ccc' : '#3182ce',
+                cursor: (batchLoading || !analysisMode) ? 'not-allowed' : 'pointer',
+                opacity: (batchLoading || !analysisMode) ? 0.7 : 1
               }}
             >
-              {batchLoading ? '🔄 Processing...' : (!useExpletiveLogic && !enableTrainingData) ? '⚠️ Select Analysis Mode' : 'Analyze Batch'}
+              {batchLoading ? '🔄 Processing...' : !analysisMode ? '⚠️ Select Analysis Mode' : 'Analyze Batch'}
             </button>
           </div>
         </div>
