@@ -1234,15 +1234,21 @@ export default function SimpleNegationAnalyzer() {
     const results = [];
     
     try {
+      // Process sentences sequentially with delay
       for (let index = 0; index < sentences.length; index++) {
         setBatchProgress({ current: index + 1, total: sentences.length });
-        const sentence = sentences[index];
+        const sentence = sentences[index].trim();
         
         try {
-          const analysis = await classifyNegation(sentence.trim());
-          const triggerInfo = await findExpletiveTrigger(sentence.trim());
-          const hasNe = hasNegation(sentence.trim());
-          const hasSubj = hasSubjunctive(sentence.trim());
+          // Add delay between requests to prevent rate limiting
+          if (index > 0) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+
+          const analysis = await classifyNegation(sentence);
+          const triggerInfo = await findExpletiveTrigger(sentence);
+          const hasNe = hasNegation(sentence);
+          const hasSubj = hasSubjunctive(sentence);
           
           // Build detailed reasoning
           const reasoning = [];
@@ -1283,39 +1289,39 @@ export default function SimpleNegationAnalyzer() {
           }
           
           // Determine confidence level
-          const confidence = await calculateConfidence(sentence.trim(), triggerInfo);
+          const confidence = await calculateConfidence(sentence, triggerInfo);
           reasoning.push(`Confidence level: ${Math.round(confidence * 100)}%`);
           
           results.push({
             id: index + 1,
-            text: sentence.trim(),
-            highlightedText: highlight(sentence.trim()),
+            text: sentence,
+            highlightedText: highlight(sentence),
             label: analysis,
-            classification: await determineClassification(sentence.trim()),
+            classification: await determineClassification(sentence),
             reasoning: reasoning.join('\n'),
             confidence: confidence,
             trigger: triggerInfo ? (triggerInfo.mappedType || mapTriggerType(triggerInfo.type)) : null
           });
+
+          // Update results immediately after each sentence
+          setBatchResults([...results]);
         } catch (error) {
           console.error(`Error processing sentence ${index + 1}:`, error);
-          // Add error result
           results.push({
             id: index + 1,
-            text: sentence.trim(),
-            highlightedText: sentence.trim(),
+            text: sentence,
+            highlightedText: sentence,
             label: `Error: ${error.message}`,
             classification: "Error",
             reasoning: `Processing failed: ${error.message}`,
             confidence: 0,
             trigger: null
           });
+          setBatchResults([...results]);
         }
       }
-      
-      setBatchResults(results);
     } catch (error) {
       console.error('Batch analysis failed:', error);
-      setBatchResults([]);
     } finally {
       setBatchLoading(false);
       setBatchProgress({ current: 0, total: 0 });
