@@ -16,11 +16,29 @@ export const formatRuleBasedResult = (analysis) => {
     case 'EXPLETIVE':
       output.push(`✅ EXPLETIVE NEGATION (${Math.round(analysis.confidence * 100)}% confidence)\n`);
       output.push('🔍 PATTERN ANALYSIS:');
-      if (analysis.evidence.triggers.strong > 0) {
+      if (analysis.evidence.triggers?.strong > 0) {
         output.push('• Found strong expletive trigger(s)');
       }
-      if (analysis.evidence.triggers.medium > 0) {
+      if (analysis.evidence.triggers?.medium > 0) {
         output.push('• Found medium expletive trigger(s)');
+      }
+      if (analysis.evidence.hasSubjunctive) {
+        output.push('• Contains subjunctive mood');
+      }
+      output.push('• No logical markers detected');
+      break;
+
+    case 'LIKELY_EXPLETIVE':
+      output.push(`ℹ️ LIKELY EXPLETIVE (${Math.round(analysis.confidence * 100)}% confidence)\n`);
+      output.push('🔍 PATTERN ANALYSIS:');
+      if (analysis.evidence.triggers?.strong > 0) {
+        output.push('• Found strong expletive trigger(s)');
+      }
+      if (analysis.evidence.triggers?.medium > 0) {
+        output.push('• Found medium expletive trigger(s)');
+      }
+      if (analysis.evidence.triggers?.weak > 0) {
+        output.push('• Found weak expletive trigger(s)');
       }
       if (analysis.evidence.hasSubjunctive) {
         output.push('• Contains subjunctive mood');
@@ -31,27 +49,35 @@ export const formatRuleBasedResult = (analysis) => {
     case 'AMBIGUOUS':
       output.push(`⚠️ AMBIGUOUS CASE (${Math.round(analysis.confidence * 100)}% confidence)\n`);
       output.push('🔍 PATTERN ANALYSIS:');
-      output.push(`• Found ${analysis.evidence.logical.markers} logical marker(s)`);
-      output.push('• Found expletive trigger(s):');
-      if (analysis.evidence.expletive.triggers.strong > 0) {
-        output.push('  - Strong triggers: ' + analysis.evidence.expletive.triggers.strong);
+      if (analysis.evidence.triggers?.strong > 0) {
+        output.push('• Found strong expletive trigger(s)');
       }
-      if (analysis.evidence.expletive.triggers.medium > 0) {
-        output.push('  - Medium triggers: ' + analysis.evidence.expletive.triggers.medium);
+      if (analysis.evidence.triggers?.medium > 0) {
+        output.push('• Found medium expletive trigger(s)');
       }
-      if (analysis.evidence.expletive.hasSubjunctive) {
-        output.push('• Contains subjunctive mood');
+      if (analysis.evidence.triggers?.weak > 0) {
+        output.push('• Found weak expletive trigger(s)');
       }
-      break;
-
-    case 'LIKELY_EXPLETIVE':
-      output.push(`ℹ️ LIKELY EXPLETIVE (${Math.round(analysis.confidence * 100)}% confidence)\n`);
-      output.push('🔍 PATTERN ANALYSIS:');
-      output.push('• Found weak expletive trigger(s)');
       if (analysis.evidence.hasSubjunctive) {
         output.push('• Contains subjunctive mood');
       }
-      output.push('• No logical markers detected');
+      if (analysis.evidence.details) {
+        output.push(`• ${analysis.evidence.details}`);
+      }
+      break;
+
+    case 'UNCERTAIN':
+      output.push(`❓ UNCERTAIN (${Math.round(analysis.confidence * 100)}% confidence)\n`);
+      output.push('🔍 PATTERN ANALYSIS:');
+      if (analysis.evidence.triggers?.weak > 0) {
+        output.push('• Found weak potential trigger(s)');
+      }
+      if (analysis.evidence.hasSubjunctive) {
+        output.push('• Contains subjunctive mood');
+      }
+      if (analysis.evidence.details) {
+        output.push(`• ${analysis.evidence.details}`);
+      }
       break;
 
     default:
@@ -78,10 +104,11 @@ export const formatHybridResult = (patternAnalysis, llmText) => {
       output.push('• Pattern confidence: ' + Math.round(patternAnalysis.confidence * 100) + '%');
       break;
     case 'EXPLETIVE':
-      if (patternAnalysis.evidence.triggers.strong > 0) {
+    case 'LIKELY_EXPLETIVE':
+      if (patternAnalysis.evidence.triggers?.strong > 0) {
         output.push('• Found strong expletive trigger(s)');
       }
-      if (patternAnalysis.evidence.triggers.medium > 0) {
+      if (patternAnalysis.evidence.triggers?.medium > 0) {
         output.push('• Found medium expletive trigger(s)');
       }
       if (patternAnalysis.evidence.hasSubjunctive) {
@@ -90,11 +117,23 @@ export const formatHybridResult = (patternAnalysis, llmText) => {
       output.push('• Pattern confidence: ' + Math.round(patternAnalysis.confidence * 100) + '%');
       break;
     case 'AMBIGUOUS':
-      output.push('• Found conflicting patterns');
+      if (patternAnalysis.evidence.triggers?.strong > 0) {
+        output.push('• Found strong expletive trigger(s)');
+      }
+      if (patternAnalysis.evidence.triggers?.medium > 0) {
+        output.push('• Found medium expletive trigger(s)');
+      }
+      if (patternAnalysis.evidence.hasSubjunctive) {
+        output.push('• Contains subjunctive mood');
+      }
       output.push('• Requires LLM disambiguation');
       break;
     default:
-      output.push('• Insufficient patterns for classification');
+      if (patternAnalysis.evidence.details) {
+        output.push(`• ${patternAnalysis.evidence.details}`);
+      } else {
+        output.push('• Insufficient patterns for classification');
+      }
       break;
   }
   output.push('');
