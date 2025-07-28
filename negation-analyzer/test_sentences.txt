@@ -1,0 +1,21 @@
+# Logical Negation Examples
+Je veux pas qu'il parte
+Il fait jamais ses devoirs
+Elle comprend plus rien
+
+# Expletive Negation Examples
+J'ai peur qu'il vienne
+Avant qu'elle parte
+Peu s'en faut qu'il réussisse
+
+# Ambiguous Cases
+J'ai peur qu'il vienne pas
+Avant qu'elle parte jamais
+
+# Weak Expletive Cases
+Je crains qu'il parte
+Il doute qu'elle vienne
+
+# Uncertain Cases
+Il dit que je pars
+Elle pense qu'il arrive

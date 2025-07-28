@@ -3,6 +3,8 @@ import './NegationAnalyzer.css';
 import * as XLSX from 'xlsx';
 import NegationAnalyzer from '../utils/NegationAnalyzer';
 import { formatErrorMessage } from '../utils/errorFormatter';
+import { formatRuleBasedResult, formatHybridResult, formatTrainingResult } from '../utils/resultFormatters';
+import { highlight, determineClassification } from '../utils/textProcessing';
 
 export default function SimpleNegationAnalyzer() {
   // State definitions
