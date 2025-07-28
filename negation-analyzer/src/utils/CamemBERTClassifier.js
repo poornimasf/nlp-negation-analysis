@@ -8,7 +8,8 @@ class CamemBERTClassifier {
         }
         this.inference = new HfInference(token);
         this.initialized = false;
-        this.modelName = 'https://blw2gc8euan45k1a.us-east-1.aws.endpoints.huggingface.cloud';  // Custom AWS endpoint
+        this.modelName = 'camembert';  // Base model identifier
+        this.endpointUrl = 'https://blw2gc8euan45k1a.us-east-1.aws.endpoints.huggingface.cloud';  // Custom endpoint
         this.maxRetries = 3;
         this.retryDelay = 1000; // 1 second
     }
@@ -21,6 +22,7 @@ class CamemBERTClassifier {
             await this._retryOperation(async () => {
                 return await this.inference.textClassification({
                     model: this.modelName,
+                    endpointUrl: this.endpointUrl,
                     inputs: "Test de connexion."
                 });
             });
@@ -63,6 +65,7 @@ class CamemBERTClassifier {
             const result = await this._retryOperation(async () => {
                 return await this.inference.textClassification({
                     model: this.modelName,
+                    endpointUrl: this.endpointUrl,
                     inputs: text,
                     parameters: {
                         candidate_labels: ["négation expletive", "négation logique"]
