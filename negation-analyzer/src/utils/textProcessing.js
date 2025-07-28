@@ -1,3 +1,26 @@
+// Normalize text by handling accents and diacritics
+export const normalizeText = (text) => {
+  if (!text) return '';
+  
+  // Handle common French accented characters and their variations
+  const accentsMap = {
+    'á': 'a', 'à': 'a', 'ã': 'a', 'â': 'a', 'ä': 'a',
+    'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+    'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+    'ó': 'o', 'ò': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o',
+    'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
+    'ý': 'y', 'ÿ': 'y',
+    'ñ': 'n',
+    'ç': 'c'
+  };
+
+  // Create regex pattern for all accented characters
+  const accentPattern = new RegExp('[' + Object.keys(accentsMap).join('') + ']', 'g');
+  
+  // Replace accented characters with their base form
+  return text.toLowerCase().replace(accentPattern, char => accentsMap[char] || char);
+};
+
 // Highlight different parts of the text
 export const highlight = (text) => {
   if (!text || typeof text !== 'string') {
@@ -6,13 +29,13 @@ export const highlight = (text) => {
   
   let output = text;
   
-  // Comprehensive expletive triggers
+  // Comprehensive expletive triggers with accent handling
   const TRIGGER_PATTERNS = [
-    // Fear expressions
-    /\b(?:j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']/gi,
+    // Fear expressions with accents
+    /\b(?:j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont)\s+(?:(?:tr[eèé]s\s+)?grand[e]?\s+)?peur\s+qu[e']/gi,
     /\bpeur\s+qu[e']/gi,
     
-    // Temporal expressions
+    // Temporal expressions with accents
     /\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e']/gi,
     /\bavant\s+qu[e']/gi,
     
@@ -20,12 +43,12 @@ export const highlight = (text) => {
     /\bil\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+(?:de\s+)?peu\s+qu[e']/gi,
     /\bpeu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+qu[e']/gi,
     
-    // Other expletive triggers
-    /\b(?:craindre|redouter|douter|éviter|empêcher)\s+qu[e']/gi,
+    // Other expletive triggers with accents
+    /\b(?:craindre|redouter|douter|[eéè]viter|emp[eêè]cher)\s+qu[e']/gi,
     /\b(?:je\s+crains|tu\s+crains|il\s+craint)\s+qu[e']/gi
   ];
   
-  // Comprehensive logical markers
+  // Comprehensive logical markers with accent handling
   const LOGICAL_MARKERS = [
     // Standard negation
     /\bne\s+(?:pas|point)\b/gi,
@@ -35,19 +58,19 @@ export const highlight = (text) => {
     /\bne\s+(?:jamais|plus)\b/gi,
     /\bn[']\s*(?:jamais|plus)\b/gi,
     
-    // Quantity negation
+    // Quantity negation with accents
     /\bne\s+(?:rien|personne|aucun[e]?|nul[le]?)\b/gi,
     /\bn[']\s*(?:rien|personne|aucun[e]?|nul[le]?)\b/gi,
     
-    // Other negation
-    /\bne\s+(?:guère|nullement)\b/gi,
-    /\bn[']\s*(?:guère|nullement)\b/gi,
+    // Other negation with accents
+    /\bne\s+(?:gu[eèé]re|nullement)\b/gi,
+    /\bn[']\s*(?:gu[eèé]re|nullement)\b/gi,
     
     // Standalone negation words
     /\b(?:jamais|rien|personne|aucun[e]?|nul[le]?|point)\b/gi
   ];
   
-  // Subjunctive patterns
+  // Subjunctive patterns with accent handling
   const SUBJUNCTIVE_PATTERNS = [
     // être
     /\b(?:sois|soit|soyons|soyez|soient)\b/gi,
@@ -61,7 +84,7 @@ export const highlight = (text) => {
     // pouvoir
     /\b(?:puisse|puisses|puisse|puissions|puissiez|puissent)\b/gi,
     
-    // Common irregular verbs
+    // Common irregular verbs with accents
     /\b(?:vienne|viennes|vienne|venions|veniez|viennent)\b/gi,
     /\b(?:prenne|prennes|prenne|prenions|preniez|prennent)\b/gi,
     /\b(?:tienne|tiennes|tienne|tenions|teniez|tiennent)\b/gi

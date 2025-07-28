@@ -1,15 +1,17 @@
+import { normalizeText } from './textProcessing';
+
 class NegationAnalyzer {
   constructor() {
     // Logical negation markers
     this.LOGICAL_MARKERS = [
-      /\b(?:pas|point|plus|jamais|rien|personne|aucun[e]?|guère|nullement)\b/i
+      /\b(?:pas|point|plus|jamais|rien|personne|aucun[e]?|gu[eèé]re|nullement)\b/i
     ];
 
     // Potentially ambiguous triggers that can be either expletive or logical
     this.AMBIGUOUS_TRIGGERS = {
       STRONG: [
         // Fear expressions with complete construction
-        /\b(?:j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']/i,
+        /\b(?:j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont)\s+(?:(?:tr[eèé]s\s+)?grand[e]?\s+)?peur\s+qu[e']/i,
         // Temporal expressions with precision
         /\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e']/i,
         // Peu s'en faut with impersonal construction
@@ -24,17 +26,20 @@ class NegationAnalyzer {
         /\bpeu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+qu[e']/i
       ],
       WEAK: [
-        // Other potential triggers
-        /\b(?:craindre|redouter|douter|éviter|empêcher)\s+qu[e']/i
+        // Other potential triggers with accents
+        /\b(?:craindre|redouter|douter|[eéè]viter|emp[eêè]cher)\s+qu[e']/i
       ]
     };
 
-    // Subjunctive patterns
+    // Subjunctive patterns with accents
     this.SUBJUNCTIVE_PATTERNS = [
       /\b(?:sois|soit|soyons|soyez|soient)\b/i,  // être
       /\b(?:aie|aies|ait|ayons|ayez|aient)\b/i,  // avoir
       /\b(?:fasse|fasses|fasse|fassions|fassiez|fassent)\b/i,  // faire
-      /\b(?:puisse|puisses|puisse|puissions|puissiez|puissent)\b/i  // pouvoir
+      /\b(?:puisse|puisses|puisse|puissions|puissiez|puissent)\b/i,  // pouvoir
+      /\b(?:vienne|viennes|vienne|venions|veniez|viennent)\b/i,  // venir
+      /\b(?:prenne|prennes|prenne|prenions|preniez|prennent)\b/i,  // prendre
+      /\b(?:tienne|tiennes|tienne|tenions|teniez|tiennent)\b/i  // tenir
     ];
   }
 
@@ -48,7 +53,7 @@ class NegationAnalyzer {
     // Check for subjunctive
     const hasSubjunctive = this.hasSubjunctive(text);
 
-    // If we have both logical markers and ambiguous triggers, it's likely logical negation
+    // If we have both logical markers and ambiguous triggers, it's likely logical
     if (logicalMarkers.length > 0 && (triggers.strong.length > 0 || triggers.medium.length > 0)) {
       return {
         type: 'LOGICAL',
@@ -127,20 +132,23 @@ class NegationAnalyzer {
   }
 
   findLogicalMarkers(text) {
-    return this.LOGICAL_MARKERS.filter(pattern => pattern.test(text));
+    const normalizedText = normalizeText(text);
+    return this.LOGICAL_MARKERS.filter(pattern => pattern.test(normalizedText));
   }
 
   findAmbiguousTriggers(text) {
+    const normalizedText = normalizeText(text);
     const triggers = {
-      strong: this.AMBIGUOUS_TRIGGERS.STRONG.filter(pattern => pattern.test(text)),
-      medium: this.AMBIGUOUS_TRIGGERS.MEDIUM.filter(pattern => pattern.test(text)),
-      weak: this.AMBIGUOUS_TRIGGERS.WEAK.filter(pattern => pattern.test(text))
+      strong: this.AMBIGUOUS_TRIGGERS.STRONG.filter(pattern => pattern.test(normalizedText)),
+      medium: this.AMBIGUOUS_TRIGGERS.MEDIUM.filter(pattern => pattern.test(normalizedText)),
+      weak: this.AMBIGUOUS_TRIGGERS.WEAK.filter(pattern => pattern.test(normalizedText))
     };
     return triggers;
   }
 
   hasSubjunctive(text) {
-    return this.SUBJUNCTIVE_PATTERNS.some(pattern => pattern.test(text));
+    const normalizedText = normalizeText(text);
+    return this.SUBJUNCTIVE_PATTERNS.some(pattern => pattern.test(normalizedText));
   }
 }
 

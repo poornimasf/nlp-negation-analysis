@@ -1,3 +1,5 @@
+import { normalizeText } from './textProcessing';
+
 // Process and validate training data
 export const processTrainingData = (data) => {
   const processedData = [];
@@ -32,32 +34,33 @@ export const processTrainingData = (data) => {
       ? hasExpletive.toLowerCase() === 'true' || hasExpletive.toLowerCase() === 'expletive'
       : Boolean(hasExpletive);
 
-    // Detect trigger if not provided
+    // Detect trigger if not provided, handling accents
     let detectedTrigger = trigger;
     if (!detectedTrigger) {
-      const lowerText = text.toLowerCase();
-      if (lowerText.includes('peur') && lowerText.includes('que')) {
+      const normalizedText = normalizeText(text.toLowerCase());
+      if (normalizedText.includes('peur') && normalizedText.includes('que')) {
         detectedTrigger = 'peur que';
-      } else if (lowerText.includes('avant') && lowerText.includes('que')) {
+      } else if (normalizedText.includes('avant') && normalizedText.includes('que')) {
         detectedTrigger = 'avant que';
-      } else if (lowerText.includes('peu s\'en faut') || lowerText.includes('s\'en faut')) {
+      } else if (normalizedText.includes('peu s\'en faut') || normalizedText.includes('s\'en faut')) {
         detectedTrigger = 'peu s\'en faut';
       }
     }
 
-    // Map to simple trigger names
+    // Map to simple trigger names, handling accents
     let simpleTrigger = detectedTrigger;
-    if (detectedTrigger) {
-      if (detectedTrigger.includes('peur')) simpleTrigger = 'peur que';
-      else if (detectedTrigger.includes('avant')) simpleTrigger = 'avant que';
-      else if (detectedTrigger.includes('peu s\'en') || detectedTrigger.includes('s\'en faut')) {
+    const normalizedTrigger = normalizeText(detectedTrigger);
+    if (normalizedTrigger) {
+      if (normalizedTrigger.includes('peur')) simpleTrigger = 'peur que';
+      else if (normalizedTrigger.includes('avant')) simpleTrigger = 'avant que';
+      else if (normalizedTrigger.includes('peu s\'en') || normalizedTrigger.includes('s\'en faut')) {
         simpleTrigger = 'peu s\'en faut';
       }
-      else if (detectedTrigger.includes('crain')) simpleTrigger = 'craindre';
-      else if (detectedTrigger.includes('redout')) simpleTrigger = 'redouter';
-      else if (detectedTrigger.includes('dout')) simpleTrigger = 'douter';
-      else if (detectedTrigger.includes('évit')) simpleTrigger = 'éviter';
-      else if (detectedTrigger.includes('empêch')) simpleTrigger = 'empêcher';
+      else if (normalizedTrigger.includes('crain')) simpleTrigger = 'craindre';
+      else if (normalizedTrigger.includes('redout')) simpleTrigger = 'redouter';
+      else if (normalizedTrigger.includes('dout')) simpleTrigger = 'douter';
+      else if (normalizedTrigger.includes('evit')) simpleTrigger = 'éviter';
+      else if (normalizedTrigger.includes('empech')) simpleTrigger = 'empêcher';
     }
 
     // Validate trigger
@@ -66,7 +69,7 @@ export const processTrainingData = (data) => {
       "craindre", "redouter", "douter", "éviter", "empêcher"
     ];
 
-    if (simpleTrigger && validTriggers.includes(simpleTrigger.toLowerCase())) {
+    if (simpleTrigger && validTriggers.some(t => normalizeText(t) === normalizeText(simpleTrigger))) {
       const processedRow = {
         id: index + 1,
         text: text.trim(),
@@ -85,11 +88,12 @@ export const processTrainingData = (data) => {
       }
 
       // Count by trigger type
-      if (simpleTrigger === 'peur que') {
+      const normalizedSimpleTrigger = normalizeText(simpleTrigger);
+      if (normalizedSimpleTrigger === normalizeText('peur que')) {
         stats.peurQueExamples++;
-      } else if (simpleTrigger === 'avant que') {
+      } else if (normalizedSimpleTrigger === normalizeText('avant que')) {
         stats.avantQueExamples++;
-      } else if (simpleTrigger === 'peu s\'en faut') {
+      } else if (normalizedSimpleTrigger === normalizeText('peu s\'en faut')) {
         stats.peuSenFautExamples++;
       }
     } else {
