@@ -108,4 +108,61 @@ export const highlight = (text) => {
   return output;
 };
 
-// Rest of the file remains the same...
+// Determine final classification from analysis
+export const determineClassification = (text, analysis) => {
+  if (!analysis) return "Uncertain";
+
+  // Get the full analysis text to check all lines
+  const analysisLines = analysis.split('\n');
+  const firstLine = analysisLines[0];
+
+  // Direct match for explicit classifications
+  if (firstLine.includes('✅ EXPLETIVE NEGATION')) {
+    return "Expletive";
+  }
+  
+  if (firstLine.includes('✅ LOGICAL NEGATION')) {
+    return "Logical";
+  }
+
+  // Handle ambiguous cases
+  if (firstLine.includes('⚠️ AMBIGUOUS CASE')) {
+    // Check if we have a resolution from LLM or training data
+    if (analysis.includes('LLM ANALYSIS:')) {
+      if (analysis.toLowerCase().includes('expletive')) {
+        return "Expletive (LLM)";
+      }
+      if (analysis.toLowerCase().includes('logical')) {
+        return "Logical (LLM)";
+      }
+    }
+    
+    if (analysis.includes('TRAINING DATA:')) {
+      if (analysis.toLowerCase().includes('expletive')) {
+        return "Expletive (Training)";
+      }
+      if (analysis.toLowerCase().includes('logical')) {
+        return "Logical (Training)";
+      }
+    }
+    
+    return "Ambiguous";
+  }
+
+  // Handle likely cases
+  if (firstLine.includes('LIKELY EXPLETIVE')) {
+    return "Likely Expletive";
+  }
+  
+  if (firstLine.includes('LIKELY LOGICAL')) {
+    return "Likely Logical";
+  }
+
+  // Handle uncertain cases
+  if (firstLine.includes('❓ UNCERTAIN')) {
+    return "Uncertain";
+  }
+
+  // Default case
+  return "Uncertain";
+};

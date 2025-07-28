@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import './NegationAnalyzer.css';
-import * as XLSX from 'xlsx';
 import NegationAnalyzer from '../utils/NegationAnalyzer';
 import { formatErrorMessage } from '../utils/errorFormatter';
 import { formatRuleBasedResult, formatHybridResult, formatTrainingResult } from '../utils/resultFormatters';
@@ -32,7 +31,7 @@ const SimpleNegationAnalyzer = () => {
     if (!file) return;
 
     try {
-      const { processedData, stats } = await processFileUpload(file);
+      const { processedData } = await processFileUpload(file);
       setTrainingData(processedData);
       
       if (processedData.length > 0) {

@@ -44,10 +44,21 @@ export const formatRuleBasedResult = (analysis) => {
       }
       break;
 
+    case 'LIKELY_EXPLETIVE':
+      output.push(`ℹ️ LIKELY EXPLETIVE (${Math.round(analysis.confidence * 100)}% confidence)\n`);
+      output.push('🔍 PATTERN ANALYSIS:');
+      output.push('• Found weak expletive trigger(s)');
+      if (analysis.evidence.hasSubjunctive) {
+        output.push('• Contains subjunctive mood');
+      }
+      output.push('• No logical markers detected');
+      break;
+
     default:
       output.push(`❓ UNCERTAIN (${Math.round(analysis.confidence * 100)}% confidence)\n`);
       output.push('🔍 PATTERN ANALYSIS:');
       output.push('• Insufficient patterns for classification');
+      break;
   }
 
   return output.join('\n');
@@ -81,6 +92,9 @@ export const formatHybridResult = (patternAnalysis, llmText) => {
     case 'AMBIGUOUS':
       output.push('• Found conflicting patterns');
       output.push('• Requires LLM disambiguation');
+      break;
+    default:
+      output.push('• Insufficient patterns for classification');
       break;
   }
   output.push('');
