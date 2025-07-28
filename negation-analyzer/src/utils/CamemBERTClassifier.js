@@ -18,12 +18,12 @@ class CamemBERTClassifier {
         if (this.initialized) return;
 
         try {
-            // Test with simple text classification
+            // Test with simple sequence classification
             await this._retryOperation(async () => {
-                return await this.inference.textClassification({
+                return await this.inference.tokenClassification({
                     model: this.modelName,
                     endpointUrl: this.endpointUrl,
-                    inputs: "Test de connexion."
+                    inputs: "Le chat est sur la table."
                 });
             });
             
@@ -61,28 +61,45 @@ class CamemBERTClassifier {
         }
 
         try {
-            // Use text classification for negation type
-            const result = await this._retryOperation(async () => {
-                return await this.inference.textClassification({
+            console.log('Analyzing text with CamemBERT:', text);
+
+            // Use token classification to identify parts of speech and negation
+            const tokenResult = await this._retryOperation(async () => {
+                return await this.inference.tokenClassification({
                     model: this.modelName,
                     endpointUrl: this.endpointUrl,
-                    inputs: text,
-                    parameters: {
-                        candidate_labels: ["négation expletive", "négation logique"]
-                    }
+                    inputs: text
                 });
             });
+
+            console.log('Token classification result:', tokenResult);
 
             // Analyze the results
             const evidence = [];
             let isExpletive = false;
             let confidence = 0.5;
 
-            if (result && result.labels) {
-                const primaryLabel = result.labels[0];
-                isExpletive = primaryLabel === "négation expletive";
-                confidence = result.scores[0];
-                evidence.push(`Classification principale: ${primaryLabel} (${Math.round(confidence * 100)}% confiance)`);
+            // Analyze token patterns
+            if (tokenResult && Array.isArray(tokenResult)) {
+                // Look for verb forms and negation markers
+                const tokens = tokenResult.map(t => ({
+                    word: t.word,
+                    entity: t.entity_group,
+                    score: t.score
+                }));
+
+                console.log('Analyzed tokens:', tokens);
+
+                // Check for subjunctive verbs
+                const hasSubjunctive = tokens.some(t => 
+                    t.entity === 'VERB' && 
+                    /\b(?:soit|sois|soyons|soyez|soient|fasse|fasses|fassions|fassiez|fassent)\b/i.test(t.word)
+                );
+
+                if (hasSubjunctive) {
+                    confidence += 0.2;
+                    evidence.push("Mode subjonctif détecté dans l'analyse syntaxique");
+                }
             }
 
             // Add pattern-based evidence
@@ -102,12 +119,6 @@ class CamemBERTClassifier {
                 evidence.push("Motif trouvé: 'peu s'en faut'");
             }
 
-            // Check for subjunctive mood
-            if (text.match(/\b(?:soit|sois|soyons|soyez|soient|fasse|fasses|fassions|fassiez|fassent)\b/i)) {
-                confidence = Math.min(confidence + 0.15, 0.95);
-                evidence.push("Mode subjonctif détecté");
-            }
-
             // Check for logical negation markers
             const logicalMarkers = text.match(/\b(?:pas|point|plus|jamais|rien|personne|aucun|guère)\b/g);
             if (logicalMarkers) {
@@ -116,11 +127,15 @@ class CamemBERTClassifier {
                 evidence.push(`Marqueurs de négation logique trouvés: ${logicalMarkers.join(', ')}`);
             }
 
-            return {
+            const finalResult = {
                 classification: isExpletive ? "EXPLETIVE NEGATION" : "LOGICAL NEGATION",
                 confidence: confidence,
                 evidence: evidence.join("\n")
             };
+
+            console.log('Final classification:', finalResult);
+            return finalResult;
+
         } catch (error) {
             console.error('CamemBERT classification error:', error);
             throw new Error(`Classification failed: ${error.message}`);
