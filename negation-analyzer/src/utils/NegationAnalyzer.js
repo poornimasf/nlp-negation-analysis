@@ -5,8 +5,8 @@ class NegationAnalyzer {
       /\b(?:pas|point|plus|jamais|rien|personne|aucun[e]?|guère|nullement)\b/i
     ];
 
-    // Expletive triggers with confidence levels
-    this.EXPLETIVE_TRIGGERS = {
+    // Potentially ambiguous triggers that can be either expletive or logical
+    this.AMBIGUOUS_TRIGGERS = {
       STRONG: [
         // Fear expressions with complete construction
         /\b(?:j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont)\s+(?:(?:très\s+)?grand[e]?\s+)?peur\s+qu[e']/i,
@@ -42,135 +42,76 @@ class NegationAnalyzer {
     // Check for logical negation markers
     const logicalMarkers = this.findLogicalMarkers(text);
     
-    // Check for expletive triggers
-    const expletiveTriggers = this.findExpletiveTriggers(text);
+    // Check for potentially ambiguous triggers
+    const triggers = this.findAmbiguousTriggers(text);
     
     // Check for subjunctive
     const hasSubjunctive = this.hasSubjunctive(text);
 
-    // Calculate initial confidence scores
-    const logicalConfidence = this.calculateLogicalConfidence(logicalMarkers);
-    const expletiveConfidence = this.calculateExpletiveConfidence(expletiveTriggers, hasSubjunctive);
-
-    // Determine classification based on evidence
-    return this.determineClassification(logicalMarkers, expletiveTriggers, hasSubjunctive, logicalConfidence, expletiveConfidence);
-  }
-
-  findLogicalMarkers(text) {
-    return this.LOGICAL_MARKERS.filter(pattern => pattern.test(text));
-  }
-
-  findExpletiveTriggers(text) {
-    const triggers = {
-      strong: this.EXPLETIVE_TRIGGERS.STRONG.filter(pattern => pattern.test(text)),
-      medium: this.EXPLETIVE_TRIGGERS.MEDIUM.filter(pattern => pattern.test(text)),
-      weak: this.EXPLETIVE_TRIGGERS.WEAK.filter(pattern => pattern.test(text))
-    };
-    return triggers;
-  }
-
-  hasSubjunctive(text) {
-    return this.SUBJUNCTIVE_PATTERNS.some(pattern => pattern.test(text));
-  }
-
-  calculateLogicalConfidence(markers) {
-    if (markers.length === 0) return 0;
-    return Math.min(0.9, 0.7 + (markers.length * 0.1));
-  }
-
-  calculateExpletiveConfidence(triggers, hasSubjunctive) {
-    let confidence = 0;
-    
-    // Strong triggers
-    if (triggers.strong.length > 0) {
-      confidence = 0.8;
-    }
-    // Medium triggers
-    else if (triggers.medium.length > 0) {
-      confidence = 0.6;
-    }
-    // Weak triggers
-    else if (triggers.weak.length > 0) {
-      confidence = 0.4;
-    }
-
-    // Boost confidence if subjunctive is present
-    if (hasSubjunctive && confidence > 0) {
-      confidence = Math.min(0.9, confidence + 0.1);
-    }
-
-    return confidence;
-  }
-
-  determineClassification(logicalMarkers, expletiveTriggers, hasSubjunctive, logicalConfidence, expletiveConfidence) {
-    const hasLogical = logicalMarkers.length > 0;
-    const hasExpletive = expletiveTriggers.strong.length > 0 || expletiveTriggers.medium.length > 0;
-    
-    // Both patterns present - potential ambiguity
-    if (hasLogical && hasExpletive) {
+    // If we have both logical markers and ambiguous triggers, it's likely logical negation
+    if (logicalMarkers.length > 0 && (triggers.strong.length > 0 || triggers.medium.length > 0)) {
       return {
-        type: 'AMBIGUOUS',
-        confidence: Math.max(logicalConfidence, expletiveConfidence),
+        type: 'LOGICAL',
+        confidence: 0.8,
         evidence: {
-          logical: {
-            markers: logicalMarkers.length,
-            confidence: logicalConfidence
-          },
-          expletive: {
-            triggers: {
-              strong: expletiveTriggers.strong.length,
-              medium: expletiveTriggers.medium.length,
-              weak: expletiveTriggers.weak.length
-            },
-            hasSubjunctive,
-            confidence: expletiveConfidence
+          markers: logicalMarkers.length,
+          details: 'Contains logical negation markers with ambiguous trigger',
+          hasSubjunctive,
+          triggers: {
+            strong: triggers.strong.length,
+            medium: triggers.medium.length,
+            weak: triggers.weak.length
           }
         }
       };
     }
 
-    // Clear logical negation
-    if (hasLogical) {
+    // If we have logical markers without triggers, it's clearly logical
+    if (logicalMarkers.length > 0) {
       return {
         type: 'LOGICAL',
-        confidence: logicalConfidence,
+        confidence: 0.9,
         evidence: {
           markers: logicalMarkers.length,
-          details: 'Contains logical negation markers'
+          details: 'Contains clear logical negation markers',
+          hasSubjunctive
         }
       };
     }
 
-    // Clear expletive pattern
-    if (hasExpletive) {
+    // If we have triggers without logical markers, analyze context
+    if (triggers.strong.length > 0 || triggers.medium.length > 0) {
+      // Look for additional context that suggests expletive use
+      const isLikelyExpletive = hasSubjunctive || triggers.strong.length > 0;
+      
       return {
-        type: 'EXPLETIVE',
-        confidence: expletiveConfidence,
+        type: isLikelyExpletive ? 'LIKELY_EXPLETIVE' : 'AMBIGUOUS',
+        confidence: isLikelyExpletive ? 0.7 : 0.5,
         evidence: {
           triggers: {
-            strong: expletiveTriggers.strong.length,
-            medium: expletiveTriggers.medium.length,
-            weak: expletiveTriggers.weak.length
+            strong: triggers.strong.length,
+            medium: triggers.medium.length,
+            weak: triggers.weak.length
           },
           hasSubjunctive,
-          details: hasSubjunctive ? 
-            'Found expletive triggers with subjunctive' : 
-            'Found expletive triggers without subjunctive'
+          details: isLikelyExpletive ? 
+            'Contains potential expletive triggers with supporting context' :
+            'Contains ambiguous triggers without clear indicators'
         }
       };
     }
 
-    // Weak expletive indication
-    if (expletiveTriggers.weak.length > 0) {
+    // If we only have weak triggers
+    if (triggers.weak.length > 0) {
       return {
-        type: 'LIKELY_EXPLETIVE',
-        confidence: expletiveConfidence,
+        type: 'UNCERTAIN',
+        confidence: 0.5,
         evidence: {
           triggers: {
-            weak: expletiveTriggers.weak.length
+            weak: triggers.weak.length
           },
           hasSubjunctive,
-          details: 'Found weak expletive triggers'
+          details: 'Contains only weak potential triggers'
         }
       };
     }
@@ -183,6 +124,23 @@ class NegationAnalyzer {
         details: 'Insufficient patterns for classification'
       }
     };
+  }
+
+  findLogicalMarkers(text) {
+    return this.LOGICAL_MARKERS.filter(pattern => pattern.test(text));
+  }
+
+  findAmbiguousTriggers(text) {
+    const triggers = {
+      strong: this.AMBIGUOUS_TRIGGERS.STRONG.filter(pattern => pattern.test(text)),
+      medium: this.AMBIGUOUS_TRIGGERS.MEDIUM.filter(pattern => pattern.test(text)),
+      weak: this.AMBIGUOUS_TRIGGERS.WEAK.filter(pattern => pattern.test(text))
+    };
+    return triggers;
+  }
+
+  hasSubjunctive(text) {
+    return this.SUBJUNCTIVE_PATTERNS.some(pattern => pattern.test(text));
   }
 }
 
