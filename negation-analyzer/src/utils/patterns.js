@@ -92,13 +92,13 @@ export const EXPLETIVE_TRIGGER_PATTERNS = {
       // Standard present/future/conditional forms
       /\bpeu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\b/i,
       
-      // Past forms with être
-      /\b(?:peu\s+)?s['']en\s+(?:est|fût)\s+fallu(?:\s+de\s+peu)?\b/i,
-      /\bpeu\s+s['']en\s+est\s+fallu\b/i,
+      // Past forms with être and que
+      /\b(?:peu\s+)?s['']en\s+(?:est|fût)\s+fallu(?:\s+de\s+peu)?(?:\s+qu[''](?:une?|elle?|il|on|ils?|elles?|[aeiouyh]|\w+))?\b/i,
+      /\bpeu\s+s['']en\s+est\s+fallu(?:\s+que?)?\b/i,
       
-      // Simple past forms
-      /\b(?:il\s+)?s['']en\s+fallut(?:\s+de\s+peu)?\b/i,
-      /\b(?:il\s+)?s['']en\s+fut\s+fallu\b/i,
+      // Simple past forms with que
+      /\b(?:peu\s+)?s['']en\s+fall(?:ut|ait)(?:\s+de\s+peu)?(?:\s+que?)?\b/i,
+      /\b(?:peu\s+)?s['']en\s+fut\s+fallu(?:\s+que?)?\b/i,
       
       // Impersonal forms with optional negation
       /\b(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)\s+de\s+peu\b/i,
@@ -111,7 +111,7 @@ export const EXPLETIVE_TRIGGER_PATTERNS = {
       /\bpeu\s+qu[''](?:un|il\s+fût)\b/i
     ],
     confidence: 0.85,
-    description: "Peu s'en faut expressions including all historical, literary, and grammatical variations"
+    description: "Peu s'en faut expressions including all historical, literary, and grammatical variations with que"
   },
 
   // Other triggers
