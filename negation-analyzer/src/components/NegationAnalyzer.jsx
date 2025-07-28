@@ -201,11 +201,22 @@ export default function NegationAnalyzer() {
       const sentences = batchInput.split("\n").filter(Boolean);
       const results = await Promise.all(sentences.map(async (sentence, index) => {
         const classification = await classifier.classifyNegation(sentence);
+        
+        // Extract prediction from analysis text if available
+        let prediction = classification.classification;
+        if (classification.evidence) {
+          const predictionMatch = classification.evidence.match(/Prediction:\s*(\w+)/);
+          if (predictionMatch) {
+            prediction = predictionMatch[1];
+          }
+        }
+        
         return {
           id: index + 1,
           text: sentence,
           highlightedText: highlight(sentence),
-          label: classification.classification,
+          label: classification.evidence,
+          classification: prediction,  // Use extracted prediction
           confidence: classification.confidence,
           evidence: classification.evidence
         };
