@@ -1190,6 +1190,51 @@ export default function SimpleNegationAnalyzer() {
       return 'Uncertain';
     }
 
+    // Handle Hybrid mode (same as Rule-based but with different prefix)
+    if (analysisMode === 'HYBRID') {
+      console.log('Processing Hybrid mode');
+      
+      // Check for expletive indicators in the full analysis
+      const expletiveIndicators = [
+        '✅ EXPLETIVE NEGATION',
+        'LIKELY EXPLETIVE NEGATION',
+        'expletive negation detected',
+        'Removed \'ne\' was likely expletive'
+      ];
+      
+      const logicalIndicators = [
+        '✅ LOGICAL NEGATION',
+        'LIKELY LOGICAL NEGATION',
+        'logical negation detected',
+        'Removed \'ne\' was likely logical'
+      ];
+      
+      // Log what we find
+      expletiveIndicators.forEach(indicator => {
+        if (analysis.includes(indicator)) {
+          console.log(`Found expletive indicator: "${indicator}"`);
+        }
+      });
+      
+      logicalIndicators.forEach(indicator => {
+        if (analysis.includes(indicator)) {
+          console.log(`Found logical indicator: "${indicator}"`);
+        }
+      });
+      
+      // Check for expletive first
+      if (expletiveIndicators.some(indicator => analysis.includes(indicator))) {
+        console.log('Hybrid analysis indicates EXPLETIVE');
+        return "Expletive (Hybrid)";
+      }
+      
+      // Then check for logical
+      if (logicalIndicators.some(indicator => analysis.includes(indicator))) {
+        console.log('Hybrid analysis indicates LOGICAL');
+        return "Logical (Hybrid)";
+      }
+    }
+
     // Handle Rule-based (CroissantLLM) results
     if (analysisMode === 'RULE_BASED') {
       console.log('Processing Rule-based mode');
@@ -1801,6 +1846,7 @@ export default function SimpleNegationAnalyzer() {
             }}
           >
             <option value="RULE_BASED">Rule-Based Analysis (CroissantLLM)</option>
+            <option value="HYBRID">Hybrid Analysis (Rule-Based + CroissantLLM)</option>
             <option value="TRAINING_DATA">Training Data Analysis</option>
           </select>
           
@@ -1813,6 +1859,9 @@ export default function SimpleNegationAnalyzer() {
           }}>
             {analysisMode === 'RULE_BASED' && (
               "🎯 Rule-based analysis with CroissantLLM for French syntax validation"
+            )}
+            {analysisMode === 'HYBRID' && (
+              "🔄 Hybrid analysis combining Rule-based patterns with CroissantLLM"
             )}
             {analysisMode === 'TRAINING_DATA' && (
               "📚 Machine learning analysis based on your training examples"
