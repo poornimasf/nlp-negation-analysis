@@ -19,10 +19,26 @@ class CroissantLLMService {
     }
 
     static async makeRequest(prompt) {
+        const token = process.env.REACT_APP_HF_TOKEN;
+        if (!token) {
+            throw new Error('Missing HF_TOKEN - Please ensure REACT_APP_HF_TOKEN is set');
+        }
+
+        console.log('Making request to:', this.ENDPOINT_URL);
+        console.log('Request payload:', {
+            inputs: prompt,
+            parameters: {
+                max_new_tokens: 256,
+                temperature: 0.1,
+                top_p: 0.95,
+                return_full_text: false
+            }
+        });
+
         const response = await fetch(this.ENDPOINT_URL, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${process.env.REACT_APP_HF_TOKEN}`,
+                'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
@@ -37,10 +53,17 @@ class CroissantLLMService {
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorText = await response.text();
+            console.error('API Error:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorText
+            });
+            throw new Error(`HTTP error! status: ${response.status}, error: ${errorText}`);
         }
 
         const result = await response.json();
+        console.log('API Response:', result);
         return result[0]?.generated_text || '';
     }
 
