@@ -11,21 +11,9 @@ export const formatRuleBasedResult = (analysis) => {
       if (analysis.evidence.hasSubjunctive) {
         output.push('• Contains subjunctive mood');
       }
-      break;
-
-    case 'EXPLETIVE':
-      output.push(`✅ EXPLETIVE NEGATION (${Math.round(analysis.confidence * 100)}% confidence)\n`);
-      output.push('🔍 PATTERN ANALYSIS:');
-      if (analysis.evidence.triggers?.strong > 0) {
-        output.push('• Found strong expletive trigger(s)');
+      if (analysis.evidence.hasExpletiveNe) {
+        output.push('• Contains expletive ne');
       }
-      if (analysis.evidence.triggers?.medium > 0) {
-        output.push('• Found medium expletive trigger(s)');
-      }
-      if (analysis.evidence.hasSubjunctive) {
-        output.push('• Contains subjunctive mood');
-      }
-      output.push('• No logical markers detected');
       break;
 
     case 'LIKELY_EXPLETIVE':
@@ -42,6 +30,9 @@ export const formatRuleBasedResult = (analysis) => {
       }
       if (analysis.evidence.hasSubjunctive) {
         output.push('• Contains subjunctive mood');
+      }
+      if (analysis.evidence.hasExpletiveNe) {
+        output.push('• Contains expletive ne');
       }
       output.push('• No logical markers detected');
       break;
@@ -61,6 +52,9 @@ export const formatRuleBasedResult = (analysis) => {
       if (analysis.evidence.hasSubjunctive) {
         output.push('• Contains subjunctive mood');
       }
+      if (analysis.evidence.hasExpletiveNe) {
+        output.push('• Contains expletive ne');
+      }
       if (analysis.evidence.details) {
         output.push(`• ${analysis.evidence.details}`);
       }
@@ -74,6 +68,9 @@ export const formatRuleBasedResult = (analysis) => {
       }
       if (analysis.evidence.hasSubjunctive) {
         output.push('• Contains subjunctive mood');
+      }
+      if (analysis.evidence.hasExpletiveNe) {
+        output.push('• Contains expletive ne');
       }
       if (analysis.evidence.details) {
         output.push(`• ${analysis.evidence.details}`);
@@ -153,7 +150,7 @@ export const formatTrainingResult = (patternAnalysis, trainingAnalysis) => {
   
   // Pattern Analysis
   output.push('📊 PATTERN EVIDENCE:');
-  output.push(`• Base classification: ${patternAnalysis.type}`);
+  output.push(`• Prediction: ${patternAnalysis.type}`);
   output.push(`• Pattern confidence: ${Math.round(patternAnalysis.confidence * 100)}%\n`);
   
   // Training Data Analysis
