@@ -7,115 +7,231 @@ negation-analyzer/
 ├── src/
 │   ├── components/
 │   │   ├── SimpleNegationAnalyzer.jsx    # Main analysis component
-│   │   └── NegationAnalyzer.css          # Component styles
+│   │   ├── BatchAnalysis.jsx             # Batch processing component
+│   │   ├── AnalysisModes.jsx            # Mode selection components
+│   │   ├── TrainingDataSection.jsx      # Training data management
+│   │   └── NegationAnalyzer.css         # Component styles
 │   ├── utils/
-│   │   ├── patterns.js                   # Regex patterns and triggers
-│   │   ├── CamemBERTClassifier.js        # Deep learning classifier
-│   │   ├── ClassifierFactory.js          # Analysis mode factory
-│   │   └── AnalysisModes.js              # Mode definitions
+│   │   ├── NegationAnalyzer.js          # Core analysis logic
+│   │   ├── patterns.js                  # Regex patterns and triggers
+│   │   ├── classifiers.js               # Classification functions
+│   │   ├── textProcessing.js            # Text analysis utilities
+│   │   ├── resultFormatters.js          # Result formatting utilities
+│   │   ├── errorFormatter.js            # Error handling utilities
+│   │   └── trainingDataManager.js       # Training data utilities
 │   ├── config/
-│   │   └── featureFlags.js               # Feature flag configuration
-│   └── App.js                            # Root application component
+│   │   └── featureFlags.js              # Feature flag configuration
+│   └── App.js                           # Root application component
 ├── public/
-│   └── index.html                        # HTML template
-└── package.json                          # Dependencies and scripts
+│   └── index.html                       # HTML template
+└── package.json                         # Dependencies and scripts
 ```
 
 ## Key Components
 
 ### SimpleNegationAnalyzer.jsx
-Primary component handling negation analysis with the following key features:
+Primary component handling negation analysis with the following features:
 
 #### Analysis Modes
 1. **Rule-Based Analysis**
    - Pattern matching for expletive triggers
-   - CroissantLLM syntax validation
+   - Subjunctive mood detection
    - Confidence scoring system
+   - Evidence-based prediction
 
-2. **Training Data Analysis**
-   - Text similarity comparison
-   - Example-based classification
-   - Confidence calculation from matches
+2. **Hybrid Analysis**
+   - Pattern analysis + CroissantLLM
+   - Confidence blending
+   - LLM-based disambiguation
+   - Enhanced prediction accuracy
 
-3. **CamemBERT Analysis (Beta)**
-   - Deep learning model integration
-   - Neural classification with pattern validation
-   - Confidence scoring with evidence collection
+3. **Training Data Analysis**
+   - Example-based learning
+   - Similarity matching
+   - Statistics tracking
+   - Training-based predictions
 
 #### Core Functions
-- `classifyNegation()`: Main classification dispatcher
-- `classifyExpletive()`: Rule-based analysis
-- `classifyWithTraining()`: Training-based analysis
-- `determineClassification()`: Final classification logic
+```javascript
+// Main classification function
+const classifyNegation = async (text) => {
+  const analysis = await analyzer.analyzeNegation(text);
+  
+  switch (analysisMode) {
+    case 'RULE_BASED':
+      return formatRuleBasedResult(analysis);
+    case 'HYBRID':
+      const llmAnalysis = await classifyExpletive(text);
+      return formatHybridResult(analysis, llmAnalysis);
+    case 'TRAINING_DATA':
+      if (useTrainingEnhancement) {
+        const trainingAnalysis = classifyWithBinaryClassifier(text);
+        return formatTrainingResult(analysis, trainingAnalysis);
+      }
+      return formatRuleBasedResult(analysis);
+  }
+};
+```
 
-### CamemBERTClassifier.js
-Deep learning classifier implementation:
-- Hugging Face inference integration
-- Error handling and validation
-- Pattern-enhanced predictions
-- Confidence scoring system
+### BatchAnalysis.jsx
+Handles batch processing and export functionality:
 
-### ClassifierFactory.js
-Factory pattern for classifier instantiation:
-- Mode-based classifier selection
-- Initialization handling
-- Error management
-- Feature flag integration
+```javascript
+// Export functions
+const downloadBatchResults = (format) => {
+  switch (format) {
+    case 'excel':
+      downloadExcel(filename);
+      break;
+    case 'csv':
+      downloadCSV(filename);
+      break;
+    case 'json':
+      downloadJSON(filename);
+      break;
+  }
+};
+```
 
-### AnalysisModes.js
-Analysis mode configuration:
-- Mode definitions and descriptions
-- Feature flag integration
-- Available modes management
-- Mode-specific documentation
+### TrainingDataSection.jsx
+Manages training data functionality:
 
-### featureFlags.js
-Feature flag management:
-- CamemBERT feature flag
-- Environment variable integration
-- Flag validation
-- Default configurations
+```javascript
+// Training data validation
+const validateTrainingData = (data) => {
+  return data.every(item => (
+    item.text &&
+    typeof item.has_expletive_ne !== 'undefined' &&
+    item.trigger &&
+    item.classification
+  ));
+};
+```
+
+### AnalysisModes.jsx
+Handles mode selection and information display:
+
+```javascript
+// Mode selector component
+export const ModeSelector = ({ mode, setMode }) => (
+  <select value={mode} onChange={(e) => setMode(e.target.value)}>
+    <option value="RULE_BASED">Pattern-Based Analysis</option>
+    <option value="HYBRID">Hybrid Analysis</option>
+    <option value="TRAINING_DATA">Training Data Analysis</option>
+  </select>
+);
+```
+
+## Utility Functions
+
+### textProcessing.js
+Text analysis and prediction logic:
+
+```javascript
+// Prediction system
+export const determineClassification = (text, analysis) => {
+  // Check evidence strength
+  const hasStrongExpletive = analysis.includes('strong expletive trigger');
+  const hasLogicalMarkers = analysis.includes('logical marker');
+  const hasSubjunctive = analysis.includes('subjunctive mood');
+  
+  if (hasStrongExpletive && hasSubjunctive && !hasLogicalMarkers) {
+    return "Likely Expletive";
+  }
+  if (hasLogicalMarkers && !hasStrongExpletive) {
+    return "Likely Logical";
+  }
+  
+  return "Uncertain";
+};
+```
+
+### classifiers.js
+Classification functions:
+
+```javascript
+// CroissantLLM integration
+export const classifyExpletive = async (text) => {
+  const response = await fetch(
+    'https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud',
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.REACT_APP_HF_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        inputs: text,
+        parameters: {
+          max_new_tokens: 256,
+          temperature: 0.1
+        }
+      })
+    }
+  );
+  return response.json();
+};
+```
+
+### resultFormatters.js
+Result formatting utilities:
+
+```javascript
+// Format training data results
+export const formatTrainingResult = (analysis, trainingAnalysis) => {
+  return {
+    type: analysis.type,
+    confidence: analysis.confidence,
+    evidence: {
+      pattern: analysis.evidence,
+      training: trainingAnalysis.matches,
+      confidence: trainingAnalysis.confidence
+    }
+  };
+};
+```
 
 ## Implementation Details
 
 ### Analysis Pipeline
-1. Analysis mode selection
-2. Classifier instantiation via factory
-3. Text input processing
-4. Mode-specific analysis:
-   - Rule-based: Pattern matching and CroissantLLM validation
-   - Training: Example comparison and confidence scoring
-   - CamemBERT: Deep learning prediction with pattern validation
-5. Result formatting and display
+1. Text input processing
+2. Mode-specific analysis:
+   - Rule-based: Pattern matching
+   - Hybrid: Pattern + LLM
+   - Training: Example matching
+3. Evidence collection
+4. Prediction generation
+5. Result formatting
 
 ### Classification Logic
 ```javascript
 switch (analysisMode) {
   case 'RULE_BASED':
-    return await classifyExpletive(text);
+    return patternAnalysis(text);
+  case 'HYBRID':
+    return combineAnalysis(patternAnalysis(text), llmAnalysis(text));
   case 'TRAINING_DATA':
-    return await classifyWithTraining(text);
-  case 'CAMEMBERT':
-    return await classifyWithCamemBERT(text);
+    return trainingAnalysis(text, examples);
 }
 ```
 
 ### Confidence Scoring
 Each mode has its own confidence calculation:
 - Rule-based: Pattern strength and validation
+- Hybrid: Weighted combination of pattern and LLM
 - Training: Example similarity and count
-- CamemBERT: Model confidence with pattern validation
 
-### Result Formatting
+### Result Format
 ```javascript
 {
-  classification: "EXPLETIVE NEGATION",
+  classification: "EXPLETIVE",
   confidence: 0.85,
   evidence: [
-    "Model prediction: Expletive (85% confidence)",
-    "Pattern validation: expletive trigger found",
-    "Supporting evidence: subjunctive form"
-  ]
+    "Strong expletive trigger detected",
+    "Subjunctive mood present",
+    "No logical markers found"
+  ],
+  prediction: "Likely Expletive"
 }
 ```
 
@@ -123,13 +239,13 @@ Each mode has its own confidence calculation:
 
 ### Required Variables
 - REACT_APP_HF_TOKEN: Hugging Face API token
-- REACT_APP_ENABLE_CAMEMBERT: Feature flag for CamemBERT
+- NODE_ENV: Development/Production mode
 
 ### Error Handling
-- Token validation
-- Model availability checks
+- Input validation
 - API error management
-- User-friendly error messages
+- Training data validation
+- User-friendly messages
 
 ## Best Practices
 
@@ -146,21 +262,21 @@ Each mode has its own confidence calculation:
 - Recovery strategies
 
 ### Performance
-- Cached model initialization
-- Efficient batch processing
-- Resource management
+- Batch processing optimization
 - Progress tracking
+- Resource management
+- Error recovery
 
 ## Future Enhancements
 
 ### Planned Features
-- Model performance optimization
-- Additional language models
-- Enhanced pattern validation
+- Enhanced prediction accuracy
+- Additional pattern support
 - Improved confidence scoring
+- Extended documentation
 
 ### Maintenance
-- Regular model updates
+- Regular testing
 - Performance monitoring
 - Error tracking
 - Documentation updates
