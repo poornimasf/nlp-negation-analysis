@@ -25,8 +25,25 @@ export default function NegationAnalyzer() {
 
   // Constants
   const TRIGGERS = {
-    en: ["craindre", "avoir peur que", "peur que", "redouter", "avant que", "regretter"],
-    nonEn: ["commencer", "arrêter", "cesser", "décider", "oublier"],
+    // Fear expressions
+    fear: [
+      /\b(?:[Aa]voir\s+)?[Pp]eur\s+que?\b/,
+      /\b(?:[Cc]raindre|[Rr]edouter)\s+que?\b/,
+      /\b[Pp]ar\s+(?:[Pp]eur|[Cc]rainte)\s+que?\b/
+    ],
+    // Temporal expressions
+    temporal: [
+      /\b[Aa]vant\s+que?\b/,
+      /\b(?:[Jj]usqu['']à|[Ee]n\s+attendant)\s+que?\b/
+    ],
+    // Peu s'en faut expressions
+    peuSenFaut: [
+      /\b[Pp]eu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\b/,
+      /\bs['']en\s+(?:est|était|ait)\s+fallu\s+de\s+peu(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?\b/,
+      /\b[Pp]eu\s+s['']en\s+(?:est|était|ait)\s+fallu(?:\s+que?)?\b/,
+      /\b[Pp]eu\s+s['']en\s+fall(?:ut|ait)(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?\b/,
+      /\bs['']en\s+fall(?:ut|ait)(?:\s+de\s+peu)?(?:\s+que?)?\b/
+    ]
   };
 
   // Basic analysis functions
@@ -43,12 +60,19 @@ export default function NegationAnalyzer() {
 
   const highlight = (text) => {
     let output = text;
-    const triggerList = [...TRIGGERS.en, ...TRIGGERS.nonEn];
-    for (const trig of triggerList) {
-      const re = new RegExp(`(${trig})`, "gi");
-      output = output.replace(re, '<span class="highlight-yellow">$1</span>');
-    }
+    
+    // Highlight all trigger patterns
+    Object.values(TRIGGERS).forEach(patterns => {
+      patterns.forEach(pattern => {
+        output = output.replace(pattern, match => 
+          `<span class="highlight-yellow">${match}</span>`
+        );
+      });
+    });
+
+    // Highlight ne
     output = output.replace(/\b(ne)\b/gi, '<span class="highlight-green">$1</span>');
+    
     return output;
   };
 
