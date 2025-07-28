@@ -74,30 +74,27 @@ class CroissantLLMService {
         try {
             console.log('Analyzing syntax:', text);
             
-            const prompt = `Analyze this French sentence where a 'ne' has been removed. Determine if the missing 'ne' was expletive or logical based on the full context:
+            const prompt = `Analyze this French sentence where a 'ne' has been removed, using both linguistic rules and world knowledge:
 
 '${text}'
 
-Important: Common patterns like 'peur que', 'avant que', and 'peu s'en faut' can be used with either expletive or logical negation.
-
-Consider these aspects:
-1. Full sentence context and meaning
-2. Presence of other negation elements
-3. Verb mood and tense
-4. Overall sentence structure
-5. Semantic intent
+Consider the FULL context:
+1. Semantic meaning and real-world implications
+2. Common usage patterns in French
+3. Speaker's likely intent
+4. Real-world situations where this would be used
+5. Cultural and pragmatic context
 
 For example:
-- "J'ai peur qu'il ne vienne" (expletive - fear about coming)
-- "J'ai peur qu'il ne vienne pas" (logical - fear about not coming)
-- "Avant qu'il ne parte" (expletive - before leaving)
-- "Avant qu'il ne parte pas" (logical - before not leaving)
+- "J'ai peur qu'il ne pleuve" - Consider: Is rain likely? Is this about preventing rain (logical) or expressing worry about rain (expletive)?
+- "Avant qu'il ne parte" - Consider: Is this about preventing departure (logical) or timing before departure (expletive)?
+- "Je crains qu'il ne soit malade" - Consider: Is this about preventing illness (logical) or expressing worry about possible illness (expletive)?
 
 Format de réponse souhaité:
 1. Type de négation (expletive/logique)
 2. Confiance (0-1)
-3. Justification syntaxique
-4. Indices linguistiques`;
+3. Justification syntaxique et sémantique
+4. Indices linguistiques et contextuels`;
 
             const response = await this._retryOperation(() => this.makeRequest(prompt));
             console.log('Analysis response:', response);
@@ -113,25 +110,29 @@ Format de réponse souhaité:
         try {
             console.log('Validating pattern:', { text, pattern });
             
-            const prompt = `Analyze this French sentence where a 'ne' has been removed. The pattern '${pattern}' needs careful analysis:
+            const prompt = `Analyze this French sentence using both linguistic patterns and world knowledge:
 
 '${text}'
 
-Important: Patterns like 'peur que', 'avant que', and 'peu s'en faut' can indicate either:
-1. Expletive negation (without other negation elements)
-2. Logical negation (when combined with pas, point, jamais, etc.)
+Pattern found: '${pattern}'
 
-Consider:
-1. Is there a complete negation structure?
-2. What is the semantic intent?
-3. Are there additional negation markers?
-4. What is the verb mood and context?
+Consider the FULL context:
+1. Semantic meaning in real-world situations
+2. Common usage in French discourse
+3. Pragmatic implications
+4. Cultural context
+5. Speaker's likely intent
+
+Examples to consider:
+- With "peur que": Is this about preventing something (logical) or expressing anxiety (expletive)?
+- With "avant que": Is this about timing (expletive) or preventing an action (logical)?
+- With "craindre que": What's the real-world situation being described?
 
 Format de réponse souhaité:
 1. Motif expletif (oui/non)
 2. Validité syntaxique (0-1)
-3. Justification
-4. Mode verbal attendu`;
+3. Justification linguistique et pragmatique
+4. Mode verbal et contexte d'usage`;
 
             const response = await this._retryOperation(() => this.makeRequest(prompt));
             console.log('Validation response:', response);
@@ -147,7 +148,7 @@ Format de réponse souhaité:
         try {
             console.log('Enhancing confidence:', { text, initialConfidence, evidence });
             
-            const prompt = `Analyze this French sentence where a 'ne' has been removed. Consider the full context:
+            const prompt = `Analyze this French sentence using both linguistic patterns and real-world knowledge:
 
 '${text}'
 
@@ -155,18 +156,22 @@ Current analysis:
 - Score initial: ${initialConfidence}
 - Evidence actuelle: ${evidence}
 
-Important: Common patterns can be used with either type of negation.
-Consider:
-1. Complete negation structure
-2. Semantic meaning
-3. Additional context clues
-4. Verb mood and tense
-5. Overall sentence intent
+Consider the FULL context:
+1. Real-world implications of the sentence
+2. Common usage patterns in French
+3. Cultural and pragmatic context
+4. Speaker's likely intent
+5. Typical situations where this would be used
+
+For example:
+- With weather: "Je crains qu'il ne pleuve" - Is this about preventing rain (unlikely in real world) or expressing worry?
+- With time: "Avant qu'il ne soit trop tard" - Is this about preventing lateness or expressing timing?
+- With health: "J'ai peur qu'il ne soit malade" - Is this about preventing illness or expressing concern?
 
 Format de réponse souhaité:
 1. Score ajusté (0-1)
-2. Justification
-3. Facteurs décisifs`;
+2. Justification sémantique et pragmatique
+3. Facteurs contextuels décisifs`;
 
             const response = await this._retryOperation(() => this.makeRequest(prompt));
             console.log('Confidence enhancement response:', response);
