@@ -1177,31 +1177,59 @@ export default function SimpleNegationAnalyzer() {
 
     // Handle CamemBERT results
     if (analysisMode === 'CAMEMBERT') {
+      console.log('Processing CamemBERT mode');
       if (analysis.includes('EXPLETIVE NEGATION')) {
+        console.log('CamemBERT indicates EXPLETIVE');
         return 'Expletive';
       }
       if (analysis.includes('LOGICAL NEGATION')) {
+        console.log('CamemBERT indicates LOGICAL');
         return 'Logical';
       }
+      console.log('CamemBERT result UNCERTAIN');
       return 'Uncertain';
     }
 
     // Handle Rule-based (CroissantLLM) results
     if (analysisMode === 'RULE_BASED') {
+      console.log('Processing Rule-based mode');
+      
       // Check for expletive indicators in the full analysis
-      if (analysis.includes('✅ EXPLETIVE NEGATION') || 
-          analysis.includes('LIKELY EXPLETIVE NEGATION') ||
-          analysis.includes('expletive negation detected') ||
-          analysis.includes('Removed \'ne\' was likely expletive')) {
+      const expletiveIndicators = [
+        '✅ EXPLETIVE NEGATION',
+        'LIKELY EXPLETIVE NEGATION',
+        'expletive negation detected',
+        'Removed \'ne\' was likely expletive'
+      ];
+      
+      const logicalIndicators = [
+        '✅ LOGICAL NEGATION',
+        'LIKELY LOGICAL NEGATION',
+        'logical negation detected',
+        'Removed \'ne\' was likely logical'
+      ];
+      
+      // Log what we find
+      expletiveIndicators.forEach(indicator => {
+        if (analysis.includes(indicator)) {
+          console.log(`Found expletive indicator: "${indicator}"`);
+        }
+      });
+      
+      logicalIndicators.forEach(indicator => {
+        if (analysis.includes(indicator)) {
+          console.log(`Found logical indicator: "${indicator}"`);
+        }
+      });
+      
+      // Check for expletive first
+      if (expletiveIndicators.some(indicator => analysis.includes(indicator))) {
         console.log('Rule-based analysis indicates EXPLETIVE');
         return "Expletive";
       }
       
-      // Check for logical indicators in the full analysis
-      if (analysis.includes('✅ LOGICAL NEGATION') ||
-          analysis.includes('LIKELY LOGICAL NEGATION') ||
-          analysis.includes('logical negation detected') ||
-          analysis.includes('Removed \'ne\' was likely logical')) {
+      // Then check for logical
+      if (logicalIndicators.some(indicator => analysis.includes(indicator))) {
         console.log('Rule-based analysis indicates LOGICAL');
         return "Logical";
       }
@@ -1209,11 +1237,14 @@ export default function SimpleNegationAnalyzer() {
 
     // Handle Training Data results
     if (analysisMode === 'TRAINING_DATA') {
+      console.log('Processing Training Data mode');
       if (analysis.includes('🎯 BINARY CLASSIFIER') || analysis.includes('🤖 PURE TRAINING')) {
         if (analysis.toLowerCase().includes('expletive')) {
+          console.log('Training data indicates EXPLETIVE');
           return useTrainingEnhancement ? "Expletive (ML)" : "Expletive";
         }
         if (analysis.toLowerCase().includes('logical')) {
+          console.log('Training data indicates LOGICAL');
           return useTrainingEnhancement ? "Logical (ML)" : "Logical";
         }
       }
@@ -1221,6 +1252,7 @@ export default function SimpleNegationAnalyzer() {
 
     // Handle no negation case
     if (analysis.includes('No negation markers found')) {
+      console.log('No negation markers found');
       return "No Negation";
     }
 
@@ -1228,6 +1260,7 @@ export default function SimpleNegationAnalyzer() {
     const confidenceMatch = analysis.match(/confidence:\s*(\d+)%/i);
     if (confidenceMatch) {
       const confidence = parseInt(confidenceMatch[1]);
+      console.log(`Found confidence score: ${confidence}%`);
       if (confidence > 50) {
         if (analysis.toLowerCase().includes('expletive')) {
           console.log('High confidence EXPLETIVE classification');
