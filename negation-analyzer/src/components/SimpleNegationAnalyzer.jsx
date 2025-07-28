@@ -1,4 +1,4 @@
-import BalancedNegationClassifier from "../utils/BalancedNegationClassifier";
+/* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 import * as XLSX from 'xlsx';
