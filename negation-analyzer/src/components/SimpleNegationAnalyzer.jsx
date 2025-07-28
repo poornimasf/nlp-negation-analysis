@@ -1,265 +1,216 @@
-import React, { useState } from 'react';
-import './NegationAnalyzer.css';
-import * as XLSX from 'xlsx';
-import NegationAnalyzer from '../utils/NegationAnalyzer';
-import { formatErrorMessage } from '../utils/errorFormatter';
-import { formatRuleBasedResult, formatHybridResult, formatTrainingResult } from '../utils/resultFormatters';
-import { highlight, determineClassification } from '../utils/textProcessing';
-
-export default function SimpleNegationAnalyzer() {
-  // State definitions
-  const [batchInput, setBatchInput] = useState("");
-  const [batchResults, setBatchResults] = useState([]);
-  const [batchLoading, setBatchLoading] = useState(false);
-  const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
-  const [analysisMode, setAnalysisMode] = useState('RULE_BASED');
-  const [useTrainingEnhancement, setUseTrainingEnhancement] = useState(false);
-  const [infoBoxExpanded, setInfoBoxExpanded] = useState(false);
-  const [trainingData, setTrainingData] = useState([]);
-  const [error, setError] = useState(null);
-
-  // CroissantLLM classification for Hybrid mode
-  const classifyExpletive = async (text) => {
-    try {
-      if (!text) {
-        throw new Error('No text provided');
-      }
-
-      if (!process.env.REACT_APP_HF_TOKEN) {
-        throw new Error('Missing HF_TOKEN');
-      }
-
-      const response = await fetch(
-        'https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.REACT_APP_HF_TOKEN}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            inputs: `Analyze this French sentence where a ne has been removed. Consider both possibilities equally: ${text}`,
-            parameters: {
-              max_new_tokens: 256,
-              temperature: 0.1,
-              top_p: 0.95,
-              return_full_text: false
-            }
-          })
-        }
-      );
-
-      if (!response.ok) {
-        if (response.status === 429) {
-          throw new Error('429: Rate limit exceeded');
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      return result.generated_text || 'No analysis available';
-    } catch (error) {
-      console.error('CroissantLLM Error:', error);
-      throw error; // Let the main error handler deal with it
-    }
-  };
-
-  // Binary classifier for Training Data mode
-  const classifyWithBinaryClassifier = (text) => {
-    try {
-      if (!text) {
-        throw new Error('No text provided');
-      }
-
-      if (!trainingData.length) {
-        throw new Error('No training data available');
-      }
-
-      // Find similar examples
-      const similarExamples = trainingData.filter(example => {
-        const similarity = calculateSimilarity(text.toLowerCase(), example.text.toLowerCase());
-        return similarity > 0.7; // Threshold for similarity
-      });
-
-      if (similarExamples.length === 0) {
-        return {
-          matches: [],
-          confidence: 0.5,
-          classification: 'UNCERTAIN'
-        };
-      }
-
-      // Count classifications
-      const counts = similarExamples.reduce((acc, example) => {
-        acc[example.classification] = (acc[example.classification] || 0) + 1;
-        return acc;
-      }, {});
-
-      // Calculate confidence
-      const total = similarExamples.length;
-      const maxCount = Math.max(...Object.values(counts));
-      const confidence = maxCount / total;
-
-      // Get majority classification
-      const classification = Object.entries(counts).reduce((a, b) => 
-        counts[a] > counts[b] ? a : b
-      )[0];
-
-      return {
-        matches: similarExamples.slice(0, 5), // Return top 5 matches
-        confidence,
-        classification
-      };
-    } catch (error) {
-      console.error('Training Data Error:', error);
-      throw error; // Let the main error handler deal with it
-    }
-  };
-
-  // Calculate text similarity for training data matching
-  const calculateSimilarity = (text1, text2) => {
-    try {
-      const words1 = text1.split(/\s+/);
-      const words2 = text2.split(/\s+/);
-      
-      const intersection = words1.filter(word => words2.includes(word));
-      const union = [...new Set([...words1, ...words2])];
-      
-      return intersection.length / union.length;
-    } catch (error) {
-      console.error('Similarity Calculation Error:', error);
-      throw error;
-    }
-  };
-
-  // Main classification function
-  const classifyNegation = async (text) => {
-    try {
-      if (!text) {
-        throw new Error('No text provided');
-      }
-
-      if (!analysisMode) {
-        throw new Error('Invalid mode: No analysis mode selected');
-      }
-
-      // Get base pattern analysis
-      const analyzer = new NegationAnalyzer();
-      const baseAnalysis = await analyzer.analyzeNegation(text);
-
-      switch (analysisMode) {
-        case 'RULE_BASED':
-          return formatRuleBasedResult(baseAnalysis);
+  {/* Training Data Management Section */}
+      {analysisMode === 'TRAINING_DATA' && (
+        <div className="card">
+          <h3 className="title">📚 User Training Data Management</h3>
+          <div style={{
+            backgroundColor: '#e8f5e8',
+            border: '1px solid #c3e6cb',
+            borderRadius: '6px',
+            padding: '12px',
+            marginBottom: '15px',
+            fontSize: '14px'
+          }}>
+            <strong>🎯 Complete User Control:</strong> Upload your own training examples to enhance analysis accuracy. 
+            The system uses ONLY your uploaded data - no hidden datasets or external training sources.
+          </div>
           
-        case 'HYBRID': {
-          const llmAnalysis = await classifyExpletive(text);
-          return formatHybridResult(baseAnalysis, llmAnalysis);
-        }
-        
-        case 'TRAINING_DATA':
-          if (useTrainingEnhancement && trainingData.length > 0) {
-            const trainingAnalysis = await classifyWithBinaryClassifier(text);
-            return formatTrainingResult(baseAnalysis, trainingAnalysis);
-          }
-          return formatRuleBasedResult(baseAnalysis);
-          
-        default:
-          throw new Error('Invalid mode: Unsupported analysis mode');
-      }
-    } catch (error) {
-      console.error('Error during classification:', error);
-      throw error;
+          <div style={{ 
+            backgroundColor: '#e8f5e8', 
+            border: '1px solid #4caf50',
+            borderRadius: '8px', 
+            marginBottom: '20px',
+            overflow: 'hidden'
+          }}>
+            <div 
+              onClick={() => setInfoBoxExpanded(!infoBoxExpanded)}
+              style={{
+                padding: '12px 15px',
+                cursor: 'pointer',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                backgroundColor: '#e8f5e8',
+                borderBottom: infoBoxExpanded ? '1px solid #4caf50' : 'none'
+              }}
+            >
+              <h4 style={{ margin: 0, fontSize: '14px' }}>📋 Expected File Format (JSON)</h4>
+              <span style={{ fontSize: '12px', color: '#2e7d32' }}>
+                {infoBoxExpanded ? '▼ Hide Format' : '▶ Show Format'}
+              </span>
+            </div>
+            {infoBoxExpanded && (
+              <div style={{ padding: '15px' }}>
+                <p><strong>Required fields:</strong> text, has_expletive_ne, trigger, classification</p>
+                <p><strong>Example JSON:</strong></p>
+                <pre style={{ fontSize: '12px', backgroundColor: 'white', padding: '10px', borderRadius: '4px' }}>
+{`{
+  "examples": [
+    {
+      "text": "J'ai peur qu'il vienne",
+      "has_expletive_ne": true,
+      "trigger": "peur que",
+      "classification": "expletive"
+    },
+    {
+      "text": "Avant qu'elle parte",
+      "has_expletive_ne": true,
+      "trigger": "avant que",
+      "classification": "expletive"
     }
-  };
+  ]
+}`}
+                </pre>
+              </div>
+            )}
+          </div>
 
-  // Batch analysis handler
-  const handleBatchAnalyze = async () => {
-    if (!batchInput.trim()) {
-      setError(formatErrorMessage(new Error('No text provided')));
-      return;
-    }
+          <div className="form-group">
+            <label htmlFor="training-file-upload">Upload Training Data:</label>
+            <div className="input-group">
+              <input
+                id="training-file-upload"
+                type="file"
+                accept=".json"
+                onChange={handleFileUpload}
+                className="input"
+              />
+              {trainingData.length > 0 && (
+                <button onClick={clearTrainingData} className="button" style={{ backgroundColor: '#dc3545' }}>
+                  Clear Data
+                </button>
+              )}
+            </div>
+            {uploadError && (
+              <p style={{ color: '#dc3545', marginTop: '10px' }}>{uploadError}</p>
+            )}
 
-    setBatchLoading(true);
-    setError(null);
-    const sentences = batchInput.split("\n").filter(line => line.trim());
-    setBatchProgress({ current: 0, total: sentences.length });
-    const results = [];
-    
-    try {
-      for (let index = 0; index < sentences.length; index++) {
-        setBatchProgress({ current: index + 1, total: sentences.length });
-        const sentence = sentences[index].trim();
-        
-        try {
-          if (index > 0) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
+            {/* Training Data Preview */}
+            {trainingData.length > 0 && (
+              <div style={{ 
+                marginTop: '20px',
+                backgroundColor: '#f8f9fa',
+                border: '1px solid #dee2e6',
+                borderRadius: '8px',
+                padding: '15px'
+              }}>
+                <h4 style={{ marginBottom: '15px', color: '#495057' }}>
+                  🔍 Training Data Preview
+                </h4>
+                <div style={{ 
+                  maxHeight: '300px', 
+                  overflowY: 'auto',
+                  backgroundColor: 'white',
+                  border: '1px solid #e9ecef',
+                  borderRadius: '4px'
+                }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ 
+                        backgroundColor: '#e9ecef',
+                        position: 'sticky',
+                        top: 0
+                      }}>
+                        <th style={{ padding: '8px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>Text</th>
+                        <th style={{ padding: '8px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>Trigger</th>
+                        <th style={{ padding: '8px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>Type</th>
+                        <th style={{ padding: '8px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>Valid</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {trainingData.slice(0, 10).map((item, index) => {
+                        // Validate trigger type
+                        const isValidTrigger = item.trigger && (
+                          ["peur que", "avant que", "peu s'en faut"].includes(item.trigger.toLowerCase()) || 
+                          ['craindre', 'redouter', 'douter', 'éviter', 'empêcher'].includes(item.trigger.toLowerCase())
+                        );
+                        
+                        // Check for proper structure
+                        const hasValidStructure = item.text && 
+                          typeof item.has_expletive_ne !== 'undefined' &&
+                          item.trigger &&
+                          item.classification;
 
-          const analysis = await classifyNegation(sentence);
-          results.push({
-            id: index + 1,
-            text: sentence,
-            highlightedText: highlight(sentence),
-            label: analysis,
-            classification: await determineClassification(sentence)
-          });
+                        return (
+                          <tr key={index} style={{ 
+                            borderBottom: '1px solid #dee2e6',
+                            backgroundColor: index % 2 === 0 ? 'white' : '#f8f9fa'
+                          }}>
+                            <td style={{ padding: '8px', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {item.text}
+                            </td>
+                            <td style={{ padding: '8px', textAlign: 'center' }}>
+                              <span style={{
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                fontSize: '0.9em',
+                                backgroundColor: isValidTrigger ? '#e8f5e9' : '#ffebee',
+                                color: isValidTrigger ? '#2e7d32' : '#c62828',
+                                border: `1px solid ${isValidTrigger ? '#c8e6c9' : '#ffcdd2'}`
+                              }}>
+                                {item.trigger}
+                              </span>
+                            </td>
+                            <td style={{ padding: '8px', textAlign: 'center' }}>
+                              <span style={{
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                fontSize: '0.9em',
+                                backgroundColor: item.has_expletive_ne ? '#e3f2fd' : '#fff3e0',
+                                color: item.has_expletive_ne ? '#1565c0' : '#ef6c00',
+                                border: `1px solid ${item.has_expletive_ne ? '#bbdefb' : '#ffe0b2'}`
+                              }}>
+                                {item.has_expletive_ne ? 'Expletive' : 'Logical'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '8px', textAlign: 'center' }}>
+                              {hasValidStructure ? (
+                                <span style={{ color: '#2e7d32' }}>✓</span>
+                              ) : (
+                                <span style={{ color: '#c62828' }}>✗</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                {trainingData.length > 10 && (
+                  <div style={{ 
+                    marginTop: '10px', 
+                    textAlign: 'center',
+                    color: '#666',
+                    fontSize: '0.9em'
+                  }}>
+                    Showing first 10 of {trainingData.length} examples
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
-          setBatchResults([...results]);
-        } catch (error) {
-          console.error(`Error processing sentence ${index + 1}:`, error);
-          results.push({
-            id: index + 1,
-            text: sentence,
-            highlightedText: sentence,
-            label: formatErrorMessage(error),
-            classification: "Error"
-          });
-          setBatchResults([...results]);
-        }
-      }
-    } catch (error) {
-      console.error('Batch analysis failed:', error);
-      setError(formatErrorMessage(error));
-    } finally {
-      setBatchLoading(false);
-      setBatchProgress({ current: 0, total: 0 });
-    }
-  };
-
-  // Rest of your component code...
-  return (
-    <div className="container">
-      {error && (
-        <div className="error-message" style={{
-          backgroundColor: '#ffebee',
-          border: '1px solid #ef5350',
-          borderRadius: '4px',
-          padding: '15px',
-          margin: '10px 0',
-          position: 'relative'
-        }}>
-          <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{error}</pre>
-          <button 
-            onClick={() => setError(null)}
-            style={{
-              position: 'absolute',
-              top: '10px',
-              right: '10px',
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '20px',
-              color: '#ef5350'
-            }}
-          >
-            ×
-          </button>
+          {/* Training Data Statistics */}
+          {trainingData.length > 0 && (
+            <div style={{ 
+              backgroundColor: '#e8f5e8', 
+              padding: '15px', 
+              borderRadius: '8px', 
+              border: '1px solid #4caf50'
+            }}>
+              <h4>📊 Training Data Statistics:</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                <div>
+                  <strong>Total Examples:</strong> {trainingData.length}<br/>
+                  <strong>Expletive Examples:</strong> {trainingData.filter(d => d.has_expletive_ne).length}<br/>
+                  <strong>Logical Examples:</strong> {trainingData.filter(d => !d.has_expletive_ne).length}
+                </div>
+                <div>
+                  <strong>"Peur que" Examples:</strong> {trainingData.filter(d => d.trigger?.toLowerCase().includes('peur')).length}<br/>
+                  <strong>"Avant que" Examples:</strong> {trainingData.filter(d => d.trigger?.toLowerCase().includes('avant')).length}<br/>
+                  <strong>"Peu s'en faut" Examples:</strong> {trainingData.filter(d => d.trigger?.toLowerCase().includes('peu s\'en')).length}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
-
-      <div className="card" style={{ marginTop: '20px' }}>
-        {/* Rest of your UI code... */}
-      </div>
-    </div>
-  );
-}
