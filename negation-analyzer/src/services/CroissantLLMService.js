@@ -74,8 +74,15 @@ class CroissantLLMService {
         try {
             console.log('Analyzing syntax:', text);
             
-            const prompt = `Cette phrase avait un 'ne' qui a été supprimé. Analyse la structure syntaxique et détermine si ce 'ne' manquant était une négation expletive ou logique:
+            const prompt = `Analyze this French sentence where a 'ne' has been removed. Determine if the missing 'ne' was an expletive or logical negation. Consider both possibilities equally:
+
 '${text}'
+
+Consider these aspects:
+1. Expletive triggers (peur que, avant que, peu s'en faut)
+2. Logical negation markers (pas, point, jamais, etc.)
+3. Verb mood (especially subjunctive)
+4. Sentence structure and context
 
 Format de réponse souhaité:
 1. Type de négation (expletive/logique)
@@ -97,10 +104,13 @@ Format de réponse souhaité:
         try {
             console.log('Validating pattern:', { text, pattern });
             
-            const prompt = `Cette phrase avait un 'ne' supprimé. Vérifie si le motif '${pattern}' indique une négation expletive:
+            const prompt = `Analyze this French sentence where a 'ne' has been removed. Check if the pattern '${pattern}' suggests expletive or logical negation:
+
 '${text}'
 
-Contexte: Un 'ne' manque dans cette phrase. Le motif '${pattern}' suggère-t-il que ce 'ne' était expletif?
+Consider both possibilities:
+1. Could this be an expletive negation trigger?
+2. Could this be part of a logical negation construction?
 
 Format de réponse souhaité:
 1. Motif expletif (oui/non)
@@ -122,11 +132,18 @@ Format de réponse souhaité:
         try {
             console.log('Enhancing confidence:', { text, initialConfidence, evidence });
             
-            const prompt = `Cette phrase avait un 'ne' supprimé. Analyse et ajuste le score de confiance pour prédire si ce 'ne' était expletif:
+            const prompt = `Analyze this French sentence where a 'ne' has been removed. Consider both expletive and logical negation possibilities:
+
 '${text}'
 
-Score initial: ${initialConfidence}
-Evidence actuelle: ${evidence}
+Current analysis:
+- Score initial: ${initialConfidence}
+- Evidence actuelle: ${evidence}
+
+Consider:
+1. Are there clear expletive triggers?
+2. Are there clear logical negation markers?
+3. Is the context ambiguous?
 
 Format de réponse souhaité:
 1. Score ajusté (0-1)
@@ -173,9 +190,19 @@ Format de réponse souhaité:
             const justification = lines.find(l => l.includes('Justification'))?.split(':')?.[1]?.trim();
             const indices = lines.find(l => l.includes('Indices'))?.split(':')?.[1]?.trim();
 
+            // Start with neutral confidence if none provided
+            let adjustedConfidence = confidence || 0.5;
+
+            // Ensure confidence is balanced
+            if (adjustedConfidence > 0.8) {
+                adjustedConfidence = 0.8; // Cap maximum confidence
+            } else if (adjustedConfidence < 0.2) {
+                adjustedConfidence = 0.2; // Set minimum confidence
+            }
+
             const result = {
                 isExpletive,
-                confidence,
+                confidence: adjustedConfidence,
                 justification,
                 indices,
                 rawResponse: text
@@ -202,9 +229,17 @@ Format de réponse souhaité:
             const justification = lines.find(l => l.includes('Justification'))?.split(':')?.[1]?.trim();
             const mood = lines.find(l => l.includes('Mode'))?.split(':')?.[1]?.trim();
 
+            // Ensure validity score is balanced
+            let adjustedValidity = validity;
+            if (adjustedValidity > 0.8) {
+                adjustedValidity = 0.8; // Cap maximum validity
+            } else if (adjustedValidity < 0.2) {
+                adjustedValidity = 0.2; // Set minimum validity
+            }
+
             const result = {
                 isExpletive,
-                validity,
+                validity: adjustedValidity,
                 justification,
                 expectedMood: mood,
                 rawResponse: text
@@ -229,8 +264,16 @@ Format de réponse souhaité:
             const justification = lines.find(l => l.includes('Justification'))?.split(':')?.[1]?.trim();
             const factors = lines.find(l => l.includes('Facteurs'))?.split(':')?.[1]?.trim();
 
+            // Ensure confidence score is balanced
+            let balancedScore = adjustedScore;
+            if (balancedScore > 0.8) {
+                balancedScore = 0.8; // Cap maximum confidence
+            } else if (balancedScore < 0.2) {
+                balancedScore = 0.2; // Set minimum confidence
+            }
+
             const result = {
-                adjustedScore,
+                adjustedScore: balancedScore,
                 justification,
                 decisiveFactors: factors,
                 rawResponse: text
