@@ -74,15 +74,24 @@ class CroissantLLMService {
         try {
             console.log('Analyzing syntax:', text);
             
-            const prompt = `Analyze this French sentence where a 'ne' has been removed. Determine if the missing 'ne' was an expletive or logical negation. Consider both possibilities equally:
+            const prompt = `Analyze this French sentence where a 'ne' has been removed. Determine if the missing 'ne' was expletive or logical based on the full context:
 
 '${text}'
 
+Important: Common patterns like 'peur que', 'avant que', and 'peu s'en faut' can be used with either expletive or logical negation.
+
 Consider these aspects:
-1. Expletive triggers (peur que, avant que, peu s'en faut)
-2. Logical negation markers (pas, point, jamais, etc.)
-3. Verb mood (especially subjunctive)
-4. Sentence structure and context
+1. Full sentence context and meaning
+2. Presence of other negation elements
+3. Verb mood and tense
+4. Overall sentence structure
+5. Semantic intent
+
+For example:
+- "J'ai peur qu'il ne vienne" (expletive - fear about coming)
+- "J'ai peur qu'il ne vienne pas" (logical - fear about not coming)
+- "Avant qu'il ne parte" (expletive - before leaving)
+- "Avant qu'il ne parte pas" (logical - before not leaving)
 
 Format de réponse souhaité:
 1. Type de négation (expletive/logique)
@@ -104,13 +113,19 @@ Format de réponse souhaité:
         try {
             console.log('Validating pattern:', { text, pattern });
             
-            const prompt = `Analyze this French sentence where a 'ne' has been removed. Check if the pattern '${pattern}' suggests expletive or logical negation:
+            const prompt = `Analyze this French sentence where a 'ne' has been removed. The pattern '${pattern}' needs careful analysis:
 
 '${text}'
 
-Consider both possibilities:
-1. Could this be an expletive negation trigger?
-2. Could this be part of a logical negation construction?
+Important: Patterns like 'peur que', 'avant que', and 'peu s'en faut' can indicate either:
+1. Expletive negation (without other negation elements)
+2. Logical negation (when combined with pas, point, jamais, etc.)
+
+Consider:
+1. Is there a complete negation structure?
+2. What is the semantic intent?
+3. Are there additional negation markers?
+4. What is the verb mood and context?
 
 Format de réponse souhaité:
 1. Motif expletif (oui/non)
@@ -132,7 +147,7 @@ Format de réponse souhaité:
         try {
             console.log('Enhancing confidence:', { text, initialConfidence, evidence });
             
-            const prompt = `Analyze this French sentence where a 'ne' has been removed. Consider both expletive and logical negation possibilities:
+            const prompt = `Analyze this French sentence where a 'ne' has been removed. Consider the full context:
 
 '${text}'
 
@@ -140,10 +155,13 @@ Current analysis:
 - Score initial: ${initialConfidence}
 - Evidence actuelle: ${evidence}
 
+Important: Common patterns can be used with either type of negation.
 Consider:
-1. Are there clear expletive triggers?
-2. Are there clear logical negation markers?
-3. Is the context ambiguous?
+1. Complete negation structure
+2. Semantic meaning
+3. Additional context clues
+4. Verb mood and tense
+5. Overall sentence intent
 
 Format de réponse souhaité:
 1. Score ajusté (0-1)
@@ -190,14 +208,17 @@ Format de réponse souhaité:
             const justification = lines.find(l => l.includes('Justification'))?.split(':')?.[1]?.trim();
             const indices = lines.find(l => l.includes('Indices'))?.split(':')?.[1]?.trim();
 
-            // Start with neutral confidence if none provided
+            // Start with moderate confidence for ambiguous patterns
             let adjustedConfidence = confidence || 0.5;
 
-            // Ensure confidence is balanced
-            if (adjustedConfidence > 0.8) {
-                adjustedConfidence = 0.8; // Cap maximum confidence
-            } else if (adjustedConfidence < 0.2) {
-                adjustedConfidence = 0.2; // Set minimum confidence
+            // Lower confidence for ambiguous cases
+            if (text.toLowerCase().includes('peur que') || 
+                text.toLowerCase().includes('avant que') || 
+                text.toLowerCase().includes('peu s\'en faut')) {
+                // Only high confidence if there are clear additional indicators
+                if (adjustedConfidence > 0.7) {
+                    adjustedConfidence = 0.7;
+                }
             }
 
             const result = {
@@ -229,12 +250,15 @@ Format de réponse souhaité:
             const justification = lines.find(l => l.includes('Justification'))?.split(':')?.[1]?.trim();
             const mood = lines.find(l => l.includes('Mode'))?.split(':')?.[1]?.trim();
 
-            // Ensure validity score is balanced
+            // Adjust validity for ambiguous patterns
             let adjustedValidity = validity;
-            if (adjustedValidity > 0.8) {
-                adjustedValidity = 0.8; // Cap maximum validity
-            } else if (adjustedValidity < 0.2) {
-                adjustedValidity = 0.2; // Set minimum validity
+            if (text.toLowerCase().includes('peur que') || 
+                text.toLowerCase().includes('avant que') || 
+                text.toLowerCase().includes('peu s\'en faut')) {
+                // Lower validity unless there are clear additional indicators
+                if (adjustedValidity > 0.7) {
+                    adjustedValidity = 0.7;
+                }
             }
 
             const result = {
@@ -264,12 +288,15 @@ Format de réponse souhaité:
             const justification = lines.find(l => l.includes('Justification'))?.split(':')?.[1]?.trim();
             const factors = lines.find(l => l.includes('Facteurs'))?.split(':')?.[1]?.trim();
 
-            // Ensure confidence score is balanced
+            // Adjust confidence for ambiguous patterns
             let balancedScore = adjustedScore;
-            if (balancedScore > 0.8) {
-                balancedScore = 0.8; // Cap maximum confidence
-            } else if (balancedScore < 0.2) {
-                balancedScore = 0.2; // Set minimum confidence
+            if (text.toLowerCase().includes('peur que') || 
+                text.toLowerCase().includes('avant que') || 
+                text.toLowerCase().includes('peu s\'en faut')) {
+                // Lower confidence unless there are clear additional indicators
+                if (balancedScore > 0.7) {
+                    balancedScore = 0.7;
+                }
             }
 
             const result = {
