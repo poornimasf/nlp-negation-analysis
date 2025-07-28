@@ -15,7 +15,9 @@ class NegationAnalyzer {
         // Temporal expressions with precision
         /\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e']/i,
         // Peu s'en faut with impersonal construction
-        /\bil\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+(?:de\s+)?peu\s+qu[e']/i
+        /\bil\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+(?:de\s+)?peu\s+qu[e']/i,
+        // Strong fear verbs
+        /\b(?:je|tu|il|elle|on)\s+crains?\s+qu[e']/i
       ],
       MEDIUM: [
         // Basic fear expressions
@@ -23,24 +25,44 @@ class NegationAnalyzer {
         // Basic temporal expressions
         /\bavant\s+qu[e']/i,
         // Basic peu s'en faut
-        /\bpeu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+qu[e']/i
+        /\bpeu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+qu[e']/i,
+        // Medium strength verbs
+        /\b(?:craindre|craignons|craignez|craignent)\s+qu[e']/i
       ],
       WEAK: [
-        // Other potential triggers with accents
-        /\b(?:craindre|redouter|douter|[eéè]viter|emp[eêè]cher)\s+qu[e']/i
+        // Doubt expressions
+        /\b(?:doute[rz]?|dout(?:ons|ez|ent))\s+qu[e']/i,
+        // Other expletive triggers
+        /\b(?:redouter|redoute[zsnt]?)\s+qu[e']/i,
+        /\b(?:[eéè]viter|[eéè]vite[zsnt]?)\s+qu[e']/i,
+        /\b(?:emp[eêè]cher|emp[eêè]che[zsnt]?)\s+qu[e']/i
       ]
     };
 
     // Subjunctive patterns with accents
     this.SUBJUNCTIVE_PATTERNS = [
-      /\b(?:sois|soit|soyons|soyez|soient)\b/i,  // être
-      /\b(?:aie|aies|ait|ayons|ayez|aient)\b/i,  // avoir
-      /\b(?:fasse|fasses|fasse|fassions|fassiez|fassent)\b/i,  // faire
-      /\b(?:puisse|puisses|puisse|puissions|puissiez|puissent)\b/i,  // pouvoir
-      /\b(?:vienne|viennes|vienne|venions|veniez|viennent)\b/i,  // venir
-      /\b(?:prenne|prennes|prenne|prenions|preniez|prennent)\b/i,  // prendre
-      /\b(?:tienne|tiennes|tienne|tenions|teniez|tiennent)\b/i  // tenir
+      // être
+      /\b(?:sois|soit|soyons|soyez|soient)\b/i,
+      // avoir
+      /\b(?:aie|aies|ait|ayons|ayez|aient)\b/i,
+      // faire
+      /\b(?:fasse|fasses|fasse|fassions|fassiez|fassent)\b/i,
+      // pouvoir
+      /\b(?:puisse|puisses|puisse|puissions|puissiez|puissent)\b/i,
+      // venir
+      /\b(?:vienne|viennes|vienne|venions|veniez|viennent)\b/i,
+      // prendre
+      /\b(?:prenne|prennes|prenne|prenions|preniez|prennent)\b/i,
+      // tenir
+      /\b(?:tienne|tiennes|tienne|tenions|teniez|tiennent)\b/i,
+      // réussir
+      /\b(?:r[eéè]ussisse|r[eéè]ussisses|r[eéè]ussissions|r[eéè]ussissiez|r[eéè]ussissent)\b/i,
+      // partir
+      /\b(?:parte|partes|parte|partions|partiez|partent)\b/i
     ];
+
+    // Expletive ne pattern (ne without pas/point etc.)
+    this.EXPLETIVE_NE = /\b(?:n['e])\s+(?!pas|point|plus|jamais|rien|personne|aucun|guère|nullement)\b/i;
   }
 
   async analyzeNegation(text) {
@@ -53,15 +75,19 @@ class NegationAnalyzer {
     // Check for subjunctive
     const hasSubjunctive = this.hasSubjunctive(text);
 
-    // If we have both logical markers and ambiguous triggers, it's likely logical
-    if (logicalMarkers.length > 0 && (triggers.strong.length > 0 || triggers.medium.length > 0)) {
+    // Check for expletive ne
+    const hasExpletiveNe = this.hasExpletiveNe(text);
+
+    // If we have logical markers, it's likely logical
+    if (logicalMarkers.length > 0) {
       return {
         type: 'LOGICAL',
-        confidence: 0.8,
+        confidence: 0.9,
         evidence: {
           markers: logicalMarkers.length,
-          details: 'Contains logical negation markers with ambiguous trigger',
+          details: 'Contains logical negation markers',
           hasSubjunctive,
+          hasExpletiveNe,
           triggers: {
             strong: triggers.strong.length,
             medium: triggers.medium.length,
@@ -71,23 +97,29 @@ class NegationAnalyzer {
       };
     }
 
-    // If we have logical markers without triggers, it's clearly logical
-    if (logicalMarkers.length > 0) {
+    // If we have strong triggers, likely expletive
+    if (triggers.strong.length > 0) {
       return {
-        type: 'LOGICAL',
-        confidence: 0.9,
+        type: 'LIKELY_EXPLETIVE',
+        confidence: hasSubjunctive || hasExpletiveNe ? 0.85 : 0.75,
         evidence: {
-          markers: logicalMarkers.length,
-          details: 'Contains clear logical negation markers',
-          hasSubjunctive
+          triggers: {
+            strong: triggers.strong.length,
+            medium: triggers.medium.length,
+            weak: triggers.weak.length
+          },
+          hasSubjunctive,
+          hasExpletiveNe,
+          details: hasSubjunctive ? 
+            'Contains strong expletive triggers with subjunctive' :
+            'Contains strong expletive triggers'
         }
       };
     }
 
-    // If we have triggers without logical markers, analyze context
-    if (triggers.strong.length > 0 || triggers.medium.length > 0) {
-      // Look for additional context that suggests expletive use
-      const isLikelyExpletive = hasSubjunctive || triggers.strong.length > 0;
+    // If we have medium triggers
+    if (triggers.medium.length > 0) {
+      const isLikelyExpletive = hasSubjunctive || hasExpletiveNe;
       
       return {
         type: isLikelyExpletive ? 'LIKELY_EXPLETIVE' : 'AMBIGUOUS',
@@ -99,24 +131,30 @@ class NegationAnalyzer {
             weak: triggers.weak.length
           },
           hasSubjunctive,
+          hasExpletiveNe,
           details: isLikelyExpletive ? 
-            'Contains potential expletive triggers with supporting context' :
+            'Contains medium expletive triggers with supporting context' :
             'Contains ambiguous triggers without clear indicators'
         }
       };
     }
 
-    // If we only have weak triggers
+    // If we have weak triggers
     if (triggers.weak.length > 0) {
+      const isLikelyExpletive = hasSubjunctive || hasExpletiveNe;
+      
       return {
-        type: 'UNCERTAIN',
-        confidence: 0.5,
+        type: isLikelyExpletive ? 'LIKELY_EXPLETIVE' : 'UNCERTAIN',
+        confidence: isLikelyExpletive ? 0.65 : 0.5,
         evidence: {
           triggers: {
             weak: triggers.weak.length
           },
           hasSubjunctive,
-          details: 'Contains only weak potential triggers'
+          hasExpletiveNe,
+          details: isLikelyExpletive ?
+            'Contains weak expletive triggers with supporting context' :
+            'Contains only weak potential triggers'
         }
       };
     }
@@ -126,7 +164,9 @@ class NegationAnalyzer {
       type: 'UNCERTAIN',
       confidence: 0.5,
       evidence: {
-        details: 'Insufficient patterns for classification'
+        details: 'Insufficient patterns for classification',
+        hasSubjunctive,
+        hasExpletiveNe
       }
     };
   }
@@ -149,6 +189,10 @@ class NegationAnalyzer {
   hasSubjunctive(text) {
     const normalizedText = normalizeText(text);
     return this.SUBJUNCTIVE_PATTERNS.some(pattern => pattern.test(normalizedText));
+  }
+
+  hasExpletiveNe(text) {
+    return this.EXPLETIVE_NE.test(text);
   }
 }
 
