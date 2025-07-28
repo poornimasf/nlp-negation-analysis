@@ -24,6 +24,9 @@ class CroissantLLMService {
             throw new Error('Missing HF_TOKEN - Please ensure REACT_APP_HF_TOKEN is set');
         }
 
+        // Remove 'hf_' prefix if present
+        const cleanToken = token.startsWith('hf_') ? token.slice(3) : token;
+
         console.log('Making request to:', this.ENDPOINT_URL);
         console.log('Request payload:', {
             inputs: prompt,
@@ -38,7 +41,7 @@ class CroissantLLMService {
         const response = await fetch(this.ENDPOINT_URL, {
             method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`,
+                'Authorization': `Bearer ${cleanToken}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
