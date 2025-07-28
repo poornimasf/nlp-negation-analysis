@@ -9,6 +9,7 @@ import { handleFileUpload as processFileUpload } from '../utils/trainingDataMana
 import { classifyExpletive, classifyWithBinaryClassifier } from '../utils/classifiers';
 import { BatchAnalysis } from './BatchAnalysis';
 import { ModeSelector, ModeInfoBox } from './AnalysisModes';
+import { TrainingDataSection } from './TrainingDataSection';
 
 const SimpleNegationAnalyzer = () => {
   // State definitions
@@ -88,7 +89,7 @@ const SimpleNegationAnalyzer = () => {
               break;
             case 'TRAINING_DATA':
               if (useTrainingEnhancement && trainingData.length > 0) {
-                const trainingAnalysis = classifyWithBinaryClassifier(sentence);
+                const trainingAnalysis = classifyWithBinaryClassifier(sentence, trainingData);
                 formattedResult = formatTrainingResult(analysis, trainingAnalysis);
               } else {
                 formattedResult = formatRuleBasedResult(analysis);
@@ -170,6 +171,16 @@ const SimpleNegationAnalyzer = () => {
           setExpanded={setInfoBoxExpanded}
         />
       </div>
+
+      {/* Training Data Section */}
+      {analysisMode === 'TRAINING_DATA' && (
+        <TrainingDataSection
+          trainingData={trainingData}
+          handleFileUpload={handleFileUpload}
+          clearTrainingData={clearTrainingData}
+          uploadError={uploadError}
+        />
+      )}
 
       <BatchAnalysis
         batchInput={batchInput}
