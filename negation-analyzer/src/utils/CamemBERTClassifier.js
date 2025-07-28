@@ -18,14 +18,23 @@ class CamemBERTClassifier {
         if (this.initialized) return;
 
         try {
-            // Test with simple sequence classification
-            await this._retryOperation(async () => {
-                return await this.inference.tokenClassification({
-                    model: this.modelName,
-                    endpointUrl: this.endpointUrl,
+            // Test with direct API call
+            const response = await fetch(this.endpointUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${process.env.REACT_APP_HF_TOKEN}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
                     inputs: "Le chat est sur la table."
-                });
+                })
             });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            await response.json(); // Validate response format
             
             this.initialized = true;
             console.log('CamemBERT initialized successfully');
@@ -63,44 +72,29 @@ class CamemBERTClassifier {
         try {
             console.log('Analyzing text with CamemBERT:', text);
 
-            // Use token classification to identify parts of speech and negation
-            const tokenResult = await this._retryOperation(async () => {
-                return await this.inference.tokenClassification({
-                    model: this.modelName,
-                    endpointUrl: this.endpointUrl,
+            // Make direct API call
+            const response = await fetch(this.endpointUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${process.env.REACT_APP_HF_TOKEN}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
                     inputs: text
-                });
+                })
             });
 
-            console.log('Token classification result:', tokenResult);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('CamemBERT raw response:', result);
 
             // Analyze the results
             const evidence = [];
             let isExpletive = false;
             let confidence = 0.5;
-
-            // Analyze token patterns
-            if (tokenResult && Array.isArray(tokenResult)) {
-                // Look for verb forms and negation markers
-                const tokens = tokenResult.map(t => ({
-                    word: t.word,
-                    entity: t.entity_group,
-                    score: t.score
-                }));
-
-                console.log('Analyzed tokens:', tokens);
-
-                // Check for subjunctive verbs
-                const hasSubjunctive = tokens.some(t => 
-                    t.entity === 'VERB' && 
-                    /\b(?:soit|sois|soyons|soyez|soient|fasse|fasses|fassions|fassiez|fassent)\b/i.test(t.word)
-                );
-
-                if (hasSubjunctive) {
-                    confidence += 0.2;
-                    evidence.push("Mode subjonctif détecté dans l'analyse syntaxique");
-                }
-            }
 
             // Add pattern-based evidence
             if (text.match(/\b(?:peur|crainte)\s+que?\b/i)) {
@@ -119,12 +113,34 @@ class CamemBERTClassifier {
                 evidence.push("Motif trouvé: 'peu s'en faut'");
             }
 
+            // Check for subjunctive mood
+            if (text.match(/\b(?:soit|sois|soyons|soyez|soient|fasse|fasses|fassions|fassiez|fassent)\b/i)) {
+                confidence = Math.min(confidence + 0.15, 0.95);
+                evidence.push("Mode subjonctif détecté");
+            }
+
             // Check for logical negation markers
             const logicalMarkers = text.match(/\b(?:pas|point|plus|jamais|rien|personne|aucun|guère)\b/g);
             if (logicalMarkers) {
                 isExpletive = false;
                 confidence = Math.max(confidence + 0.3, 0.95);
                 evidence.push(`Marqueurs de négation logique trouvés: ${logicalMarkers.join(', ')}`);
+            }
+
+            // Analyze model output if available
+            if (result && Array.isArray(result)) {
+                // Look for relevant tokens and their scores
+                const relevantTokens = result.filter(token => 
+                    token.score > 0.5 && 
+                    (token.entity_group === 'B-NEG' || token.entity_group === 'I-NEG')
+                );
+
+                if (relevantTokens.length > 0) {
+                    evidence.push('Analyse CamemBERT:');
+                    relevantTokens.forEach(token => {
+                        evidence.push(`- Token '${token.word}': ${Math.round(token.score * 100)}% confiance`);
+                    });
+                }
             }
 
             const finalResult = {
