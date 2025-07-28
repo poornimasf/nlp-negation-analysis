@@ -14,6 +14,95 @@ export default function SimpleNegationAnalyzer() {
   const [infoBoxExpanded, setInfoBoxExpanded] = useState(false);
   const [trainingData, setTrainingData] = useState([]);
 
+  // CroissantLLM classification for Hybrid mode
+  const classifyExpletive = async (text) => {
+    try {
+      const response = await fetch(
+        'https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud',
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.REACT_APP_HF_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            inputs: `Analyze this French sentence where a ne has been removed. Consider both possibilities equally: ${text}`,
+            parameters: {
+              max_new_tokens: 256,
+              temperature: 0.1,
+              top_p: 0.95,
+              return_full_text: false
+            }
+          })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return result.generated_text || 'No analysis available';
+    } catch (error) {
+      console.error('Error in CroissantLLM:', error);
+      return formatErrorMessage(error);
+    }
+  };
+
+  // Binary classifier for Training Data mode
+  const classifyWithBinaryClassifier = (text) => {
+    if (trainingData.length === 0) {
+      return "No training data available for binary classifier.";
+    }
+
+    // Find similar examples
+    const similarExamples = trainingData.filter(example => {
+      const similarity = calculateSimilarity(text.toLowerCase(), example.text.toLowerCase());
+      return similarity > 0.7; // Threshold for similarity
+    });
+
+    if (similarExamples.length === 0) {
+      return {
+        matches: [],
+        confidence: 0.5,
+        classification: 'UNCERTAIN'
+      };
+    }
+
+    // Count classifications
+    const counts = similarExamples.reduce((acc, example) => {
+      acc[example.classification] = (acc[example.classification] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Calculate confidence
+    const total = similarExamples.length;
+    const maxCount = Math.max(...Object.values(counts));
+    const confidence = maxCount / total;
+
+    // Get majority classification
+    const classification = Object.entries(counts).reduce((a, b) => 
+      counts[a] > counts[b] ? a : b
+    )[0];
+
+    return {
+      matches: similarExamples.slice(0, 5), // Return top 5 matches
+      confidence,
+      classification
+    };
+  };
+
+  // Calculate text similarity for training data matching
+  const calculateSimilarity = (text1, text2) => {
+    const words1 = text1.split(/\s+/);
+    const words2 = text2.split(/\s+/);
+    
+    const intersection = words1.filter(word => words2.includes(word));
+    const union = [...new Set([...words1, ...words2])];
+    
+    return intersection.length / union.length;
+  };
+
   // Format functions for each mode
   const formatRuleBasedResult = (analysis) => {
     const output = [];
@@ -69,6 +158,7 @@ export default function SimpleNegationAnalyzer() {
     return output.join('\n');
   };
 
+  // Format Hybrid result
   const formatHybridResult = async (patternAnalysis, llmText) => {
     const output = [];
     
@@ -107,6 +197,7 @@ export default function SimpleNegationAnalyzer() {
     return output.join('\n');
   };
 
+  // Format Training Data result
   const formatTrainingResult = (patternAnalysis, trainingAnalysis) => {
     const output = [];
     
@@ -163,9 +254,7 @@ export default function SimpleNegationAnalyzer() {
     }
   };
 
-  // Rest of the component remains the same
-  // ...
-
+  // Rest of your component code...
   return (
     <div className="container">
       <div className="card" style={{ marginTop: '20px' }}>
@@ -253,8 +342,7 @@ export default function SimpleNegationAnalyzer() {
           </div>
         )}
 
-        {/* Rest of the component remains the same */}
-        {/* ... */}
+        {/* Rest of your component code... */}
       </div>
     </div>
   );
