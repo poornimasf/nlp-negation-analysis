@@ -37,11 +37,22 @@ class BinaryClassifier {
     // Add probability reasoning to analysis
     analysis.probabilityAnalysis = reasoning;
 
-    // Determine classification
-    const type = probability > 0.5 ? "EXPLETIVE" : "LOGICAL";
-
-    // Format the result text
+    // Format the result text first to get the analysis
     const formattedAnalysis = this._formatAnalysis(analysis);
+
+    // Determine classification based on probability and confidence thresholds
+    let type;
+    if (confidence < 0.3) {
+      type = "UNCERTAIN";
+    } else if (Math.abs(probability - 0.5) < 0.2) {
+      type = "AMBIGUOUS";
+    } else if (probability > 0.7) {
+      type = "EXPLETIVE";
+    } else if (probability < 0.3) {
+      type = "LOGICAL";
+    } else {
+      type = probability > 0.5 ? "LIKELY_EXPLETIVE" : "LIKELY_LOGICAL";
+    }
 
     return {
       classification: type,
