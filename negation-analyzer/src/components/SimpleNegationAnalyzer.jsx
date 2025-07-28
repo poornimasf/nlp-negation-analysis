@@ -1802,9 +1802,6 @@ export default function SimpleNegationAnalyzer() {
           >
             <option value="RULE_BASED">Rule-Based Analysis (CroissantLLM)</option>
             <option value="TRAINING_DATA">Training Data Analysis</option>
-            {isFeatureEnabled('ENABLE_CAMEMBERT') && (
-              <option value="CAMEMBERT">CamemBERT Analysis (Beta)</option>
-            )}
           </select>
           
           <p style={{ 
