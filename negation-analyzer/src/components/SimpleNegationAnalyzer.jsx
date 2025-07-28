@@ -82,10 +82,11 @@ const SimpleNegationAnalyzer = () => {
             case 'RULE_BASED':
               formattedResult = formatRuleBasedResult(analysis);
               break;
-            case 'HYBRID':
+            case 'HYBRID': {
               const llmAnalysis = await classifyExpletive(sentence);
               formattedResult = formatHybridResult(analysis, llmAnalysis);
               break;
+            }
             case 'TRAINING_DATA':
               if (useTrainingEnhancement && trainingData.length > 0) {
                 const trainingAnalysis = classifyWithBinaryClassifier(sentence, trainingData);

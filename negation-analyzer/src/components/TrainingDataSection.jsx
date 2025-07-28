@@ -19,7 +19,7 @@ export const TrainingDataSection = ({
       <strong>🎯 Complete User Control:</strong> Upload your own training examples to enhance analysis accuracy. 
       The system uses ONLY your uploaded data - no hidden datasets or external training sources.
     </div>
-
+    
     {/* File Upload Section */}
     <div className="form-group">
       <label htmlFor="training-file-upload">Upload Training Data (JSON):</label>
