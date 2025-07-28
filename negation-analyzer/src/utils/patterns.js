@@ -93,8 +93,8 @@ export const EXPLETIVE_TRIGGER_PATTERNS = {
       /\bpeu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\b/i,
       
       // Past forms with être and que
-      /\b(?:peu\s+)?s['']en\s+(?:est|fût)\s+fallu(?:\s+de\s+peu)?(?:\s+qu[''](?:une?|elle?|il|on|ils?|elles?|[aeiouyh]|\w+))?\b/i,
-      /\bpeu\s+s['']en\s+est\s+fallu(?:\s+que?)?\b/i,
+      /\bs['']en\s+(?:est|était)\s+fallu\s+de\s+peu(?:\s+qu[''](?:une?|elle?|il|on|ils?|elles?|[aeiouyh]|\w+))?\b/i,
+      /\bpeu\s+s['']en\s+(?:est|était)\s+fallu(?:\s+que?)?\b/i,
       
       // Simple past forms with que
       /\b(?:peu\s+)?s['']en\s+fall(?:ut|ait)(?:\s+de\s+peu)?(?:\s+que?)?\b/i,
@@ -102,7 +102,7 @@ export const EXPLETIVE_TRIGGER_PATTERNS = {
       
       // Impersonal forms with optional negation
       /\b(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)\s+de\s+peu\b/i,
-      /\bil\s+s['']en\s+est\s+fallu\s+de\s+peu\b/i,
+      /\bil\s+s['']en\s+(?:est|était)\s+fallu\s+de\s+peu\b/i,
       
       // Negated forms
       /\b(?:il\s+)?ne\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+pas\s+de\s+beaucoup\b/i,
