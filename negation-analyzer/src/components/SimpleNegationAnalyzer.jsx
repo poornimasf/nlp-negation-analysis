@@ -6,6 +6,7 @@ import { formatErrorMessage } from '../utils/errorFormatter';
 import { formatRuleBasedResult, formatHybridResult, formatTrainingResult } from '../utils/resultFormatters';
 import { highlight, determineClassification } from '../utils/textProcessing';
 import { handleFileUpload as processFileUpload } from '../utils/trainingDataManager';
+import { classifyExpletive, classifyWithBinaryClassifier } from '../utils/classifiers';
 import { BatchAnalysis } from './BatchAnalysis';
 import { ModeSelector, ModeInfoBox } from './AnalysisModes';
 
