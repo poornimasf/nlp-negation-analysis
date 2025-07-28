@@ -1157,61 +1157,91 @@ export default function SimpleNegationAnalyzer() {
   // Determine classification type for batch results
   const determineClassification = async (text) => {
     const analysis = await classifyNegation(text);
-    console.log('Analysis result:', analysis);
+    console.log('Raw analysis result:', analysis);
     
-    // Get the first line which contains the main classification
-    const firstLine = analysis.split('\n')[0];
+    // Get the full analysis text to check all lines
+    const analysisLines = analysis.split('\n');
+    const firstLine = analysisLines[0];
     console.log('First line:', firstLine);
-    
-    // Handle CamemBERT results
-    if (analysisMode === 'CAMEMBERT') {
-      if (firstLine.includes('EXPLETIVE NEGATION')) {
-        return 'Expletive';
-      }
-      if (firstLine.includes('LOGICAL NEGATION')) {
-        return 'Logical';
-      }
-      if (firstLine.includes('UNCERTAIN')) {
-        return 'Uncertain';
-      }
-    }
-    
-    // Ensure consistency between Analysis and Prediction
-    if (firstLine.includes('✅ EXPLETIVE NEGATION') || 
-        firstLine.includes('LIKELY EXPLETIVE NEGATION') ||
-        firstLine.includes('Removed \'ne\' was likely expletive') ||
-        (firstLine.includes('🎯 BINARY CLASSIFIER') && firstLine.toLowerCase().includes('expletive')) ||
-        (firstLine.includes('🎯 TRAINING-ENHANCED') && firstLine.toLowerCase().includes('expletive')) ||
-        (firstLine.includes('🤖 PURE TRAINING') && firstLine.toLowerCase().includes('expletive'))) {
+
+    // Direct match for explicit classifications
+    if (firstLine.includes('✅ EXPLETIVE NEGATION')) {
+      console.log('Found explicit EXPLETIVE classification');
       return "Expletive";
     }
     
-    if (firstLine.includes('✅ LOGICAL NEGATION') || 
-        firstLine.includes('LIKELY LOGICAL NEGATION') ||
-        firstLine.includes('Logical negation detected') ||
-        firstLine.includes('Removed \'ne\' was likely logical') ||
-        (firstLine.includes('🎯 BINARY CLASSIFIER') && firstLine.toLowerCase().includes('logical')) ||
-        (firstLine.includes('🎯 TRAINING-ENHANCED') && firstLine.toLowerCase().includes('logical')) ||
-        (firstLine.includes('🤖 PURE TRAINING') && firstLine.toLowerCase().includes('logical'))) {
+    if (firstLine.includes('✅ LOGICAL NEGATION')) {
+      console.log('Found explicit LOGICAL classification');
       return "Logical";
     }
-    
-    // Handle training data enhanced results
-    if (useTrainingEnhancement && trainingData.length > 0) {
-      if (firstLine.toLowerCase().includes('expletive')) {
-        return "Expletive (ML)";
+
+    // Handle CamemBERT results
+    if (analysisMode === 'CAMEMBERT') {
+      if (analysis.includes('EXPLETIVE NEGATION')) {
+        return 'Expletive';
       }
-      if (firstLine.toLowerCase().includes('logical')) {
-        return "Logical (ML)";
+      if (analysis.includes('LOGICAL NEGATION')) {
+        return 'Logical';
+      }
+      return 'Uncertain';
+    }
+
+    // Handle Rule-based (CroissantLLM) results
+    if (analysisMode === 'RULE_BASED') {
+      // Check for expletive indicators in the full analysis
+      if (analysis.includes('✅ EXPLETIVE NEGATION') || 
+          analysis.includes('LIKELY EXPLETIVE NEGATION') ||
+          analysis.includes('expletive negation detected') ||
+          analysis.includes('Removed \'ne\' was likely expletive')) {
+        console.log('Rule-based analysis indicates EXPLETIVE');
+        return "Expletive";
+      }
+      
+      // Check for logical indicators in the full analysis
+      if (analysis.includes('✅ LOGICAL NEGATION') ||
+          analysis.includes('LIKELY LOGICAL NEGATION') ||
+          analysis.includes('logical negation detected') ||
+          analysis.includes('Removed \'ne\' was likely logical')) {
+        console.log('Rule-based analysis indicates LOGICAL');
+        return "Logical";
       }
     }
-    
+
+    // Handle Training Data results
+    if (analysisMode === 'TRAINING_DATA') {
+      if (analysis.includes('🎯 BINARY CLASSIFIER') || analysis.includes('🤖 PURE TRAINING')) {
+        if (analysis.toLowerCase().includes('expletive')) {
+          return useTrainingEnhancement ? "Expletive (ML)" : "Expletive";
+        }
+        if (analysis.toLowerCase().includes('logical')) {
+          return useTrainingEnhancement ? "Logical (ML)" : "Logical";
+        }
+      }
+    }
+
     // Handle no negation case
-    if (firstLine.includes('No negation markers found')) {
+    if (analysis.includes('No negation markers found')) {
       return "No Negation";
     }
-    
+
+    // Additional checks for expletive/logical classification
+    const confidenceMatch = analysis.match(/confidence:\s*(\d+)%/i);
+    if (confidenceMatch) {
+      const confidence = parseInt(confidenceMatch[1]);
+      if (confidence > 50) {
+        if (analysis.toLowerCase().includes('expletive')) {
+          console.log('High confidence EXPLETIVE classification');
+          return "Expletive";
+        }
+        if (analysis.toLowerCase().includes('logical')) {
+          console.log('High confidence LOGICAL classification');
+          return "Logical";
+        }
+      }
+    }
+
     // Default to Uncertain for unclear cases
+    console.log('No clear classification found, defaulting to Uncertain');
     return "Uncertain";
   };
 
