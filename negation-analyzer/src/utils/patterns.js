@@ -90,19 +90,22 @@ export const EXPLETIVE_TRIGGER_PATTERNS = {
   peuSenFaut: {
     patterns: [
       // Standard present/future/conditional forms
-      /\bpeu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\b/i,
+      /\b[Pp]eu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\b/i,
       
       // Past forms with être and que
-      /\bs['']en\s+(?:est|était)\s+fallu\s+de\s+peu(?:\s+qu[''](?:une?|elle?|il|on|ils?|elles?|[aeiouyh]|\w+))?\b/i,
-      /\bpeu\s+s['']en\s+(?:est|était)\s+fallu(?:\s+que?)?\b/i,
+      /\b[Pp]eu\s+s['']en\s+(?:est|était|ait)\s+fallu(?:\s+de\s+peu)?(?:\s+que?)?\b/i,
+      /\bs['']en\s+(?:est|était|ait)\s+fallu\s+de\s+peu(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?\b/i,
       
       // Simple past forms with que
-      /\b(?:peu\s+)?s['']en\s+fall(?:ut|ait)(?:\s+de\s+peu)?(?:\s+que?)?\b/i,
-      /\b(?:peu\s+)?s['']en\s+fut\s+fallu(?:\s+que?)?\b/i,
+      /\b[Pp]eu\s+s['']en\s+fall(?:ut|ait)(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?\b/i,
+      /\bs['']en\s+fall(?:ut|ait)(?:\s+de\s+peu)?(?:\s+que?)?\b/i,
+      
+      // Future and conditional forms
+      /\b[Pp]eu\s+s['']en\s+(?:faudra|faudrait)(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?\b/i,
       
       // Impersonal forms with optional negation
       /\b(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)\s+de\s+peu\b/i,
-      /\bil\s+s['']en\s+(?:est|était)\s+fallu\s+de\s+peu\b/i,
+      /\bil\s+s['']en\s+(?:est|était|ait)\s+fallu\s+de\s+peu\b/i,
       
       // Negated forms
       /\b(?:il\s+)?ne\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+pas\s+de\s+beaucoup\b/i,

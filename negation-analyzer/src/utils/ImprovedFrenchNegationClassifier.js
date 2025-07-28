@@ -25,7 +25,7 @@ class ImprovedFrenchNegationClassifier {
                 /\b(?:jusqu'à|en attendant)\s+que?\b/i,
                 
                 // Other expletive triggers
-                /\b(?:peu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)|s['']en\s+(?:est|était)\s+fallu\s+de\s+peu(?:\s+qu[''](?:une?|elle?|il|on|ils?|elles?|[aeiouyh]|\w+))?|peu\s+s['']en\s+(?:est|était)\s+fallu(?:\s+que?)?|(?:peu\s+)?s['']en\s+fall(?:ut|ait)(?:\s+de\s+peu)?(?:\s+que?)?|(?:peu\s+)?s['']en\s+fut\s+fallu(?:\s+que?)?|(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)\s+de\s+peu|il\s+s['']en\s+(?:est|était)\s+fallu\s+de\s+peu|(?:il\s+)?ne\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+pas\s+de\s+beaucoup|peu\s+qu[''](?:un|il\s+fût))\b/i,
+                /\b(?:[Pp]eu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)|[Pp]eu\s+s['']en\s+(?:est|était|ait)\s+fallu(?:\s+de\s+peu)?(?:\s+que?)?|s['']en\s+(?:est|était|ait)\s+fallu\s+de\s+peu(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?|[Pp]eu\s+s['']en\s+fall(?:ut|ait)(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?|s['']en\s+fall(?:ut|ait)(?:\s+de\s+peu)?(?:\s+que?)?|[Pp]eu\s+s['']en\s+(?:faudra|faudrait)(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?|(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)\s+de\s+peu|il\s+s['']en\s+(?:est|était|ait)\s+fallu\s+de\s+peu|(?:il\s+)?ne\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+pas\s+de\s+beaucoup|peu\s+qu[''](?:un|il\s+fût))\b/i,
                 /\bà\s+moins\s+que?\b/i,
                 /\bempêcher\s+que?\b/i
             ],
