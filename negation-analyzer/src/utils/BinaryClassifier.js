@@ -70,7 +70,7 @@ class BinaryClassifier {
 
   _extractFeatures(text) {
     // Define the peu s'en faut pattern with all variations
-    const peuSenFautPattern = /\b(?:peu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)|(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)(?:\s+(?:de\s+peu|pas\s+de\s+beaucoup))?)\b/i;
+    const peuSenFautPattern = /\b(?:peu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)|s['']en\s+(?:fut\s+fallu|est\s+fall(?:u|ut)|fallut\s+de\s+peu)|peu\s+qu[''](?:un|il\s+fût)|(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)(?:\s+(?:de\s+peu|pas\s+de\s+beaucoup))?)\b/i;
 
     return {
       // Trigger patterns

@@ -92,6 +92,12 @@ export const EXPLETIVE_TRIGGER_PATTERNS = {
       // Standard forms
       /\bpeu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\b/i,
       
+      // Historical and literary forms
+      /\bs['']en\s+(?:fut\s+fallu|est\s+fall(?:u|ut)|fallut\s+de\s+peu)\b/i,
+      
+      // Subjunctive forms
+      /\bpeu\s+qu[''](?:un|il\s+fût)\b/i,
+      
       // Impersonal forms with optional negation
       /\b(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)\s+de\s+peu\b/i,
       
@@ -99,7 +105,7 @@ export const EXPLETIVE_TRIGGER_PATTERNS = {
       /\b(?:il\s+)?ne\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+pas\s+de\s+beaucoup\b/i
     ],
     confidence: 0.85,
-    description: "Peu s'en faut expressions"
+    description: "Peu s'en faut expressions including historical and literary variations"
   },
 
   // Other triggers

@@ -25,7 +25,7 @@ class ImprovedFrenchNegationClassifier {
                 /\b(?:jusqu'à|en attendant)\s+que?\b/i,
                 
                 // Other expletive triggers
-                /\b(?:peu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)|(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)(?:\s+(?:de\s+peu|pas\s+de\s+beaucoup))?)\b/i,
+                /\b(?:peu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)|s['']en\s+(?:fut\s+fallu|est\s+fall(?:u|ut)|fallut\s+de\s+peu)|peu\s+qu[''](?:un|il\s+fût)|(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)(?:\s+(?:de\s+peu|pas\s+de\s+beaucoup))?)\b/i,
                 /\bà\s+moins\s+que?\b/i,
                 /\bempêcher\s+que?\b/i
             ],
