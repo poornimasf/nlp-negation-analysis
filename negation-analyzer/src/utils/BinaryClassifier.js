@@ -69,6 +69,9 @@ class BinaryClassifier {
   }
 
   _extractFeatures(text) {
+    // Define the peu s'en faut pattern with all variations
+    const peuSenFautPattern = /\b(?:peu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)|(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)(?:\s+(?:de\s+peu|pas\s+de\s+beaucoup))?)\b/i;
+
     return {
       // Trigger patterns
       triggers: {
@@ -83,9 +86,9 @@ class BinaryClassifier {
           context: this._extractContext(text, /\bavant\s+que?\b/i)
         },
         peuSenFaut: {
-          present: /\b(peu\s+s['']en\s+faut|s['']en\s+faut)/i.test(text),
-          matches: text.match(/\b(peu\s+s['']en\s+faut|s['']en\s+faut)/gi) || [],
-          context: this._extractContext(text, /\b(peu\s+s['']en\s+faut|s['']en\s+faut)/i)
+          present: peuSenFautPattern.test(text),
+          matches: text.match(peuSenFautPattern) || [],
+          context: this._extractContext(text, peuSenFautPattern)
         }
       },
       
