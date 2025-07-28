@@ -89,23 +89,29 @@ export const EXPLETIVE_TRIGGER_PATTERNS = {
   // Peu s'en faut expressions
   peuSenFaut: {
     patterns: [
-      // Standard forms
+      // Standard present/future/conditional forms
       /\bpeu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\b/i,
       
-      // Historical and literary forms
-      /\bs['']en\s+(?:fut\s+fallu|est\s+fall(?:u|ut)|fallut\s+de\s+peu)\b/i,
+      // Past forms with être
+      /\b(?:peu\s+)?s['']en\s+(?:est|fût)\s+fallu(?:\s+de\s+peu)?\b/i,
+      /\bpeu\s+s['']en\s+est\s+fallu\b/i,
       
-      // Subjunctive forms
-      /\bpeu\s+qu[''](?:un|il\s+fût)\b/i,
+      // Simple past forms
+      /\b(?:il\s+)?s['']en\s+fallut(?:\s+de\s+peu)?\b/i,
+      /\b(?:il\s+)?s['']en\s+fut\s+fallu\b/i,
       
       // Impersonal forms with optional negation
       /\b(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)\s+de\s+peu\b/i,
+      /\bil\s+s['']en\s+est\s+fallu\s+de\s+peu\b/i,
       
       // Negated forms
-      /\b(?:il\s+)?ne\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+pas\s+de\s+beaucoup\b/i
+      /\b(?:il\s+)?ne\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+pas\s+de\s+beaucoup\b/i,
+      
+      // Literary forms
+      /\bpeu\s+qu[''](?:un|il\s+fût)\b/i
     ],
     confidence: 0.85,
-    description: "Peu s'en faut expressions including historical and literary variations"
+    description: "Peu s'en faut expressions including all historical, literary, and grammatical variations"
   },
 
   // Other triggers

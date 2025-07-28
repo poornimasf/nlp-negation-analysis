@@ -70,7 +70,7 @@ class BinaryClassifier {
 
   _extractFeatures(text) {
     // Define the peu s'en faut pattern with all variations
-    const peuSenFautPattern = /\b(?:peu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)|s['']en\s+(?:fut\s+fallu|est\s+fall(?:u|ut)|fallut\s+de\s+peu)|peu\s+qu[''](?:un|il\s+fût)|(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)(?:\s+(?:de\s+peu|pas\s+de\s+beaucoup))?)\b/i;
+    const peuSenFautPattern = /\b(?:peu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)|(?:peu\s+)?s['']en\s+(?:est|fût)\s+fallu(?:\s+de\s+peu)?|peu\s+s['']en\s+est\s+fallu|(?:il\s+)?s['']en\s+fallut(?:\s+de\s+peu)?|(?:il\s+)?s['']en\s+fut\s+fallu|(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)\s+de\s+peu|il\s+s['']en\s+est\s+fallu\s+de\s+peu|(?:il\s+)?ne\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+pas\s+de\s+beaucoup|peu\s+qu[''](?:un|il\s+fût))\b/i;
 
     return {
       // Trigger patterns
