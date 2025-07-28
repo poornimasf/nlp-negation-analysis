@@ -1176,35 +1176,37 @@ export default function SimpleNegationAnalyzer() {
       }
     }
     
-    // Handle other modes
-    if (firstLine.includes('Logical negation detected') ||
+    // Ensure consistency between Analysis and Prediction
+    if (firstLine.includes('✅ EXPLETIVE NEGATION') || 
+        firstLine.includes('LIKELY EXPLETIVE NEGATION') ||
+        firstLine.includes('Removed \'ne\' was likely expletive') ||
+        (firstLine.includes('🎯 BINARY CLASSIFIER') && firstLine.toLowerCase().includes('expletive')) ||
+        (firstLine.includes('🎯 TRAINING-ENHANCED') && firstLine.toLowerCase().includes('expletive')) ||
+        (firstLine.includes('🤖 PURE TRAINING') && firstLine.toLowerCase().includes('expletive'))) {
+      return "Expletive";
+    }
+    
+    if (firstLine.includes('✅ LOGICAL NEGATION') || 
         firstLine.includes('LIKELY LOGICAL NEGATION') ||
+        firstLine.includes('Logical negation detected') ||
         firstLine.includes('Removed \'ne\' was likely logical') ||
-        (firstLine.includes('🎯 BINARY CLASSIFIER') && firstLine.includes('likely logical'))) {
+        (firstLine.includes('🎯 BINARY CLASSIFIER') && firstLine.toLowerCase().includes('logical')) ||
+        (firstLine.includes('🎯 TRAINING-ENHANCED') && firstLine.toLowerCase().includes('logical')) ||
+        (firstLine.includes('🤖 PURE TRAINING') && firstLine.toLowerCase().includes('logical'))) {
       return "Logical";
     }
     
-    if (firstLine.includes('✅ EXPLETIVE NEGATION') ||
-        (firstLine.includes('🎯 BINARY CLASSIFIER') && firstLine.includes('likely expletive'))) {
-      return "Expletive";
+    // Handle training data enhanced results
+    if (useTrainingEnhancement && trainingData.length > 0) {
+      if (firstLine.toLowerCase().includes('expletive')) {
+        return "Expletive (ML)";
+      }
+      if (firstLine.toLowerCase().includes('logical')) {
+        return "Logical (ML)";
+      }
     }
     
-    if (firstLine.includes('LIKELY EXPLETIVE NEGATION') ||
-        firstLine.includes('Removed \'ne\' was likely expletive') ||
-        firstLine.includes('peu s\'en faut')) {
-      return "Expletive";
-    }
-    
-    if (firstLine.includes('🎯 TRAINING-ENHANCED: Logical') ||
-        firstLine.includes('🤖 PURE TRAINING: Removed \'ne\' was likely logical')) {
-      return useTrainingEnhancement && trainingData.length > 0 ? "Logical (ML)" : "Logical";
-    }
-    
-    if (firstLine.includes('🎯 TRAINING-ENHANCED: Expletive') ||
-        firstLine.includes('🤖 PURE TRAINING: Removed \'ne\' was likely expletive')) {
-      return useTrainingEnhancement && trainingData.length > 0 ? "Expletive (ML)" : "Expletive";
-    }
-    
+    // Handle no negation case
     if (firstLine.includes('No negation markers found')) {
       return "No Negation";
     }
