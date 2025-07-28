@@ -69,7 +69,9 @@ class BinaryClassifier {
   }
 
   _extractFeatures(text) {
-    // Define the peu s'en faut pattern with all variations
+    // Define patterns for all triggers
+    const peurQuePattern = /\b(?:[Aa]voir\s+)?[Pp]eur\s+que?\b|(?:[Cc]raindre|[Rr]edouter)\s+que?\b|[Pp]ar\s+(?:[Pp]eur|[Cc]rainte)\s+que?\b/i;
+    const avantQuePattern = /\b[Aa]vant\s+que?\b|(?:[Jj]usqu['']à|[Ee]n\s+attendant)\s+que?\b/i;
     const peuSenFautPattern = /\b(?:[Pp]eu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)|[Pp]eu\s+s['']en\s+(?:est|était|ait)\s+fallu(?:\s+de\s+peu)?(?:\s+que?)?|s['']en\s+(?:est|était|ait)\s+fallu\s+de\s+peu(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?|[Pp]eu\s+s['']en\s+fall(?:ut|ait)(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?|s['']en\s+fall(?:ut|ait)(?:\s+de\s+peu)?(?:\s+que?)?|[Pp]eu\s+s['']en\s+(?:faudra|faudrait)(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?|(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)\s+de\s+peu|il\s+s['']en\s+(?:est|était|ait)\s+fallu\s+de\s+peu|(?:il\s+)?ne\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+pas\s+de\s+beaucoup|peu\s+qu[''](?:un|il\s+fût))\b/i;
 
     return {

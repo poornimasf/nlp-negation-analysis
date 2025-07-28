@@ -16,13 +16,13 @@ class ImprovedFrenchNegationClassifier {
             // Expletive negation patterns
             expletive_triggers: [
                 // Fear expressions
-                /\b(?:avoir\s+)?peur\s+que?\b/i,
-                /\b(?:craindre|redouter)\s+que?\b/i,
-                /\bpar\s+(?:peur|crainte)\s+que?\b/i,
+                /\b(?:[Aa]voir\s+)?[Pp]eur\s+que?\b/i,
+                /\b(?:[Cc]raindre|[Rr]edouter)\s+que?\b/i,
+                /\b[Pp]ar\s+(?:[Pp]eur|[Cc]rainte)\s+que?\b/i,
                 
                 // Temporal expressions
-                /\bavant\s+que?\b/i,
-                /\b(?:jusqu'à|en attendant)\s+que?\b/i,
+                /\b[Aa]vant\s+que?\b/i,
+                /\b(?:[Jj]usqu['']à|[Ee]n\s+attendant)\s+que?\b/i,
                 
                 // Other expletive triggers
                 /\b(?:[Pp]eu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)|[Pp]eu\s+s['']en\s+(?:est|était|ait)\s+fallu(?:\s+de\s+peu)?(?:\s+que?)?|s['']en\s+(?:est|était|ait)\s+fallu\s+de\s+peu(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?|[Pp]eu\s+s['']en\s+fall(?:ut|ait)(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?|s['']en\s+fall(?:ut|ait)(?:\s+de\s+peu)?(?:\s+que?)?|[Pp]eu\s+s['']en\s+(?:faudra|faudrait)(?:\s+qu[''](?:une?|elle?|ils?|elles?|on|il|[aeiouyh]|\w+))?|(?:il\s+)?(?:ne\s+)?s['']en\s+(?:faut|fallait|faudra|faudrait)\s+de\s+peu|il\s+s['']en\s+(?:est|était|ait)\s+fallu\s+de\s+peu|(?:il\s+)?ne\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+pas\s+de\s+beaucoup|peu\s+qu[''](?:un|il\s+fût))\b/i,

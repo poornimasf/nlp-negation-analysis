@@ -117,6 +117,29 @@ export const EXPLETIVE_TRIGGER_PATTERNS = {
     description: "Peu s'en faut expressions including all historical, literary, and grammatical variations with que"
   },
 
+  // Fear expressions
+  peurQue: {
+    patterns: [
+      // Basic forms with optional avoir
+      /\b(?:[Aa]voir\s+)?[Pp]eur\s+que?\b/i,
+      /\b(?:[Cc]raindre|[Rr]edouter)\s+que?\b/i,
+      /\b[Pp]ar\s+(?:[Pp]eur|[Cc]rainte)\s+que?\b/i
+    ],
+    confidence: 0.85,
+    description: "Fear expressions with capitalization support"
+  },
+
+  // Temporal expressions
+  avantQue: {
+    patterns: [
+      // Basic temporal expressions
+      /\b[Aa]vant\s+que?\b/i,
+      /\b(?:[Jj]usqu['']à|[Ee]n\s+attendant)\s+que?\b/i
+    ],
+    confidence: 0.8,
+    description: "Temporal expressions with capitalization support"
+  },
+
   // Other triggers
   other: {
     patterns: [
