@@ -280,6 +280,9 @@ export const BatchAnalysis = ({
                   <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
                     Analysis
                   </th>
+                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
+                    Prediction
+                  </th>
                   <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
                     Highlighted
                   </th>
@@ -296,6 +299,26 @@ export const BatchAnalysis = ({
                     </td>
                     <td style={{ padding: '12px' }}>
                       <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{result.label}</pre>
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'center' }}>
+                      <span style={{
+                        padding: '4px 8px',
+                        borderRadius: '4px',
+                        fontSize: '0.9em',
+                        backgroundColor: result.classification === 'Expletive' ? '#e3f2fd' :
+                                       result.classification === 'Logical' ? '#fff3e0' :
+                                       result.classification.includes('Likely') ? '#f3e5f5' : '#f5f5f5',
+                        color: result.classification === 'Expletive' ? '#1565c0' :
+                               result.classification === 'Logical' ? '#ef6c00' :
+                               result.classification.includes('Likely') ? '#7b1fa2' : '#757575',
+                        border: `1px solid ${
+                          result.classification === 'Expletive' ? '#bbdefb' :
+                          result.classification === 'Logical' ? '#ffe0b2' :
+                          result.classification.includes('Likely') ? '#e1bee7' : '#eeeeee'
+                        }`
+                      }}>
+                        {result.classification}
+                      </span>
                     </td>
                     <td style={{ padding: '12px' }}>
                       <div dangerouslySetInnerHTML={{ __html: result.highlightedText }}></div>

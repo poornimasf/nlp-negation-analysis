@@ -115,6 +115,7 @@ export const determineClassification = (text, analysis) => {
   // Get the full analysis text to check all lines
   const analysisLines = analysis.split('\n');
   const firstLine = analysisLines[0];
+  const fullText = analysisLines.join(' ');
 
   // Direct match for explicit classifications
   if (firstLine.includes('✅ EXPLETIVE NEGATION')) {
@@ -127,23 +128,43 @@ export const determineClassification = (text, analysis) => {
 
   // Handle ambiguous cases
   if (firstLine.includes('⚠️ AMBIGUOUS CASE')) {
-    // Check if we have a resolution from LLM or training data
-    if (analysis.includes('LLM ANALYSIS:')) {
-      if (analysis.toLowerCase().includes('expletive')) {
+    // Check for LLM resolution
+    if (fullText.includes('LLM ANALYSIS:')) {
+      // Look for specific LLM indicators
+      const llmSection = fullText.substring(fullText.indexOf('LLM ANALYSIS:'));
+      if (llmSection.toLowerCase().includes('expletive marker') || 
+          llmSection.toLowerCase().includes('expletive negation')) {
         return "Expletive (LLM)";
       }
-      if (analysis.toLowerCase().includes('logical')) {
+      if (llmSection.toLowerCase().includes('logical marker') || 
+          llmSection.toLowerCase().includes('logical negation')) {
         return "Logical (LLM)";
       }
     }
     
-    if (analysis.includes('TRAINING DATA:')) {
-      if (analysis.toLowerCase().includes('expletive')) {
+    // Check for training data resolution
+    if (fullText.includes('TRAINING DATA:')) {
+      // Look for similar examples
+      if (fullText.toLowerCase().includes('similar expletive examples') || 
+          fullText.toLowerCase().includes('expletive pattern')) {
         return "Expletive (Training)";
       }
-      if (analysis.toLowerCase().includes('logical')) {
+      if (fullText.toLowerCase().includes('similar logical examples') || 
+          fullText.toLowerCase().includes('logical pattern')) {
         return "Logical (Training)";
       }
+    }
+    
+    // Check evidence strength
+    const hasStrongExpletive = fullText.toLowerCase().includes('strong expletive trigger');
+    const hasLogicalMarkers = fullText.toLowerCase().includes('logical marker');
+    const hasSubjunctive = fullText.toLowerCase().includes('subjunctive mood');
+    
+    if (hasStrongExpletive && hasSubjunctive && !hasLogicalMarkers) {
+      return "Likely Expletive";
+    }
+    if (hasLogicalMarkers && !hasStrongExpletive) {
+      return "Likely Logical";
     }
     
     return "Ambiguous";
@@ -160,6 +181,15 @@ export const determineClassification = (text, analysis) => {
 
   // Handle uncertain cases
   if (firstLine.includes('❓ UNCERTAIN')) {
+    // Check for weak indicators
+    if (fullText.toLowerCase().includes('weak expletive trigger') || 
+        fullText.toLowerCase().includes('potential expletive')) {
+      return "Weak Expletive";
+    }
+    if (fullText.toLowerCase().includes('weak logical marker') || 
+        fullText.toLowerCase().includes('potential logical')) {
+      return "Weak Logical";
+    }
     return "Uncertain";
   }
 
