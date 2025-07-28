@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import { SimpleNegationAnalyzer } from './components';
+import SimpleNegationAnalyzer from './components/SimpleNegationAnalyzer';
 
 function App() {
   return (
