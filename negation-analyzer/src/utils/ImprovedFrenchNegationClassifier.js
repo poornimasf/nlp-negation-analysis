@@ -32,7 +32,19 @@ class ImprovedFrenchNegationClassifier {
             
             // Logical negation patterns
             logical_markers: {
-                // Standard negation particles
+                // Complete negation constructions (requiring both parts)
+                complete_negation: [
+                    /\bne\b[^.]*?\bpas\b/i,
+                    /\bne\b[^.]*?\bpoint\b/i,
+                    /\bne\b[^.]*?\bplus\b/i,
+                    /\bne\b[^.]*?\bjamais\b/i,
+                    /\bne\b[^.]*?\bguère\b/i,
+                    /\bne\b[^.]*?\bnullement\b/i,
+                    /\bne\b[^.]*?\bpersonne\b/i,
+                    /\bne\b[^.]*?\brien\b/i
+                ],
+                
+                // Secondary negation particles (only considered with proper context)
                 particles: [
                     /\bpas\b/i,
                     /\bpoint\b/i,
@@ -53,18 +65,10 @@ class ImprovedFrenchNegationClassifier {
                 // Compound negation
                 compound: [
                     /\bni\b.*\bni\b/i,
-                    /\bsans\b.*\bni\b/i,
-                    /\bne\b.*\bque?\b.*\bseulement\b/i
+                    /\bsans\b.*\bni\b/i
                 ],
                 
-                // Negative verbs and expressions
-                expressions: [
-                    /\b(?:ne\s+)?(?:sais|peux|veux|dois)\s+pas\b/i,
-                    /\b(?:ne\s+)?(?:fait|fais|font|faisons|faites)\s+(?:pas|plus|rien)\b/i,
-                    /\b(?:ne\s+)?(?:est|sont|était|étaient)\s+(?:pas|plus|jamais)\b/i
-                ],
-                
-                // Restrictive expressions
+                // Restrictive expressions (not necessarily negative)
                 restrictive: [
                     /\bne\b.*\bque\b/i,
                     /\bseulement\b/i,
@@ -182,6 +186,9 @@ class ImprovedFrenchNegationClassifier {
             patterns.forEach(pattern => {
                 const match = text.match(pattern);
                 if (match) {
+                    // Important: The presence of another 'ne' in the sentence is NOT
+                    // a reliable indicator for determining if a removed 'ne' was
+                    // expletive or logical, as they can coexist independently
                     evidence.logicalEvidence.markers.push({
                         type,
                         pattern: match[0],
@@ -194,23 +201,35 @@ class ImprovedFrenchNegationClassifier {
                     // Weight different types of logical markers
                     let score = 0;
                     switch(type) {
+                        case 'complete_negation':
+                            // Complete negation constructions are strongest indicators
+                            score = 0.6;
+                            evidence.logicalEvidence.reasoning.push(
+                                `Found complete negation construction: "${match[0]}"`
+                            );
+                            break;
                         case 'particles':
-                            score = 0.4; // Strong indicators like "pas", "point"
+                            // Particles alone are weaker without complete construction
+                            score = 0.2;
+                            evidence.logicalEvidence.reasoning.push(
+                                `Found negation particle: "${match[0]}" (weak indicator without ne)`
+                            );
                             break;
                         case 'pronouns':
                             score = 0.35; // Clear indicators like "personne", "rien"
                             break;
                         case 'compound':
-                            score = 0.45; // Very strong indicators like "ni...ni"
-                            break;
-                        case 'expressions':
-                            score = 0.3; // Common negative expressions
+                            score = 0.45; // Strong indicators like "ni...ni"
                             break;
                         case 'restrictive':
-                            score = 0.25; // Weaker indicators
+                            // Restrictive expressions need more context
+                            score = 0.15;
+                            evidence.logicalEvidence.reasoning.push(
+                                `Found restrictive expression: "${match[0]}" (needs context)`
+                            );
                             break;
                         default:
-                            score = 0.2;
+                            score = 0.1;
                     }
                     
                     evidence.logicalEvidence.score += score;
