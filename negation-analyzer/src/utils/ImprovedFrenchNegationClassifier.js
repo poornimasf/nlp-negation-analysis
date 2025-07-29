@@ -119,7 +119,7 @@ class ImprovedFrenchNegationClassifier {
             console.log('French negation classifier initialized successfully');
         } catch (error) {
             console.error('Initialization failed:', error);
-            throw new Error(\`Classifier initialization failed: \${error.message}\`);
+            throw new Error(`Classifier initialization failed: ${error.message}`);
         }
     }
 
@@ -140,7 +140,7 @@ class ImprovedFrenchNegationClassifier {
             
         } catch (error) {
             console.error('Classification error:', error);
-            throw new Error(\`Classification failed: \${error.message}\`);
+            throw new Error(`Classification failed: ${error.message}`);
         }
     }
 
@@ -176,7 +176,7 @@ class ImprovedFrenchNegationClassifier {
                 });
                 evidence.expletiveEvidence.score += 0.3;
                 evidence.expletiveEvidence.reasoning.push(
-                    \`Found expletive trigger: "\${match[0]}"\`
+                    `Found expletive trigger: "${match[0]}"`
                 );
             }
         });
@@ -186,9 +186,6 @@ class ImprovedFrenchNegationClassifier {
             patterns.forEach(pattern => {
                 const match = text.match(pattern);
                 if (match) {
-                    // Important: The presence of another 'ne' in the sentence is NOT
-                    // a reliable indicator for determining if a removed 'ne' was
-                    // expletive or logical, as they can coexist independently
                     evidence.logicalEvidence.markers.push({
                         type,
                         pattern: match[0],
@@ -202,27 +199,24 @@ class ImprovedFrenchNegationClassifier {
                     let score = 0;
                     switch(type) {
                         case 'complete_negation':
-                            // Complete negation constructions are strongest indicators
                             score = 0.6;
                             evidence.logicalEvidence.reasoning.push(
                                 `Found complete negation construction: "${match[0]}"`
                             );
                             break;
                         case 'particles':
-                            // Particles alone are weaker without complete construction
                             score = 0.2;
                             evidence.logicalEvidence.reasoning.push(
                                 `Found negation particle: "${match[0]}" (weak indicator without ne)`
                             );
                             break;
                         case 'pronouns':
-                            score = 0.35; // Clear indicators like "personne", "rien"
+                            score = 0.35;
                             break;
                         case 'compound':
-                            score = 0.45; // Strong indicators like "ni...ni"
+                            score = 0.45;
                             break;
                         case 'restrictive':
-                            // Restrictive expressions need more context
                             score = 0.15;
                             evidence.logicalEvidence.reasoning.push(
                                 `Found restrictive expression: "${match[0]}" (needs context)`
@@ -234,7 +228,7 @@ class ImprovedFrenchNegationClassifier {
                     
                     evidence.logicalEvidence.score += score;
                     evidence.logicalEvidence.reasoning.push(
-                        \`Found \${type} negation: "\${match[0]}"\`
+                        `Found ${type} negation: "${match[0]}"`
                     );
                 }
             });
@@ -254,23 +248,21 @@ class ImprovedFrenchNegationClassifier {
                         )
                     });
                     
-                    // Weight verb moods
                     if (mood === 'subjunctive') {
                         evidence.expletiveEvidence.score += 0.2;
                         evidence.verbForms.reasoning.push(
-                            \`Found subjunctive form: "\${match[0]}" (supports expletive)\`
+                            `Found subjunctive form: "${match[0]}" (supports expletive)`
                         );
                     } else if (mood === 'indicative') {
                         evidence.logicalEvidence.score += 0.15;
                         evidence.verbForms.reasoning.push(
-                            \`Found indicative form: "\${match[0]}" (supports logical)\`
+                            `Found indicative form: "${match[0]}" (supports logical)`
                         );
                     }
                 }
             });
         });
 
-        // Cap scores at 0.95
         evidence.expletiveEvidence.score = Math.min(evidence.expletiveEvidence.score, 0.95);
         evidence.logicalEvidence.score = Math.min(evidence.logicalEvidence.score, 0.95);
 
@@ -278,34 +270,45 @@ class ImprovedFrenchNegationClassifier {
     }
 
     async _getLLMPrediction(text, evidence) {
-        const prompt = \`Analysez cette phrase française pour déterminer si un "ne" manquant était expletif ou logique.
+        const prompt = `En tant que linguiste spécialisé en français, analysez cette phrase pour déterminer si le "ne" (présent ou absent) est explétif ou de négation logique.
 
-Phrase: "\${text}"
+Phrase à analyser : "${text}"
 
-Indices trouvés:
+Éléments grammaticaux repérés :
 ${evidence.expletiveEvidence.triggers.length > 0 ? 
-  '- Déclencheurs expletifs: ' + evidence.expletiveEvidence.triggers.map(t => t.pattern).join(', ') : ''}
+  '• Constructions déclenchant le ne explétif :\n' + 
+  evidence.expletiveEvidence.triggers.map(t => `  - ${t.pattern} (construction ${t.type})`).join('\n') : ''}
+
 ${evidence.logicalEvidence.markers.length > 0 ? 
-  '- Marqueurs de négation logique: ' + evidence.logicalEvidence.markers.map(m => m.pattern).join(', ') : ''}
+  '• Marqueurs de négation logique :\n' + 
+  evidence.logicalEvidence.markers.map(m => `  - ${m.pattern} (négation ${m.type})`).join('\n') : ''}
+
 ${evidence.verbForms.forms.length > 0 ? 
-  '- Formes verbales: ' + evidence.verbForms.forms.map(f => \`\${f.form} (\${f.mood})\`).join(', ') : ''}
+  '• Modes et temps verbaux :\n' + 
+  evidence.verbForms.forms.map(f => `  - ${f.form} (${f.mood === 'subjunctive' ? 'subjonctif' : 'indicatif'})`).join('\n') : ''}
 
-Instructions détaillées:
-1. Analysez la structure syntaxique complète
-2. Identifiez le type de négation:
-   - Négation LOGIQUE: exprime une vraie négation (ex: ne...pas)
-   - Négation EXPLETIVE: ne facultatif qui n'exprime pas une vraie négation
-3. Considérez:
-   - Les marqueurs de négation logique (pas, point, jamais, etc.)
-   - Les déclencheurs expletifs (peur que, avant que, etc.)
-   - Le mode verbal (subjonctif vs indicatif)
-   - Le contexte sémantique complet
+Rappel des constructions typiques :
+• Ne explétif :
+  - Verbes de crainte : "avoir peur que", "craindre que"
+  - Locutions : "avant que", "à moins que"
+  - Tournures : "peu s'en faut que", "il s'en faut de peu que"
 
-Format de réponse:
-Type: [LOGIQUE/EXPLETIF]
-Confiance: [0-1]
-Indices: [liste d'indices trouvés]
-Justification: [explication détaillée]\`;
+• Négation logique :
+  - Ne...pas, ne...plus, ne...jamais
+  - Ne...rien, ne...personne
+  - Ne...guère, ne...point
+
+Analyse détaillée et justification :
+- Identifiez la construction principale
+- Examinez le mode verbal (subjonctif/indicatif)
+- Vérifiez la présence d'autres marqueurs
+- Déterminez si le "ne" est explétif ou logique
+
+Format de réponse :
+Type : [LOGIQUE/EXPLETIF]
+Confiance : [0-1]
+Indices : [liste d'indices trouvés]
+Justification : [explication détaillée]`;
 
         const response = await this.inference.textGeneration({
             model: this.modelId,
@@ -325,23 +328,18 @@ Justification: [explication détaillée]\`;
         try {
             const lines = text.split('\n');
             
-            // Extract type
-            const typeMatch = lines.find(l => l.toLowerCase().includes('type:'))?.split(':')[1]?.trim().toLowerCase();
+            const typeMatch = lines.find(l => l.toLowerCase().includes('type :'))?.split(':')[1]?.trim().toLowerCase();
             const isExpletive = typeMatch?.includes('expletif') || typeMatch?.includes('explétif');
             const isLogical = typeMatch?.includes('logique');
             
-            // Extract confidence
-            const confidenceMatch = lines.find(l => l.toLowerCase().includes('confiance:'))?.split(':')[1]?.trim();
+            const confidenceMatch = lines.find(l => l.toLowerCase().includes('confiance :'))?.split(':')[1]?.trim();
             const confidence = parseFloat(confidenceMatch) || 0;
             
-            // Extract evidence
-            const indicesMatch = lines.find(l => l.toLowerCase().includes('indices:'))?.split(':')[1]?.trim();
+            const indicesMatch = lines.find(l => l.toLowerCase().includes('indices :'))?.split(':')[1]?.trim();
             const indices = indicesMatch ? indicesMatch.split(',').map(i => i.trim()) : [];
             
-            // Extract reasoning
-            const justificationMatch = lines.find(l => l.toLowerCase().includes('justification:'))?.split(':')[1]?.trim();
+            const justificationMatch = lines.find(l => l.toLowerCase().includes('justification :'))?.split(':')[1]?.trim();
             
-            // Determine type with clear default
             let type = 'UNCERTAIN';
             if (isExpletive) type = 'EXPLETIVE';
             else if (isLogical) type = 'LOGICAL';
@@ -366,14 +364,12 @@ Justification: [explication détaillée]\`;
     }
 
     _combineEvidence(llmResult, evidence) {
-        // Weight factors for different evidence types
         const weights = {
             llm: 0.4,
             patterns: 0.4,
             verbForms: 0.2
         };
 
-        // Calculate scores for each type
         const expletiveScore = (
             (llmResult.type === 'EXPLETIVE' ? llmResult.confidence : 0) * weights.llm +
             evidence.expletiveEvidence.score * weights.patterns
@@ -384,11 +380,9 @@ Justification: [explication détaillée]\`;
             evidence.logicalEvidence.score * weights.patterns
         );
 
-        // Determine classification and confidence
         let classification, confidence;
         
         if (Math.abs(expletiveScore - logicalScore) < 0.2) {
-            // Scores are too close - mark as uncertain
             classification = 'UNCERTAIN';
             confidence = Math.max(expletiveScore, logicalScore);
         } else if (expletiveScore > logicalScore) {
@@ -399,22 +393,17 @@ Justification: [explication détaillée]\`;
             confidence = logicalScore;
         }
 
-        // Cap confidence
         confidence = Math.min(Math.max(confidence, 0), 0.95);
 
-        // Collect all evidence
         const allEvidence = [
-            // Model evidence
-            \`Model prediction: \${llmResult.type} (\${Math.round(llmResult.confidence * 100)}% confidence)\`,
+            `Prédiction du modèle : ${llmResult.type} (confiance ${Math.round(llmResult.confidence * 100)}%)`,
             llmResult.justification,
             
-            // Pattern evidence
             ...evidence.expletiveEvidence.reasoning,
             ...evidence.logicalEvidence.reasoning,
             ...evidence.verbForms.reasoning,
             
-            // Final confidence
-            \`Combined confidence: \${Math.round(confidence * 100)}%\`
+            `Confiance combinée : ${Math.round(confidence * 100)}%`
         ].filter(Boolean);
 
         return {
@@ -440,11 +429,11 @@ Justification: [explication détaillée]\`;
                 const result = await this.classifyNegation(text);
                 results.push(result);
             } catch (error) {
-                console.error(\`Batch classification error for text: \${text}\`, error);
+                console.error(`Batch classification error for text: ${text}`, error);
                 results.push({
                     classification: 'ERROR',
                     confidence: 0,
-                    evidence: \`Classification error: \${error.message}\`
+                    evidence: `Classification error: ${error.message}`
                 });
             }
         }
