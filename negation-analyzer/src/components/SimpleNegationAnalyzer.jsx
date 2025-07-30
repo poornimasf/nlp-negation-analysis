@@ -208,29 +208,22 @@ const SimpleNegationAnalyzer = () => {
               lineHeight: '1.5',
               border: '1px solid #e9ecef'
             }}>
-{`[
-  {
-    "text": "J'ai peur qu'il vienne",
-    "pattern": "avoir peur que",
-    "nePosition": 3,
-    "classification": "Expletive",
-    "confidence": 0.85
-  },
-  {
-    "text": "Avant qu'elle parte",
-    "pattern": "avant que",
-    "nePosition": 2,
-    "classification": "Expletive",
-    "confidence": 0.9
-  },
-  {
-    "text": "Je doute qu'il soit là",
-    "pattern": "douter que",
-    "nePosition": 3,
-    "classification": "Expletive",
-    "confidence": 0.8
-  }
-]`}
+{`{
+  "examples": [
+    {
+      "text": "J'ai peur qu'il vienne",
+      "has_expletive_ne": true,
+      "trigger": "peur que",
+      "classification": "expletive"
+    },
+    {
+      "text": "Je veux pas qu'il parte",
+      "has_expletive_ne": false,
+      "trigger": "logical",
+      "classification": "logical"
+    }
+  ]
+}`}
             </pre>
             <div style={{ 
               marginTop: '15px', 
@@ -244,10 +237,9 @@ const SimpleNegationAnalyzer = () => {
               <strong>Fields Explanation:</strong>
               <ul style={{ marginTop: '8px', marginBottom: '0', paddingLeft: '20px' }}>
                 <li><code>text</code>: The original French sentence</li>
-                <li><code>pattern</code>: The trigger pattern for NE placement</li>
-                <li><code>nePosition</code>: Word index where NE should be placed (0-based)</li>
-                <li><code>classification</code>: "Expletive" or "Logical"</li>
-                <li><code>confidence</code>: Confidence score (0.0 to 1.0)</li>
+                <li><code>has_expletive_ne</code>: Boolean indicating presence of expletive ne</li>
+                <li><code>trigger</code>: The trigger pattern or "logical" for logical negation</li>
+                <li><code>classification</code>: "expletive" or "logical"</li>
               </ul>
             </div>
           </div>
