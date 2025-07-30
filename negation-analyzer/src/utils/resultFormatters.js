@@ -137,7 +137,37 @@ export const formatHybridResult = (patternAnalysis, llmText) => {
   
   // LLM Analysis Section
   output.push('🤖 LLM ANALYSIS:');
-  output.push(llmText);
+  
+  // Parse LLM response
+  if (llmText) {
+    try {
+      // Extract Analysis and Classification sections
+      const analysisMatch = llmText.match(/Analysis:\s*(.*?)(?=Classification:|$)/s);
+      const classificationMatch = llmText.match(/Classification:\s*(EXPLETIVE|LOGICAL)/i);
+      
+      if (analysisMatch && analysisMatch[1]) {
+        // Split analysis into bullet points
+        const analysis = analysisMatch[1].trim();
+        const points = analysis.split(/[.•]\s+/).filter(p => p.trim());
+        points.forEach(point => {
+          if (point.trim()) {
+            output.push(`• ${point.trim()}`);
+          }
+        });
+      }
+      
+      if (classificationMatch && classificationMatch[1]) {
+        output.push('');  // Add spacing
+        const classification = classificationMatch[1].trim().toUpperCase();
+        output.push(`📝 LLM Classification: ${classification}`);
+      }
+    } catch (error) {
+      console.error('Error parsing LLM response:', error);
+      output.push('• ' + llmText);  // Fallback to raw text if parsing fails
+    }
+  } else {
+    output.push('• No LLM analysis available');
+  }
   
   return output.join('\n');
 };
