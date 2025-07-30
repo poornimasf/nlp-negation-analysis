@@ -12,21 +12,15 @@ export const classifyExpletive = async (text) => {
     }
 
     const response = await fetch(
-      'https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud',
+      'https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud/',
       {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${process.env.REACT_APP_HF_TOKEN}`,
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          inputs: `Analyze this French sentence where a ne has been removed. Consider both possibilities equally: ${text}`,
-          parameters: {
-            max_new_tokens: 256,
-            temperature: 0.1,
-            top_p: 0.95,
-            return_full_text: false
-          }
+          inputs: `Analyze this French sentence where a ne has been removed. Consider both possibilities equally: ${text}`
         })
       }
     );
@@ -39,7 +33,9 @@ export const classifyExpletive = async (text) => {
     }
 
     const result = await response.json();
-    return result.generated_text || 'No analysis available';
+    return Array.isArray(result) && result.length > 0 && result[0].generated_text 
+      ? result[0].generated_text 
+      : 'No analysis available';
   } catch (error) {
     console.error('CroissantLLM Error:', error);
     throw error;
