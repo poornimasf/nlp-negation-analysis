@@ -322,7 +322,12 @@ const SimpleNegationAnalyzer = () => {
                         <div dangerouslySetInnerHTML={{ __html: result.highlightedText }}></div>
                       </td>
                       <td style={{ padding: '12px' }}>
-                        {result.proposedSentence ? result.proposedSentence.replace(/\bne\b/g, 'Ne') : 'N/A'}
+                        <div dangerouslySetInnerHTML={{ 
+                          __html: result.proposedSentence ? 
+                            result.proposedSentence.replace(/\bne\b/gi, match => 
+                              `<span style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500">NE</span>`
+                            ) : 'N/A'
+                        }}></div>
                       </td>
                     </tr>
                   ))}
