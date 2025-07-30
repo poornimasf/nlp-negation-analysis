@@ -188,7 +188,7 @@ const SimpleNegationAnalyzer = () => {
 
       {/* Training Data Section */}
       {analysisMode === 'TRAINING_DATA' && (
-        <>
+        <div className="card">
           <TrainingDataSection
             trainingData={trainingData}
             handleFileUpload={handleFileUpload}
@@ -196,9 +196,8 @@ const SimpleNegationAnalyzer = () => {
             uploadError={uploadError}
           />
           
-          {/* JSON Format Example Card */}
-          <div className="card" style={{ marginTop: '20px' }}>
-            <h4 style={{ marginBottom: '15px', color: '#333' }}>Expected Training Data Format</h4>
+          <div style={{ marginTop: '20px' }}>
+            <h4 style={{ marginBottom: '15px', color: '#333' }}>📋 Expected JSON Format:</h4>
             <pre style={{
               backgroundColor: '#f8f9fa',
               padding: '15px',
@@ -243,7 +242,7 @@ const SimpleNegationAnalyzer = () => {
               </ul>
             </div>
           </div>
-        </>
+        </div>
       )}
 
       <div className="card">
