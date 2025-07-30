@@ -20,14 +20,30 @@ export const classifyExpletive = async (text) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          inputs: `Analyze whether this French sentence requires expletive or logical negation: "${text}"
+          inputs: `Example 1 (Expletive Negation):
+Sentence: "Je crains qu'il ne vienne trop tard."
+Analysis: The verb "craindre" triggers expletive ne. There is no actual negation intended.
+Classification: EXPLETIVE
+Reasoning: The negation particle "ne" is used idiomatically with verbs of fear.
+Conclusion: EXPLETIVE
+
+Example 2 (Logical Negation):
+Sentence: "Je ne veux pas qu'il parte."
+Analysis: This sentence uses "ne ... pas" to directly negate the verb "vouloir". The negation is intentional and affects the meaning.
+Classification: LOGICAL
+Reasoning: The negative construction changes the speaker's intention and is semantically negative.
+Conclusion: LOGICAL
+
+Now analyze the following French sentence to determine whether the sentence previously contained **expletive negation** or **logical negation**:
+
+"${text}"
 
 Your task:
-1. Determine if this sentence requires expletive ne (as in "Je crains qu'il ne vienne") or logical negation (as in "Je ne veux pas").
-2. Explain your reasoning based on the triggers, structure, and context.
-3. Provide your conclusion: EXPLETIVE or LOGICAL.
+1. Determine if the sentence previously contained **expletive negation** (e.g., *Je crains qu'il ne vienne*) or **logical negation** (e.g., *Je ne veux pas*).
+2. Analyze the **negation trigger(s)**, grammatical **structure**, and **context**.
+3. Provide a final classification: \`EXPLETIVE\` or \`LOGICAL\`.
 
-Format your response as:
+Respond in the following format: 
 Analysis: [your detailed reasoning]
 Classification: [EXPLETIVE or LOGICAL]`
         })

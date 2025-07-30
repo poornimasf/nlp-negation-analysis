@@ -141,29 +141,56 @@ export const formatHybridResult = (patternAnalysis, llmText) => {
   // Parse LLM response
   if (llmText) {
     try {
-      // Extract Analysis and Classification sections
+      // Extract sections using regex
       const analysisMatch = llmText.match(/Analysis:\s*(.*?)(?=Classification:|$)/s);
       const classificationMatch = llmText.match(/Classification:\s*(EXPLETIVE|LOGICAL)/i);
+      const reasoningMatch = llmText.match(/Reasoning:\s*(.*?)(?=Conclusion:|$)/s);
+      const conclusionMatch = llmText.match(/Conclusion:\s*(EXPLETIVE|LOGICAL)/i);
       
       if (analysisMatch && analysisMatch[1]) {
-        // Split analysis into bullet points
+        output.push('📝 Analysis:');
         const analysis = analysisMatch[1].trim();
-        const points = analysis.split(/[.•]\s+/).filter(p => p.trim());
-        points.forEach(point => {
-          if (point.trim()) {
-            output.push(`• ${point.trim()}`);
-          }
-        });
+        output.push(`• ${analysis}`);
+        output.push('');
+      }
+      
+      if (reasoningMatch && reasoningMatch[1]) {
+        output.push('💭 Reasoning:');
+        const reasoning = reasoningMatch[1].trim();
+        output.push(`• ${reasoning}`);
+        output.push('');
       }
       
       if (classificationMatch && classificationMatch[1]) {
-        output.push('');  // Add spacing
         const classification = classificationMatch[1].trim().toUpperCase();
-        output.push(`📝 LLM Classification: ${classification}`);
+        output.push(`✨ Classification: ${classification}`);
+      }
+      
+      if (conclusionMatch && conclusionMatch[1]) {
+        const conclusion = conclusionMatch[1].trim().toUpperCase();
+        if (conclusion !== classificationMatch?.[1].trim().toUpperCase()) {
+          output.push(`🎯 Final Conclusion: ${conclusion}`);
+        }
       }
     } catch (error) {
       console.error('Error parsing LLM response:', error);
-      output.push('• ' + llmText);  // Fallback to raw text if parsing fails
+      // Fallback to simpler parsing if the detailed format fails
+      const basicAnalysisMatch = llmText.match(/Analysis:\s*(.*?)(?=Classification:|$)/s);
+      const basicClassificationMatch = llmText.match(/Classification:\s*(EXPLETIVE|LOGICAL)/i);
+      
+      if (basicAnalysisMatch && basicAnalysisMatch[1]) {
+        output.push('📝 Analysis:');
+        output.push(`• ${basicAnalysisMatch[1].trim()}`);
+        output.push('');
+      }
+      
+      if (basicClassificationMatch && basicClassificationMatch[1]) {
+        output.push(`✨ Classification: ${basicClassificationMatch[1].trim().toUpperCase()}`);
+      }
+      
+      if (!basicAnalysisMatch && !basicClassificationMatch) {
+        output.push('• ' + llmText);  // Last resort: show raw text
+      }
     }
   } else {
     output.push('• No LLM analysis available');
