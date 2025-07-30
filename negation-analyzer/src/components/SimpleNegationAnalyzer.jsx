@@ -78,55 +78,45 @@ const SimpleNegationAnalyzer = () => {
 
           const analysis = await analyzer.analyzeNegation(sentence);
           let formattedResult;
+          let classification;
+          const proposedSentence = proposeNePlacement(sentence, analysisMode, trainingData);
 
           switch (analysisMode) {
             case 'RULE_BASED':
               formattedResult = formatRuleBasedResult(analysis);
+              classification = await determineClassification(sentence, formattedResult);
               break;
+
             case 'HYBRID': {
               const llmAnalysis = await classifyExpletive(sentence);
               formattedResult = formatHybridResult(analysis, llmAnalysis);
+              classification = await determineClassification(sentence, formattedResult);
               break;
             }
+
             case 'TRAINING_DATA':
               if (useTrainingEnhancement && trainingData.length > 0) {
                 const trainingAnalysis = classifyWithBinaryClassifier(sentence, trainingData);
                 formattedResult = formatTrainingResult(analysis, trainingAnalysis);
                 const prediction = formattedResult.match(/Prediction:\s*(.*?)(?:\n|$)/);
-                const classification = prediction ? prediction[1].trim() : "Uncertain";
-                results.push({
-                  id: index + 1,
-                  text: sentence,
-                  highlightedText: highlight(sentence),
-                  label: formattedResult,
-                  classification,
-                  proposedSentence
-                });
+                classification = prediction ? prediction[1].trim() : "Uncertain";
               } else {
                 formattedResult = formatRuleBasedResult(analysis);
-                results.push({
-                  id: index + 1,
-                  text: sentence,
-                  highlightedText: highlight(sentence),
-                  label: formattedResult,
-                  classification: await determineClassification(sentence, formattedResult),
-                  proposedSentence
-                });
+                classification = await determineClassification(sentence, formattedResult);
               }
               break;
+
             default:
               formattedResult = formatRuleBasedResult(analysis);
+              classification = await determineClassification(sentence, formattedResult);
           }
-
-          // Generate proposed sentence with 'ne' placement
-          const proposedSentence = proposeNePlacement(sentence, analysisMode, trainingData);
 
           results.push({
             id: index + 1,
             text: sentence,
             highlightedText: highlight(sentence),
             label: formattedResult,
-            classification: await determineClassification(sentence, formattedResult),
+            classification,
             proposedSentence
           });
 
@@ -139,7 +129,7 @@ const SimpleNegationAnalyzer = () => {
             highlightedText: sentence,
             label: formatErrorMessage(error),
             classification: "Error",
-            proposedSentence: sentence // Original sentence for errors
+            proposedSentence: sentence
           });
           setBatchResults([...results]);
         }
@@ -400,8 +390,8 @@ const SimpleNegationAnalyzer = () => {
                       <td style={{ padding: '12px' }}>
                         <div dangerouslySetInnerHTML={{ 
                           __html: result.proposedSentence ? 
-                            result.proposedSentence.replace(/\bne\b/gi, match => 
-                              `<span style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500">NE</span>`
+                            result.proposedSentence.replace(/\bNE\b/g, 
+                              '<span style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500">NE</span>'
                             ) : 'N/A'
                         }}></div>
                       </td>
