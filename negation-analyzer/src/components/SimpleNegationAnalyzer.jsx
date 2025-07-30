@@ -93,9 +93,25 @@ const SimpleNegationAnalyzer = () => {
                 const trainingAnalysis = classifyWithBinaryClassifier(sentence, trainingData);
                 formattedResult = formatTrainingResult(analysis, trainingAnalysis);
                 const prediction = formattedResult.match(/Prediction:\s*(.*?)(?:\n|$)/);
-                classification = prediction ? prediction[1].trim() : "Uncertain";
+                const classification = prediction ? prediction[1].trim() : "Uncertain";
+                results.push({
+                  id: index + 1,
+                  text: sentence,
+                  highlightedText: highlight(sentence),
+                  label: formattedResult,
+                  classification,
+                  proposedSentence
+                });
               } else {
                 formattedResult = formatRuleBasedResult(analysis);
+                results.push({
+                  id: index + 1,
+                  text: sentence,
+                  highlightedText: highlight(sentence),
+                  label: formattedResult,
+                  classification: await determineClassification(sentence, formattedResult),
+                  proposedSentence
+                });
               }
               break;
             default:
