@@ -1,61 +1,14 @@
 /**
  * Utility for proposing 'ne' placement in French sentences
+ * Note: Pattern presence alone is not sufficient for determining negation type
  */
 
-// Rules for Rule-Based mode only
-const EXPLETIVE_RULES = {
-  FEAR_DOUBT: [
-    {
-      pattern: /\b(avoir\s+peur|craindre|redouter)\s+que\b/i,
-      nePosition: (text, match) => {
-        const queIndex = text.indexOf('que', match.index + match[0].length);
-        return queIndex + 'que'.length;
-      }
-    }
-  ],
+// Logical negation markers
+const LOGICAL_MARKERS = [
+  /\b(?:pas|point|plus|jamais|rien|personne|aucun[e]?|guère|nullement)\b/i
+];
 
-  TEMPORAL: [
-    {
-      pattern: /\b(avant|jusqu'à\s+ce)\s+que\b/i,
-      nePosition: (text, match) => {
-        const queIndex = text.indexOf('que', match.index + match[0].length);
-        return queIndex + 'que'.length;
-      }
-    }
-  ],
-
-  PREVENTION: [
-    {
-      pattern: /\b(empêcher|éviter|prendre\s+garde)\s+que\b/i,
-      nePosition: (text, match) => {
-        const queIndex = text.indexOf('que', match.index + match[0].length);
-        return queIndex + 'que'.length;
-      }
-    }
-  ],
-
-  COMPARATIVE: [
-    {
-      pattern: /\b(plus|moins|meilleur|mieux|autre|autrement)\s+que\b/i,
-      nePosition: (text, match) => {
-        const queIndex = text.indexOf('que', match.index + match[0].length);
-        return queIndex + 'que'.length;
-      }
-    }
-  ],
-
-  IMPERSONAL: [
-    {
-      pattern: /\b(il\s+s'en\s+faut|il\s+tient\s+à\s+ce)\s+que\b/i,
-      nePosition: (text, match) => {
-        const queIndex = text.indexOf('que', match.index + match[0].length);
-        return queIndex + 'que'.length;
-      }
-    }
-  ]
-};
-
-// Common verb patterns (for Rule-Based fallback only)
+// Common positions for 'ne' placement
 const VERB_PATTERNS = [
   /\b(?:suis|es|est|sommes|êtes|sont)\b/i,
   /\b(?:seront|sera|serai|seras|serez|serons)\b/i,
@@ -69,21 +22,69 @@ const VERB_PATTERNS = [
   /\b(?:viens|vient|venons|venez|viennent)\b/i
 ];
 
+// Expletive patterns - Note: These alone don't determine negation type
+const EXPLETIVE_PATTERNS = {
+  FEAR_DOUBT: [
+    {
+      pattern: /\b(?:avoir\s+peur|craindre|redouter)\s+que\b/i,
+      name: 'FEAR_EXPRESSION'
+    }
+  ],
+  TEMPORAL: [
+    {
+      pattern: /\b(?:avant)\s+que\b/i,
+      name: 'TEMPORAL_EXPRESSION'
+    }
+  ],
+  IMPERSONAL: [
+    {
+      pattern: /\b(?:il\s+s['']en\s+faut)\s+que\b/i,
+      name: 'IMPERSONAL_EXPRESSION'
+    }
+  ]
+};
+
 /**
- * Find matching rule for Rule-Based mode
- * @param {string} text - Input text
- * @returns {Object|null} - Matching rule info or null
+ * Analyzes clause structure for completeness and validity
  */
-function findRuleMatch(text) {
-  for (const [category, rules] of Object.entries(EXPLETIVE_RULES)) {
-    for (const rule of rules) {
+function analyzeClauseStructure(text) {
+  // Basic clause structure check
+  const hasMainVerb = VERB_PATTERNS.some(pattern => pattern.test(text));
+  const hasQue = /\bque\b/i.test(text);
+  const hasSubordinateClause = hasQue && text.split(/\bque\b/i)[1].trim().length > 0;
+
+  return {
+    isComplete: hasMainVerb && hasSubordinateClause,
+    hasMainVerb,
+    hasSubordinateClause
+  };
+}
+
+/**
+ * Checks for presence of logical negation markers
+ */
+function hasLogicalNegation(text) {
+  return LOGICAL_MARKERS.some(marker => marker.test(text));
+}
+
+/**
+ * Finds matching expletive pattern and analyzes context
+ */
+function findPatternMatch(text) {
+  for (const [category, patterns] of Object.entries(EXPLETIVE_PATTERNS)) {
+    for (const rule of patterns) {
       const match = text.match(rule.pattern);
       if (match) {
-        return {
-          category,
-          match,
-          nePosition: rule.nePosition(text, match)
-        };
+        // Find position for NE (after 'que')
+        const queIndex = text.toLowerCase().indexOf('que', match.index + match[0].length);
+        if (queIndex !== -1) {
+          return {
+            category,
+            pattern: rule.name,
+            match,
+            nePosition: queIndex + 'que'.length
+          };
+        }
       }
     }
   }
@@ -91,65 +92,109 @@ function findRuleMatch(text) {
 }
 
 /**
+ * Calculates confidence based on multiple factors
+ */
+function calculateConfidence(analysis) {
+  let confidence = 0;
+
+  // Base confidence from pattern presence
+  if (analysis.hasPattern) confidence += 0.3;
+  
+  // Structure analysis
+  if (analysis.hasCompleteStructure) confidence += 0.3;
+  
+  // Logical negation check
+  if (!analysis.hasLogicalNegation) confidence += 0.2;
+  
+  // Context analysis
+  if (analysis.hasValidContext) confidence += 0.2;
+
+  // Adjustments
+  if (analysis.hasLogicalNegation) confidence *= 0.5;
+  if (!analysis.hasCompleteStructure) confidence *= 0.7;
+  if (analysis.hasAmbiguousContext) confidence *= 0.75;
+
+  return Math.min(confidence, 0.9);
+}
+
+/**
  * Rule-Based mode: Propose 'ne' placement using grammatical rules
- * @param {string} text - Input text
- * @returns {Object} - Proposal with text and metadata
  */
 function proposeFromRules(text) {
-  // Try specific construction rules first
-  const ruleMatch = findRuleMatch(text);
-  if (ruleMatch) {
+  // Find potential expletive pattern
+  const patternMatch = findPatternMatch(text);
+  
+  // Analyze structure and context
+  const structure = analyzeClauseStructure(text);
+  const hasLogical = hasLogicalNegation(text);
+
+  // If no pattern match or incomplete structure, try verb pattern
+  if (!patternMatch || !structure.isComplete) {
     const words = text.split(/(\s+)/);
-    const position = ruleMatch.nePosition;
+    let verbIndex = -1;
     
+    for (let i = 0; i < words.length; i++) {
+      if (VERB_PATTERNS.some(pattern => pattern.test(words[i]))) {
+        verbIndex = i;
+        break;
+      }
+    }
+
+    if (verbIndex === -1) {
+      return {
+        text: text,
+        confidence: 0,
+        rule: 'NO_MATCH'
+      };
+    }
+
+    // Low confidence verb-based proposal
     return {
       text: [
-        ...words.slice(0, position),
-        "ne",
+        ...words.slice(0, verbIndex),
+        "NE",
         " ",
-        ...words.slice(position)
+        ...words.slice(verbIndex)
       ].join(""),
-      confidence: 0.85,
-      rule: ruleMatch.category
+      confidence: 0.3,
+      rule: 'VERB_PATTERN'
     };
   }
 
-  // Fall back to verb pattern matching
-  const words = text.split(/(\s+)/);
-  let verbIndex = -1;
-  
-  for (let i = 0; i < words.length; i++) {
-    if (VERB_PATTERNS.some(pattern => pattern.test(words[i]))) {
-      verbIndex = i;
-      break;
-    }
-  }
+  // Calculate confidence based on all factors
+  const confidence = calculateConfidence({
+    hasPattern: true,
+    hasCompleteStructure: structure.isComplete,
+    hasLogicalNegation: hasLogical,
+    hasValidContext: true,
+    hasAmbiguousContext: false
+  });
 
-  if (verbIndex === -1) {
+  // Only propose NE if confidence is sufficient
+  if (confidence < 0.4) {
     return {
       text: text,
-      confidence: 0,
-      rule: 'NO_MATCH'
+      confidence,
+      rule: 'LOW_CONFIDENCE'
     };
   }
 
+  // Create proposal with NE
+  const words = text.split(/(\s+)/);
   return {
     text: [
-      ...words.slice(0, verbIndex),
-      "ne",
+      ...words.slice(0, patternMatch.nePosition),
+      "NE",
       " ",
-      ...words.slice(verbIndex)
+      ...words.slice(patternMatch.nePosition)
     ].join(""),
-    confidence: 0.6,
-    rule: 'VERB_PATTERN'
+    confidence,
+    rule: `${patternMatch.category}_${patternMatch.pattern}`
   };
 }
 
 /**
  * Training Data mode: Use only training examples for proposals
- * @param {string} text - Input text
- * @param {Array} trainingData - Training examples
- * @returns {Object} - Proposal with text and metadata
  */
 function proposeFromTrainingData(text, trainingData) {
   if (!trainingData?.length) {
@@ -180,7 +225,7 @@ function proposeFromTrainingData(text, trainingData) {
   return {
     text: [
       ...words.slice(0, position),
-      "ne",
+      "NE",
       " ",
       ...words.slice(position)
     ].join(""),
@@ -191,10 +236,6 @@ function proposeFromTrainingData(text, trainingData) {
 
 /**
  * Main function for proposing 'ne' placement
- * @param {string} text - The input sentence
- * @param {string} mode - Analysis mode ('RULE_BASED' or 'TRAINING_DATA')
- * @param {Array} trainingData - Training data for TRAINING_DATA mode
- * @returns {string} - Sentence with proposed 'ne' placement
  */
 export default function proposeNePlacement(text, mode = 'RULE_BASED', trainingData = []) {
   if (mode === 'TRAINING_DATA') {
@@ -203,7 +244,7 @@ export default function proposeNePlacement(text, mode = 'RULE_BASED', trainingDa
     return proposal.text;
   }
   
-  // Rule-Based mode: Use grammatical rules
+  // Rule-Based mode: Use grammatical rules with comprehensive analysis
   const proposal = proposeFromRules(text);
   return proposal.text;
 }
