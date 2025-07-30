@@ -180,12 +180,70 @@ const SimpleNegationAnalyzer = () => {
 
       {/* Training Data Section */}
       {analysisMode === 'TRAINING_DATA' && (
-        <TrainingDataSection
-          trainingData={trainingData}
-          handleFileUpload={handleFileUpload}
-          clearTrainingData={clearTrainingData}
-          uploadError={uploadError}
-        />
+        <>
+          <TrainingDataSection
+            trainingData={trainingData}
+            handleFileUpload={handleFileUpload}
+            clearTrainingData={clearTrainingData}
+            uploadError={uploadError}
+          />
+          
+          {/* JSON Format Example Card */}
+          <div className="card" style={{ marginTop: '20px' }}>
+            <h4 style={{ marginBottom: '15px', color: '#333' }}>Expected Training Data Format</h4>
+            <pre style={{
+              backgroundColor: '#f8f9fa',
+              padding: '15px',
+              borderRadius: '4px',
+              overflowX: 'auto',
+              fontSize: '14px',
+              lineHeight: '1.5',
+              border: '1px solid #e9ecef'
+            }}>
+{`[
+  {
+    "text": "J'ai peur qu'il vienne",
+    "pattern": "avoir peur que",
+    "nePosition": 3,
+    "classification": "Expletive",
+    "confidence": 0.85
+  },
+  {
+    "text": "Avant qu'elle parte",
+    "pattern": "avant que",
+    "nePosition": 2,
+    "classification": "Expletive",
+    "confidence": 0.9
+  },
+  {
+    "text": "Je doute qu'il soit là",
+    "pattern": "douter que",
+    "nePosition": 3,
+    "classification": "Expletive",
+    "confidence": 0.8
+  }
+]`}
+            </pre>
+            <div style={{ 
+              marginTop: '15px', 
+              fontSize: '14px', 
+              color: '#666',
+              backgroundColor: '#fff8e1',
+              padding: '12px',
+              borderRadius: '4px',
+              border: '1px solid #ffe082'
+            }}>
+              <strong>Fields Explanation:</strong>
+              <ul style={{ marginTop: '8px', marginBottom: '0', paddingLeft: '20px' }}>
+                <li><code>text</code>: The original French sentence</li>
+                <li><code>pattern</code>: The trigger pattern for NE placement</li>
+                <li><code>nePosition</code>: Word index where NE should be placed (0-based)</li>
+                <li><code>classification</code>: "Expletive" or "Logical"</li>
+                <li><code>confidence</code>: Confidence score (0.0 to 1.0)</li>
+              </ul>
+            </div>
+          </div>
+        </>
       )}
 
       <div className="card">
