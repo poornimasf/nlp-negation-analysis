@@ -75,6 +75,7 @@ export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
         return {
           title: '📚 Training Data Analysis',
           color: '#9c27b0',
+          description: '🎯 Complete User Control: Upload your own training examples to enhance analysis accuracy. The system uses ONLY your uploaded data - no hidden datasets or external training sources.',
           items: [
             'Uses your custom examples',
             'Similarity-based matching',
@@ -119,6 +120,19 @@ export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
       </div>
       {isExpanded && (
         <div style={{ padding: '15px' }}>
+          {content.description && (
+            <div style={{
+              backgroundColor: '#f3e5f5',
+              border: '1px solid #ce93d8',
+              borderRadius: '6px',
+              padding: '12px',
+              marginBottom: '15px',
+              fontSize: '14px',
+              color: '#4a148c'
+            }}>
+              {content.description}
+            </div>
+          )}
           <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
             {content.items.map((item, index) => (
               <li key={index}>{item}</li>

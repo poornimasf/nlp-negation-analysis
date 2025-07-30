@@ -11,17 +11,7 @@ export const TrainingDataSection = ({
   return (
     <div className="card">
       <h3 className="title">📚 Training Data Analysis</h3>
-      <div style={{
-        backgroundColor: '#e8f5e8',
-        border: '1px solid #c3e6cb',
-        borderRadius: '6px',
-        padding: '12px',
-        marginBottom: '15px',
-        fontSize: '14px'
-      }}>
-        <strong>🎯 Complete User Control:</strong> Upload your own training examples to enhance analysis accuracy. 
-        The system uses ONLY your uploaded data - no hidden datasets or external training sources.
-      </div>
+
       
       {/* File Upload Section */}
       <div className="form-group">
