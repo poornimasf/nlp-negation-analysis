@@ -10,6 +10,7 @@ export const processTrainingData = (data) => {
     peurQueExamples: 0,
     avantQueExamples: 0,
     peuSenFautExamples: 0,
+    otherExamples: 0,
     lastUpdated: new Date().toISOString()
   };
 
@@ -34,70 +35,78 @@ export const processTrainingData = (data) => {
       ? hasExpletive.toLowerCase() === 'true' || hasExpletive.toLowerCase() === 'expletive'
       : Boolean(hasExpletive);
 
-    // Detect trigger if not provided, handling accents
+    // Detect trigger if not provided
     let detectedTrigger = trigger;
+    const normalizedText = normalizeText(text.toLowerCase());
+    
     if (!detectedTrigger) {
-      const normalizedText = normalizeText(text.toLowerCase());
-      if (normalizedText.includes('peur') && normalizedText.includes('que')) {
-        detectedTrigger = 'peur que';
-      } else if (normalizedText.includes('avant') && normalizedText.includes('que')) {
+      // Fear expressions
+      if (/(peur|craindre|redouter|douter)\b.*\bque\b/i.test(normalizedText)) {
+        detectedTrigger = normalizedText.includes('peur') ? 'peur que' : 'craindre';
+      }
+      // Temporal expressions
+      else if (/(avant|jusqu['']a)\b.*\bque\b/i.test(normalizedText)) {
         detectedTrigger = 'avant que';
-      } else if (normalizedText.includes('peu s\'en faut') || normalizedText.includes('s\'en faut')) {
+      }
+      // Impersonal expressions
+      else if (/\b(peu\s+s['']en\s+faut|il\s+s['']en\s+faut)/i.test(normalizedText)) {
         detectedTrigger = 'peu s\'en faut';
       }
+      // Other common triggers
+      else if (/\b(eviter|empecher)\b/i.test(normalizedText)) {
+        detectedTrigger = normalizedText.includes('eviter') ? 'éviter' : 'empêcher';
+      }
     }
 
-    // Map to simple trigger names, handling accents
+    // Map to simple trigger names
     let simpleTrigger = detectedTrigger;
     const normalizedTrigger = normalizeText(detectedTrigger);
+    
     if (normalizedTrigger) {
-      if (normalizedTrigger.includes('peur')) simpleTrigger = 'peur que';
-      else if (normalizedTrigger.includes('avant')) simpleTrigger = 'avant que';
-      else if (normalizedTrigger.includes('peu s\'en') || normalizedTrigger.includes('s\'en faut')) {
-        simpleTrigger = 'peu s\'en faut';
+      if (/(peur|crainte)\b.*\bque\b/i.test(normalizedTrigger)) {
+        simpleTrigger = 'peur que';
       }
-      else if (normalizedTrigger.includes('crain')) simpleTrigger = 'craindre';
-      else if (normalizedTrigger.includes('redout')) simpleTrigger = 'redouter';
-      else if (normalizedTrigger.includes('dout')) simpleTrigger = 'douter';
-      else if (normalizedTrigger.includes('evit')) simpleTrigger = 'éviter';
-      else if (normalizedTrigger.includes('empech')) simpleTrigger = 'empêcher';
+      else if (/\bcrain/i.test(normalizedTrigger)) simpleTrigger = 'craindre';
+      else if (/\bredout/i.test(normalizedTrigger)) simpleTrigger = 'redouter';
+      else if (/\bdout/i.test(normalizedTrigger)) simpleTrigger = 'douter';
+      else if (/\bavant\b.*\bque\b/i.test(normalizedTrigger)) simpleTrigger = 'avant que';
+      else if (/\bpeu\s+s['']en\b/i.test(normalizedTrigger)) simpleTrigger = 'peu s\'en faut';
+      else if (/\bevit/i.test(normalizedTrigger)) simpleTrigger = 'éviter';
+      else if (/\bempech/i.test(normalizedTrigger)) simpleTrigger = 'empêcher';
     }
 
-    // Validate trigger
-    const validTriggers = [
-      "peur que", "avant que", "peu s'en faut",
-      "craindre", "redouter", "douter", "éviter", "empêcher"
-    ];
+    // Accept all examples, even without recognized triggers
+    const processedRow = {
+      id: index + 1,
+      text: text.trim(),
+      has_expletive_ne: isExpletive,
+      trigger: simpleTrigger || 'unknown',
+      classification: classification || (isExpletive ? 'expletive' : 'logical')
+    };
 
-    if (simpleTrigger && validTriggers.some(t => normalizeText(t) === normalizeText(simpleTrigger))) {
-      const processedRow = {
-        id: index + 1,
-        text: text.trim(),
-        has_expletive_ne: isExpletive,
-        trigger: simpleTrigger,
-        classification: classification || (isExpletive ? 'expletive' : 'logical')
-      };
+    processedData.push(processedRow);
+    stats.totalExamples++;
+    
+    if (isExpletive) {
+      stats.expletiveExamples++;
+    } else {
+      stats.logicalExamples++;
+    }
 
-      processedData.push(processedRow);
-      stats.totalExamples++;
-      
-      if (isExpletive) {
-        stats.expletiveExamples++;
-      } else {
-        stats.logicalExamples++;
-      }
-
-      // Count by trigger type
+    // Count by trigger type
+    if (simpleTrigger) {
       const normalizedSimpleTrigger = normalizeText(simpleTrigger);
-      if (normalizedSimpleTrigger === normalizeText('peur que')) {
+      if (/peur.*que/i.test(normalizedSimpleTrigger)) {
         stats.peurQueExamples++;
-      } else if (normalizedSimpleTrigger === normalizeText('avant que')) {
+      } else if (/avant.*que/i.test(normalizedSimpleTrigger)) {
         stats.avantQueExamples++;
-      } else if (normalizedSimpleTrigger === normalizeText('peu s\'en faut')) {
+      } else if (/peu.*s['']en/i.test(normalizedSimpleTrigger)) {
         stats.peuSenFautExamples++;
+      } else {
+        stats.otherExamples++;
       }
     } else {
-      console.warn(`Skipping row ${index + 1}: Invalid trigger "${simpleTrigger}"`);
+      stats.otherExamples++;
     }
   });
 
@@ -116,21 +125,35 @@ export const handleFileUpload = async (file) => {
     throw new Error('Please upload a JSON file. CSV support has been removed to ensure reliable parsing of complex French sentences.');
   }
 
-  const text = await file.text();
-  const jsonData = JSON.parse(text);
+  try {
+    const text = await file.text();
+    let jsonData;
+    
+    try {
+      jsonData = JSON.parse(text);
+    } catch (e) {
+      throw new Error('Invalid JSON format. Please check the file format.');
+    }
 
-  if (!Array.isArray(jsonData)) {
-    throw new Error('Invalid JSON format. Please ensure the file contains an array of training examples.');
+    // Handle both array and object formats
+    const examples = Array.isArray(jsonData) ? jsonData : 
+                    jsonData.examples ? jsonData.examples :
+                    jsonData.data ? jsonData.data : null;
+
+    if (!examples || !Array.isArray(examples)) {
+      throw new Error('Invalid JSON structure. Expected an array of examples or an object with an "examples" array.');
+    }
+
+    // Validate basic structure
+    if (examples.length === 0) {
+      throw new Error('No training examples found in the file.');
+    }
+
+    // Process the data
+    return processTrainingData(examples);
+
+  } catch (error) {
+    console.error('File processing error:', error);
+    throw error;
   }
-
-  // Validate JSON structure
-  const requiredFields = ['text'];
-  const sampleItem = jsonData[0];
-  const missingFields = requiredFields.filter(field => !(field in sampleItem));
-  
-  if (missingFields.length > 0) {
-    throw new Error(`Missing required fields: ${missingFields.join(', ')}. Each training example must have at least a 'text' field.`);
-  }
-
-  return processTrainingData(jsonData);
 };

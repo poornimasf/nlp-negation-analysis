@@ -1,3 +1,5 @@
+import { normalizeText } from './textProcessing';
+
 // CroissantLLM classification for Hybrid mode
 export const classifyExpletive = async (text) => {
   try {
@@ -44,6 +46,67 @@ export const classifyExpletive = async (text) => {
   }
 };
 
+// Common trigger patterns
+const TRIGGER_PATTERNS = {
+  FEAR: [
+    /peur\s+que/i,
+    /craindre/i,
+    /redouter/i,
+    /douter/i
+  ],
+  TEMPORAL: [
+    /avant\s+que/i,
+    /jusqu['']à\s+ce\s+que/i
+  ],
+  IMPERSONAL: [
+    /peu\s+s['']en\s+faut/i,
+    /il\s+s['']en\s+faut/i
+  ]
+};
+
+// Extract trigger pattern from text
+function extractTrigger(text) {
+  const normalizedText = normalizeText(text.toLowerCase());
+  
+  for (const [category, patterns] of Object.entries(TRIGGER_PATTERNS)) {
+    for (const pattern of patterns) {
+      if (pattern.test(normalizedText)) {
+        return {
+          category,
+          pattern: pattern.source
+        };
+      }
+    }
+  }
+  return null;
+}
+
+// Calculate text similarity considering trigger patterns
+function calculateSimilarity(text1, text2) {
+  // Normalize texts
+  const norm1 = normalizeText(text1.toLowerCase());
+  const norm2 = normalizeText(text2.toLowerCase());
+
+  // Get words (excluding common words)
+  const commonWords = new Set(['le', 'la', 'les', 'un', 'une', 'des', 'de', 'du', 'à', 'au', 'aux']);
+  const words1 = norm1.split(/\s+/).filter(w => !commonWords.has(w));
+  const words2 = norm2.split(/\s+/).filter(w => !commonWords.has(w));
+
+  // Check for shared trigger patterns
+  const trigger1 = extractTrigger(norm1);
+  const trigger2 = extractTrigger(norm2);
+  const triggerBonus = (trigger1 && trigger2 && trigger1.category === trigger2.category) ? 0.3 : 0;
+
+  // Calculate word similarity
+  const intersection = words1.filter(word => words2.some(w2 => w2.includes(word) || word.includes(w2)));
+  const union = [...new Set([...words1, ...words2])];
+  
+  const baseSimilarity = intersection.length / union.length;
+  
+  // Add trigger bonus but cap at 0.95
+  return Math.min(baseSimilarity + triggerBonus, 0.95);
+}
+
 // Binary classifier for Training Data mode
 export const classifyWithBinaryClassifier = (text, trainingData) => {
   if (!text) {
@@ -54,50 +117,58 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
     throw new Error('No training data available');
   }
 
-  // Find similar examples using text similarity
-  const similarExamples = trainingData.filter(example => {
-    const similarity = calculateSimilarity(text.toLowerCase(), example.text.toLowerCase());
-    return similarity > 0.7; // Threshold for similarity
-  });
+  // Extract trigger from input text
+  const inputTrigger = extractTrigger(text);
+
+  // Find similar examples
+  const similarExamples = trainingData
+    .map(example => ({
+      ...example,
+      similarity: calculateSimilarity(text, example.text)
+    }))
+    .filter(example => {
+      // Lower threshold for examples with matching trigger patterns
+      const threshold = inputTrigger && extractTrigger(example.text)?.category === inputTrigger.category
+        ? 0.3  // Lower threshold for matching triggers
+        : 0.4; // Higher threshold for non-matching triggers
+      
+      return example.similarity > threshold;
+    })
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, 5); // Keep top 5 matches
 
   if (similarExamples.length === 0) {
     return {
       matches: [],
       confidence: 0.5,
-      classification: 'UNCERTAIN'
+      classification: 'UNCERTAIN',
+      message: 'No similar examples found in training data'
     };
   }
 
-  // Count classifications
-  const counts = similarExamples.reduce((acc, example) => {
-    acc[example.classification] = (acc[example.classification] || 0) + 1;
+  // Weight examples by similarity
+  const weightedCounts = similarExamples.reduce((acc, example) => {
+    const weight = example.similarity;
+    acc[example.classification] = (acc[example.classification] || 0) + weight;
     return acc;
   }, {});
 
-  // Calculate confidence
-  const total = similarExamples.length;
-  const maxCount = Math.max(...Object.values(counts));
-  const confidence = maxCount / total;
+  // Calculate confidence and get majority classification
+  const totalWeight = Object.values(weightedCounts).reduce((a, b) => a + b, 0);
+  const maxWeight = Math.max(...Object.values(weightedCounts));
+  const confidence = maxWeight / totalWeight;
 
-  // Get majority classification
-  const classification = Object.entries(counts).reduce((a, b) => 
-    counts[a] > counts[b] ? a : b
-  )[0];
+  const classification = Object.entries(weightedCounts)
+    .reduce((a, b) => weightedCounts[a[0]] > weightedCounts[b[0]] ? a : b)[0];
+
+  // Generate detailed message
+  const message = `Found ${similarExamples.length} similar example${similarExamples.length > 1 ? 's' : ''} ` +
+    `(best match: ${Math.round(similarExamples[0].similarity * 100)}% similar)`;
 
   return {
-    matches: similarExamples.slice(0, 5), // Return top 5 matches
+    matches: similarExamples,
     confidence,
-    classification
+    classification,
+    message
   };
-};
-
-// Calculate text similarity for training data matching
-const calculateSimilarity = (text1, text2) => {
-  const words1 = text1.split(/\s+/);
-  const words2 = text2.split(/\s+/);
-  
-  const intersection = words1.filter(word => words2.includes(word));
-  const union = [...new Set([...words1, ...words2])];
-  
-  return intersection.length / union.length;
 };
