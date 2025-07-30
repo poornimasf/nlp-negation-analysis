@@ -196,52 +196,7 @@ const SimpleNegationAnalyzer = () => {
             uploadError={uploadError}
           />
           
-          <div style={{ marginTop: '20px' }}>
-            <h4 style={{ marginBottom: '15px', color: '#333' }}>📋 Expected JSON Format:</h4>
-            <pre style={{
-              backgroundColor: '#f8f9fa',
-              padding: '15px',
-              borderRadius: '4px',
-              overflowX: 'auto',
-              fontSize: '14px',
-              lineHeight: '1.5',
-              border: '1px solid #e9ecef'
-            }}>
-{`{
-  "examples": [
-    {
-      "text": "J'ai peur qu'il vienne",
-      "has_expletive_ne": true,
-      "trigger": "peur que",
-      "classification": "expletive"
-    },
-    {
-      "text": "Je veux pas qu'il parte",
-      "has_expletive_ne": false,
-      "trigger": "logical",
-      "classification": "logical"
-    }
-  ]
-}`}
-            </pre>
-            <div style={{ 
-              marginTop: '15px', 
-              fontSize: '14px', 
-              color: '#666',
-              backgroundColor: '#fff8e1',
-              padding: '12px',
-              borderRadius: '4px',
-              border: '1px solid #ffe082'
-            }}>
-              <strong>Fields Explanation:</strong>
-              <ul style={{ marginTop: '8px', marginBottom: '0', paddingLeft: '20px' }}>
-                <li><code>text</code>: The original French sentence</li>
-                <li><code>has_expletive_ne</code>: Boolean indicating presence of expletive ne</li>
-                <li><code>trigger</code>: The trigger pattern or "logical" for logical negation</li>
-                <li><code>classification</code>: "expletive" or "logical"</li>
-              </ul>
-            </div>
-          </div>
+
         </div>
       )}
 
