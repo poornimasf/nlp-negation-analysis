@@ -186,7 +186,7 @@ const SimpleNegationAnalyzer = () => {
         />
       </div>
 
-      {/* Training Data Section */}
+      {/* Training Data Section with JSON Format */}
       {analysisMode === 'TRAINING_DATA' && (
         <div className="card">
           <TrainingDataSection
