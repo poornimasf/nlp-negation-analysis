@@ -1,182 +1,128 @@
-# Analysis Modes
+# Analysis Modes Documentation
 
 ## Overview
-The system provides multiple analysis modes for French expletive negation detection, each with its own strengths and use cases.
+The system provides two distinct analysis modes for French negation analysis, each with its own approach to NE placement prediction.
 
 ## 1. Rule-Based Analysis
 
 ### Description
-Pure pattern-based analysis using predefined linguistic rules and triggers.
+Pattern-based analysis using predefined linguistic rules and triggers, with comprehensive context analysis.
 
-### Features
-- Primary trigger detection (peur que, avant que)
-- Logical marker identification
-- Context-aware pattern matching
-- Confidence-based classification
+### Key Features
+- French linguistic pattern detection
+- Complete clause structure analysis
+- Logical marker detection
+- Context-aware confidence scoring
 
-### Use Cases
-- Quick analysis of standard patterns
-- High-confidence classifications
-- Real-time analysis needs
-- Pattern-based research
+### Pattern Analysis
+Important: Pattern presence alone does not determine negation type. Analysis includes:
+1. Pattern Detection
+   - Fear expressions (peur que)
+   - Temporal expressions (avant que)
+   - Impersonal expressions (peu s'en faut)
 
-## 2. Pattern Recognition
+2. Context Analysis
+   - Logical marker detection (pas, point, jamais, etc.)
+   - Clause structure completeness
+   - Semantic context evaluation
+
+3. Confidence Scoring
+   - Pattern presence: 30%
+   - Structure analysis: 30%
+   - Logical negation check: 20%
+   - Context analysis: 20%
+   - Adjustments based on markers and structure
+
+### NE Placement Strategy
+Always proposes NE placement with varying confidence:
+1. Pattern-based placement (0.3-0.9 confidence)
+2. Verb-based placement (0.3 confidence)
+3. Fallback to beginning (0.1 confidence)
+
+## 2. Training Data Analysis
 
 ### Description
-Comprehensive pattern detection system with context awareness.
+Pure example-based learning using provided training data.
 
-### Features
-- Expletive trigger detection
-- Logical marker analysis
-- Contextual pattern matching
-- Confidence scoring system
+### Key Features
+- Exact pattern matching from examples
+- No rule-based fallback
+- Confidence based on match quality
+- Independent verification capability
 
-### Components
-- Trigger patterns
-  - peur que variations
-  - avant que constructions
-- Logical markers
-  - ne pas
-  - ne plus
-  - ne jamais
-- Context analysis
-  - Surrounding words
-  - Sentence structure
-  - Pattern positioning
+### Training Data Format
+```json
+[
+  {
+    "text": "J'ai peur qu'il vienne",
+    "pattern": "avoir peur que",
+    "nePosition": 3,
+    "classification": "Expletive",
+    "confidence": 0.85
+  }
+]
+```
 
-## 3. Classification System
+### NE Placement Strategy
+Always proposes NE placement:
+1. Training example match (0.8 confidence)
+2. Fallback to beginning (0.1 confidence)
 
-### Categories
-1. **Expletive Negation**
-   - Criteria: Expletive triggers + ne without logical markers
-   - Confidence: High (80-100%)
-   - Examples: "J'ai peur qu'il ne vienne"
+## Results Display
 
-2. **Logical Negation**
-   - Criteria: Ne + logical markers
-   - Confidence: High (80-100%)
-   - Examples: "Il ne vient pas"
+### Columns
+1. Sentence: Original input
+2. Analysis: Detailed analysis results
+3. Prediction: Classification result
+4. Highlighted: Visual pattern highlighting
+5. Proposed Sentence: NE placement suggestion
+   - Shows "NE" in highlighted format
+   - Always provides a proposal
+   - Confidence indicated in analysis
 
-3. **No Negation**
-   - Criteria: Absence of 'ne'
-   - Confidence: High (90-100%)
-   - Examples: "Il vient"
+### Styling
+- NE Display: Capitalized "NE" with highlight
+- Regular text: Standard black color
+- Confidence levels: Shown in analysis details
 
-4. **Uncertain**
-   - Criteria: Ambiguous patterns or mixed signals
-   - Confidence: Low (40-60%)
-   - Examples: "Je crains qu'il vienne"
+## Mode Selection
 
-5. **Needs Review**
-   - Criteria: Default fallback for unclear cases
-   - Confidence: N/A
-   - Examples: Complex or unusual constructions
+### Rule-Based Mode Best For
+- Standard French constructions
+- Pattern-based analysis
+- Comprehensive linguistic analysis
+- High-precision requirements
 
-### Classification Process
-1. Check for expletive patterns
-2. Identify logical markers
-3. Verify 'ne' presence
-4. Evaluate ambiguity
-5. Assign appropriate category
+### Training Data Mode Best For
+- Corpus-specific analysis
+- Example-based learning
+- Pattern discovery
+- Independent verification
 
-## 4. Batch Processing (Currently Disabled)
+## Implementation Notes
 
-### Status
-- Implemented but not active in production (v2.6.0)
-- Code available in BatchAnalysis.jsx
-- Disabled to simplify production interface
-- Can be re-enabled through App.js
+### Rule-Based Implementation
+- Comprehensive pattern analysis
+- Multiple validation steps
+- Confidence-based scoring
+- Always returns proposal
 
-### Features (When Enabled)
-- Multiple sentence analysis
-- Consistent classification
-- Performance optimization
-- Result aggregation
-
-### Components
-1. **Input Processing**
-   - Text normalization
-   - Sentence splitting
-   - Pattern extraction
-
-2. **Analysis Pipeline**
-   - Pattern matching
-   - Classification
-   - Confidence scoring
-   - Result compilation
-
-3. **Output Generation**
-   - Classification summary
-   - Detailed analysis
-   - Statistics generation
-   - Export formatting
-
-## Performance Considerations
-
-### Response Times
-- Single analysis: < 200ms
-- Batch processing: < 500ms per item
-- Export generation: < 1s for standard batches
-
-### Resource Usage
-- Memory: 120-180MB
-- CPU: 15-25% average
-- Network: Minimal
+### Training Data Implementation
+- Pure example matching
+- No rule-based fallback
+- Independent operation
+- Always returns proposal
 
 ## Best Practices
 
-### Analysis Selection
-1. Use Rule-Based for:
-   - Standard patterns
-   - Quick analysis
-   - High confidence needs
+### Mode Selection
+- Use appropriate mode for use case
+- Consider data availability
+- Monitor confidence scores
+- Validate results
 
-2. Use Pattern Recognition for:
-   - Complex cases
-   - Detailed analysis
-   - Research purposes
-
-3. Use Batch Processing for:
-   - Multiple sentences
-   - Research datasets
-   - Bulk analysis needs
-
-### Configuration Tips
-- Enable appropriate feature flags
-- Configure confidence thresholds
-- Set batch size limits
-- Monitor performance metrics
-
-## Error Handling
-
-### Common Issues
-1. Pattern conflicts
-2. Ambiguous cases
-3. Performance bottlenecks
-4. Resource limitations
-
-### Resolution Steps
-1. Check configuration
-2. Verify input format
-3. Monitor system resources
-4. Review error logs
-
-## Future Enhancements
-
-### Planned Features
-1. Enhanced pattern detection
-2. Improved confidence scoring
-3. Additional classification types
-4. Performance optimizations
-
-### Research Areas
-1. Pattern expansion
-2. Classification refinement
-3. Performance improvement
-4. Error reduction
-
-## Notes
-- System is actively maintained
-- Regular updates planned
-- Documentation kept current
-- Performance monitored
+### Data Management
+- Maintain quality training data
+- Regular pattern updates
+- Monitor confidence trends
+- Track analysis accuracy

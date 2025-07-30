@@ -13,6 +13,7 @@ negation-analyzer/
 │   │   └── NegationAnalyzer.css         # Component styles
 │   ├── utils/
 │   │   ├── NegationAnalyzer.js          # Core analysis logic
+│   │   ├── neProposer.js               # NE placement logic
 │   │   ├── patterns.js                  # Regex patterns and triggers
 │   │   ├── classifiers.js               # Classification functions
 │   │   ├── textProcessing.js            # Text analysis utilities
@@ -22,6 +23,8 @@ negation-analyzer/
 │   ├── config/
 │   │   └── featureFlags.js              # Feature flag configuration
 │   └── App.js                           # Root application component
+├── docs/
+│   └── ANALYSIS_RULES.md                # Detailed analysis documentation
 ├── public/
 │   └── index.html                       # HTML template
 └── package.json                         # Dependencies and scripts
@@ -30,165 +33,66 @@ negation-analyzer/
 ## Key Components
 
 ### SimpleNegationAnalyzer.jsx
-Primary component handling negation analysis with the following features:
+Primary component handling negation analysis with:
 
 #### Analysis Modes
 1. **Rule-Based Analysis**
-   - Pattern matching for expletive triggers
-   - Subjunctive mood detection
+   - Pattern and context analysis
    - Confidence scoring system
-   - Evidence-based prediction
+   - Always proposes NE placement
+   - Multiple validation steps
 
-2. **Hybrid Analysis**
-   - Pattern analysis + CroissantLLM
-   - Confidence blending
-   - LLM-based disambiguation
-   - Enhanced prediction accuracy
-
-3. **Training Data Analysis**
-   - Example-based learning
-   - Similarity matching
-   - Statistics tracking
-   - Training-based predictions
+2. **Training Data Analysis**
+   - Pure example-based learning
+   - No rule-based fallback
+   - Always proposes NE placement
+   - Independent verification
 
 #### Core Functions
 ```javascript
-// Main classification function
-const classifyNegation = async (text) => {
+// Main classification and proposal function
+const analyzeText = async (text) => {
   const analysis = await analyzer.analyzeNegation(text);
+  const proposal = proposeNePlacement(text, analysisMode, trainingData);
   
-  switch (analysisMode) {
-    case 'RULE_BASED':
-      return formatRuleBasedResult(analysis);
-    case 'HYBRID':
-      const llmAnalysis = await classifyExpletive(text);
-      return formatHybridResult(analysis, llmAnalysis);
-    case 'TRAINING_DATA':
-      if (useTrainingEnhancement) {
-        const trainingAnalysis = classifyWithBinaryClassifier(text);
-        return formatTrainingResult(analysis, trainingAnalysis);
-      }
-      return formatRuleBasedResult(analysis);
-  }
-};
-```
-
-### BatchAnalysis.jsx
-Handles batch processing and export functionality:
-
-```javascript
-// Export functions
-const downloadBatchResults = (format) => {
-  switch (format) {
-    case 'excel':
-      downloadExcel(filename);
-      break;
-    case 'csv':
-      downloadCSV(filename);
-      break;
-    case 'json':
-      downloadJSON(filename);
-      break;
-  }
-};
-```
-
-### TrainingDataSection.jsx
-Manages training data functionality:
-
-```javascript
-// Training data validation
-const validateTrainingData = (data) => {
-  return data.every(item => (
-    item.text &&
-    typeof item.has_expletive_ne !== 'undefined' &&
-    item.trigger &&
-    item.classification
-  ));
-};
-```
-
-### AnalysisModes.jsx
-Handles mode selection and information display:
-
-```javascript
-// Mode selector component
-export const ModeSelector = ({ mode, setMode }) => (
-  <select value={mode} onChange={(e) => setMode(e.target.value)}>
-    <option value="RULE_BASED">Pattern-Based Analysis</option>
-    <option value="HYBRID">Hybrid Analysis</option>
-    <option value="TRAINING_DATA">Training Data Analysis</option>
-  </select>
-);
-```
-
-## Utility Functions
-
-### textProcessing.js
-Text analysis and prediction logic:
-
-```javascript
-// Prediction system
-export const determineClassification = (text, analysis) => {
-  // Check evidence strength
-  const hasStrongExpletive = analysis.includes('strong expletive trigger');
-  const hasLogicalMarkers = analysis.includes('logical marker');
-  const hasSubjunctive = analysis.includes('subjunctive mood');
-  
-  if (hasStrongExpletive && hasSubjunctive && !hasLogicalMarkers) {
-    return "Likely Expletive";
-  }
-  if (hasLogicalMarkers && !hasStrongExpletive) {
-    return "Likely Logical";
-  }
-  
-  return "Uncertain";
-};
-```
-
-### classifiers.js
-Classification functions:
-
-```javascript
-// CroissantLLM integration
-export const classifyExpletive = async (text) => {
-  const response = await fetch(
-    'https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud',
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.REACT_APP_HF_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        inputs: text,
-        parameters: {
-          max_new_tokens: 256,
-          temperature: 0.1
-        }
-      })
-    }
-  );
-  return response.json();
-};
-```
-
-### resultFormatters.js
-Result formatting utilities:
-
-```javascript
-// Format training data results
-export const formatTrainingResult = (analysis, trainingAnalysis) => {
   return {
-    type: analysis.type,
-    confidence: analysis.confidence,
-    evidence: {
-      pattern: analysis.evidence,
-      training: trainingAnalysis.matches,
-      confidence: trainingAnalysis.confidence
-    }
+    analysis,
+    proposal,
+    confidence: calculateConfidence(analysis)
   };
 };
+```
+
+### neProposer.js
+Handles NE placement logic:
+
+```javascript
+// Rule-Based NE placement
+function proposeFromRules(text) {
+  // Pattern analysis
+  // Context validation
+  // Confidence calculation
+  // Always returns proposal with NE
+}
+
+// Training Data NE placement
+function proposeFromTrainingData(text, trainingData) {
+  // Example matching
+  // Position determination
+  // Always returns proposal with NE
+}
+```
+
+### Results Display
+```javascript
+// Results table with NE proposals
+<td style={{ padding: '12px' }}>
+  <div dangerouslySetInnerHTML={{ 
+    __html: result.proposedSentence.replace(/\bNE\b/g, 
+      '<span style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500">NE</span>'
+    )
+  }}></div>
+</td>
 ```
 
 ## Implementation Details
@@ -196,64 +100,49 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
 ### Analysis Pipeline
 1. Text input processing
 2. Mode-specific analysis:
-   - Rule-based: Pattern matching
-   - Hybrid: Pattern + LLM
+   - Rule-based: Pattern + context analysis
    - Training: Example matching
-3. Evidence collection
-4. Prediction generation
-5. Result formatting
-
-### Classification Logic
-```javascript
-switch (analysisMode) {
-  case 'RULE_BASED':
-    return patternAnalysis(text);
-  case 'HYBRID':
-    return combineAnalysis(patternAnalysis(text), llmAnalysis(text));
-  case 'TRAINING_DATA':
-    return trainingAnalysis(text, examples);
-}
-```
+3. NE placement proposal
+4. Result formatting
+5. Display with highlighting
 
 ### Confidence Scoring
-Each mode has its own confidence calculation:
-- Rule-based: Pattern strength and validation
-- Hybrid: Weighted combination of pattern and LLM
-- Training: Example similarity and count
-
-### Result Format
 ```javascript
-{
-  classification: "EXPLETIVE",
-  confidence: 0.85,
-  evidence: [
-    "Strong expletive trigger detected",
-    "Subjunctive mood present",
-    "No logical markers found"
-  ],
-  prediction: "Likely Expletive"
-}
+// Rule-Based scoring
+const confidence = calculateConfidence({
+  hasPattern: 0.3,          // Pattern presence
+  hasCompleteStructure: 0.3, // Structure analysis
+  noLogicalMarkers: 0.2,    // Negation check
+  validContext: 0.2         // Context analysis
+});
+
+// Training Data scoring
+const confidence = matchQuality ? 0.8 : 0.1;
 ```
 
-## Environment Setup
+### NE Placement Logic
+1. Rule-Based Mode:
+   - Pattern match: Primary placement
+   - Verb position: Secondary placement
+   - Beginning: Fallback placement
 
-### Required Variables
-- REACT_APP_HF_TOKEN: Hugging Face API token
-- NODE_ENV: Development/Production mode
+2. Training Data Mode:
+   - Example match: Use position
+   - No match: Beginning placement
 
-### Error Handling
+## Error Handling
 - Input validation
-- API error management
+- Pattern matching errors
 - Training data validation
-- User-friendly messages
+- Graceful fallbacks
 
 ## Best Practices
 
 ### Mode Selection
-- Use appropriate mode for use case
-- Consider performance implications
+- Use appropriate mode for case
+- Consider data availability
 - Monitor confidence scores
-- Validate results across modes
+- Validate results
 
 ### Error Management
 - Graceful degradation
@@ -262,18 +151,18 @@ Each mode has its own confidence calculation:
 - Recovery strategies
 
 ### Performance
-- Batch processing optimization
-- Progress tracking
-- Resource management
+- Efficient pattern matching
+- Quick training data lookup
+- Responsive UI updates
 - Error recovery
 
 ## Future Enhancements
 
 ### Planned Features
-- Enhanced prediction accuracy
-- Additional pattern support
+- Enhanced pattern detection
 - Improved confidence scoring
 - Extended documentation
+- Additional test cases
 
 ### Maintenance
 - Regular testing

@@ -38,9 +38,15 @@ The French Negation Type Prediction System is a specialized linguistic analysis 
 
 ### Core Functionality
 - **Single Sentence Analysis**: Primary production feature
-- **Real-time Loading**: Progress indicators and status updates
+- **NE Placement Proposals**: Always provided with confidence scoring
 - **Training Data Management**: Upload, preview, validate examples
 - **Error Handling**: Graceful degradation and detailed error reporting
+
+### Results Display
+- **Analysis Results**: Detailed pattern and context analysis
+- **Prediction**: Classification with confidence
+- **Highlighted Text**: Visual pattern identification
+- **Proposed Sentence**: NE placement with highlighted "NE"
 
 ### Disabled Features
 - **Batch Processing**: Implemented but currently disabled in production
