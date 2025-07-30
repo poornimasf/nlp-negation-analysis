@@ -6,8 +6,8 @@
 negation-analyzer/
 ├── src/
 │   ├── components/
-│   │   ├── SimpleNegationAnalyzer.jsx    # Main analysis component
-│   │   ├── BatchAnalysis.jsx             # Batch processing component
+│   │   ├── SimpleNegationAnalyzer.jsx    # Main analysis component (Active in Production)
+│   │   ├── BatchAnalysis.jsx             # Batch processing component (Implemented but Disabled)
 │   │   ├── AnalysisModes.jsx            # Mode selection components
 │   │   ├── TrainingDataSection.jsx      # Training data management
 │   │   └── NegationAnalyzer.css         # Component styles

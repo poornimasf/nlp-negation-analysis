@@ -1,3 +1,20 @@
+/**
+ * BatchAnalysis Component
+ * 
+ * CURRENT STATUS: Implemented but not active in production
+ * This component is fully implemented but currently disabled in the production build.
+ * To enable, import and add this component to App.js
+ * 
+ * Features:
+ * - Batch processing of multiple sentences
+ * - Progress tracking and loading indicators
+ * - Export functionality (Excel, CSV, JSON)
+ * - Detailed results table with highlighting
+ * 
+ * Note: Component was disabled in v2.6.0 to simplify the production interface.
+ * Review PRODUCTION_STATE.md for more details about deployment status.
+ */
+
 import React from 'react';
 import * as XLSX from 'xlsx';
 

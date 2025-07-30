@@ -79,9 +79,15 @@ Comprehensive pattern detection system with context awareness.
 4. Evaluate ambiguity
 5. Assign appropriate category
 
-## 4. Batch Processing
+## 4. Batch Processing (Currently Disabled)
 
-### Features
+### Status
+- Implemented but not active in production (v2.6.0)
+- Code available in BatchAnalysis.jsx
+- Disabled to simplify production interface
+- Can be re-enabled through App.js
+
+### Features (When Enabled)
 - Multiple sentence analysis
 - Consistent classification
 - Performance optimization

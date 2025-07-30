@@ -37,11 +37,17 @@ The French Negation Type Prediction System is a specialized linguistic analysis 
    - Clear user interface indicators
 
 ### Core Functionality
-- **Batch Processing**: Multiple sentence analysis with progress tracking
+- **Single Sentence Analysis**: Primary production feature
 - **Real-time Loading**: Progress indicators and status updates
-- **Export Options**: Excel, CSV, JSON, TXT formats
 - **Training Data Management**: Upload, preview, validate examples
 - **Error Handling**: Graceful degradation and detailed error reporting
+
+### Disabled Features
+- **Batch Processing**: Implemented but currently disabled in production
+  - Multiple sentence analysis with progress tracking
+  - Export options (Excel, CSV, JSON)
+  - Available in codebase but not exposed in UI
+  - Path to re-enable: Import BatchAnalysis component in App.js
 
 ### Technical Architecture
 - **Frontend**: React with responsive design
