@@ -92,6 +92,8 @@ const SimpleNegationAnalyzer = () => {
               if (useTrainingEnhancement && trainingData.length > 0) {
                 const trainingAnalysis = classifyWithBinaryClassifier(sentence, trainingData);
                 formattedResult = formatTrainingResult(analysis, trainingAnalysis);
+                const prediction = formattedResult.match(/Prediction:\s*(.*?)(?:\n|$)/);
+                classification = prediction ? prediction[1].trim() : "Uncertain";
               } else {
                 formattedResult = formatRuleBasedResult(analysis);
               }
