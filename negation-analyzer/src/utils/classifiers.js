@@ -20,7 +20,16 @@ export const classifyExpletive = async (text) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          inputs: `Analyze this French sentence where a ne has been removed. Consider both possibilities equally: ${text}`
+          inputs: `Analyze whether this French sentence requires expletive or logical negation: "${text}"
+
+Your task:
+1. Determine if this sentence requires expletive ne (as in "Je crains qu'il ne vienne") or logical negation (as in "Je ne veux pas").
+2. Explain your reasoning based on the triggers, structure, and context.
+3. Provide your conclusion: EXPLETIVE or LOGICAL.
+
+Format your response as:
+Analysis: [your detailed reasoning]
+Classification: [EXPLETIVE or LOGICAL]`
         })
       }
     );
