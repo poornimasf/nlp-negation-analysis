@@ -239,7 +239,8 @@ export const classify = (text, trainingData, mode = 'BINARY') => {
   // Use appropriate classifier based on mode
   switch (mode) {
     case 'SVM':
-      return classifyWithSVM(text, null, trainingData);
+      const svmModel = trainSVMModel(trainingData);
+      return classifyWithSVM(text, svmModel, trainingData);
     case 'BINARY':
     default:
       return classifyWithBinaryClassifier(text, trainingData);

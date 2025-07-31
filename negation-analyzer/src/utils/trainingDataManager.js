@@ -17,15 +17,25 @@ export function validateExample(example) {
     throw new Error('Example must include text');
   }
 
-  if (!example.classification || 
-      !['EXPLETIVE', 'LOGICAL'].includes(example.classification.toUpperCase())) {
+  // Normalize classification to uppercase and handle both formats
+  let classification = example.classification;
+  if (typeof example.has_expletive_ne === 'boolean') {
+    classification = example.has_expletive_ne ? 'EXPLETIVE' : 'LOGICAL';
+  } else if (classification) {
+    classification = classification.toUpperCase();
+  } else {
     throw new Error('Invalid classification');
+  }
+
+  if (!['EXPLETIVE', 'LOGICAL'].includes(classification)) {
+    throw new Error('Invalid classification value');
   }
 
   return {
     ...example,
     text: normalizeText(example.text),
-    classification: example.classification.toUpperCase(),
+    classification: classification,
+    trigger: example.trigger || 'unknown',
     added: example.added || new Date().toISOString()
   };
 }
@@ -50,17 +60,21 @@ export function handleFileUpload(file) {
         const jsonData = event.target.result;
         const data = JSON.parse(jsonData);
 
-        // Check if data has examples array
-        if (!data.examples || !Array.isArray(data.examples)) {
+        // Handle both array and object formats
+        const examples = Array.isArray(data) ? data : data.examples;
+        
+        if (!Array.isArray(examples)) {
           throw new Error('Invalid JSON format: missing examples array');
         }
 
         // Process and validate each example
-        const processedData = data.examples.map((example) => {
-          // Convert old format to new format if necessary
+        const processedData = examples.map((example) => {
+          // Handle both old and new formats
           const normalizedExample = {
             text: example.text,
-            classification: example.has_expletive_ne ? 'EXPLETIVE' : 'LOGICAL',
+            classification: example.has_expletive_ne !== undefined 
+              ? (example.has_expletive_ne ? 'EXPLETIVE' : 'LOGICAL')
+              : example.classification,
             trigger: example.trigger || 'unknown',
             added: new Date().toISOString()
           };
@@ -165,10 +179,12 @@ export function importTrainingData(jsonData) {
 
     // Validate all examples
     return examples.map(example => {
-      // Convert old format to new format if necessary
+      // Handle both old and new formats
       const normalizedExample = {
         text: example.text,
-        classification: example.has_expletive_ne ? 'EXPLETIVE' : 'LOGICAL',
+        classification: example.has_expletive_ne !== undefined 
+          ? (example.has_expletive_ne ? 'EXPLETIVE' : 'LOGICAL')
+          : example.classification,
         trigger: example.trigger || 'unknown',
         added: new Date().toISOString()
       };

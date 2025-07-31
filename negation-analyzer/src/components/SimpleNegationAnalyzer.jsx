@@ -95,11 +95,12 @@ const SimpleNegationAnalyzer = () => {
             }
 
             case 'TRAINING_DATA':
+            case 'SVM_ANALYSIS':
               if (useTrainingEnhancement && trainingData.length > 0) {
-                const trainingAnalysis = classifyWithBinaryClassifier(sentence, trainingData);
+                const mode = analysisMode === 'SVM_ANALYSIS' ? 'SVM' : 'BINARY';
+                const trainingAnalysis = classify(sentence, trainingData, mode);
                 formattedResult = formatTrainingResult(analysis, trainingAnalysis);
-                const prediction = formattedResult.match(/Prediction:\s*(.*?)(?:\n|$)/);
-                classification = prediction ? prediction[1].trim() : "Uncertain";
+                classification = trainingAnalysis.classification;
               } else {
                 formattedResult = formatRuleBasedResult(analysis);
                 classification = await determineClassification(sentence, formattedResult);
