@@ -14,33 +14,35 @@ export const classifyExpletive = async (text) => {
 
     const prompt = `Example 1 (Expletive Negation):
 Sentence: "Je crains qu'il ne vienne trop tard."
-Analysis: The verb "craindre" triggers expletive ne. There is no actual negation intended.
+Analysis: The verb "craindre" in this context introduces a fear clause with "que", triggering expletive ne. The presence of "que" followed by subjunctive mood without "pas" indicates expletive usage.
 Classification: EXPLETIVE
-Reasoning: The negation particle "ne" is used idiomatically with verbs of fear.
+Reasoning: The ne particle appears without "pas" in a fear context, serving as an expletive marker rather than negation.
+NE Position: After "qu'il"
 Conclusion: EXPLETIVE
 
 Example 2 (Logical Negation):
 Sentence: "Je ne veux pas qu'il parte."
-Analysis: This sentence uses "ne ... pas" to directly negate the verb "vouloir". The negation is intentional and affects the meaning.
+Analysis: The verb "vouloir" is directly negated using "ne...pas" construction. This indicates true semantic negation of the desire.
 Classification: LOGICAL
-Reasoning: The negative construction changes the speaker's intention and is semantically negative.
+Reasoning: The presence of both "ne" and "pas" creates a complete negative construction that changes the meaning of the verb.
+NE Position: Before "veux"
 Conclusion: LOGICAL
 
-Now analyze the following French sentence to determine whether the sentence previously contained **expletive negation** or **logical negation**:
+Now analyze the following French sentence to determine whether it previously contained **expletive negation** or **logical negation**:
 
 "${text}"
 
 Your task:
-1. Determine if the sentence previously contained **expletive negation** (e.g., *Je crains qu'il ne vienne*) or **logical negation** (e.g., *Je ne veux pas*).
-2. Analyze the **negation trigger(s)**, grammatical **structure**, and **context**.
-3. Provide a final classification: \`EXPLETIVE\` or \`LOGICAL\`.
-4. Indicate the position where "ne" should be placed in the sentence.
+1. Analyze the complete grammatical structure and context.
+2. Consider whether any verbs present are being negated (logical) or are part of an expletive construction.
+3. Look for contextual clues like "pas", subjunctive mood, or fear/doubt expressions.
+4. Determine the most likely position for "ne" based on the analysis.
 
 Respond in the following format: 
-Analysis: [your detailed reasoning about the sentence structure and triggers]
+Analysis: [focus on grammatical structure and contextual evidence]
 Classification: [EXPLETIVE or LOGICAL]
-Reasoning: [explanation of why this classification was chosen]
-NE Position: [indicate where "ne" should be placed in the sentence]
+Reasoning: [explain why this is expletive or logical negation]
+NE Position: [specify where "ne" should be placed]
 Conclusion: [final EXPLETIVE or LOGICAL determination]`;
 
     const response = await fetch(

@@ -136,51 +136,37 @@ export const formatHybridResult = (patternAnalysis, llmResponse) => {
   output.push('');
   
   // LLM Analysis Section
-  output.push('🤖 LLM ANALYSIS:');
+  output.push('🤖 SEMANTIC ANALYSIS:');
   
-  if (llmResponse) {
+  if (llmResponse && typeof llmResponse === 'object') {
     try {
-      if (typeof llmResponse === 'object') {
-        // Add the detailed analysis
-        if (llmResponse.analysis) {
-          output.push('📝 Analysis:');
-          output.push(`• ${llmResponse.analysis}`);
-          output.push('');
+      // Add the reasoning if available
+      if (llmResponse.reasoning) {
+        output.push('💭 Reasoning:');
+        output.push(`• ${llmResponse.reasoning}`);
+        output.push('');
+      }
+      
+      // Add the classification and confidence
+      if (llmResponse.classification) {
+        output.push(`✨ Classification: ${llmResponse.classification}`);
+        if (llmResponse.confidence) {
+          output.push(`💡 Confidence: ${Math.round(llmResponse.confidence * 100)}%`);
         }
-        
-        // Add the reasoning if available
-        if (llmResponse.reasoning) {
-          output.push('💭 Reasoning:');
-          output.push(`• ${llmResponse.reasoning}`);
-          output.push('');
-        }
-        
-        // Add the classification and confidence
-        if (llmResponse.classification) {
-          output.push(`✨ Classification: ${llmResponse.classification}`);
-          if (llmResponse.confidence) {
-            output.push(`💡 Confidence: ${Math.round(llmResponse.confidence * 100)}%`);
-          }
-        }
-        
-        // Add the conclusion if it differs from classification
-        if (llmResponse.conclusion && llmResponse.conclusion !== llmResponse.classification) {
-          output.push(`🎯 Final Conclusion: ${llmResponse.conclusion}`);
-        }
-      } else if (typeof llmResponse === 'string') {
-        // Handle string response
-        output.push('📝 Analysis:');
-        output.push(`• ${llmResponse}`);
+      }
+      
+      // Add NE placement suggestion if available
+      if (llmResponse.nePosition) {
+        output.push('');
+        output.push('🎯 Suggested NE Position:');
+        output.push(`• ${llmResponse.nePosition}`);
       }
     } catch (error) {
       console.error('Error formatting LLM response:', error);
-      output.push('• Error processing LLM response');
-      if (llmResponse.rawResponse) {
-        output.push(`• Raw response: ${llmResponse.rawResponse}`);
-      }
+      output.push('• Error processing semantic analysis');
     }
   } else {
-    output.push('• No LLM analysis available');
+    output.push('• No semantic analysis available');
   }
   
   return output.join('\n');
