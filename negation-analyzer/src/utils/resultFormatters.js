@@ -140,23 +140,33 @@ export const formatHybridResult = (patternAnalysis, llmResponse) => {
   
   if (llmResponse) {
     try {
-      // Handle the new response format
-      if (typeof llmResponse === 'object' && llmResponse.analysis) {
-        // Add the analysis text
-        output.push('📝 Analysis:');
-        output.push(`• ${llmResponse.analysis}`);
-        output.push('');
+      if (typeof llmResponse === 'object') {
+        // Add the detailed analysis
+        if (llmResponse.analysis) {
+          output.push('📝 Analysis:');
+          output.push(`• ${llmResponse.analysis}`);
+          output.push('');
+        }
         
-        // Add the classification
+        // Add the reasoning if available
+        if (llmResponse.reasoning) {
+          output.push('💭 Reasoning:');
+          output.push(`• ${llmResponse.reasoning}`);
+          output.push('');
+        }
+        
+        // Add the classification and confidence
         if (llmResponse.classification) {
           output.push(`✨ Classification: ${llmResponse.classification}`);
-          output.push(`💡 Confidence: ${Math.round(llmResponse.confidence * 100)}%`);
+          if (llmResponse.confidence) {
+            output.push(`💡 Confidence: ${Math.round(llmResponse.confidence * 100)}%`);
+          }
         }
-      } else if (Array.isArray(llmResponse) && llmResponse[0]?.generated_text) {
-        // Handle raw API response format
-        const generatedText = llmResponse[0].generated_text;
-        output.push('📝 Generated Analysis:');
-        output.push(`• ${generatedText}`);
+        
+        // Add the conclusion if it differs from classification
+        if (llmResponse.conclusion && llmResponse.conclusion !== llmResponse.classification) {
+          output.push(`🎯 Final Conclusion: ${llmResponse.conclusion}`);
+        }
       } else if (typeof llmResponse === 'string') {
         // Handle string response
         output.push('📝 Analysis:');
@@ -165,7 +175,9 @@ export const formatHybridResult = (patternAnalysis, llmResponse) => {
     } catch (error) {
       console.error('Error formatting LLM response:', error);
       output.push('• Error processing LLM response');
-      output.push(`• Raw response: ${JSON.stringify(llmResponse)}`);
+      if (llmResponse.rawResponse) {
+        output.push(`• Raw response: ${llmResponse.rawResponse}`);
+      }
     }
   } else {
     output.push('• No LLM analysis available');
