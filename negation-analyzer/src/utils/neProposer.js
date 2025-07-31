@@ -55,19 +55,6 @@ const EXPLETIVE_PATTERNS = {
 };
 
 /**
- * Analyzes clause structure for completeness and validity
- */
-function analyzeClauseStructure(text) {
-  // Basic clause structure check
-  const hasMainVerb = VERB_PATTERNS.some(pattern => pattern.test(text));
-  const hasQue = /\bque\b/i.test(text);
-  const hasSubordinateClause = hasQue && text.split(/\bque\b/i)[1].trim().length > 0;
-
-  // Return only what we use
-  return hasMainVerb && hasSubordinateClause;
-}
-
-/**
  * Finds verb position in text
  */
 function findVerbPosition(text) {
@@ -78,13 +65,6 @@ function findVerbPosition(text) {
     }
   }
   return -1;
-}
-
-/**
- * Checks for presence of logical negation markers
- */
-function hasLogicalNegation(text) {
-  return LOGICAL_MARKERS.some(marker => marker.test(text));
 }
 
 /**
@@ -246,22 +226,100 @@ function proposeFromTrainingData(text, trainingData) {
 }
 
 /**
+ * CroissantLLM mode: Propose 'ne' placement based on LLM analysis
+ */
+function proposeFromCroissantLLM(text, analysis) {
+  // Default to rule-based if no analysis is available
+  if (!analysis) {
+    return proposeFromRules(text);
+  }
+
+  const analysisText = analysis.toLowerCase();
+  const words = text.split(/\s+/);
+  
+  // Check if CroissantLLM has provided specific placement information
+  const placementMatch = analysisText.match(/ne placement:\s*(\d+)/i);
+  if (placementMatch) {
+    const position = parseInt(placementMatch[1], 10);
+    if (!isNaN(position) && position >= 0 && position < words.length) {
+      return {
+        text: [
+          ...words.slice(0, position),
+          "NE",
+          ...words.slice(position)
+        ].join(" "),
+        confidence: 0.9,
+        source: 'CROISSANT_LLM_EXPLICIT'
+      };
+    }
+  }
+
+  // Check for verb-based placement hints
+  const verbMatch = analysisText.match(/place ne before[:\s]+(\w+)/i);
+  if (verbMatch) {
+    const targetVerb = verbMatch[1].toLowerCase();
+    const verbIndex = words.findIndex(word => 
+      word.toLowerCase() === targetVerb || 
+      VERB_PATTERNS.some(pattern => pattern.test(word))
+    );
+    
+    if (verbIndex !== -1) {
+      return {
+        text: [
+          ...words.slice(0, verbIndex),
+          "NE",
+          ...words.slice(verbIndex)
+        ].join(" "),
+        confidence: 0.8,
+        source: 'CROISSANT_LLM_VERB'
+      };
+    }
+  }
+
+  // Check classification and use appropriate strategy
+  if (analysisText.includes('classification: expletive')) {
+    // For expletive negation, try to place after 'que' if present
+    const queIndex = words.findIndex(word => /que?/i.test(word));
+    if (queIndex !== -1) {
+      return {
+        text: [
+          ...words.slice(0, queIndex + 1),
+          "NE",
+          ...words.slice(queIndex + 1)
+        ].join(" "),
+        confidence: 0.7,
+        source: 'CROISSANT_LLM_EXPLETIVE'
+      };
+    }
+  }
+
+  // Fallback to rule-based placement
+  return proposeFromRules(text);
+}
+
+/**
  * Main function for proposing 'ne' placement
  * Always returns a sentence with NE placement
  */
-export default function proposeNePlacement(text, mode = 'RULE_BASED', trainingData = []) {
+export default function proposeNePlacement(text, mode = 'RULE_BASED', trainingData = [], analysis = '') {
   if (!text || typeof text !== 'string') {
     return text;  // Return unchanged if invalid input
   }
 
   try {
-    if (mode === 'TRAINING_DATA') {
-      const proposal = proposeFromTrainingData(text, trainingData);
-      return proposal.text;
+    switch (mode) {
+      case 'TRAINING_DATA':
+        const trainingProposal = proposeFromTrainingData(text, trainingData);
+        return trainingProposal.text;
+      
+      case 'HYBRID':  // Now represents CroissantLLM mode
+        const llmProposal = proposeFromCroissantLLM(text, analysis);
+        return llmProposal.text;
+      
+      default:
+        const ruleProposal = proposeFromRules(text);
+        return ruleProposal.text;
     }
-    
-    const proposal = proposeFromRules(text);
-    return proposal.text;
   } catch (error) {
     console.error('Error in NE placement:', error);
     return text;  // Return original text if error occurs
