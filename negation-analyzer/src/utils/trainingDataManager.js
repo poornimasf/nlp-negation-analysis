@@ -17,25 +17,39 @@ export function validateExample(example) {
     throw new Error('Example must include text');
   }
 
-  // Normalize classification to uppercase and handle both formats
-  let classification = example.classification;
+  // Handle both has_expletive_ne and classification fields
+  let classification;
   if (typeof example.has_expletive_ne === 'boolean') {
     classification = example.has_expletive_ne ? 'EXPLETIVE' : 'LOGICAL';
-  } else if (classification) {
-    classification = classification.toUpperCase();
+  } else if (example.classification) {
+    classification = example.classification.toUpperCase();
   } else {
-    throw new Error('Invalid classification');
+    throw new Error('Must include either has_expletive_ne or classification');
   }
 
   if (!['EXPLETIVE', 'LOGICAL'].includes(classification)) {
     throw new Error('Invalid classification value');
   }
 
+  // Validate trigger
+  if (!example.trigger) {
+    throw new Error('Must include trigger field');
+  }
+
+  const validTriggers = [
+    "peur que", "avant que", "peu s'en faut", "logical",
+    "craindre", "redouter", "douter", "éviter", "empêcher"
+  ];
+
+  if (!validTriggers.includes(example.trigger.toLowerCase())) {
+    throw new Error('Invalid trigger value');
+  }
+
   return {
-    ...example,
     text: normalizeText(example.text),
+    has_expletive_ne: classification === 'EXPLETIVE',
+    trigger: example.trigger.toLowerCase(),
     classification: classification,
-    trigger: example.trigger || 'unknown',
     added: example.added || new Date().toISOString()
   };
 }
@@ -60,26 +74,18 @@ export function handleFileUpload(file) {
         const jsonData = event.target.result;
         const data = JSON.parse(jsonData);
 
-        // Handle both array and object formats
-        const examples = Array.isArray(data) ? data : data.examples;
-        
-        if (!Array.isArray(examples)) {
+        // Check if data has examples array
+        if (!data.examples || !Array.isArray(data.examples)) {
           throw new Error('Invalid JSON format: missing examples array');
         }
 
         // Process and validate each example
-        const processedData = examples.map((example) => {
-          // Handle both old and new formats
-          const normalizedExample = {
-            text: example.text,
-            classification: example.has_expletive_ne !== undefined 
-              ? (example.has_expletive_ne ? 'EXPLETIVE' : 'LOGICAL')
-              : example.classification,
-            trigger: example.trigger || 'unknown',
-            added: new Date().toISOString()
-          };
-
-          return validateExample(normalizedExample);
+        const processedData = data.examples.map((example) => {
+          try {
+            return validateExample(example);
+          } catch (error) {
+            throw new Error(`Invalid example "${example.text}": ${error.message}`);
+          }
         });
 
         resolve({ processedData });
@@ -158,8 +164,8 @@ export function exportTrainingData(data) {
   return JSON.stringify({
     examples: data.map(example => ({
       text: example.text,
-      has_expletive_ne: example.classification === 'EXPLETIVE',
-      trigger: example.trigger || 'unknown',
+      has_expletive_ne: example.has_expletive_ne,
+      trigger: example.trigger,
       classification: example.classification.toLowerCase()
     }))
   }, null, 2);
@@ -178,19 +184,7 @@ export function importTrainingData(jsonData) {
     }
 
     // Validate all examples
-    return examples.map(example => {
-      // Handle both old and new formats
-      const normalizedExample = {
-        text: example.text,
-        classification: example.has_expletive_ne !== undefined 
-          ? (example.has_expletive_ne ? 'EXPLETIVE' : 'LOGICAL')
-          : example.classification,
-        trigger: example.trigger || 'unknown',
-        added: new Date().toISOString()
-      };
-
-      return validateExample(normalizedExample);
-    });
+    return examples.map(example => validateExample(example));
   } catch (error) {
     throw new Error(`Failed to import training data: ${error.message}`);
   }
