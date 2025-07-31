@@ -1,7 +1,10 @@
 # Analysis Modes Documentation
 
 ## Overview
-The system provides two distinct analysis modes for French negation analysis, each with its own approach to NE placement prediction.
+The system provides three distinct analysis modes for French negation analysis, each with its own approach to NE placement prediction:
+1. Rule-Based Analysis
+2. CroissantLLM Analysis
+3. Training Data Analysis
 
 ## 1. Rule-Based Analysis
 
@@ -31,7 +34,6 @@ Important: Pattern presence alone does not determine negation type. Analysis inc
    - Structure analysis: 30%
    - Logical negation check: 20%
    - Context analysis: 20%
-   - Adjustments based on markers and structure
 
 ### NE Placement Strategy
 Always proposes NE placement with varying confidence:
@@ -39,7 +41,44 @@ Always proposes NE placement with varying confidence:
 2. Verb-based placement (0.3 confidence)
 3. Fallback to beginning (0.1 confidence)
 
-## 2. Training Data Analysis
+## 2. CroissantLLM Analysis
+
+### Description
+AI-powered analysis using CroissantLLM for French linguistic understanding and NE placement prediction.
+
+### Key Features
+- Deep linguistic analysis
+- Context-aware classification
+- Explicit NE placement suggestions
+- High confidence scoring
+
+### Analysis Process
+1. Linguistic Analysis
+   - Full sentence structure analysis
+   - Context understanding
+   - Semantic relationship detection
+   - Verb mood and tense analysis
+
+2. Classification
+   - Direct classification output
+   - Confidence scoring
+   - Detailed reasoning
+   - Context justification
+
+### NE Placement Strategy
+Hierarchical placement decision:
+1. Explicit LLM Instructions (0.9 confidence)
+   - Direct position specification
+   - Verb-based placement guidance
+2. Classification-Based (0.7-0.8 confidence)
+   - Expletive: After 'que' when present
+   - Logical: Before main verb
+3. Rule-Based Fallback (0.3-0.6 confidence)
+   - Pattern matching
+   - Verb position
+   - Structure analysis
+
+## 3. Training Data Analysis
 
 ### Description
 Pure example-based learning using provided training data.
@@ -84,14 +123,21 @@ Always proposes NE placement:
 - NE Display: Capitalized "NE" with highlight
 - Regular text: Standard black color
 - Confidence levels: Shown in analysis details
+- CroissantLLM: 🤖 prefix for LLM analysis
 
 ## Mode Selection
 
 ### Rule-Based Mode Best For
 - Standard French constructions
 - Pattern-based analysis
-- Comprehensive linguistic analysis
 - High-precision requirements
+- Performance-critical scenarios
+
+### CroissantLLM Mode Best For
+- Complex linguistic structures
+- Context-dependent analysis
+- High accuracy requirements
+- Novel sentence patterns
 
 ### Training Data Mode Best For
 - Corpus-specific analysis
@@ -106,6 +152,12 @@ Always proposes NE placement:
 - Multiple validation steps
 - Confidence-based scoring
 - Always returns proposal
+
+### CroissantLLM Implementation
+- Direct LLM integration
+- Explicit placement guidance
+- Classification-based strategies
+- Rule-based fallback
 
 ### Training Data Implementation
 - Pure example matching
@@ -126,3 +178,9 @@ Always proposes NE placement:
 - Regular pattern updates
 - Monitor confidence trends
 - Track analysis accuracy
+
+### CroissantLLM Usage
+- Monitor response quality
+- Track confidence scores
+- Validate placements
+- Review classifications

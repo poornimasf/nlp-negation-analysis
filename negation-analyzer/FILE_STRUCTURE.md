@@ -6,28 +6,27 @@
 negation-analyzer/
 ├── src/
 │   ├── components/
-│   │   ├── SimpleNegationAnalyzer.jsx    # Main analysis component (Active in Production)
-│   │   ├── BatchAnalysis.jsx             # Batch processing component (Implemented but Disabled)
-│   │   ├── AnalysisModes.jsx            # Mode selection components
-│   │   ├── TrainingDataSection.jsx      # Training data management
-│   │   └── NegationAnalyzer.css         # Component styles
+│   │   ├── SimpleNegationAnalyzer.jsx    # Main analysis component
+│   │   ├── AnalysisModes.jsx             # Mode selection components
+│   │   ├── TrainingDataSection.jsx       # Training data management
+│   │   └── NegationAnalyzer.css          # Component styles
 │   ├── utils/
-│   │   ├── NegationAnalyzer.js          # Core analysis logic
-│   │   ├── neProposer.js               # NE placement logic
-│   │   ├── patterns.js                  # Regex patterns and triggers
-│   │   ├── classifiers.js               # Classification functions
-│   │   ├── textProcessing.js            # Text analysis utilities
-│   │   ├── resultFormatters.js          # Result formatting utilities
-│   │   ├── errorFormatter.js            # Error handling utilities
-│   │   └── trainingDataManager.js       # Training data utilities
+│   │   ├── NegationAnalyzer.js           # Core analysis logic
+│   │   ├── neProposer.js                 # NE placement logic
+│   │   ├── patterns.js                   # Regex patterns and triggers
+│   │   ├── classifiers.js                # Classification functions
+│   │   ├── textProcessing.js             # Text analysis utilities
+│   │   ├── resultFormatters.js           # Result formatting utilities
+│   │   ├── errorFormatter.js             # Error handling utilities
+│   │   └── trainingDataManager.js        # Training data utilities
 │   ├── config/
-│   │   └── featureFlags.js              # Feature flag configuration
-│   └── App.js                           # Root application component
+│   │   └── featureFlags.js               # Feature flag configuration
+│   └── App.js                            # Root application component
 ├── docs/
-│   └── ANALYSIS_RULES.md                # Detailed analysis documentation
+│   └── ANALYSIS_RULES.md                 # Detailed analysis documentation
 ├── public/
-│   └── index.html                       # HTML template
-└── package.json                         # Dependencies and scripts
+│   └── index.html                        # HTML template
+└── package.json                          # Dependencies and scripts
 ```
 
 ## Key Components
@@ -39,13 +38,17 @@ Primary component handling negation analysis with:
 1. **Rule-Based Analysis**
    - Pattern and context analysis
    - Confidence scoring system
-   - Always proposes NE placement
    - Multiple validation steps
 
-2. **Training Data Analysis**
+2. **CroissantLLM Analysis**
+   - Deep learning integration
+   - Explicit NE placement
+   - High confidence predictions
+   - Intelligent fallback
+
+3. **Training Data Analysis**
    - Pure example-based learning
    - No rule-based fallback
-   - Always proposes NE placement
    - Independent verification
 
 #### Core Functions
@@ -53,7 +56,12 @@ Primary component handling negation analysis with:
 // Main classification and proposal function
 const analyzeText = async (text) => {
   const analysis = await analyzer.analyzeNegation(text);
-  const proposal = proposeNePlacement(text, analysisMode, trainingData);
+  const proposal = proposeNePlacement(
+    text,
+    analysisMode,
+    trainingData,
+    analysisMode === 'HYBRID' ? analysis : ''  // For CroissantLLM mode
+  );
   
   return {
     analysis,
@@ -67,6 +75,23 @@ const analyzeText = async (text) => {
 Handles NE placement logic:
 
 ```javascript
+// CroissantLLM NE placement
+function proposeFromCroissantLLM(text, analysis) {
+  // Check for explicit placement instructions
+  const placementMatch = analysis.match(/ne placement:\s*(\d+)/i);
+  if (placementMatch) {
+    return placementWithConfidence(text, parseInt(placementMatch[1], 10), 0.9);
+  }
+
+  // Use classification-based strategies
+  if (analysis.includes('classification: expletive')) {
+    return placeAfterQue(text, 0.7);
+  }
+
+  // Fallback to rule-based
+  return proposeFromRules(text);
+}
+
 // Rule-Based NE placement
 function proposeFromRules(text) {
   // Pattern analysis
@@ -101,6 +126,7 @@ function proposeFromTrainingData(text, trainingData) {
 1. Text input processing
 2. Mode-specific analysis:
    - Rule-based: Pattern + context analysis
+   - CroissantLLM: AI-powered analysis
    - Training: Example matching
 3. NE placement proposal
 4. Result formatting
@@ -116,17 +142,27 @@ const confidence = calculateConfidence({
   validContext: 0.2         // Context analysis
 });
 
+// CroissantLLM scoring
+const confidence = analysis.includes('explicit placement') ? 0.9 :
+                  analysis.includes('classification') ? 0.7 :
+                  0.5;
+
 // Training Data scoring
 const confidence = matchQuality ? 0.8 : 0.1;
 ```
 
 ### NE Placement Logic
-1. Rule-Based Mode:
+1. CroissantLLM Mode:
+   - Explicit placement instructions
+   - Classification-based strategies
+   - Rule-based fallback
+
+2. Rule-Based Mode:
    - Pattern match: Primary placement
    - Verb position: Secondary placement
    - Beginning: Fallback placement
 
-2. Training Data Mode:
+3. Training Data Mode:
    - Example match: Use position
    - No match: Beginning placement
 
@@ -135,6 +171,7 @@ const confidence = matchQuality ? 0.8 : 0.1;
 - Pattern matching errors
 - Training data validation
 - Graceful fallbacks
+- LLM error recovery
 
 ## Best Practices
 
@@ -155,11 +192,12 @@ const confidence = matchQuality ? 0.8 : 0.1;
 - Quick training data lookup
 - Responsive UI updates
 - Error recovery
+- LLM response caching
 
 ## Future Enhancements
 
 ### Planned Features
-- Enhanced pattern detection
+- Enhanced LLM integration
 - Improved confidence scoring
 - Extended documentation
 - Additional test cases
@@ -169,3 +207,4 @@ const confidence = matchQuality ? 0.8 : 0.1;
 - Performance monitoring
 - Error tracking
 - Documentation updates
+- LLM quality checks
