@@ -88,7 +88,7 @@ export const formatRuleBasedResult = (analysis) => {
 };
 
 // Format Hybrid result
-export const formatHybridResult = (patternAnalysis, llmText) => {
+export const formatHybridResult = (patternAnalysis, llmResponse) => {
   const output = [];
   
   output.push('🔄 HYBRID ANALYSIS\n');
@@ -138,59 +138,34 @@ export const formatHybridResult = (patternAnalysis, llmText) => {
   // LLM Analysis Section
   output.push('🤖 LLM ANALYSIS:');
   
-  // Parse LLM response
-  if (llmText) {
+  if (llmResponse) {
     try {
-      // Extract sections using regex
-      const analysisMatch = llmText.match(/Analysis:\s*(.*?)(?=Classification:|$)/s);
-      const classificationMatch = llmText.match(/Classification:\s*(EXPLETIVE|LOGICAL)/i);
-      const reasoningMatch = llmText.match(/Reasoning:\s*(.*?)(?=Conclusion:|$)/s);
-      const conclusionMatch = llmText.match(/Conclusion:\s*(EXPLETIVE|LOGICAL)/i);
-      
-      if (analysisMatch && analysisMatch[1]) {
+      // Handle the new response format
+      if (typeof llmResponse === 'object' && llmResponse.analysis) {
+        // Add the analysis text
         output.push('📝 Analysis:');
-        const analysis = analysisMatch[1].trim();
-        output.push(`• ${analysis}`);
+        output.push(`• ${llmResponse.analysis}`);
         output.push('');
-      }
-      
-      if (reasoningMatch && reasoningMatch[1]) {
-        output.push('💭 Reasoning:');
-        const reasoning = reasoningMatch[1].trim();
-        output.push(`• ${reasoning}`);
-        output.push('');
-      }
-      
-      if (classificationMatch && classificationMatch[1]) {
-        const classification = classificationMatch[1].trim().toUpperCase();
-        output.push(`✨ Classification: ${classification}`);
-      }
-      
-      if (conclusionMatch && conclusionMatch[1]) {
-        const conclusion = conclusionMatch[1].trim().toUpperCase();
-        if (conclusion !== classificationMatch?.[1].trim().toUpperCase()) {
-          output.push(`🎯 Final Conclusion: ${conclusion}`);
+        
+        // Add the classification
+        if (llmResponse.classification) {
+          output.push(`✨ Classification: ${llmResponse.classification}`);
+          output.push(`💡 Confidence: ${Math.round(llmResponse.confidence * 100)}%`);
         }
+      } else if (Array.isArray(llmResponse) && llmResponse[0]?.generated_text) {
+        // Handle raw API response format
+        const generatedText = llmResponse[0].generated_text;
+        output.push('📝 Generated Analysis:');
+        output.push(`• ${generatedText}`);
+      } else if (typeof llmResponse === 'string') {
+        // Handle string response
+        output.push('📝 Analysis:');
+        output.push(`• ${llmResponse}`);
       }
     } catch (error) {
-      console.error('Error parsing LLM response:', error);
-      // Fallback to simpler parsing if the detailed format fails
-      const basicAnalysisMatch = llmText.match(/Analysis:\s*(.*?)(?=Classification:|$)/s);
-      const basicClassificationMatch = llmText.match(/Classification:\s*(EXPLETIVE|LOGICAL)/i);
-      
-      if (basicAnalysisMatch && basicAnalysisMatch[1]) {
-        output.push('📝 Analysis:');
-        output.push(`• ${basicAnalysisMatch[1].trim()}`);
-        output.push('');
-      }
-      
-      if (basicClassificationMatch && basicClassificationMatch[1]) {
-        output.push(`✨ Classification: ${basicClassificationMatch[1].trim().toUpperCase()}`);
-      }
-      
-      if (!basicAnalysisMatch && !basicClassificationMatch) {
-        output.push('• ' + llmText);  // Last resort: show raw text
-      }
+      console.error('Error formatting LLM response:', error);
+      output.push('• Error processing LLM response');
+      output.push(`• Raw response: ${JSON.stringify(llmResponse)}`);
     }
   } else {
     output.push('• No LLM analysis available');
