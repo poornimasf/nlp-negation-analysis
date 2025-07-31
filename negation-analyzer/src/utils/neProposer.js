@@ -167,13 +167,14 @@ function proposeFromRules(text) {
   const hasLogical = hasLogicalNegation(text);
   const verbPosition = findVerbPosition(text);
 
-  // Calculate confidence
+  // Calculate confidence based on structure and context
   const confidence = patternMatch ? 0.8 :
+                    (structure.isComplete && !hasLogical) ? 0.7 :
                     verbPosition !== -1 ? 0.5 :
                     0.2;
 
-  // If we have a pattern match, use it for placement
-  if (patternMatch) {
+  // If we have a pattern match and valid structure, use it for placement
+  if (patternMatch && structure.isComplete) {
     const words = text.split(/\s+/);
     return {
       text: [
@@ -183,6 +184,20 @@ function proposeFromRules(text) {
       ].join(" "),
       confidence,
       rule: `${patternMatch.category}_${patternMatch.pattern}`
+    };
+  }
+
+  // If logical negation is present, place NE before verb
+  if (hasLogical && verbPosition !== -1) {
+    const words = text.split(/\s+/);
+    return {
+      text: [
+        ...words.slice(0, verbPosition),
+        "NE",
+        ...words.slice(verbPosition)
+      ].join(" "),
+      confidence,
+      rule: 'LOGICAL_NEGATION'
     };
   }
 

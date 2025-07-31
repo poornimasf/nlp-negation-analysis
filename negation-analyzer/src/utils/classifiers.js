@@ -34,12 +34,14 @@ Your task:
 1. Determine if the sentence previously contained **expletive negation** (e.g., *Je crains qu'il ne vienne*) or **logical negation** (e.g., *Je ne veux pas*).
 2. Analyze the **negation trigger(s)**, grammatical **structure**, and **context**.
 3. Provide a final classification: \`EXPLETIVE\` or \`LOGICAL\`.
+4. Indicate the position where "ne" should be placed in the sentence.
 
 Respond in the following format: 
-Analysis: [your detailed reasoning]
+Analysis: [your detailed reasoning about the sentence structure and triggers]
 Classification: [EXPLETIVE or LOGICAL]
-Reasoning: [explanation of the classification]
-Conclusion: [EXPLETIVE or LOGICAL]`;
+Reasoning: [explanation of why this classification was chosen]
+NE Position: [indicate where "ne" should be placed in the sentence]
+Conclusion: [final EXPLETIVE or LOGICAL determination]`;
 
     const response = await fetch(
       'https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud/',
@@ -71,7 +73,8 @@ Conclusion: [EXPLETIVE or LOGICAL]`;
       // Parse the structured response
       const analysisMatch = generatedText.match(/Analysis:\s*(.*?)(?=Classification:|$)/s);
       const classificationMatch = generatedText.match(/Classification:\s*(EXPLETIVE|LOGICAL)/i);
-      const reasoningMatch = generatedText.match(/Reasoning:\s*(.*?)(?=Conclusion:|$)/s);
+      const reasoningMatch = generatedText.match(/Reasoning:\s*(.*?)(?=NE Position:|$)/s);
+      const nePositionMatch = generatedText.match(/NE Position:\s*(.*?)(?=Conclusion:|$)/s);
       const conclusionMatch = generatedText.match(/Conclusion:\s*(EXPLETIVE|LOGICAL)/i);
       
       return {
@@ -79,6 +82,7 @@ Conclusion: [EXPLETIVE or LOGICAL]`;
         classification: (classificationMatch && classificationMatch[1]) ? 
           classificationMatch[1].toUpperCase() : 'UNCERTAIN',
         reasoning: reasoningMatch ? reasoningMatch[1].trim() : '',
+        nePosition: nePositionMatch ? nePositionMatch[1].trim() : '',
         conclusion: (conclusionMatch && conclusionMatch[1]) ? 
           conclusionMatch[1].toUpperCase() : undefined,
         confidence: 0.85,
