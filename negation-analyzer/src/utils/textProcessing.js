@@ -140,8 +140,8 @@ export const determineClassification = (text, analysis) => {
   const firstLine = analysisLines[0];
   const fullText = analysisLines.join(' ');
 
-  // For Hybrid mode, look for LLM's classification first
-  if (fullText.includes('🤖 LLM ANALYSIS:')) {
+  // For CroissantLLM mode, look for LLM's classification
+  if (fullText.includes('🤖 CroissantLLM ANALYSIS')) {
     const classificationMatch = fullText.match(/Classification:\s*(EXPLETIVE|LOGICAL)/i);
     if (classificationMatch && classificationMatch[1]) {
       return classificationMatch[1].charAt(0) + classificationMatch[1].slice(1).toLowerCase();
