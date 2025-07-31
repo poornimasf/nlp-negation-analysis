@@ -63,11 +63,8 @@ function analyzeClauseStructure(text) {
   const hasQue = /\bque\b/i.test(text);
   const hasSubordinateClause = hasQue && text.split(/\bque\b/i)[1].trim().length > 0;
 
-  return {
-    isComplete: hasMainVerb && hasSubordinateClause,
-    hasMainVerb,
-    hasSubordinateClause
-  };
+  // Return only what we use
+  return hasMainVerb && hasSubordinateClause;
 }
 
 /**
@@ -161,10 +158,6 @@ function extractNePosition(example) {
 function proposeFromRules(text) {
   // Find potential expletive pattern
   const patternMatch = findPatternMatch(text);
-  
-  // Analyze structure and context
-  const structure = analyzeClauseStructure(text);
-  const hasLogical = hasLogicalNegation(text);
   const verbPosition = findVerbPosition(text);
 
   // Calculate confidence

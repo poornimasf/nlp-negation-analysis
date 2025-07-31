@@ -7,7 +7,6 @@ import { highlight, determineClassification } from '../utils/textProcessing';
 import { handleFileUpload as processFileUpload } from '../utils/trainingDataManager';
 import { classifyExpletive, classifyWithBinaryClassifier } from '../utils/classifiers';
 import proposeNePlacement from '../utils/neProposer';
-import { BatchAnalysis } from './BatchAnalysis';
 import { ModeSelector, ModeInfoBox } from './AnalysisModes';
 import { TrainingDataSection } from './TrainingDataSection';
 
