@@ -74,13 +74,24 @@ export function handleFileUpload(file) {
         const jsonData = event.target.result;
         const data = JSON.parse(jsonData);
 
-        // Check if data has examples array
-        if (!data.examples || !Array.isArray(data.examples)) {
-          throw new Error('Invalid JSON format: missing examples array');
+        // Handle different JSON formats
+        let examples = [];
+        
+        if (Array.isArray(data)) {
+          // Format: [{ example1 }, { example2 }]
+          examples = data;
+        } else if (data.examples && Array.isArray(data.examples)) {
+          // Format: { "examples": [{ example1 }, { example2 }] }
+          examples = data.examples;
+        } else if (data.text && (data.has_expletive_ne !== undefined || data.classification)) {
+          // Format: Single example object
+          examples = [data];
+        } else {
+          throw new Error('Invalid JSON format. Expected either a single example, an array of examples, or an object with examples array');
         }
 
         // Process and validate each example
-        const processedData = data.examples.map((example) => {
+        const processedData = examples.map((example) => {
           try {
             return validateExample(example);
           } catch (error) {
@@ -176,11 +187,20 @@ export function importTrainingData(jsonData) {
   try {
     const data = JSON.parse(jsonData);
     
-    // Handle both array and object with examples array
-    const examples = Array.isArray(data) ? data : data.examples;
+    // Handle different JSON formats
+    let examples = [];
     
-    if (!Array.isArray(examples)) {
-      throw new Error('Invalid data format');
+    if (Array.isArray(data)) {
+      // Format: [{ example1 }, { example2 }]
+      examples = data;
+    } else if (data.examples && Array.isArray(data.examples)) {
+      // Format: { "examples": [{ example1 }, { example2 }] }
+      examples = data.examples;
+    } else if (data.text && (data.has_expletive_ne !== undefined || data.classification)) {
+      // Format: Single example object
+      examples = [data];
+    } else {
+      throw new Error('Invalid JSON format. Expected either a single example, an array of examples, or an object with examples array');
     }
 
     // Validate all examples

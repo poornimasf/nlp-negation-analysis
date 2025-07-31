@@ -77,20 +77,10 @@ export const TrainingDataSection = ({
                 fontSize: '12px'
               }}>
 {`{
-  "examples": [
-    {
-      "text": "J'ai peur qu'il vienne",
-      "has_expletive_ne": true,
-      "trigger": "peur que",
-      "classification": "expletive"
-    },
-    {
-      "text": "Je veux pas qu'il parte",
-      "has_expletive_ne": false,
-      "trigger": "logical",
-      "classification": "logical"
-    }
-  ]
+  "text": "Je veux pas qu'il parte",
+  "has_expletive_ne": false,
+  "trigger": "logical",
+  "classification": "logical"
 }`}
               </pre>
               <div style={{ 
@@ -109,6 +99,9 @@ export const TrainingDataSection = ({
                   <li><code>trigger</code>: The trigger pattern or "logical" for logical negation</li>
                   <li><code>classification</code>: "expletive" or "logical"</li>
                 </ul>
+                <div style={{ marginTop: '12px', fontSize: '13px', color: '#666' }}>
+                  Note: You can also provide multiple examples as an array or wrap them in an "examples" array.
+                </div>
               </div>
             </div>
           )}
