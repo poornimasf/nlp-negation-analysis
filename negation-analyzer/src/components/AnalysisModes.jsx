@@ -24,6 +24,7 @@ export const ModeSelector = ({ analysisMode, setAnalysisMode }) => (
       <option value="RULE_BASED">Pattern-Based Analysis</option>
       <option value="HYBRID">Hybrid (Patterns + CroissantLLM)</option>
       <option value="TRAINING_DATA">Training Data Analysis</option>
+      <option value="SVM_ANALYSIS">SVM Analysis</option>
     </select>
     
     <p style={{ 
@@ -41,6 +42,9 @@ export const ModeSelector = ({ analysisMode, setAnalysisMode }) => (
       )}
       {analysisMode === 'TRAINING_DATA' && (
         "📚 Uses your examples to train a custom classifier"
+      )}
+      {analysisMode === 'SVM_ANALYSIS' && (
+        "🤖 Uses Support Vector Machine with linear kernel for classification"
       )}
     </p>
   </div>
@@ -81,6 +85,18 @@ export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
             'Similarity-based matching',
             'Transparent decision making',
             'Confidence from similar cases'
+          ]
+        };
+      case 'SVM_ANALYSIS':
+        return {
+          title: '🤖 SVM Analysis',
+          color: '#ff5722',
+          description: '🎯 Advanced Machine Learning: Utilizes Support Vector Machine with linear kernel for precise classification based on your training data.',
+          items: [
+            'Linear kernel SVM classifier',
+            'Optimal hyperplane separation',
+            'High-dimensional feature analysis',
+            'Margin-based confidence scoring'
           ]
         };
       default:
