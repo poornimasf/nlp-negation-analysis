@@ -22,7 +22,7 @@ export const ModeSelector = ({ analysisMode, setAnalysisMode }) => (
       }}
     >
       <option value="RULE_BASED">Pattern-Based Analysis</option>
-      <option value="HYBRID">Hybrid (Patterns + CroissantLLM)</option>
+      <option value="HYBRID">CroissantLLM Analysis</option>
       <option value="TRAINING_DATA">Training Data Analysis</option>
     </select>
     
@@ -37,7 +37,7 @@ export const ModeSelector = ({ analysisMode, setAnalysisMode }) => (
         "🔍 Analyzes French linguistic patterns and markers"
       )}
       {analysisMode === 'HYBRID' && (
-        "🔄 Combines pattern analysis with CroissantLLM for enhanced accuracy"
+        "🤖 Uses CroissantLLM to analyze negation type"
       )}
       {analysisMode === 'TRAINING_DATA' && (
         "📚 Uses your examples to train a custom classifier"
@@ -62,13 +62,13 @@ export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
         };
       case 'HYBRID':
         return {
-          title: '🔄 Hybrid Analysis',
+          title: '🤖 CroissantLLM Analysis',
           color: '#4caf50',
           items: [
-            'Combines pattern detection with LLM',
-            'Enhanced accuracy for ambiguous cases',
-            'Detailed evidence collection',
-            'Confidence blending'
+            'Uses advanced language model',
+            'Detailed linguistic analysis',
+            'Considers full sentence context',
+            'Explains reasoning for classification'
           ]
         };
       case 'TRAINING_DATA':
