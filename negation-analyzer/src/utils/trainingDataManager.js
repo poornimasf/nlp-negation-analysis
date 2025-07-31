@@ -18,15 +18,68 @@ export function validateExample(example) {
   }
 
   if (!example.classification || 
-      !['EXPLETIVE', 'LOGICAL'].includes(example.classification)) {
+      !['EXPLETIVE', 'LOGICAL'].includes(example.classification.toUpperCase())) {
     throw new Error('Invalid classification');
   }
 
   return {
     ...example,
     text: normalizeText(example.text),
+    classification: example.classification.toUpperCase(),
     added: example.added || new Date().toISOString()
   };
+}
+
+// Handle file upload
+export function handleFileUpload(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      reject(new Error('No file provided'));
+      return;
+    }
+
+    if (file.type !== 'application/json') {
+      reject(new Error('File must be JSON format'));
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = async (event) => {
+      try {
+        const jsonData = event.target.result;
+        const data = JSON.parse(jsonData);
+
+        // Check if data has examples array
+        if (!data.examples || !Array.isArray(data.examples)) {
+          throw new Error('Invalid JSON format: missing examples array');
+        }
+
+        // Process and validate each example
+        const processedData = data.examples.map((example) => {
+          // Convert old format to new format if necessary
+          const normalizedExample = {
+            text: example.text,
+            classification: example.has_expletive_ne ? 'EXPLETIVE' : 'LOGICAL',
+            trigger: example.trigger || 'unknown',
+            added: new Date().toISOString()
+          };
+
+          return validateExample(normalizedExample);
+        });
+
+        resolve({ processedData });
+      } catch (error) {
+        reject(new Error(`Failed to process file: ${error.message}`));
+      }
+    };
+
+    reader.onerror = () => {
+      reject(new Error('Failed to read file'));
+    };
+
+    reader.readAsText(file);
+  });
 }
 
 // Add new training example
@@ -88,19 +141,40 @@ export function getSVMModel(trainingData) {
 
 // Export training data
 export function exportTrainingData(data) {
-  return JSON.stringify(data, null, 2);
+  return JSON.stringify({
+    examples: data.map(example => ({
+      text: example.text,
+      has_expletive_ne: example.classification === 'EXPLETIVE',
+      trigger: example.trigger || 'unknown',
+      classification: example.classification.toLowerCase()
+    }))
+  }, null, 2);
 }
 
 // Import training data
 export function importTrainingData(jsonData) {
   try {
     const data = JSON.parse(jsonData);
-    if (!Array.isArray(data)) {
+    
+    // Handle both array and object with examples array
+    const examples = Array.isArray(data) ? data : data.examples;
+    
+    if (!Array.isArray(examples)) {
       throw new Error('Invalid data format');
     }
 
     // Validate all examples
-    return data.map(example => validateExample(example));
+    return examples.map(example => {
+      // Convert old format to new format if necessary
+      const normalizedExample = {
+        text: example.text,
+        classification: example.has_expletive_ne ? 'EXPLETIVE' : 'LOGICAL',
+        trigger: example.trigger || 'unknown',
+        added: new Date().toISOString()
+      };
+
+      return validateExample(normalizedExample);
+    });
   } catch (error) {
     throw new Error(`Failed to import training data: ${error.message}`);
   }

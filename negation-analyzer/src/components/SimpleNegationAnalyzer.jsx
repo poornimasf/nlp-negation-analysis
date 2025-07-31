@@ -4,7 +4,7 @@ import NegationAnalyzer from '../utils/NegationAnalyzer';
 import { formatErrorMessage } from '../utils/errorFormatter';
 import { formatRuleBasedResult, formatHybridResult, formatTrainingResult } from '../utils/resultFormatters';
 import { highlight, determineClassification } from '../utils/textProcessing';
-import { handleFileUpload as processFileUpload } from '../utils/trainingDataManager';
+import { handleFileUpload } from '../utils/trainingDataManager';
 import { classifyExpletive, classifyWithBinaryClassifier } from '../utils/classifiers';
 import proposeNePlacement from '../utils/neProposer';
 import { BatchAnalysis } from './BatchAnalysis';
@@ -32,7 +32,7 @@ const SimpleNegationAnalyzer = () => {
     if (!file) return;
 
     try {
-      const { processedData } = await processFileUpload(file);
+      const { processedData } = await handleFileUpload(file);
       setTrainingData(processedData);
       
       if (processedData.length > 0) {
