@@ -100,7 +100,8 @@ const SimpleNegationAnalyzer = () => {
                 const mode = analysisMode === 'SVM_ANALYSIS' ? 'SVM' : 'BINARY';
                 const trainingAnalysis = classify(sentence, trainingData, mode);
                 formattedResult = formatTrainingResult(analysis, trainingAnalysis);
-                classification = trainingAnalysis.classification;
+                // Extract prediction from pattern analysis for display
+                classification = analysis.type === 'UNCERTAIN' ? trainingAnalysis.classification : analysis.type;
               } else {
                 formattedResult = formatRuleBasedResult(analysis);
                 classification = await determineClassification(sentence, formattedResult);
