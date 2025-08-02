@@ -1,75 +1,60 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 
-export const TrainingDataSection = ({ onDataLoad = () => {} }) => {
+export const TrainingDataSection = ({ onDataLoad }) => {
   const [error, setError] = useState(null);
   const [showFormat, setShowFormat] = useState(false);
 
-  const handleFileUpload = useCallback((event) => {
+  const handleFileUpload = async (event) => {
     setError(null);
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-
-    reader.addEventListener('load', (event) => {
-      try {
-        const content = event.target?.result;
-        if (typeof content !== 'string') {
-          throw new Error('Invalid file content');
-        }
-
-        // Parse JSON
-        const jsonData = JSON.parse(content);
-        console.log('Parsed JSON:', jsonData);
-        
-        // Convert array to object if needed
-        const data = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
-        console.log('Processed data:', data);
-
-        // Validate structure
-        if (!data || !data.examples || !Array.isArray(data.examples)) {
-          throw new Error('Invalid data structure. Expected { examples: [...] }');
-        }
-
-        // Process each example
-        const processedData = {
-          examples: data.examples.map((example, index) => {
-            if (!example || typeof example !== 'object') {
-              throw new Error(`Invalid example at index ${index}`);
-            }
-
-            // Clean and validate the example
-            return {
-              text: String(example.text || '').trim(),
-              has_expletive_ne: Boolean(example.has_expletive_ne),
-              classification: Boolean(example.classification),
-              trigger: ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger) 
-                ? example.trigger 
-                : null,
-              ne_position: example.ne_position !== null ? Number(example.ne_position) : null
-            };
-          })
-        };
-
-        console.log('Final processed data:', processedData);
-        onDataLoad(processedData);
-      } catch (err) {
-        console.error('Error processing file:', err);
-        setError(`Error processing file: ${err.message}`);
-      }
-    });
-
-    reader.addEventListener('error', () => {
-      setError('Error reading file');
-    });
-
     try {
-      reader.readAsText(file);
+      // Read file as text using fetch and blob
+      const fileContent = await file.text();
+      console.log('File content:', fileContent);
+
+      // Parse JSON
+      const jsonData = JSON.parse(fileContent);
+      console.log('Parsed JSON:', jsonData);
+      
+      // Convert array to object if needed
+      const data = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
+      console.log('Processed data:', data);
+
+      // Validate structure
+      if (!data || !data.examples || !Array.isArray(data.examples)) {
+        throw new Error('Invalid data structure. Expected { examples: [...] }');
+      }
+
+      // Process each example
+      const processedData = {
+        examples: data.examples.map((example, index) => {
+          if (!example || typeof example !== 'object') {
+            throw new Error(`Invalid example at index ${index}`);
+          }
+
+          // Clean and validate the example
+          return {
+            text: String(example.text || '').trim(),
+            has_expletive_ne: Boolean(example.has_expletive_ne),
+            classification: Boolean(example.classification),
+            trigger: ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger) 
+              ? example.trigger 
+              : null,
+            ne_position: example.ne_position !== null ? Number(example.ne_position) : null
+          };
+        })
+      };
+
+      console.log('Final processed data:', processedData);
+      onDataLoad(processedData);
     } catch (err) {
-      setError(`Error reading file: ${err.message}`);
+      console.error('Error processing file:', err);
+      setError(`Error processing file: ${err.message}`);
     }
-  }, [onDataLoad]);
+  };
 
   const formatExample = {
     "examples": [
