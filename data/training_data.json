@@ -1,0 +1,46 @@
+{
+  "examples": [
+    {
+      "text": "J'ai peur qu'il ne vienne",
+      "has_expletive_ne": true,
+      "classification": true,
+      "trigger": "peur que",
+      "ne_position": 3
+    },
+    {
+      "text": "Avant qu'elle ne parte",
+      "has_expletive_ne": true,
+      "classification": true,
+      "trigger": "avant que",
+      "ne_position": 2
+    },
+    {
+      "text": "Peu s'en faut qu'il ne réussisse",
+      "has_expletive_ne": true,
+      "classification": true,
+      "trigger": "peu s'en faut",
+      "ne_position": 5
+    },
+    {
+      "text": "J'ai peur qu'il vienne",
+      "has_expletive_ne": false,
+      "classification": true,
+      "trigger": "peur que",
+      "ne_position": null
+    },
+    {
+      "text": "Avant qu'elle parte",
+      "has_expletive_ne": false,
+      "classification": true,
+      "trigger": "avant que",
+      "ne_position": null
+    },
+    {
+      "text": "Il parle de son travail",
+      "has_expletive_ne": false,
+      "classification": false,
+      "trigger": null,
+      "ne_position": null
+    }
+  ]
+}

@@ -1,7 +1,12 @@
 text,has_expletive_ne,trigger,classification
-"J'ai peur qu'il ne vienne",true,peur que,expletive
-"J'ai peur qu'il ne vienne pas",false,peur que,logical
-"Avant qu'elle ne parte",true,avant que,expletive
-"Avant qu'elle parte",false,avant que,no_negation
-"J'ai peur qu'elle ne soit malade",true,peur que,expletive
-"J'ai peur qu'elle ne soit pas malade",false,peur que,logical
+"J'ai peur qu'il vienne",true,peur que,expletive
+"Avant qu'elle parte",true,avant que,expletive
+"Je crains qu'il vienne",true,craindre que,expletive
+"Elle a peur qu'il parte",true,peur que,expletive
+"Il redoute qu'elle vienne",true,redouter que,expletive
+"Avant que tu partes",true,avant que,expletive
+"En attendant qu'il arrive",true,en attendant que,expletive
+"Peu s'en faut qu'il réussisse",true,peu s'en faut que,expletive
+"Il parle de son travail",false,,no_negation
+"Elle étudie à l'université",false,,no_negation
+"Je vais au cinéma",false,,no_negation
