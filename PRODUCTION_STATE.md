@@ -62,34 +62,60 @@ The French Negation Type Prediction System is a specialized linguistic analysis 
 - **Data Processing**: Client-side with no data persistence
 - **Performance**: Real-time processing with progress tracking
 
-## Recent Updates (v2.6.0)
+## Recent Updates (v2.6.1)
 
 ### Major Changes
-1. **Simplified Analysis Modes**
-   - Removed hybrid analysis option
-   - Implemented either/or logic
-   - Rule-based takes priority when both enabled
+1. **Updated Training Data Format**
+   - Simplified JSON structure
+   - Improved validation
+   - Better error handling
+   - Automatic format conversion
 
-2. **Enhanced Classification Sensitivity**
-   - More sensitive to "likely" indicators
-   - Reduced "Uncertain" classifications
-   - Improved trigger pattern fallback logic
+2. **Enhanced Git Workflow**
+   - Added workflow safeguards
+   - Improved branch protection
+   - Better deployment process
+   - Added documentation
 
-3. **Improved User Experience**
-   - Real-time batch processing with progress bars
-   - Loading indicators with sentence-by-sentence tracking
-   - Streamlined export formats (removed trigger/mode columns)
+3. **UI Improvements**
+   - Collapsible format guide
+   - Better error messages
+   - Enhanced styling
+   - Improved user feedback
 
-4. **Context-Aware AI Integration**
-   - Updated CroissantLLM prompts for removed "ne" context
-   - Enhanced French syntax validation
-   - Improved confidence scoring based on linguistic analysis
+4. **Development Process**
+   - Added workflow scripts
+   - Enhanced documentation
+   - Improved build process
+   - Better error handling
+
+### Training Data Format
+The system now uses a simplified JSON format:
+```json
+{
+  "examples": [
+    {
+      "text": "French sentence",
+      "has_expletive_ne": true/false,
+      "classification": true/false,
+      "trigger": "peur que"|"avant que"|"peu s'en faut"|null,
+      "ne_position": number|null
+    }
+  ]
+}
+```
 
 ### Bug Fixes
-- Fixed async function handling in batch processing
-- Resolved undefined text errors in pattern matching
-- Improved error handling for CroissantLLM failures
-- Enhanced null checks throughout the system
+- Fixed detached HEAD issues
+- Improved file reading
+- Enhanced error handling
+- Better format validation
+
+### Development Workflow
+- Added git workflow script
+- Enhanced branch protection
+- Improved deployment process
+- Better documentation
 
 ## System Performance
 
