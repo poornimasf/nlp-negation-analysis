@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import './NegationAnalyzer.css';
 
-export const TrainingDataSection = ({ onDataLoad }) => {
+export const TrainingDataSection = ({ onDataLoad = () => {} }) => {
   const [error, setError] = useState(null);
   const [showFormat, setShowFormat] = useState(false);
 
@@ -10,12 +10,11 @@ export const TrainingDataSection = ({ onDataLoad }) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Read file as text
     const reader = new FileReader();
-    
-    reader.onload = (e) => {
+
+    reader.addEventListener('load', (event) => {
       try {
-        const content = e.target?.result;
+        const content = event.target?.result;
         if (typeof content !== 'string') {
           throw new Error('Invalid file content');
         }
@@ -59,11 +58,11 @@ export const TrainingDataSection = ({ onDataLoad }) => {
         console.error('Error processing file:', err);
         setError(`Error processing file: ${err.message}`);
       }
-    };
+    });
 
-    reader.onerror = () => {
+    reader.addEventListener('error', () => {
       setError('Error reading file');
-    };
+    });
 
     try {
       reader.readAsText(file);
