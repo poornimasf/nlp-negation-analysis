@@ -5,40 +5,45 @@ export const TrainingDataSection = ({ onDataLoad }) => {
   const [error, setError] = useState(null);
   const [showFormat, setShowFormat] = useState(false);
 
+  const processFileContent = (content) => {
+    try {
+      // Parse JSON
+      const jsonData = JSON.parse(content);
+      
+      // If it's an array, wrap it in examples object
+      const data = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
+      
+      // Validate the data
+      if (!validateTrainingData(data)) {
+        setError('Invalid training data format. Check console for details.');
+        return;
+      }
+
+      // Clean the data
+      const cleanedData = cleanTrainingData(data);
+      
+      onDataLoad(cleanedData);
+      setError(null);
+    } catch (err) {
+      console.error('Processing error:', err);
+      setError('Error processing file: ' + err.message);
+    }
+  };
+
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
     const reader = new FileReader();
-
-    reader.addEventListener('load', function(event) {
-      try {
-        // Parse JSON
-        const jsonData = JSON.parse(event.target.result);
-        
-        // If it's an array, wrap it in examples object
-        const data = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
-        
-        // Validate the data
-        if (!validateTrainingData(data)) {
-          setError('Invalid training data format. Check console for details.');
-          return;
-        }
-
-        // Clean the data
-        const cleanedData = cleanTrainingData(data);
-        
-        onDataLoad(cleanedData);
-        setError(null);
-      } catch (err) {
-        console.error('Processing error:', err);
-        setError('Error processing file: ' + err.message);
-      }
-    });
-
-    reader.addEventListener('error', function() {
+    
+    // Use traditional onload assignment
+    reader.onload = function() {
+      processFileContent(this.result);
+    };
+    
+    reader.onerror = function() {
       setError('Error reading file');
-    });
+    };
 
     reader.readAsText(file);
   };
