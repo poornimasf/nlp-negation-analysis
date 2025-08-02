@@ -9,29 +9,49 @@ export const TrainingDataSection = ({ onDataLoad }) => {
     if (!file) return;
 
     try {
-      const text = await file.text();
-      const data = JSON.parse(text);
-      
-      // Validate the data format
-      if (!validateTrainingData(data)) {
-        setError('Invalid training data format');
-        return;
-      }
+      // Use FileReader instead of file.text()
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          
+          // If data is an array, convert it to the new format
+          const formattedData = Array.isArray(data) ? { examples: data } : data;
+          
+          // Validate the data format
+          if (!validateTrainingData(formattedData)) {
+            setError('Invalid training data format');
+            return;
+          }
 
-      onDataLoad(data);
-      setError(null);
+          onDataLoad(formattedData);
+          setError(null);
+        } catch (err) {
+          setError('Error parsing JSON: ' + err.message);
+        }
+      };
+
+      reader.onerror = () => {
+        setError('Error reading file');
+      };
+
+      reader.readAsText(file);
     } catch (err) {
       setError('Error loading file: ' + err.message);
     }
   };
 
   const validateTrainingData = (data) => {
-    if (!data.examples || !Array.isArray(data.examples)) {
+    // Check if data has examples array
+    if (!data || !data.examples || !Array.isArray(data.examples)) {
       return false;
     }
 
+    // Validate each example
     return data.examples.every(example => (
-      example.text &&
+      example &&
+      typeof example === 'object' &&
+      typeof example.text === 'string' &&
       typeof example.has_expletive_ne === 'boolean' &&
       typeof example.classification === 'boolean' &&
       (example.trigger === null || ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger)) &&
