@@ -1,161 +1,51 @@
 import React from 'react';
+import './NegationAnalyzer.css';
 
-export const ModeSelector = ({ analysisMode, setAnalysisMode }) => (
-  <div style={{ 
-    backgroundColor: '#e3f2fd', 
-    padding: '15px', 
-    borderRadius: '8px', 
-    marginBottom: '20px',
-    border: '2px solid #2196f3'
-  }}>
-    <h4>🔍 Analysis Mode:</h4>
-    <select
-      value={analysisMode}
-      onChange={(e) => setAnalysisMode(e.target.value)}
-      style={{
-        width: '100%',
-        padding: '8px',
-        marginBottom: '10px',
-        borderRadius: '4px',
-        border: '1px solid #2196f3',
-        fontSize: '16px'
-      }}
-    >
-      <option value="RULE_BASED">Pattern-Based Analysis</option>
-      <option value="HYBRID">Hybrid (Patterns + CroissantLLM)</option>
-      <option value="TRAINING_DATA">Training Data Analysis</option>
-      <option value="SVM_ANALYSIS">SVM Analysis</option>
-    </select>
-    
-    <p style={{ 
-      marginTop: '10px',
-      padding: '10px',
-      backgroundColor: 'rgba(255,255,255,0.7)',
-      borderRadius: '4px',
-      border: '1px solid #2196f3'
-    }}>
-      {analysisMode === 'RULE_BASED' && (
-        "🔍 Analyzes French linguistic patterns and markers"
-      )}
-      {analysisMode === 'HYBRID' && (
-        "🔄 Combines pattern analysis with CroissantLLM for enhanced accuracy"
-      )}
-      {analysisMode === 'TRAINING_DATA' && (
-        "📚 Uses your examples to train a custom classifier"
-      )}
-      {analysisMode === 'SVM_ANALYSIS' && (
-        "🤖 Uses Support Vector Machine with linear kernel for classification"
-      )}
-    </p>
-  </div>
-);
-
-export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
-  const getContent = () => {
-    switch (mode) {
-      case 'RULE_BASED':
-        return {
-          title: '🔍 Pattern-Based Analysis',
-          color: '#2196f3',
-          items: [
-            'Detects logical negation markers',
-            'Identifies expletive triggers',
-            'Analyzes subjunctive mood',
-            'Provides confidence-based results'
-          ]
-        };
-      case 'HYBRID':
-        return {
-          title: '🔄 Hybrid Analysis',
-          color: '#4caf50',
-          items: [
-            'Combines pattern detection with LLM',
-            'Enhanced accuracy for ambiguous cases',
-            'Detailed evidence collection',
-            'Confidence blending'
-          ]
-        };
-      case 'TRAINING_DATA':
-        return {
-          title: '📚 Training Data Analysis',
-          color: '#9c27b0',
-          description: '🎯 Complete User Control: Upload your own training examples to enhance analysis accuracy. The system uses ONLY your uploaded data - no hidden datasets or external training sources.',
-          items: [
-            'Uses your custom examples',
-            'Similarity-based matching',
-            'Transparent decision making',
-            'Confidence from similar cases'
-          ]
-        };
-      case 'SVM_ANALYSIS':
-        return {
-          title: '🤖 SVM Analysis',
-          color: '#ff5722',
-          description: '🎯 Advanced Machine Learning: Utilizes Support Vector Machine with linear kernel for precise classification based on your training data.',
-          items: [
-            'Linear kernel SVM classifier',
-            'Optimal hyperplane separation',
-            'High-dimensional feature analysis',
-            'Margin-based confidence scoring'
-          ]
-        };
-      default:
-        return null;
-    }
-  };
-
-  const content = getContent();
-  if (!content) return null;
-
+const AnalysisModes = ({ currentMode, onModeChange }) => {
   return (
-    <div style={{ 
-      backgroundColor: '#fff', 
-      border: `1px solid ${content.color}`,
-      borderRadius: '8px', 
-      marginBottom: '20px',
-      overflow: 'hidden'
-    }}>
-      <div 
-        onClick={() => setExpanded(!isExpanded)}
-        style={{
-          padding: '12px 15px',
-          cursor: 'pointer',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          backgroundColor: '#fff',
-          borderBottom: isExpanded ? `1px solid ${content.color}` : 'none'
-        }}
-      >
-        <h4 style={{ margin: 0, fontSize: '14px', color: content.color }}>
-          {content.title}
-        </h4>
-        <span style={{ fontSize: '12px', color: content.color }}>
-          {isExpanded ? '▼ Hide Details' : '▶ Show Details'}
-        </span>
+    <div className="analysis-modes">
+      <h3>Analysis Mode</h3>
+      <div className="mode-selector">
+        <select 
+          value={currentMode} 
+          onChange={(e) => onModeChange(e.target.value)}
+        >
+          <option value="training">Training Data Analysis</option>
+          <option value="rule">Rule-Based Analysis</option>
+        </select>
       </div>
-      {isExpanded && (
-        <div style={{ padding: '15px' }}>
-          {content.description && (
-            <div style={{
-              backgroundColor: '#f3e5f5',
-              border: '1px solid #ce93d8',
-              borderRadius: '6px',
-              padding: '12px',
-              marginBottom: '15px',
-              fontSize: '14px',
-              color: '#4a148c'
-            }}>
-              {content.description}
-            </div>
-          )}
-          <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-            {content.items.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+
+      <div className="mode-info">
+        {currentMode === 'training' ? (
+          <div className="info-box">
+            <h4>Training Data Analysis Mode</h4>
+            <p>Uses example-based learning to identify expletive negation.</p>
+            <ul>
+              <li>Matches against known examples</li>
+              <li>Supports three trigger patterns:
+                <ul>
+                  <li>peur que</li>
+                  <li>avant que</li>
+                  <li>peu s'en faut</li>
+                </ul>
+              </li>
+              <li>Provides NE placement suggestions based on examples</li>
+            </ul>
+          </div>
+        ) : (
+          <div className="info-box">
+            <h4>Rule-Based Analysis Mode</h4>
+            <p>Uses predefined linguistic rules to analyze negation.</p>
+            <ul>
+              <li>Pattern-based detection</li>
+              <li>Comprehensive trigger analysis</li>
+              <li>Context-aware classification</li>
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
+
+export default AnalysisModes;
