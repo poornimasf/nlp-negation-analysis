@@ -94,8 +94,7 @@ export const TrainingDataSection = ({ onDataLoad = () => {} }) => {
     <div className="training-data-section">
       <h3>Training Data Analysis</h3>
       <p className="section-description">
-        Upload a JSON file containing French sentences for negation analysis. 
-        The file should include examples of sentences with and without expletive negation.
+        Upload JSON file in the format shown below.
       </p>
       
       <div className="format-toggle" onClick={() => setShowFormat(!showFormat)}>
@@ -107,7 +106,7 @@ export const TrainingDataSection = ({ onDataLoad = () => {} }) => {
         <div className="info-box">
           <h4>Expected JSON Format:</h4>
           <div className="format-explanation">
-            <p>Upload a JSON file with the following structure:</p>
+            <p>Required format:</p>
             <pre>{JSON.stringify(formatExample, null, 2)}</pre>
             
             <h5>Field Descriptions:</h5>
