@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 
 export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrainingData, uploadError }) => {
-  const [error, setError] = useState(null);
   const [showFormat, setShowFormat] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
 
@@ -26,7 +25,7 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
   };
 
   const renderPreview = () => {
-    if (!trainingData || !trainingData.examples || trainingData.examples.length === 0) {
+    if (!trainingData?.examples?.length) {
       return null;
     }
 
@@ -161,7 +160,7 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
             <small>Check the console for more details.</small>
           </div>
         )}
-        {trainingData && trainingData.examples && trainingData.examples.length > 0 && (
+        {trainingData?.examples?.length > 0 && (
           <button onClick={clearTrainingData} className="clear-button">
             Clear Training Data
           </button>
