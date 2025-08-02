@@ -5,54 +5,75 @@ const TrainingDataSection = ({ onDataLoad }) => {
   const [error, setError] = useState(null);
   const [showFormat, setShowFormat] = useState(false);
 
-  const handleFileUpload = async (event) => {
+  const processJsonData = (jsonData) => {
+    // Convert array to object if needed
+    const data = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
+    console.log('Initial data structure:', data);
+
+    // Validate structure
+    if (!data || !data.examples || !Array.isArray(data.examples)) {
+      throw new Error('Invalid data structure. Expected { examples: [...] }');
+    }
+
+    // Process each example
+    return {
+      examples: data.examples.map((example, index) => {
+        if (!example || typeof example !== 'object') {
+          throw new Error(`Invalid example at index ${index}`);
+        }
+
+        // Clean and validate the example
+        return {
+          text: String(example.text || '').trim(),
+          has_expletive_ne: Boolean(example.has_expletive_ne),
+          classification: Boolean(example.classification),
+          trigger: ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger) 
+            ? example.trigger 
+            : null,
+          ne_position: example.ne_position !== null ? Number(example.ne_position) : null
+        };
+      })
+    };
+  };
+
+  const handleFileUpload = (event) => {
     setError(null);
     const file = event.target.files?.[0];
     if (!file) return;
 
-    try {
-      // Read file as text
-      const text = await file.text();
-      console.log('File content:', text);
-
-      // Parse JSON
-      const jsonData = JSON.parse(text);
-      console.log('Parsed JSON:', jsonData);
-      
-      // Convert array to object if needed
-      const data = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
-      console.log('Processed data:', data);
-
-      // Validate structure
-      if (!data || !data.examples || !Array.isArray(data.examples)) {
-        throw new Error('Invalid data structure. Expected { examples: [...] }');
+    const reader = new FileReader();
+    
+    reader.onload = function(event) {
+      try {
+        const content = event.target.result;
+        console.log('File content loaded');
+        
+        const jsonData = JSON.parse(content);
+        console.log('JSON parsed successfully');
+        
+        const processedData = processJsonData(jsonData);
+        console.log('Data processed:', processedData);
+        
+        if (typeof onDataLoad === 'function') {
+          onDataLoad(processedData);
+        } else {
+          console.error('onDataLoad is not a function');
+          setError('Internal error: invalid callback');
+        }
+      } catch (err) {
+        console.error('Error processing file:', err);
+        setError(`Error processing file: ${err.message}`);
       }
+    };
 
-      // Process each example
-      const processedData = {
-        examples: data.examples.map((example, index) => {
-          if (!example || typeof example !== 'object') {
-            throw new Error(`Invalid example at index ${index}`);
-          }
+    reader.onerror = function() {
+      setError('Error reading file');
+    };
 
-          // Clean and validate the example
-          return {
-            text: String(example.text || '').trim(),
-            has_expletive_ne: Boolean(example.has_expletive_ne),
-            classification: Boolean(example.classification),
-            trigger: ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger) 
-              ? example.trigger 
-              : null,
-            ne_position: example.ne_position !== null ? Number(example.ne_position) : null
-          };
-        })
-      };
-
-      console.log('Final processed data:', processedData);
-      onDataLoad(processedData);
+    try {
+      reader.readAsText(file);
     } catch (err) {
-      console.error('Error processing file:', err);
-      setError(`Error processing file: ${err.message}`);
+      setError(`Error reading file: ${err.message}`);
     }
   };
 
