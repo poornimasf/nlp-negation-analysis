@@ -123,3 +123,64 @@ select.input {
 .stats-section li {
   margin-bottom: 5px;
 }
+/* Training Data Section Styles */
+.training-data-section {
+  margin: 20px 0;
+}
+
+.training-data-section .info-box {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.format-explanation {
+  margin: 15px 0;
+}
+
+.format-explanation pre {
+  background-color: white;
+  padding: 15px;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  margin: 15px 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: #333;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 14px;
+}
+
+.format-explanation ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin: 15px 0;
+}
+
+.format-explanation li {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.format-explanation strong {
+  color: #2c3e50;
+}
+
+.upload-section {
+  margin: 20px 0;
+}
+
+.file-input {
+  display: block;
+  margin: 10px 0;
+}
+
+.error-message {
+  color: #dc3545;
+  background-color: #f8d7da;
+  padding: 10px;
+  border-radius: 4px;
+  margin: 10px 0;
+}
