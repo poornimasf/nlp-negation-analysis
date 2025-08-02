@@ -5,110 +5,90 @@ export const TrainingDataSection = ({ onDataLoad }) => {
   const [error, setError] = useState(null);
   const [showFormat, setShowFormat] = useState(false);
 
-  const handleFileUpload = async (event) => {
+  const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
-    try {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          // Try to parse the JSON
-          let data;
-          try {
-            data = JSON.parse(e.target.result);
-          } catch (parseError) {
-            console.error('Parse error:', parseError);
-            setError('Invalid JSON format. Please check the file content.');
-            return;
-          }
+    const reader = new FileReader();
 
-          // Clean and validate the data
-          const cleanedData = cleanTrainingData(data);
-          
-          if (!validateTrainingData(cleanedData)) {
-            setError('Invalid training data structure. Please check the format.');
-            return;
-          }
-
-          onDataLoad(cleanedData);
-          setError(null);
-        } catch (err) {
-          console.error('Processing error:', err);
-          setError('Error processing file: ' + err.message);
+    reader.addEventListener('load', function(event) {
+      try {
+        // Parse JSON
+        const jsonData = JSON.parse(event.target.result);
+        
+        // If it's an array, wrap it in examples object
+        const data = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
+        
+        // Validate the data
+        if (!validateTrainingData(data)) {
+          setError('Invalid training data format. Check console for details.');
+          return;
         }
-      };
 
-      reader.onerror = () => {
-        setError('Error reading file');
-      };
+        // Clean the data
+        const cleanedData = cleanTrainingData(data);
+        
+        onDataLoad(cleanedData);
+        setError(null);
+      } catch (err) {
+        console.error('Processing error:', err);
+        setError('Error processing file: ' + err.message);
+      }
+    });
 
-      reader.readAsText(file);
-    } catch (err) {
-      console.error('File error:', err);
-      setError('Error loading file: ' + err.message);
-    }
+    reader.addEventListener('error', function() {
+      setError('Error reading file');
+    });
+
+    reader.readAsText(file);
   };
 
   const cleanTrainingData = (data) => {
-    // If it's an array, wrap it in examples object
-    if (Array.isArray(data)) {
-      data = { examples: data };
+    if (!data.examples || !Array.isArray(data.examples)) {
+      return data;
     }
 
-    // Clean the examples
-    if (data.examples && Array.isArray(data.examples)) {
-      data.examples = data.examples.map(example => ({
+    return {
+      examples: data.examples.map(example => ({
         ...example,
-        // Trim whitespace from text
-        text: example.text?.trim(),
-        // Ensure boolean values
+        text: example.text?.trim() || '',
         has_expletive_ne: Boolean(example.has_expletive_ne),
         classification: Boolean(example.classification),
-        // Clean trigger value
         trigger: ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger) 
           ? example.trigger 
           : null,
-        // Validate ne_position
-        ne_position: validateNePosition(example.text, example.ne_position)
-      }));
-    }
-
-    return data;
+        ne_position: validateNePosition(example.text?.trim() || '', example.ne_position)
+      }))
+    };
   };
 
   const validateNePosition = (text, position) => {
     if (position === null) return null;
     
-    // Convert to number
     const pos = Number(position);
-    
-    // Check if it's a valid number
     if (isNaN(pos)) return null;
     
-    // Count words in text
-    const wordCount = text?.split(/\s+/).filter(Boolean).length || 0;
-    
-    // Position should be between 1 and word count
-    if (pos < 1 || pos > wordCount) return null;
+    const words = text.split(/\s+/).filter(Boolean);
+    if (pos < 1 || pos > words.length) {
+      console.warn('Invalid ne_position:', pos, 'for text:', text);
+      return null;
+    }
     
     return pos;
   };
 
   const validateTrainingData = (data) => {
-    // Check basic structure
     if (!data || !data.examples || !Array.isArray(data.examples)) {
       console.error('Invalid data structure:', data);
       return false;
     }
 
-    // Validate each example
     return data.examples.every(example => {
       const isValid = (
         example &&
         typeof example === 'object' &&
         typeof example.text === 'string' &&
-        example.text.length > 0 &&
+        example.text.trim().length > 0 &&
         typeof example.has_expletive_ne === 'boolean' &&
         typeof example.classification === 'boolean' &&
         (example.trigger === null || ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger)) &&
