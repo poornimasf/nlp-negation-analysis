@@ -1,168 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import { parseTrainingData, analyzeSentence } from '../utils/trainingDataParser';
+import React, { useState } from 'react';
+import { analyzeSentence, formatAnalysis, suggestNePosition } from '../utils/ruleBasedAnalyzer';
 import './NegationAnalyzer.css';
 
 const NegationAnalyzer = () => {
-  // State management
   const [inputText, setInputText] = useState('');
-  const [trainingData, setTrainingData] = useState(null);
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Load training data on component mount
-  useEffect(() => {
-    loadTrainingData();
-  }, []);
-
-  // Load and parse training data
-  const loadTrainingData = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/data/training_data.json');
-      const data = await response.json();
-      const parsed = parseTrainingData(data);
-      setTrainingData(parsed);
-      setError(null);
-    } catch (err) {
-      setError('Error loading training data: ' + err.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Handle input changes
   const handleInputChange = (event) => {
     setInputText(event.target.value);
+    setAnalysis(null);
+    setError(null);
   };
 
-  // Analyze input text
   const handleAnalyze = () => {
-    if (!inputText.trim()) {
-      setError('Please enter a sentence to analyze');
-      return;
-    }
-
     try {
-      const result = analyzeSentence(inputText, trainingData.examples);
-      setAnalysis(result);
+      const text = inputText.trim();
+      if (!text) {
+        setError('Please enter a sentence to analyze');
+        return;
+      }
+
+      // Perform analysis
+      const result = analyzeSentence(text);
+      
+      // Get NE position suggestion if expletive
+      if (result.classification) {
+        result.suggestedNePosition = suggestNePosition(text, result.trigger);
+      }
+
+      // Format results
+      setAnalysis(formatAnalysis(result));
       setError(null);
     } catch (err) {
-      setError('Analysis error: ' + err.message);
+      console.error('Analysis error:', err);
+      setError('Error analyzing sentence: ' + err.message);
     }
-  };
-
-  // Format analysis results
-  const formatResults = () => {
-    if (!analysis) return null;
-
-    return (
-      <div className="analysis-results">
-        <h3>Analysis Results</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Input</th>
-              <th>Classification</th>
-              <th>Trigger</th>
-              <th>Suggested NE Position</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{inputText}</td>
-              <td>{analysis.classification ? 'Expletive' : 'Not Expletive'}</td>
-              <td>{analysis.trigger || 'None'}</td>
-              <td>{analysis.suggestedNePosition || 'N/A'}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  };
-
-  // Format training data statistics
-  const formatStats = () => {
-    if (!trainingData?.stats) return null;
-
-    const { stats } = trainingData;
-    return (
-      <div className="training-stats">
-        <h3>Training Data Statistics</h3>
-        <table>
-          <tbody>
-            <tr>
-              <td>Total Examples:</td>
-              <td>{stats.total}</td>
-            </tr>
-            <tr>
-              <td>Expletive Examples:</td>
-              <td>{stats.expletive.total}</td>
-            </tr>
-            <tr>
-              <td>With NE:</td>
-              <td>{stats.expletive.withNe}</td>
-            </tr>
-            <tr>
-              <td>Without NE:</td>
-              <td>{stats.expletive.withoutNe}</td>
-            </tr>
-            <tr>
-              <td>Non-Expletive Examples:</td>
-              <td>{stats.nonExpletive}</td>
-            </tr>
-          </tbody>
-        </table>
-
-        <h4>Trigger Statistics</h4>
-        {Object.entries(stats.expletive.byTrigger).map(([trigger, triggerStats]) => (
-          <div key={trigger} className="trigger-stats">
-            <h5>{trigger}</h5>
-            <table>
-              <tbody>
-                <tr>
-                  <td>Total:</td>
-                  <td>{triggerStats.total}</td>
-                </tr>
-                <tr>
-                  <td>With NE:</td>
-                  <td>{triggerStats.withNe}</td>
-                </tr>
-                <tr>
-                  <td>Without NE:</td>
-                  <td>{triggerStats.withoutNe}</td>
-                </tr>
-                <tr>
-                  <td>Common NE Positions:</td>
-                  <td>{triggerStats.nePositions.join(', ') || 'None'}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        ))}
-      </div>
-    );
   };
 
   return (
     <div className="negation-analyzer">
       <h2>French Negation Analyzer</h2>
       
-      {/* Error display */}
-      {error && (
-        <div className="error-message">
-          {error}
-        </div>
-      )}
-
-      {/* Loading indicator */}
-      {isLoading && (
-        <div className="loading">
-          Loading training data...
-        </div>
-      )}
-
-      {/* Input section */}
+      <div className="description">
+        <p>
+          Analyze French sentences for expletive negation patterns. 
+          The analyzer will identify potential expletive negation contexts 
+          and suggest 'ne' placement where appropriate.
+        </p>
+      </div>
+      
       <div className="input-section">
         <textarea
           value={inputText}
@@ -170,19 +57,77 @@ const NegationAnalyzer = () => {
           placeholder="Enter French sentence to analyze..."
           rows={4}
         />
-        <button 
-          onClick={handleAnalyze}
-          disabled={!trainingData || isLoading}
-        >
+        <button onClick={handleAnalyze}>
           Analyze
         </button>
       </div>
 
-      {/* Results section */}
-      {formatResults()}
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
 
-      {/* Training data statistics */}
-      {formatStats()}
+      {analysis && (
+        <div className="analysis-results">
+          <h3>Analysis Results</h3>
+          <table>
+            <tbody>
+              <tr>
+                <th>Classification:</th>
+                <td>{analysis.type}</td>
+              </tr>
+              {analysis.classification && (
+                <>
+                  <tr>
+                    <th>Trigger Found:</th>
+                    <td>{analysis.trigger}</td>
+                  </tr>
+                  <tr>
+                    <th>Has NE:</th>
+                    <td>{analysis.hasNe}</td>
+                  </tr>
+                  <tr>
+                    <th>NE Position:</th>
+                    <td>{analysis.nePosition}</td>
+                  </tr>
+                  {analysis.suggestedNePosition && (
+                    <tr>
+                      <th>Suggested NE Position:</th>
+                      <td>{analysis.suggestedNePosition}</td>
+                    </tr>
+                  )}
+                </>
+              )}
+              <tr>
+                <th>Confidence:</th>
+                <td>{analysis.confidence}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          {analysis.classification && (
+            <div className="sentence-visualization">
+              <h4>Sentence Structure</h4>
+              <div className="sentence-breakdown">
+                {inputText.split(/\s+/).map((word, index) => (
+                  <span 
+                    key={index} 
+                    className={`
+                      word
+                      ${word.toLowerCase().includes(analysis.trigger) ? 'trigger' : ''}
+                      ${(index + 1) === analysis.nePosition ? 'current-ne' : ''}
+                      ${(index + 1) === analysis.suggestedNePosition ? 'suggested-ne' : ''}
+                    `}
+                  >
+                    {word}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
