@@ -9,9 +9,11 @@ export const TrainingDataSection = ({ onDataLoad }) => {
     try {
       // Parse JSON
       const jsonData = JSON.parse(content);
+      console.log('Parsed JSON:', jsonData); // Debug log
       
       // If it's an array, wrap it in examples object
       const data = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
+      console.log('Processed data:', data); // Debug log
       
       // Validate the data
       if (!validateTrainingData(data)) {
@@ -21,6 +23,7 @@ export const TrainingDataSection = ({ onDataLoad }) => {
 
       // Clean the data
       const cleanedData = cleanTrainingData(data);
+      console.log('Cleaned data:', cleanedData); // Debug log
       
       onDataLoad(cleanedData);
       setError(null);
@@ -36,7 +39,6 @@ export const TrainingDataSection = ({ onDataLoad }) => {
 
     const reader = new FileReader();
     
-    // Use traditional onload assignment
     reader.onload = function() {
       processFileContent(this.result);
     };
@@ -71,11 +73,14 @@ export const TrainingDataSection = ({ onDataLoad }) => {
     if (position === null) return null;
     
     const pos = Number(position);
-    if (isNaN(pos)) return null;
+    if (isNaN(pos)) {
+      console.warn('ne_position is not a number:', position);
+      return null;
+    }
     
     const words = text.split(/\s+/).filter(Boolean);
     if (pos < 1 || pos > words.length) {
-      console.warn('Invalid ne_position:', pos, 'for text:', text);
+      console.warn(`Invalid ne_position: ${pos} (word count: ${words.length}) for text: "${text}"`);
       return null;
     }
     
@@ -83,28 +88,73 @@ export const TrainingDataSection = ({ onDataLoad }) => {
   };
 
   const validateTrainingData = (data) => {
-    if (!data || !data.examples || !Array.isArray(data.examples)) {
-      console.error('Invalid data structure:', data);
+    // Check basic structure
+    if (!data) {
+      console.error('Data is null or undefined');
       return false;
     }
 
-    return data.examples.every(example => {
-      const isValid = (
-        example &&
-        typeof example === 'object' &&
-        typeof example.text === 'string' &&
-        example.text.trim().length > 0 &&
-        typeof example.has_expletive_ne === 'boolean' &&
-        typeof example.classification === 'boolean' &&
-        (example.trigger === null || ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger)) &&
-        (example.ne_position === null || (Number.isInteger(example.ne_position) && example.ne_position > 0))
-      );
+    if (!data.examples) {
+      console.error('Missing examples array');
+      return false;
+    }
 
-      if (!isValid) {
-        console.error('Invalid example:', example);
+    if (!Array.isArray(data.examples)) {
+      console.error('examples is not an array');
+      return false;
+    }
+
+    // Validate each example
+    return data.examples.every((example, index) => {
+      console.log(`Validating example ${index}:`, example); // Debug log
+
+      const validationErrors = [];
+
+      // Check if example exists and is an object
+      if (!example || typeof example !== 'object') {
+        console.error(`Example ${index} is not an object:`, example);
+        return false;
       }
 
-      return isValid;
+      // Validate text
+      if (!example.text || typeof example.text !== 'string') {
+        validationErrors.push('text must be a non-empty string');
+      }
+
+      // Validate has_expletive_ne
+      if (typeof example.has_expletive_ne !== 'boolean') {
+        validationErrors.push('has_expletive_ne must be a boolean');
+      }
+
+      // Validate classification
+      if (typeof example.classification !== 'boolean') {
+        validationErrors.push('classification must be a boolean');
+      }
+
+      // Validate trigger
+      if (example.trigger !== null && 
+          !['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger)) {
+        validationErrors.push('trigger must be one of: "peur que", "avant que", "peu s\'en faut", or null');
+      }
+
+      // Validate ne_position
+      if (example.ne_position !== null) {
+        if (!Number.isInteger(example.ne_position)) {
+          validationErrors.push('ne_position must be an integer or null');
+        } else if (example.ne_position < 1) {
+          validationErrors.push('ne_position must be greater than 0');
+        }
+      }
+
+      if (validationErrors.length > 0) {
+        console.error(`Validation errors for example ${index}:`, {
+          example,
+          errors: validationErrors
+        });
+        return false;
+      }
+
+      return true;
     });
   };
 
@@ -170,7 +220,7 @@ export const TrainingDataSection = ({ onDataLoad }) => {
           <div className="error-message">
             {error}
             <br />
-            <small>Check the console for more details.</small>
+            <small>Check the console for detailed validation errors.</small>
           </div>
         )}
       </div>
