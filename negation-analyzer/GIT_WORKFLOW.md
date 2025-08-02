@@ -1,21 +1,32 @@
 # Git Workflow Guide
 
 ## Current Repository State
-- **Version**: 2.6.1
+- **Version**: 2.6.2
 - **Last Updated**: August 2, 2025
 - **Status**: ✅ Active and Stable
 - **Main Branch**: Protected, requires direct commits
 
 ## Recent Changes
-- Updated training data format
-- Added git workflow safeguards
-- Improved UI components
-- Enhanced error handling
+- Simplified to binary classification
+- Removed logical negation analysis
+- Updated confidence scoring
+- Improved documentation
 
 ## Working with the Repository
 
+### Production Code Location
+All production code must be in:
+```
+/main/src/utils/
+```
+
+Development and testing code in:
+```
+/main/negation-analyzer/src/utils/
+```
+
 ### Training Data Format
-The repository now uses a simplified JSON format:
+The repository uses a simplified JSON format:
 ```json
 {
   "examples": [
@@ -30,13 +41,12 @@ The repository now uses a simplified JSON format:
 }
 ```
 
-### Preventing Detached HEAD State
+### Git Workflow
 
-To avoid detached HEAD states and ensure proper git workflow:
-
-1. **Always work on the main branch:**
+1. **Always work on main branch:**
    ```bash
    git checkout main
+   git pull origin main
    ```
 
 2. **Before making changes:**
@@ -49,38 +59,46 @@ To avoid detached HEAD states and ensure proper git workflow:
    ```bash
    # Make your changes
    git add .
-   git commit -m "your message"
+   git commit -m "type: description
+
+   - Bullet points for changes
+   - Follow conventional commits
+   - Include context if needed"
    git push origin main
    ```
 
+### Commit Types
+- **fix**: Bug fixes
+- **feat**: New features
+- **docs**: Documentation changes
+- **chore**: Maintenance tasks
+- **test**: Adding or updating tests
+- **refactor**: Code improvements
+
 ## Automated Safeguards
 
-The repository includes several safeguards:
+### Pre-commit Hook
+- Prevents commits in detached HEAD state
+- Ensures you're on main branch
+- Runs in .git/hooks
 
-1. **Pre-commit Hook:**
-   - Prevents commits in detached HEAD state
-   - Ensures you're on the main branch
-   - Automatically installed in .git/hooks
+### Workflow Script
+- Checks HEAD state
+- Ensures main branch
+- Syncs with remote
+- Fixes detached HEAD
 
-2. **Workflow Script:**
-   - Checks HEAD state
-   - Ensures main branch
-   - Syncs with remote
-   - Fixes detached HEAD if detected
+## File Organization
 
-## Component Updates
+### Production Files
+- NegationAnalyzer.js
+- textProcessing.js
+- Other core utilities
 
-### Training Data Section
-- New collapsible format guide
-- Improved error handling
-- Automatic format conversion
-- Better validation
-
-### UI Components
-- Updated JSON format display
-- Enhanced error messages
-- Improved styling
-- Better user feedback
+### Development Files
+- Test files
+- Experimental features
+- Documentation
 
 ## Deployment Process
 
@@ -92,40 +110,40 @@ The repository includes several safeguards:
 2. **Commit Process:**
    ```bash
    git add .
-   git commit -m "descriptive message"
+   git commit -m "type: description"
    git push origin main
    ```
 
 3. **Deployment:**
    - Automatic via AWS Amplify
    - Triggered by push to main
-   - Build status in Amplify Console
+   - Build status in Console
 
 ## Best Practices
 
-1. **Before Starting Work:**
-   - Run workflow script
-   - Pull latest changes
-   - Verify branch status
+### Before Starting Work
+- Run workflow script
+- Pull latest changes
+- Verify branch status
 
-2. **Making Changes:**
-   - Work directly on main
-   - Commit frequently
-   - Use clear commit messages
-   - Push regularly
+### Making Changes
+- Work directly on main
+- Commit frequently
+- Use clear messages
+- Push regularly
 
-3. **Code Quality:**
-   - Test changes locally
-   - Update documentation
-   - Follow format guidelines
-   - Use provided scripts
+### Code Quality
+- Test changes locally
+- Update documentation
+- Follow standards
+- Use provided scripts
 
 ## Troubleshooting
 
 ### Detached HEAD State
 If you see "detached HEAD" message:
 
-1. **Save your changes:**
+1. **Save changes:**
    ```bash
    git branch temp-branch
    ```
@@ -135,7 +153,7 @@ If you see "detached HEAD" message:
    git checkout main
    ```
 
-3. **Merge your changes:**
+3. **Apply changes:**
    ```bash
    git merge temp-branch
    ```
@@ -165,17 +183,17 @@ If you see "detached HEAD" message:
 
 ## Support and Resources
 
-1. **Documentation:**
-   - GIT_WORKFLOW.md (this file)
-   - PRODUCTION_STATE.md
-   - Component READMEs
+### Documentation
+- GIT_WORKFLOW.md (this file)
+- PRODUCTION_STATE.md
+- Component READMEs
 
-2. **Scripts:**
-   - git-workflow.sh
-   - deployment scripts
-   - validation tools
+### Scripts
+- git-workflow.sh
+- sync-analyzer.sh
+- validation tools
 
-3. **Monitoring:**
-   - AWS Amplify Console
-   - GitHub repository
-   - Build logs
+### Monitoring
+- AWS Amplify Console
+- GitHub repository
+- Build logs

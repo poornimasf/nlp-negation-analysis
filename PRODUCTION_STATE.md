@@ -1,93 +1,42 @@
 # Production State Documentation
 
 ## Current System Status
-- **Version**: 2.6.0
-- **Last Updated**: July 26, 2025
+- **Version**: 2.6.2
+- **Last Updated**: August 2, 2025
 - **Status**: ✅ Active and Stable
 - **URL**: https://main.d1gx30ivteuneq.amplifyapp.com/
 
 ## System Overview
-The French Negation Type Prediction System is a specialized linguistic analysis platform that predicts whether removed "ne" markers in French sentences were originally expletive or logical negation. The system combines traditional French linguistic expertise with modern AI capabilities through CroissantLLM integration.
+The French Negation Type Prediction System is a specialized linguistic analysis platform that predicts whether a French sentence can have expletive negation. The system uses rule-based pattern matching and training data analysis to make predictions.
 
 ## Current Features
 
 ### Analysis Modes
 1. **Rule-Based Analysis**
-   - French linguistic pattern detection
-   - CroissantLLM integration for syntax validation
-   - Trigger patterns: "peur que", "avant que", "peu s'en faut"
-   - Subjunctive mood analysis
-   - Context-aware confidence scoring
+   - Binary classification (expletive/non-expletive)
+   - Three official triggers:
+     * "peur que"
+     * "avant que"
+     * "peu s'en faut"
+   - Subjunctive mood detection
+   - Confidence-based scoring
 
 2. **Training Data Analysis**
-   - Pure machine learning approach
-   - Text similarity matching with trigger boost
-   - User-provided example learning
+   - Example-based learning
+   - Pattern matching with triggers
+   - User-provided examples
    - Transparent decision making
 
-3. **CamemBERT Analysis (Beta)**
-   - Deep learning-based French language analysis
-   - Direct negation type classification
-   - Confidence scoring with pattern validation
-   - Available through feature flag: REACT_APP_ENABLE_CAMEMBERT
-
-4. **Priority System**
-   - Either/or logic (no hybrid mode)
-   - Rule-based takes priority when both enabled
-   - Clear user interface indicators
-
 ### Core Functionality
-- **Single Sentence Analysis**: Primary production feature
-- **NE Placement Proposals**: Always provided with confidence scoring
-- **Training Data Management**: Upload, preview, validate examples
-- **Error Handling**: Graceful degradation and detailed error reporting
+- **Binary Classification**: Expletive vs Non-expletive only
+- **Confidence Scoring**: Based on triggers and subjunctive
+- **Training Data Management**: Upload and validate examples
+- **Error Handling**: Graceful degradation with clear messages
 
 ### Results Display
-- **Analysis Results**: Detailed pattern and context analysis
-- **Prediction**: Classification with confidence
-- **Highlighted Text**: Visual pattern identification
-- **Proposed Sentence**: NE placement with highlighted "NE"
-
-### Disabled Features
-- **Batch Processing**: Implemented but currently disabled in production
-  - Multiple sentence analysis with progress tracking
-  - Export options (Excel, CSV, JSON)
-  - Available in codebase but not exposed in UI
-  - Path to re-enable: Import BatchAnalysis component in App.js
-
-### Technical Architecture
-- **Frontend**: React with responsive design
-- **AI Integration**: CroissantLLM for French syntax analysis
-- **Cloud Hosting**: AWS Amplify
-- **Data Processing**: Client-side with no data persistence
-- **Performance**: Real-time processing with progress tracking
-
-## Recent Updates (v2.6.2)
-
-### Major Changes
-1. **Simplified Classification Logic**
-   - Removed logical negation analysis
-   - Binary classification: expletive or non-expletive only
-   - Strict requirements for expletive classification
-   - Improved confidence scoring
-
-2. **Expletive Classification Rules**
-   - Must have official trigger AND subjunctive
-   - Official triggers: "peur que", "avant que", "peu s'en faut"
-   - Clear rules for non-expletive cases
-   - Higher confidence scoring for clear cases
-
-3. **Analysis Improvements**
-   - Removed ambiguous classifications
-   - Better trigger pattern matching
-   - Clearer evidence reporting
-   - More accurate confidence scores
-
-4. **Classification Confidence**
-   - Expletive with 'ne': 0.95
-   - Expletive without 'ne': 0.85
-   - Non-expletive (no trigger): 0.95
-   - Non-expletive (trigger, no subjunctive): 0.90
+- **Analysis Results**: Binary classification with confidence
+- **Evidence Details**: Triggers and subjunctive detection
+- **Clear Feedback**: Detailed reasoning for predictions
 
 ### Classification Rules
 1. **Expletive Requirements**
@@ -101,13 +50,12 @@ The French Negation Type Prediction System is a specialized linguistic analysis 
    - Any other cases default to non-expletive
 
 3. **Confidence Scoring**
-   - Based on presence of required components
-   - Higher confidence for clear cases
-   - Presence of 'ne' boosts confidence
-   - Clear documentation of evidence
+   - Expletive with 'ne': 0.95
+   - Expletive without 'ne': 0.85
+   - Non-expletive (no trigger): 0.95
+   - Non-expletive (trigger, no subjunctive): 0.90
 
 ### Training Data Format
-The system now uses a simplified JSON format:
 ```json
 {
   "examples": [
@@ -122,31 +70,11 @@ The system now uses a simplified JSON format:
 }
 ```
 
-### Bug Fixes
-- Fixed detached HEAD issues
-- Improved file reading
-- Enhanced error handling
-- Better format validation
-
-### Development Workflow
-- Added git workflow script
-- Enhanced branch protection
-- Improved deployment process
-- Better documentation
-
-## System Performance
-
-### Processing Capabilities
-- **Single Sentence**: Near-instantaneous analysis
-- **Batch Processing**: Handles 50+ sentences efficiently
-- **Progress Tracking**: Real-time updates during processing
-- **Error Recovery**: Continues processing despite individual failures
-
-### Accuracy Metrics
-- **Rule-Based Mode**: High precision for known trigger patterns
-- **Training Data Mode**: Accuracy depends on training data quality
-- **Confidence Scoring**: Reliable indicators of prediction certainty
-- **Classification Sensitivity**: Reduced uncertain cases by ~40%
+## Technical Architecture
+- **Frontend**: React with responsive design
+- **Data Processing**: Client-side only
+- **Cloud Hosting**: AWS Amplify
+- **Performance**: Real-time analysis
 
 ## Deployment Information
 
@@ -154,11 +82,9 @@ The system now uses a simplified JSON format:
 - **App ID**: d1gx30ivteuneq
 - **Branch**: main
 - **Build Status**: ✅ Successful
-- **Last Deployment**: July 26, 2025
+- **Last Deployment**: August 2, 2025
 
 ### Environment Variables
-- **REACT_APP_HF_TOKEN**: Hugging Face API token for CroissantLLM
-- **REACT_APP_ENABLE_CAMEMBERT**: Feature flag for CamemBERT analysis mode
 - **Build Settings**: Automatic deployment on git push
 - **Domain**: Custom domain with SSL certificate
 
@@ -166,76 +92,56 @@ The system now uses a simplified JSON format:
 - **CloudWatch**: Performance and error monitoring
 - **Amplify Console**: Deployment status and logs
 - **Error Tracking**: Client-side error reporting
-- **Usage Analytics**: Basic traffic monitoring
 
 ## Known Issues and Limitations
 
 ### Current Limitations
-1. **CroissantLLM Dependency**: Requires Hugging Face API availability
-2. **Processing Speed**: Batch analysis can be slow due to AI calls
-3. **Language Scope**: Focused specifically on French negation
-4. **Data Persistence**: No server-side data storage (by design)
+1. **Binary Classification**: Only expletive vs non-expletive
+2. **Limited Triggers**: Only three official triggers supported
+3. **Subjunctive Required**: Must detect subjunctive for expletive
+4. **No Data Persistence**: Client-side only (by design)
 
 ### Planned Improvements
-1. **Performance Optimization**: Caching for repeated analyses
-2. **Enhanced Patterns**: Additional trigger pattern support
-3. **User Interface**: Further simplification and clarity
-4. **Documentation**: Expanded user guides and examples
+1. **Performance**: Optimize pattern matching
+2. **Triggers**: Consider additional validated patterns
+3. **Documentation**: Expand examples and guides
+4. **Testing**: Increase test coverage
 
 ## Security and Privacy
 
 ### Data Handling
 - **No Persistence**: All data processed client-side only
-- **Privacy First**: No user data stored on servers
-- **Secure Transmission**: HTTPS for all communications
-- **API Security**: Hugging Face token properly secured
+- **Privacy First**: No user data stored
+- **Secure Transmission**: HTTPS only
+- **Content Security**: No storage of user content
 
 ### Access Control
 - **Public Access**: No authentication required
-- **Rate Limiting**: Handled by Hugging Face API
-- **CORS Configuration**: Properly configured for security
-- **Content Security**: No user-generated content storage
+- **CORS**: Properly configured
+- **Content Security**: No user data storage
 
 ## Support and Maintenance
 
-### Regular Maintenance Tasks
-1. **Dependency Updates**: Monthly security and feature updates
-2. **Performance Monitoring**: Weekly performance reviews
-3. **Error Analysis**: Daily error log reviews
-4. **User Feedback**: Continuous improvement based on usage
+### Regular Maintenance
+1. **Dependencies**: Monthly security updates
+2. **Performance**: Weekly monitoring
+3. **Error Logs**: Daily review
+4. **User Feedback**: Continuous improvement
 
 ### Support Channels
-- **Documentation**: Comprehensive guides in repository
-- **Issue Tracking**: GitHub issues for bug reports
-- **Development**: Active development and maintenance
-- **Community**: Open source collaboration
+- **Documentation**: Repository guides
+- **Issue Tracking**: GitHub issues
+- **Development**: Active maintenance
 
-## Future Roadmap
+## Development Process
 
-### Short-term Goals (Next 3 months)
-1. **Performance Optimization**: Reduce batch processing time
-2. **Enhanced Patterns**: Add more expletive trigger patterns
-3. **User Experience**: Improve loading and feedback systems
-4. **Documentation**: Expand user guides and examples
+### Version Control
+- **Repository**: GitHub
+- **Branch Strategy**: Main branch only
+- **Deployment**: Automatic via AWS Amplify
 
-### Long-term Vision (6-12 months)
-1. **Multi-language Support**: Extend to other Romance languages
-2. **Advanced AI**: Integration with newer language models
-3. **Research Tools**: Enhanced features for academic research
-4. **API Development**: Programmatic access for researchers
-
-## Contact and Resources
-
-### Development Team
-- **Primary Developer**: Active maintenance and feature development
-- **Repository**: GitHub with full source code access
-- **Documentation**: Comprehensive technical documentation
-- **Community**: Open to contributions and feedback
-
-### External Dependencies
-- **CroissantLLM**: Hugging Face hosted French language model
-- **AWS Amplify**: Cloud hosting and deployment platform
-- **React Ecosystem**: Modern web development framework
-- **Linguistic Resources**: French grammar and syntax references
-
-This production system represents a mature, stable platform for French negation analysis with ongoing development and improvement.
+### Code Quality
+- **Testing**: Unit tests for core logic
+- **Documentation**: Inline and README docs
+- **Standards**: ESLint and Prettier
+- **Reviews**: Required for all changes
