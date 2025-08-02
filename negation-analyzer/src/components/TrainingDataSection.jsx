@@ -1,65 +1,72 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 
-export const TrainingDataSection = ({ onDataLoad }) => {
+const TrainingDataSection = ({ onDataLoad }) => {
   const [error, setError] = useState(null);
   const [showFormat, setShowFormat] = useState(false);
 
-  const handleFileUpload = useCallback((event) => {
+  const processJsonData = (jsonData) => {
+    // Convert array to object if needed
+    const data = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
+    console.log('Initial data structure:', data);
+
+    // Validate structure
+    if (!data || !data.examples || !Array.isArray(data.examples)) {
+      throw new Error('Invalid data structure. Expected { examples: [...] }');
+    }
+
+    // Process each example
+    return {
+      examples: data.examples.map((example, index) => {
+        if (!example || typeof example !== 'object') {
+          throw new Error(`Invalid example at index ${index}`);
+        }
+
+        // Clean and validate the example
+        return {
+          text: String(example.text || '').trim(),
+          has_expletive_ne: Boolean(example.has_expletive_ne),
+          classification: Boolean(example.classification),
+          trigger: ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger) 
+            ? example.trigger 
+            : null,
+          ne_position: example.ne_position !== null ? Number(example.ne_position) : null
+        };
+      })
+    };
+  };
+
+  const handleFileUpload = (event) => {
     setError(null);
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Read file as text
     const reader = new FileReader();
     
-    reader.onload = (e) => {
+    reader.onload = function(event) {
       try {
-        const content = e.target?.result;
-        if (typeof content !== 'string') {
-          throw new Error('Invalid file content');
-        }
-
-        // Parse JSON
-        const jsonData = JSON.parse(content);
+        const content = event.target.result;
+        console.log('File content loaded');
         
-        // Convert array to object if needed
-        const data = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
-
-        // Validate structure
-        if (!data || !data.examples || !Array.isArray(data.examples)) {
-          throw new Error('Invalid data structure. Expected { examples: [...] }');
+        const jsonData = JSON.parse(content);
+        console.log('JSON parsed successfully');
+        
+        const processedData = processJsonData(jsonData);
+        console.log('Data processed:', processedData);
+        
+        if (typeof onDataLoad === 'function') {
+          onDataLoad(processedData);
+        } else {
+          console.error('onDataLoad is not a function');
+          setError('Internal error: invalid callback');
         }
-
-        // Process each example
-        const processedData = {
-          examples: data.examples.map((example, index) => {
-            if (!example || typeof example !== 'object') {
-              throw new Error(`Invalid example at index ${index}`);
-            }
-
-            // Clean and validate the example
-            return {
-              text: String(example.text || '').trim(),
-              has_expletive_ne: Boolean(example.has_expletive_ne),
-              classification: Boolean(example.classification),
-              trigger: ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger) 
-                ? example.trigger 
-                : null,
-              ne_position: example.ne_position !== null ? Number(example.ne_position) : null
-            };
-          })
-        };
-
-        // Call the callback with processed data
-        onDataLoad(processedData);
       } catch (err) {
         console.error('Error processing file:', err);
         setError(`Error processing file: ${err.message}`);
       }
     };
 
-    reader.onerror = () => {
+    reader.onerror = function() {
       setError('Error reading file');
     };
 
@@ -68,7 +75,7 @@ export const TrainingDataSection = ({ onDataLoad }) => {
     } catch (err) {
       setError(`Error reading file: ${err.message}`);
     }
-  }, [onDataLoad]);
+  };
 
   const formatExample = {
     "examples": [
@@ -93,8 +100,7 @@ export const TrainingDataSection = ({ onDataLoad }) => {
     <div className="training-data-section">
       <h3>Training Data Analysis</h3>
       <p className="section-description">
-        Upload a JSON file containing French sentences for negation analysis. 
-        The file should include examples of sentences with and without expletive negation.
+        Upload JSON file in the format shown below.
       </p>
       
       <div className="format-toggle" onClick={() => setShowFormat(!showFormat)}>
@@ -106,7 +112,7 @@ export const TrainingDataSection = ({ onDataLoad }) => {
         <div className="info-box">
           <h4>Expected JSON Format:</h4>
           <div className="format-explanation">
-            <p>Upload a JSON file with the following structure:</p>
+            <p>Required format:</p>
             <pre>{JSON.stringify(formatExample, null, 2)}</pre>
             
             <h5>Field Descriptions:</h5>
@@ -139,3 +145,5 @@ export const TrainingDataSection = ({ onDataLoad }) => {
     </div>
   );
 };
+
+export default TrainingDataSection;
