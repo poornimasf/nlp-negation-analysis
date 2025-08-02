@@ -1,81 +1,9 @@
 import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 
-const TrainingDataSection = ({ onDataLoad }) => {
-  const [error, setError] = useState(null);
+export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrainingData, uploadError }) => {
   const [showFormat, setShowFormat] = useState(false);
-
-  const processJsonData = (jsonData) => {
-    // Convert array to object if needed
-    const data = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
-    console.log('Initial data structure:', data);
-
-    // Validate structure
-    if (!data || !data.examples || !Array.isArray(data.examples)) {
-      throw new Error('Invalid data structure. Expected { examples: [...] }');
-    }
-
-    // Process each example
-    return {
-      examples: data.examples.map((example, index) => {
-        if (!example || typeof example !== 'object') {
-          throw new Error(`Invalid example at index ${index}`);
-        }
-
-        // Clean and validate the example
-        return {
-          text: String(example.text || '').trim(),
-          has_expletive_ne: Boolean(example.has_expletive_ne),
-          classification: Boolean(example.classification),
-          trigger: ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger) 
-            ? example.trigger 
-            : null,
-          ne_position: example.ne_position !== null ? Number(example.ne_position) : null
-        };
-      })
-    };
-  };
-
-  const handleFileUpload = (event) => {
-    setError(null);
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    
-    reader.onload = function(event) {
-      try {
-        const content = event.target.result;
-        console.log('File content loaded');
-        
-        const jsonData = JSON.parse(content);
-        console.log('JSON parsed successfully');
-        
-        const processedData = processJsonData(jsonData);
-        console.log('Data processed:', processedData);
-        
-        if (typeof onDataLoad === 'function') {
-          onDataLoad(processedData);
-        } else {
-          console.error('onDataLoad is not a function');
-          setError('Internal error: invalid callback');
-        }
-      } catch (err) {
-        console.error('Error processing file:', err);
-        setError(`Error processing file: ${err.message}`);
-      }
-    };
-
-    reader.onerror = function() {
-      setError('Error reading file');
-    };
-
-    try {
-      reader.readAsText(file);
-    } catch (err) {
-      setError(`Error reading file: ${err.message}`);
-    }
-  };
+  const [showPreview, setShowPreview] = useState(true);
 
   const formatExample = {
     "examples": [
@@ -94,6 +22,97 @@ const TrainingDataSection = ({ onDataLoad }) => {
         "ne_position": null
       }
     ]
+  };
+
+  const renderPreview = () => {
+    if (!trainingData?.examples?.length) {
+      return null;
+    }
+
+    const stats = {
+      total: trainingData.examples.length,
+      withNe: trainingData.examples.filter(ex => ex.has_expletive_ne).length,
+      expletivePossible: trainingData.examples.filter(ex => ex.classification).length,
+      triggers: {
+        'peur que': 0,
+        'avant que': 0,
+        'peu s\'en faut': 0
+      }
+    };
+
+    // Count triggers
+    trainingData.examples.forEach(ex => {
+      if (ex.trigger && stats.triggers.hasOwnProperty(ex.trigger)) {
+        stats.triggers[ex.trigger]++;
+      }
+    });
+
+    return (
+      <div className="preview-section">
+        <div className="preview-header">
+          <h4>Training Data Preview</h4>
+          <button onClick={() => setShowPreview(!showPreview)} className="toggle-button">
+            {showPreview ? 'Hide' : 'Show'} Preview
+          </button>
+        </div>
+
+        {showPreview && (
+          <>
+            <div className="stats-section">
+              <h5>Statistics</h5>
+              <div className="stats-grid">
+                <div className="stats-column">
+                  <p>Total examples: {stats.total}</p>
+                  <p>With NE: {stats.withNe}</p>
+                  <p>Expletive possible: {stats.expletivePossible}</p>
+                </div>
+                <div className="stats-column">
+                  <p>Triggers:</p>
+                  <ul>
+                    {Object.entries(stats.triggers).map(([trigger, count]) => (
+                      <li key={trigger}>{trigger}: {count}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="examples-preview">
+              <h5>Examples</h5>
+              <div className="examples-table-container">
+                <table className="examples-table">
+                  <thead>
+                    <tr>
+                      <th>Text</th>
+                      <th>Has NE</th>
+                      <th>Expletive</th>
+                      <th>Trigger</th>
+                      <th>NE Position</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {trainingData.examples.slice(0, 5).map((example, index) => (
+                      <tr key={index} className={example.has_expletive_ne ? 'has-ne' : ''}>
+                        <td>{example.text}</td>
+                        <td>{example.has_expletive_ne ? 'Yes' : 'No'}</td>
+                        <td>{example.classification ? 'Yes' : 'No'}</td>
+                        <td>{example.trigger || '-'}</td>
+                        <td>{example.ne_position || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {trainingData.examples.length > 5 && (
+                  <p className="more-examples">
+                    And {trainingData.examples.length - 5} more examples...
+                  </p>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -134,16 +153,21 @@ const TrainingDataSection = ({ onDataLoad }) => {
           onChange={handleFileUpload}
           className="file-input"
         />
-        {error && (
+        {uploadError && (
           <div className="error-message">
-            {error}
+            {uploadError}
             <br />
             <small>Check the console for more details.</small>
           </div>
         )}
+        {trainingData?.examples?.length > 0 && (
+          <button onClick={clearTrainingData} className="clear-button">
+            Clear Training Data
+          </button>
+        )}
       </div>
+
+      {renderPreview()}
     </div>
   );
 };
-
-export default TrainingDataSection;
