@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 
-// Using named export to match the import in SimpleNegationAnalyzer
 export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrainingData, uploadError }) => {
   const [error, setError] = useState(null);
   const [showFormat, setShowFormat] = useState(false);
+  const [showPreview, setShowPreview] = useState(true);
 
   const formatExample = {
     "examples": [
@@ -23,6 +23,97 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
         "ne_position": null
       }
     ]
+  };
+
+  const renderPreview = () => {
+    if (!trainingData || !trainingData.examples || trainingData.examples.length === 0) {
+      return null;
+    }
+
+    const stats = {
+      total: trainingData.examples.length,
+      withNe: trainingData.examples.filter(ex => ex.has_expletive_ne).length,
+      expletivePossible: trainingData.examples.filter(ex => ex.classification).length,
+      triggers: {
+        'peur que': 0,
+        'avant que': 0,
+        'peu s\'en faut': 0
+      }
+    };
+
+    // Count triggers
+    trainingData.examples.forEach(ex => {
+      if (ex.trigger && stats.triggers.hasOwnProperty(ex.trigger)) {
+        stats.triggers[ex.trigger]++;
+      }
+    });
+
+    return (
+      <div className="preview-section">
+        <div className="preview-header">
+          <h4>Training Data Preview</h4>
+          <button onClick={() => setShowPreview(!showPreview)} className="toggle-button">
+            {showPreview ? 'Hide' : 'Show'} Preview
+          </button>
+        </div>
+
+        {showPreview && (
+          <>
+            <div className="stats-section">
+              <h5>Statistics</h5>
+              <div className="stats-grid">
+                <div className="stats-column">
+                  <p>Total examples: {stats.total}</p>
+                  <p>With NE: {stats.withNe}</p>
+                  <p>Expletive possible: {stats.expletivePossible}</p>
+                </div>
+                <div className="stats-column">
+                  <p>Triggers:</p>
+                  <ul>
+                    {Object.entries(stats.triggers).map(([trigger, count]) => (
+                      <li key={trigger}>{trigger}: {count}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="examples-preview">
+              <h5>Examples</h5>
+              <div className="examples-table-container">
+                <table className="examples-table">
+                  <thead>
+                    <tr>
+                      <th>Text</th>
+                      <th>Has NE</th>
+                      <th>Expletive</th>
+                      <th>Trigger</th>
+                      <th>NE Position</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {trainingData.examples.slice(0, 5).map((example, index) => (
+                      <tr key={index} className={example.has_expletive_ne ? 'has-ne' : ''}>
+                        <td>{example.text}</td>
+                        <td>{example.has_expletive_ne ? 'Yes' : 'No'}</td>
+                        <td>{example.classification ? 'Yes' : 'No'}</td>
+                        <td>{example.trigger || '-'}</td>
+                        <td>{example.ne_position || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {trainingData.examples.length > 5 && (
+                  <p className="more-examples">
+                    And {trainingData.examples.length - 5} more examples...
+                  </p>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -70,12 +161,14 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
             <small>Check the console for more details.</small>
           </div>
         )}
-        {trainingData && trainingData.length > 0 && (
+        {trainingData && trainingData.examples && trainingData.examples.length > 0 && (
           <button onClick={clearTrainingData} className="clear-button">
             Clear Training Data
           </button>
         )}
       </div>
+
+      {renderPreview()}
     </div>
   );
 };
