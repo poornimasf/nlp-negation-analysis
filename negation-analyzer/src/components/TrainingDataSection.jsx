@@ -13,18 +13,29 @@ export const TrainingDataSection = ({ onDataLoad }) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const data = JSON.parse(e.target.result);
-          const formattedData = Array.isArray(data) ? { examples: data } : data;
-          
-          if (!validateTrainingData(formattedData)) {
-            setError('Invalid training data format');
+          // Try to parse the JSON
+          let data;
+          try {
+            data = JSON.parse(e.target.result);
+          } catch (parseError) {
+            console.error('Parse error:', parseError);
+            setError('Invalid JSON format. Please check the file content.');
             return;
           }
 
-          onDataLoad(formattedData);
+          // Clean and validate the data
+          const cleanedData = cleanTrainingData(data);
+          
+          if (!validateTrainingData(cleanedData)) {
+            setError('Invalid training data structure. Please check the format.');
+            return;
+          }
+
+          onDataLoad(cleanedData);
           setError(null);
         } catch (err) {
-          setError('Error parsing JSON: ' + err.message);
+          console.error('Processing error:', err);
+          setError('Error processing file: ' + err.message);
         }
       };
 
@@ -34,24 +45,82 @@ export const TrainingDataSection = ({ onDataLoad }) => {
 
       reader.readAsText(file);
     } catch (err) {
+      console.error('File error:', err);
       setError('Error loading file: ' + err.message);
     }
   };
 
+  const cleanTrainingData = (data) => {
+    // If it's an array, wrap it in examples object
+    if (Array.isArray(data)) {
+      data = { examples: data };
+    }
+
+    // Clean the examples
+    if (data.examples && Array.isArray(data.examples)) {
+      data.examples = data.examples.map(example => ({
+        ...example,
+        // Trim whitespace from text
+        text: example.text?.trim(),
+        // Ensure boolean values
+        has_expletive_ne: Boolean(example.has_expletive_ne),
+        classification: Boolean(example.classification),
+        // Clean trigger value
+        trigger: ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger) 
+          ? example.trigger 
+          : null,
+        // Validate ne_position
+        ne_position: validateNePosition(example.text, example.ne_position)
+      }));
+    }
+
+    return data;
+  };
+
+  const validateNePosition = (text, position) => {
+    if (position === null) return null;
+    
+    // Convert to number
+    const pos = Number(position);
+    
+    // Check if it's a valid number
+    if (isNaN(pos)) return null;
+    
+    // Count words in text
+    const wordCount = text?.split(/\s+/).filter(Boolean).length || 0;
+    
+    // Position should be between 1 and word count
+    if (pos < 1 || pos > wordCount) return null;
+    
+    return pos;
+  };
+
   const validateTrainingData = (data) => {
+    // Check basic structure
     if (!data || !data.examples || !Array.isArray(data.examples)) {
+      console.error('Invalid data structure:', data);
       return false;
     }
 
-    return data.examples.every(example => (
-      example &&
-      typeof example === 'object' &&
-      typeof example.text === 'string' &&
-      typeof example.has_expletive_ne === 'boolean' &&
-      typeof example.classification === 'boolean' &&
-      (example.trigger === null || ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger)) &&
-      (example.ne_position === null || typeof example.ne_position === 'number')
-    ));
+    // Validate each example
+    return data.examples.every(example => {
+      const isValid = (
+        example &&
+        typeof example === 'object' &&
+        typeof example.text === 'string' &&
+        example.text.length > 0 &&
+        typeof example.has_expletive_ne === 'boolean' &&
+        typeof example.classification === 'boolean' &&
+        (example.trigger === null || ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger)) &&
+        (example.ne_position === null || (Number.isInteger(example.ne_position) && example.ne_position > 0))
+      );
+
+      if (!isValid) {
+        console.error('Invalid example:', example);
+      }
+
+      return isValid;
+    });
   };
 
   const formatExample = {
@@ -95,7 +164,7 @@ export const TrainingDataSection = ({ onDataLoad }) => {
             
             <h5>Field Descriptions:</h5>
             <ul>
-              <li><strong>text</strong>: The French sentence</li>
+              <li><strong>text</strong>: The French sentence (whitespace will be trimmed)</li>
               <li><strong>has_expletive_ne</strong>: true if 'ne' is present</li>
               <li><strong>classification</strong>: true for expletive possible, false for not possible</li>
               <li><strong>trigger</strong>: One of: "peur que", "avant que", "peu s'en faut", or null</li>
@@ -112,7 +181,13 @@ export const TrainingDataSection = ({ onDataLoad }) => {
           onChange={handleFileUpload}
           className="file-input"
         />
-        {error && <div className="error-message">{error}</div>}
+        {error && (
+          <div className="error-message">
+            {error}
+            <br />
+            <small>Check the console for more details.</small>
+          </div>
+        )}
       </div>
     </div>
   );
