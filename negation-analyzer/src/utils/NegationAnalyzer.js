@@ -2,117 +2,120 @@ import { normalizeText } from './textProcessing';
 
 class NegationAnalyzer {
   constructor() {
-    // Expletive triggers with confidence levels
+    // Only specific constructions that can have expletive ne
     this.EXPLETIVE_TRIGGERS = {
-      HIGH: [
-        // Fear expressions with complete construction
-        /\b(?:j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont)\s+(?:(?:tr[eèé]s\s+)?grand[e]?\s+)?peur\s+qu[e']/i,
-        // Strong fear verbs
-        /\b(?:je|tu|il|elle|on)\s+crains?\s+qu[e']/i,
-        // Temporal expressions with precision
-        /\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e']/i,
-        // Peu s'en faut with impersonal construction
-        /\bil\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+(?:de\s+)?peu\s+qu[e']/i
-      ],
-      MEDIUM: [
-        // Basic fear expressions
-        /\bpeur\s+qu[e']/i,
-        // Basic temporal expressions
+      // These triggers have high probability of expletive ne
+      PRIMARY: [
+        // Fear expressions
+        /\b(?:avoir\s+)?peur\s+qu[e']/i,
+        /\b(?:craindre|craigns?|craignons|craignez|craignent)\s+qu[e']/i,
+        // Temporal before
         /\bavant\s+qu[e']/i,
-        // Basic peu s'en faut
-        /\bpeu\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+qu[e']/i,
-        // Medium strength verbs
-        /\b(?:craindre|craignons|craignez|craignent)\s+qu[e']/i
+        // Impersonal expression
+        /\bpeu\s+s['']en\s+faut\s+qu[e']/i
       ],
-      LOW: [
-        // Other potential expletive triggers
-        /\b(?:redouter|redoute[zsnt]?)\s+qu[e']/i,
-        /\b(?:[eéè]viter|[eéè]vite[zsnt]?)\s+qu[e']/i,
-        /\b(?:emp[eêè]cher|emp[eêè]che[zsnt]?)\s+qu[e']/i
+      // These can sometimes have expletive ne but need more context
+      SECONDARY: [
+        /\b(?:empêcher|empêche[zsnt]?)\s+qu[e']/i,
+        /\b(?:éviter|évite[zsnt]?)\s+qu[e']/i,
+        /\b(?:redouter|redoute[zsnt]?)\s+qu[e']/i
       ]
     };
 
-    // Subjunctive patterns
+    // Subjunctive is required for expletive ne
     this.SUBJUNCTIVE_PATTERNS = [
-      /\b(?:sois|soit|soyons|soyez|soient)\b/i,  // être
-      /\b(?:aie|aies|ait|ayons|ayez|aient)\b/i,  // avoir
-      /\b(?:fasse|fasses|fasse|fassions|fassiez|fassent)\b/i,  // faire
-      /\b(?:puisse|puisses|puisse|puissions|puissiez|puissent)\b/i,  // pouvoir
-      /\b(?:vienne|viennes|vienne|venions|veniez|viennent)\b/i,  // venir
-      /\b(?:prenne|prennes|prenne|prenions|preniez|prennent)\b/i,  // prendre
-      /\b(?:tienne|tiennes|tienne|tenions|teniez|tiennent)\b/i,  // tenir
-      /\b(?:r[eéè]ussisse|r[eéè]ussisses|r[eéè]ussissions|r[eéè]ussissiez|r[eéè]ussissent)\b/i,  // réussir
-      /\b(?:parte|partes|parte|partions|partiez|partent)\b/i  // partir
+      /\b(?:sois|soit|soyons|soyez|soient)\b/i,
+      /\b(?:aie|aies|ait|ayons|ayez|aient)\b/i,
+      /\b(?:fasse|fasses|fasse|fassions|fassiez|fassent)\b/i,
+      /\b(?:puisse|puisses|puisse|puissions|puissiez|puissent)\b/i,
+      /\b(?:vienne|viennes|vienne|venions|veniez|viennent)\b/i,
+      /\b(?:prenne|prennes|prenne|prenions|preniez|prennent)\b/i,
+      /\b(?:tienne|tiennes|tienne|tenions|teniez|tiennent)\b/i,
+      /\b(?:parte|partes|parte|partions|partiez|partent)\b/i
     ];
 
-    // Optional ne pattern
+    // Pattern for optional ne
     this.OPTIONAL_NE = /\b(?:n['e])\b/i;
   }
 
   async analyzeNegation(text) {
     const normalizedText = normalizeText(text);
     
-    // Find triggers by confidence level
+    // Find primary and secondary triggers
     const triggers = {
-      high: this.EXPLETIVE_TRIGGERS.HIGH.filter(pattern => pattern.test(normalizedText)),
-      medium: this.EXPLETIVE_TRIGGERS.MEDIUM.filter(pattern => pattern.test(normalizedText)),
-      low: this.EXPLETIVE_TRIGGERS.LOW.filter(pattern => pattern.test(normalizedText))
+      primary: this.EXPLETIVE_TRIGGERS.PRIMARY.filter(pattern => pattern.test(normalizedText)),
+      secondary: this.EXPLETIVE_TRIGGERS.SECONDARY.filter(pattern => pattern.test(normalizedText))
     };
 
-    // Check for subjunctive
+    // Check for subjunctive - required for expletive ne
     const hasSubjunctive = this.hasSubjunctive(normalizedText);
     
     // Check for optional ne
     const hasOptionalNe = this.OPTIONAL_NE.test(normalizedText);
 
-    // Analysis based on triggers and context
-    if (triggers.high.length > 0) {
+    // Clear cases for expletive:
+    // 1. Primary trigger + subjunctive
+    if (triggers.primary.length > 0 && hasSubjunctive) {
       return {
         type: 'EXPLETIVE',
-        confidence: hasSubjunctive ? 0.9 : 0.8,
+        confidence: hasOptionalNe ? 0.95 : 0.85,
         evidence: {
-          triggers: triggers.high,
-          hasSubjunctive,
+          triggers: triggers.primary,
+          hasSubjunctive: true,
           hasOptionalNe,
-          details: 'Strong expletive context with high-confidence triggers'
+          details: 'Primary expletive trigger with subjunctive mood'
         }
       };
     }
 
-    if (triggers.medium.length > 0) {
+    // Clear cases for non-expletive:
+    // 1. No triggers at all
+    // 2. Triggers but no subjunctive
+    if (triggers.primary.length === 0 && triggers.secondary.length === 0) {
+      return {
+        type: 'NON_EXPLETIVE',
+        confidence: 0.9,
+        evidence: {
+          details: 'No expletive triggers found',
+          hasSubjunctive,
+          hasOptionalNe
+        }
+      };
+    }
+
+    if ((triggers.primary.length > 0 || triggers.secondary.length > 0) && !hasSubjunctive) {
+      return {
+        type: 'NON_EXPLETIVE',
+        confidence: 0.85,
+        evidence: {
+          triggers: [...triggers.primary, ...triggers.secondary],
+          hasSubjunctive: false,
+          hasOptionalNe,
+          details: 'Found triggers but missing required subjunctive mood'
+        }
+      };
+    }
+
+    // Secondary triggers with subjunctive - possible expletive but less certain
+    if (triggers.secondary.length > 0 && hasSubjunctive) {
       return {
         type: 'EXPLETIVE',
-        confidence: hasSubjunctive ? 0.8 : 0.7,
+        confidence: hasOptionalNe ? 0.8 : 0.7,
         evidence: {
-          triggers: triggers.medium,
-          hasSubjunctive,
+          triggers: triggers.secondary,
+          hasSubjunctive: true,
           hasOptionalNe,
-          details: 'Expletive context with medium-confidence triggers'
+          details: 'Secondary expletive trigger with subjunctive mood'
         }
       };
     }
 
-    if (triggers.low.length > 0) {
-      return {
-        type: hasSubjunctive ? 'EXPLETIVE' : 'NON_EXPLETIVE',
-        confidence: hasSubjunctive ? 0.7 : 0.6,
-        evidence: {
-          triggers: triggers.low,
-          hasSubjunctive,
-          hasOptionalNe,
-          details: hasSubjunctive ? 
-            'Potential expletive context with supporting subjunctive' :
-            'Weak expletive indicators without supporting context'
-        }
-      };
-    }
-
-    // Default case - no expletive indicators
+    // Default case - not enough evidence for expletive
     return {
       type: 'NON_EXPLETIVE',
-      confidence: 0.8,
+      confidence: 0.75,
       evidence: {
-        details: 'No expletive triggers or supporting context found',
+        details: 'Insufficient evidence for expletive classification',
         hasSubjunctive,
         hasOptionalNe
       }
