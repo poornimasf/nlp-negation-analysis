@@ -3,22 +3,19 @@ import './NegationAnalyzer.css';
 
 export const TrainingDataSection = ({ onDataLoad }) => {
   const [error, setError] = useState(null);
+  const [showFormat, setShowFormat] = useState(false);
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
 
     try {
-      // Use FileReader instead of file.text()
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const data = JSON.parse(e.target.result);
-          
-          // If data is an array, convert it to the new format
           const formattedData = Array.isArray(data) ? { examples: data } : data;
           
-          // Validate the data format
           if (!validateTrainingData(formattedData)) {
             setError('Invalid training data format');
             return;
@@ -42,12 +39,10 @@ export const TrainingDataSection = ({ onDataLoad }) => {
   };
 
   const validateTrainingData = (data) => {
-    // Check if data has examples array
     if (!data || !data.examples || !Array.isArray(data.examples)) {
       return false;
     }
 
-    // Validate each example
     return data.examples.every(example => (
       example &&
       typeof example === 'object' &&
@@ -81,23 +76,34 @@ export const TrainingDataSection = ({ onDataLoad }) => {
   return (
     <div className="training-data-section">
       <h3>Training Data Analysis</h3>
+      <p className="section-description">
+        Upload a JSON file containing French sentences for negation analysis. 
+        The file should include examples of sentences with and without expletive negation.
+      </p>
       
-      <div className="info-box">
-        <h4>Expected JSON Format:</h4>
-        <div className="format-explanation">
-          <p>Upload a JSON file with the following structure:</p>
-          <pre>{JSON.stringify(formatExample, null, 2)}</pre>
-          
-          <h5>Field Descriptions:</h5>
-          <ul>
-            <li><strong>text</strong>: The French sentence</li>
-            <li><strong>has_expletive_ne</strong>: true if 'ne' is present</li>
-            <li><strong>classification</strong>: true for expletive possible, false for not possible</li>
-            <li><strong>trigger</strong>: One of: "peur que", "avant que", "peu s'en faut", or null</li>
-            <li><strong>ne_position</strong>: Position of 'ne' if present (1-based), null if not</li>
-          </ul>
-        </div>
+      <div className="format-toggle" onClick={() => setShowFormat(!showFormat)}>
+        <span className="toggle-icon">{showFormat ? '▼' : '▶'}</span>
+        <span className="toggle-text">Show JSON Format Details</span>
       </div>
+      
+      {showFormat && (
+        <div className="info-box">
+          <h4>Expected JSON Format:</h4>
+          <div className="format-explanation">
+            <p>Upload a JSON file with the following structure:</p>
+            <pre>{JSON.stringify(formatExample, null, 2)}</pre>
+            
+            <h5>Field Descriptions:</h5>
+            <ul>
+              <li><strong>text</strong>: The French sentence</li>
+              <li><strong>has_expletive_ne</strong>: true if 'ne' is present</li>
+              <li><strong>classification</strong>: true for expletive possible, false for not possible</li>
+              <li><strong>trigger</strong>: One of: "peur que", "avant que", "peu s'en faut", or null</li>
+              <li><strong>ne_position</strong>: Position of 'ne' if present (1-based), null if not</li>
+            </ul>
+          </div>
+        </div>
+      )}
 
       <div className="upload-section">
         <input
