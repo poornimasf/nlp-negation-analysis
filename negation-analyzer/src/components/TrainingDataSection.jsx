@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 
-const TrainingDataSection = ({ onDataLoad }) => {
+export const TrainingDataSection = ({ onDataLoad }) => {
   const [error, setError] = useState(null);
 
   const handleFileUpload = async (event) => {
@@ -91,5 +91,3 @@ const TrainingDataSection = ({ onDataLoad }) => {
     </div>
   );
 };
-
-export default TrainingDataSection;
