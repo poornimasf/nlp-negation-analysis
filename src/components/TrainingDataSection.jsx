@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 
-export const TrainingDataSection = ({ onDataLoad }) => {
+const TrainingDataSection = ({ onDataLoad }) => {
   const [error, setError] = useState(null);
   const [showFormat, setShowFormat] = useState(false);
 
@@ -11,12 +11,12 @@ export const TrainingDataSection = ({ onDataLoad }) => {
     if (!file) return;
 
     try {
-      // Read file as text using fetch and blob
-      const fileContent = await file.text();
-      console.log('File content:', fileContent);
+      // Read file as text
+      const text = await file.text();
+      console.log('File content:', text);
 
       // Parse JSON
-      const jsonData = JSON.parse(fileContent);
+      const jsonData = JSON.parse(text);
       console.log('Parsed JSON:', jsonData);
       
       // Convert array to object if needed
@@ -124,3 +124,5 @@ export const TrainingDataSection = ({ onDataLoad }) => {
     </div>
   );
 };
+
+export default TrainingDataSection;
