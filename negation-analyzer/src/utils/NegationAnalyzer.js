@@ -2,22 +2,17 @@ import { normalizeText } from './textProcessing';
 
 class NegationAnalyzer {
   constructor() {
-    // Logical negation markers
-    this.LOGICAL_MARKERS = [
-      /\b(?:pas|point|plus|jamais|rien|personne|aucun[e]?|gu[eèé]re|nullement)\b/i
-    ];
-
-    // Potentially ambiguous triggers that can be either expletive or logical
-    this.AMBIGUOUS_TRIGGERS = {
-      STRONG: [
+    // Expletive triggers with confidence levels
+    this.EXPLETIVE_TRIGGERS = {
+      HIGH: [
         // Fear expressions with complete construction
         /\b(?:j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont)\s+(?:(?:tr[eèé]s\s+)?grand[e]?\s+)?peur\s+qu[e']/i,
+        // Strong fear verbs
+        /\b(?:je|tu|il|elle|on)\s+crains?\s+qu[e']/i,
         // Temporal expressions with precision
         /\b(?:juste|bien|peu|longtemps)\s+avant\s+qu[e']/i,
         // Peu s'en faut with impersonal construction
-        /\bil\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+(?:de\s+)?peu\s+qu[e']/i,
-        // Strong fear verbs
-        /\b(?:je|tu|il|elle|on)\s+crains?\s+qu[e']/i
+        /\bil\s+s['']en\s+(?:faut|fallait|faudra|faudrait)\s+(?:de\s+)?peu\s+qu[e']/i
       ],
       MEDIUM: [
         // Basic fear expressions
@@ -29,170 +24,103 @@ class NegationAnalyzer {
         // Medium strength verbs
         /\b(?:craindre|craignons|craignez|craignent)\s+qu[e']/i
       ],
-      WEAK: [
-        // Doubt expressions
-        /\b(?:doute[rz]?|dout(?:ons|ez|ent))\s+qu[e']/i,
-        // Other expletive triggers
+      LOW: [
+        // Other potential expletive triggers
         /\b(?:redouter|redoute[zsnt]?)\s+qu[e']/i,
         /\b(?:[eéè]viter|[eéè]vite[zsnt]?)\s+qu[e']/i,
         /\b(?:emp[eêè]cher|emp[eêè]che[zsnt]?)\s+qu[e']/i
       ]
     };
 
-    // Subjunctive patterns with accents
+    // Subjunctive patterns
     this.SUBJUNCTIVE_PATTERNS = [
-      // être
-      /\b(?:sois|soit|soyons|soyez|soient)\b/i,
-      // avoir
-      /\b(?:aie|aies|ait|ayons|ayez|aient)\b/i,
-      // faire
-      /\b(?:fasse|fasses|fasse|fassions|fassiez|fassent)\b/i,
-      // pouvoir
-      /\b(?:puisse|puisses|puisse|puissions|puissiez|puissent)\b/i,
-      // venir
-      /\b(?:vienne|viennes|vienne|venions|veniez|viennent)\b/i,
-      // prendre
-      /\b(?:prenne|prennes|prenne|prenions|preniez|prennent)\b/i,
-      // tenir
-      /\b(?:tienne|tiennes|tienne|tenions|teniez|tiennent)\b/i,
-      // réussir
-      /\b(?:r[eéè]ussisse|r[eéè]ussisses|r[eéè]ussissions|r[eéè]ussissiez|r[eéè]ussissent)\b/i,
-      // partir
-      /\b(?:parte|partes|parte|partions|partiez|partent)\b/i
+      /\b(?:sois|soit|soyons|soyez|soient)\b/i,  // être
+      /\b(?:aie|aies|ait|ayons|ayez|aient)\b/i,  // avoir
+      /\b(?:fasse|fasses|fasse|fassions|fassiez|fassent)\b/i,  // faire
+      /\b(?:puisse|puisses|puisse|puissions|puissiez|puissent)\b/i,  // pouvoir
+      /\b(?:vienne|viennes|vienne|venions|veniez|viennent)\b/i,  // venir
+      /\b(?:prenne|prennes|prenne|prenions|preniez|prennent)\b/i,  // prendre
+      /\b(?:tienne|tiennes|tienne|tenions|teniez|tiennent)\b/i,  // tenir
+      /\b(?:r[eéè]ussisse|r[eéè]ussisses|r[eéè]ussissions|r[eéè]ussissiez|r[eéè]ussissent)\b/i,  // réussir
+      /\b(?:parte|partes|parte|partions|partiez|partent)\b/i  // partir
     ];
 
-    // Expletive ne pattern (ne without pas/point etc.)
-    this.EXPLETIVE_NE = /\b(?:n['e])\s+(?!pas|point|plus|jamais|rien|personne|aucun|guère|nullement)\b/i;
+    // Optional ne pattern
+    this.OPTIONAL_NE = /\b(?:n['e])\b/i;
   }
 
   async analyzeNegation(text) {
-    // Check for logical negation markers
-    const logicalMarkers = this.findLogicalMarkers(text);
+    const normalizedText = normalizeText(text);
     
-    // Check for potentially ambiguous triggers
-    const triggers = this.findAmbiguousTriggers(text);
-    
+    // Find triggers by confidence level
+    const triggers = {
+      high: this.EXPLETIVE_TRIGGERS.HIGH.filter(pattern => pattern.test(normalizedText)),
+      medium: this.EXPLETIVE_TRIGGERS.MEDIUM.filter(pattern => pattern.test(normalizedText)),
+      low: this.EXPLETIVE_TRIGGERS.LOW.filter(pattern => pattern.test(normalizedText))
+    };
+
     // Check for subjunctive
-    const hasSubjunctive = this.hasSubjunctive(text);
+    const hasSubjunctive = this.hasSubjunctive(normalizedText);
+    
+    // Check for optional ne
+    const hasOptionalNe = this.OPTIONAL_NE.test(normalizedText);
 
-    // Check for expletive ne
-    const hasExpletiveNe = this.hasExpletiveNe(text);
-
-    // If we have logical markers, it's likely logical
-    if (logicalMarkers.length > 0) {
+    // Analysis based on triggers and context
+    if (triggers.high.length > 0) {
       return {
-        type: 'LOGICAL',
-        confidence: 0.9,
+        type: 'EXPLETIVE',
+        confidence: hasSubjunctive ? 0.9 : 0.8,
         evidence: {
-          markers: logicalMarkers.length,
-          details: 'Contains logical negation markers',
+          triggers: triggers.high,
           hasSubjunctive,
-          hasExpletiveNe,
-          triggers: {
-            strong: triggers.strong.length,
-            medium: triggers.medium.length,
-            weak: triggers.weak.length
-          }
+          hasOptionalNe,
+          details: 'Strong expletive context with high-confidence triggers'
         }
       };
     }
 
-    // If we have strong triggers, likely expletive
-    if (triggers.strong.length > 0) {
-      return {
-        type: 'LIKELY_EXPLETIVE',
-        confidence: hasSubjunctive || hasExpletiveNe ? 0.85 : 0.75,
-        evidence: {
-          triggers: {
-            strong: triggers.strong.length,
-            medium: triggers.medium.length,
-            weak: triggers.weak.length
-          },
-          hasSubjunctive,
-          hasExpletiveNe,
-          details: hasSubjunctive ? 
-            'Contains strong expletive triggers with subjunctive' :
-            'Contains strong expletive triggers'
-        }
-      };
-    }
-
-    // If we have medium triggers
     if (triggers.medium.length > 0) {
-      const isLikelyExpletive = hasSubjunctive || hasExpletiveNe;
-      
       return {
-        type: isLikelyExpletive ? 'LIKELY_EXPLETIVE' : 'AMBIGUOUS',
-        confidence: isLikelyExpletive ? 0.7 : 0.5,
+        type: 'EXPLETIVE',
+        confidence: hasSubjunctive ? 0.8 : 0.7,
         evidence: {
-          triggers: {
-            strong: triggers.strong.length,
-            medium: triggers.medium.length,
-            weak: triggers.weak.length
-          },
+          triggers: triggers.medium,
           hasSubjunctive,
-          hasExpletiveNe,
-          details: isLikelyExpletive ? 
-            'Contains medium expletive triggers with supporting context' :
-            'Contains ambiguous triggers without clear indicators'
+          hasOptionalNe,
+          details: 'Expletive context with medium-confidence triggers'
         }
       };
     }
 
-    // If we have weak triggers
-    if (triggers.weak.length > 0) {
-      const isLikelyExpletive = hasSubjunctive || hasExpletiveNe;
-      
+    if (triggers.low.length > 0) {
       return {
-        type: isLikelyExpletive ? 'LIKELY_EXPLETIVE' : 'UNCERTAIN',
-        confidence: isLikelyExpletive ? 0.65 : 0.5,
+        type: hasSubjunctive ? 'EXPLETIVE' : 'NON_EXPLETIVE',
+        confidence: hasSubjunctive ? 0.7 : 0.6,
         evidence: {
-          triggers: {
-            weak: triggers.weak.length
-          },
+          triggers: triggers.low,
           hasSubjunctive,
-          hasExpletiveNe,
-          details: isLikelyExpletive ?
-            'Contains weak expletive triggers with supporting context' :
-            'Contains only weak potential triggers'
+          hasOptionalNe,
+          details: hasSubjunctive ? 
+            'Potential expletive context with supporting subjunctive' :
+            'Weak expletive indicators without supporting context'
         }
       };
     }
 
-    // Default case - not enough evidence
+    // Default case - no expletive indicators
     return {
-      type: 'UNCERTAIN',
-      confidence: 0.5,
+      type: 'NON_EXPLETIVE',
+      confidence: 0.8,
       evidence: {
-        details: 'Insufficient patterns for classification',
+        details: 'No expletive triggers or supporting context found',
         hasSubjunctive,
-        hasExpletiveNe
+        hasOptionalNe
       }
     };
   }
 
-  findLogicalMarkers(text) {
-    const normalizedText = normalizeText(text);
-    return this.LOGICAL_MARKERS.filter(pattern => pattern.test(normalizedText));
-  }
-
-  findAmbiguousTriggers(text) {
-    const normalizedText = normalizeText(text);
-    const triggers = {
-      strong: this.AMBIGUOUS_TRIGGERS.STRONG.filter(pattern => pattern.test(normalizedText)),
-      medium: this.AMBIGUOUS_TRIGGERS.MEDIUM.filter(pattern => pattern.test(normalizedText)),
-      weak: this.AMBIGUOUS_TRIGGERS.WEAK.filter(pattern => pattern.test(normalizedText))
-    };
-    return triggers;
-  }
-
   hasSubjunctive(text) {
-    const normalizedText = normalizeText(text);
-    return this.SUBJUNCTIVE_PATTERNS.some(pattern => pattern.test(normalizedText));
-  }
-
-  hasExpletiveNe(text) {
-    return this.EXPLETIVE_NE.test(text);
+    return this.SUBJUNCTIVE_PATTERNS.some(pattern => pattern.test(text));
   }
 }
 

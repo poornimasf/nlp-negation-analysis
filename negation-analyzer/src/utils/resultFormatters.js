@@ -1,198 +1,62 @@
-// Format Rule-Based result
 export const formatRuleBasedResult = (analysis) => {
-  const output = [];
+  const { type, confidence, evidence } = analysis;
   
-  switch (analysis.type) {
-    case 'LOGICAL':
-      output.push(`✅ LOGICAL NEGATION (${Math.round(analysis.confidence * 100)}% confidence)\n`);
-      output.push('🔍 PATTERN ANALYSIS:');
-      output.push(`• Found ${analysis.evidence.markers} logical marker(s)`);
-      output.push('• No expletive triggers detected');
-      if (analysis.evidence.hasSubjunctive) {
-        output.push('• Contains subjunctive mood');
-      }
-      if (analysis.evidence.hasExpletiveNe) {
-        output.push('• Contains expletive ne');
-      }
-      break;
-
-    case 'LIKELY_EXPLETIVE':
-      output.push(`ℹ️ LIKELY EXPLETIVE (${Math.round(analysis.confidence * 100)}% confidence)\n`);
-      output.push('🔍 PATTERN ANALYSIS:');
-      if (analysis.evidence.triggers?.strong > 0) {
-        output.push('• Found strong expletive trigger(s)');
-      }
-      if (analysis.evidence.triggers?.medium > 0) {
-        output.push('• Found medium expletive trigger(s)');
-      }
-      if (analysis.evidence.triggers?.weak > 0) {
-        output.push('• Found weak expletive trigger(s)');
-      }
-      if (analysis.evidence.hasSubjunctive) {
-        output.push('• Contains subjunctive mood');
-      }
-      if (analysis.evidence.hasExpletiveNe) {
-        output.push('• Contains expletive ne');
-      }
-      output.push('• No logical markers detected');
-      break;
-
-    case 'AMBIGUOUS':
-      output.push(`⚠️ AMBIGUOUS CASE (${Math.round(analysis.confidence * 100)}% confidence)\n`);
-      output.push('🔍 PATTERN ANALYSIS:');
-      if (analysis.evidence.triggers?.strong > 0) {
-        output.push('• Found strong expletive trigger(s)');
-      }
-      if (analysis.evidence.triggers?.medium > 0) {
-        output.push('• Found medium expletive trigger(s)');
-      }
-      if (analysis.evidence.triggers?.weak > 0) {
-        output.push('• Found weak expletive trigger(s)');
-      }
-      if (analysis.evidence.hasSubjunctive) {
-        output.push('• Contains subjunctive mood');
-      }
-      if (analysis.evidence.hasExpletiveNe) {
-        output.push('• Contains expletive ne');
-      }
-      if (analysis.evidence.details) {
-        output.push(`• ${analysis.evidence.details}`);
-      }
-      break;
-
-    case 'UNCERTAIN':
-      output.push(`❓ UNCERTAIN (${Math.round(analysis.confidence * 100)}% confidence)\n`);
-      output.push('🔍 PATTERN ANALYSIS:');
-      if (analysis.evidence.triggers?.weak > 0) {
-        output.push('• Found weak potential trigger(s)');
-      }
-      if (analysis.evidence.hasSubjunctive) {
-        output.push('• Contains subjunctive mood');
-      }
-      if (analysis.evidence.hasExpletiveNe) {
-        output.push('• Contains expletive ne');
-      }
-      if (analysis.evidence.details) {
-        output.push(`• ${analysis.evidence.details}`);
-      }
-      break;
-
-    default:
-      output.push(`❓ UNCERTAIN (${Math.round(analysis.confidence * 100)}% confidence)\n`);
-      output.push('🔍 PATTERN ANALYSIS:');
-      output.push('• Insufficient patterns for classification');
-      break;
-  }
-
-  return output.join('\n');
-};
-
-// Format Hybrid result
-export const formatHybridResult = (patternAnalysis, llmResponse) => {
-  const output = [];
+  // Format confidence as percentage
+  const confidencePercent = Math.round(confidence * 100);
   
-  output.push('🔄 HYBRID ANALYSIS\n');
+  // Build result string
+  let result = `${type} (${confidencePercent}% confidence)\n`;
   
-  // Pattern Analysis Section
-  output.push('📊 PATTERN EVIDENCE:');
-  switch (patternAnalysis.type) {
-    case 'LOGICAL':
-      output.push(`• Found ${patternAnalysis.evidence.markers} logical marker(s)`);
-      output.push('• Pattern confidence: ' + Math.round(patternAnalysis.confidence * 100) + '%');
-      break;
-    case 'EXPLETIVE':
-    case 'LIKELY_EXPLETIVE':
-      if (patternAnalysis.evidence.triggers?.strong > 0) {
-        output.push('• Found strong expletive trigger(s)');
-      }
-      if (patternAnalysis.evidence.triggers?.medium > 0) {
-        output.push('• Found medium expletive trigger(s)');
-      }
-      if (patternAnalysis.evidence.hasSubjunctive) {
-        output.push('• Contains subjunctive mood');
-      }
-      output.push('• Pattern confidence: ' + Math.round(patternAnalysis.confidence * 100) + '%');
-      break;
-    case 'AMBIGUOUS':
-      if (patternAnalysis.evidence.triggers?.strong > 0) {
-        output.push('• Found strong expletive trigger(s)');
-      }
-      if (patternAnalysis.evidence.triggers?.medium > 0) {
-        output.push('• Found medium expletive trigger(s)');
-      }
-      if (patternAnalysis.evidence.hasSubjunctive) {
-        output.push('• Contains subjunctive mood');
-      }
-      output.push('• Requires LLM disambiguation');
-      break;
-    default:
-      if (patternAnalysis.evidence.details) {
-        output.push(`• ${patternAnalysis.evidence.details}`);
-      } else {
-        output.push('• Insufficient patterns for classification');
-      }
-      break;
-  }
-  output.push('');
-  
-  // LLM Analysis Section
-  output.push('🤖 SEMANTIC ANALYSIS:');
-  
-  if (llmResponse && typeof llmResponse === 'object') {
-    try {
-      // Add the reasoning if available
-      if (llmResponse.reasoning) {
-        output.push('💭 Reasoning:');
-        output.push(`• ${llmResponse.reasoning}`);
-        output.push('');
-      }
-      
-      // Add the classification and confidence
-      if (llmResponse.classification) {
-        output.push(`✨ Classification: ${llmResponse.classification}`);
-        if (llmResponse.confidence) {
-          output.push(`💡 Confidence: ${Math.round(llmResponse.confidence * 100)}%`);
-        }
-      }
-      
-      // Add NE placement suggestion if available
-      if (llmResponse.nePosition) {
-        output.push('');
-        output.push('🎯 Suggested NE Position:');
-        output.push(`• ${llmResponse.nePosition}`);
-      }
-    } catch (error) {
-      console.error('Error formatting LLM response:', error);
-      output.push('• Error processing semantic analysis');
+  // Add evidence details
+  if (evidence) {
+    result += `\nEvidence:\n`;
+    result += `- ${evidence.details}\n`;
+    
+    if (evidence.triggers) {
+      result += `- Found triggers: ${JSON.stringify(evidence.triggers)}\n`;
     }
-  } else {
-    output.push('• No semantic analysis available');
+    
+    if (evidence.hasSubjunctive) {
+      result += `- Contains subjunctive mood\n`;
+    }
+    
+    if (evidence.hasOptionalNe) {
+      result += `- Contains optional 'ne'\n`;
+    }
   }
   
-  return output.join('\n');
+  return result;
 };
 
-// Format Training Data result
-export const formatTrainingResult = (patternAnalysis, trainingAnalysis) => {
-  const output = [];
+export const formatTrainingResult = (analysis, trainingAnalysis) => {
+  const { type, confidence } = analysis;
+  const confidencePercent = Math.round(confidence * 100);
   
-  output.push('📚 TRAINING DATA ANALYSIS\n');
+  let result = `${type} (${confidencePercent}% confidence)\n`;
+  result += `Based on training data analysis:\n`;
   
-  // Pattern Analysis
-  output.push('📊 PATTERN EVIDENCE:');
-  output.push(`• Prediction: ${patternAnalysis.type}`);
-  output.push(`• Pattern confidence: ${Math.round(patternAnalysis.confidence * 100)}%\n`);
-  
-  // Training Data Analysis
-  output.push('🎯 SIMILAR EXAMPLES:');
   if (trainingAnalysis.matches && trainingAnalysis.matches.length > 0) {
-    trainingAnalysis.matches.forEach(match => {
-      output.push(`• ${match.text} (${match.classification})`);
-    });
-    output.push(`\n💡 Training data confidence: ${Math.round(trainingAnalysis.confidence * 100)}%`);
+    result += `- Found ${trainingAnalysis.matches.length} similar examples\n`;
+    result += `- Best match confidence: ${Math.round(trainingAnalysis.confidence * 100)}%\n`;
   } else {
-    output.push('• No similar examples found in training data');
+    result += `- No close matches in training data\n`;
   }
   
-  return output.join('\n');
+  return result;
+};
+
+export const formatHybridResult = (analysis, llmAnalysis) => {
+  const { type, confidence } = analysis;
+  const confidencePercent = Math.round(confidence * 100);
+  
+  let result = `${type} (${confidencePercent}% confidence)\n`;
+  result += `Combined analysis:\n`;
+  result += `- Rule-based: ${analysis.type}\n`;
+  result += `- LLM analysis: ${llmAnalysis.classification}\n`;
+  
+  if (llmAnalysis.explanation) {
+    result += `\nLLM explanation:\n${llmAnalysis.explanation}\n`;
+  }
+  
+  return result;
 };
