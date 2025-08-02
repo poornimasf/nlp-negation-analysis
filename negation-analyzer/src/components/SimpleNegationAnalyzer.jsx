@@ -20,7 +20,7 @@ const SimpleNegationAnalyzer = () => {
   const [analysisMode, setAnalysisMode] = useState('RULE_BASED');
   const [useTrainingEnhancement, setUseTrainingEnhancement] = useState(false);
   const [infoBoxExpanded, setInfoBoxExpanded] = useState(false);
-  const [trainingData, setTrainingData] = useState([]);
+  const [trainingData, setTrainingData] = useState({ examples: [] });
   const [error, setError] = useState(null);
   const [uploadError, setUploadError] = useState(null);
 
@@ -32,12 +32,34 @@ const SimpleNegationAnalyzer = () => {
     if (!file) return;
 
     try {
-      const { processedData } = await processFileUpload(file);
-      setTrainingData(processedData);
+      const reader = new FileReader();
       
-      if (processedData.length > 0) {
-        setUseTrainingEnhancement(true);
-      }
+      reader.onload = async (e) => {
+        try {
+          const content = e.target.result;
+          const jsonData = JSON.parse(content);
+          
+          // Convert array to object if needed
+          const processedData = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
+          
+          // Validate structure
+          if (!processedData || !processedData.examples || !Array.isArray(processedData.examples)) {
+            throw new Error('Invalid data structure. Expected { examples: [...] }');
+          }
+          
+          setTrainingData(processedData);
+          setUseTrainingEnhancement(true);
+        } catch (err) {
+          console.error('Error processing file:', err);
+          setUploadError(formatErrorMessage(err));
+        }
+      };
+
+      reader.onerror = () => {
+        setUploadError('Error reading file');
+      };
+
+      reader.readAsText(file);
     } catch (error) {
       console.error('File upload error:', error);
       setUploadError(formatErrorMessage(error));
@@ -46,7 +68,7 @@ const SimpleNegationAnalyzer = () => {
 
   // Clear training data
   const clearTrainingData = () => {
-    setTrainingData([]);
+    setTrainingData({ examples: [] });
     setUseTrainingEnhancement(false);
     setUploadError(null);
   };
@@ -79,7 +101,7 @@ const SimpleNegationAnalyzer = () => {
           const analysis = await analyzer.analyzeNegation(sentence);
           let formattedResult;
           let classification;
-          const proposedSentence = proposeNePlacement(sentence, analysisMode, trainingData);
+          const proposedSentence = proposeNePlacement(sentence, analysisMode, trainingData.examples);
 
           switch (analysisMode) {
             case 'RULE_BASED':
@@ -96,9 +118,9 @@ const SimpleNegationAnalyzer = () => {
 
             case 'TRAINING_DATA':
             case 'SVM_ANALYSIS':
-              if (useTrainingEnhancement && trainingData.length > 0) {
+              if (useTrainingEnhancement && trainingData.examples.length > 0) {
                 const mode = analysisMode === 'SVM_ANALYSIS' ? 'SVM' : 'BINARY';
-                const trainingAnalysis = classify(sentence, trainingData, mode);
+                const trainingAnalysis = classify(sentence, trainingData.examples, mode);
                 formattedResult = formatTrainingResult(analysis, trainingAnalysis);
                 // Extract prediction from pattern analysis for display
                 classification = analysis.type === 'UNCERTAIN' ? trainingAnalysis.classification : analysis.type;
