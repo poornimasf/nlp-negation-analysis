@@ -1,4 +1,5 @@
 import React from 'react';
+import './TrainingData.css';
 
 const JsonFormatGuide = () => {
   const exampleJson = {
@@ -31,7 +32,7 @@ const JsonFormatGuide = () => {
     <div className="json-format-guide">
       <h3>Training Data Format</h3>
       <div className="format-explanation">
-        <h4>Fields:</h4>
+        <h4>Required Fields:</h4>
         <ul>
           <li><strong>text</strong>: The French sentence</li>
           <li><strong>has_expletive_ne</strong>: true if 'ne' is present in the example</li>
@@ -43,6 +44,16 @@ const JsonFormatGuide = () => {
       <div className="example-json">
         <h4>Example:</h4>
         <pre>{JSON.stringify(exampleJson, null, 2)}</pre>
+      </div>
+      <div className="format-notes">
+        <h4>Notes:</h4>
+        <ul>
+          <li>All examples must be wrapped in an "examples" array</li>
+          <li>classification: true = expletive possible, false = not possible</li>
+          <li>has_expletive_ne: indicates if 'ne' is present in this example</li>
+          <li>ne_position: counts words from start of sentence (1-based)</li>
+          <li>trigger: must be one of the three supported patterns or null</li>
+        </ul>
       </div>
     </div>
   );
