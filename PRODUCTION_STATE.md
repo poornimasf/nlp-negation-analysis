@@ -62,32 +62,49 @@ The French Negation Type Prediction System is a specialized linguistic analysis 
 - **Data Processing**: Client-side with no data persistence
 - **Performance**: Real-time processing with progress tracking
 
-## Recent Updates (v2.6.1)
+## Recent Updates (v2.6.2)
 
 ### Major Changes
-1. **Updated Training Data Format**
-   - Simplified JSON structure
-   - Improved validation
-   - Better error handling
-   - Automatic format conversion
+1. **Simplified Classification Logic**
+   - Removed logical negation analysis
+   - Binary classification: expletive or non-expletive only
+   - Strict requirements for expletive classification
+   - Improved confidence scoring
 
-2. **Enhanced Git Workflow**
-   - Added workflow safeguards
-   - Improved branch protection
-   - Better deployment process
-   - Added documentation
+2. **Expletive Classification Rules**
+   - Must have official trigger AND subjunctive
+   - Official triggers: "peur que", "avant que", "peu s'en faut"
+   - Clear rules for non-expletive cases
+   - Higher confidence scoring for clear cases
 
-3. **UI Improvements**
-   - Collapsible format guide
-   - Better error messages
-   - Enhanced styling
-   - Improved user feedback
+3. **Analysis Improvements**
+   - Removed ambiguous classifications
+   - Better trigger pattern matching
+   - Clearer evidence reporting
+   - More accurate confidence scores
 
-4. **Development Process**
-   - Added workflow scripts
-   - Enhanced documentation
-   - Improved build process
-   - Better error handling
+4. **Classification Confidence**
+   - Expletive with 'ne': 0.95
+   - Expletive without 'ne': 0.85
+   - Non-expletive (no trigger): 0.95
+   - Non-expletive (trigger, no subjunctive): 0.90
+
+### Classification Rules
+1. **Expletive Requirements**
+   - Must have one of the official triggers
+   - Must have subjunctive mood
+   - Optional 'ne' increases confidence
+
+2. **Non-Expletive Cases**
+   - No official triggers found
+   - Has trigger but missing subjunctive
+   - Any other cases default to non-expletive
+
+3. **Confidence Scoring**
+   - Based on presence of required components
+   - Higher confidence for clear cases
+   - Presence of 'ne' boosts confidence
+   - Clear documentation of evidence
 
 ### Training Data Format
 The system now uses a simplified JSON format:

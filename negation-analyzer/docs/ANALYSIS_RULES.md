@@ -1,175 +1,118 @@
 # French Negation Analysis Rules
 
-## Important: Pattern Analysis Limitations
+## Classification Overview
 
-### Key Principle
-The presence of common patterns (peur que, avant que, peu s'en faut) alone is NOT sufficient to determine expletive or logical negation. Multiple factors must be considered for accurate analysis.
+The system classifies French sentences into two categories:
+1. Expletive
+2. Non-expletive
 
-## Pattern Analysis Examples
+## Expletive Classification Requirements
 
-### 1. Fear Expressions (peur que)
+### Required Components
+1. **Official Trigger**
+   - Must have one of:
+     * "peur que"
+     * "avant que"
+     * "peu s'en faut"
+   - Variations are supported (e.g., "avoir peur que")
+
+2. **Subjunctive Mood**
+   - Must have subjunctive verb form
+   - Common forms are detected:
+     * être: sois, soit, soyons, soyez, soient
+     * avoir: aie, aies, ait, ayons, ayez, aient
+     * faire: fasse, fasses, fassions, fassiez, fassent
+     * etc.
+
+### Optional Component
+- **Ne Marker**
+  * Presence increases confidence
+  * Not required for classification
+  * Must not be part of "ne...pas" construction
+
+## Non-Expletive Classification
+
+### Clear Non-Expletive Cases
+1. No official triggers present
+2. Has trigger but missing subjunctive
+3. Any case not meeting expletive requirements
+
+## Confidence Scoring
+
+### High Confidence (0.95)
+- Expletive with all components:
+  * Official trigger
+  * Subjunctive mood
+  * Ne marker present
+- Non-expletive with no triggers
+
+### Strong Confidence (0.90)
+- Non-expletive with:
+  * Has trigger
+  * Missing subjunctive
+
+### Good Confidence (0.85)
+- Expletive with:
+  * Official trigger
+  * Subjunctive mood
+  * No ne marker
+
+## Examples
+
+### Expletive Examples
 ```
-Same pattern, different negation types:
-
-Expletive possible:
 "J'ai peur qu'il ne vienne"
-(Fear that he will come)
+- Trigger: "peur que"
+- Subjunctive: "vienne"
+- Ne present
+- Confidence: 0.95
 
-Logical negation:
-"J'ai peur qu'il ne vienne pas"
-(Fear that he won't come)
-
-Key difference: Presence of logical negation marker (pas)
+"Avant qu'il parte"
+- Trigger: "avant que"
+- Subjunctive: "parte"
+- No ne
+- Confidence: 0.85
 ```
 
-### 2. Temporal Expressions (avant que)
+### Non-Expletive Examples
 ```
-Same pattern, different uses:
+"J'ai peur qu'il part"
+- Has trigger: "peur que"
+- No subjunctive
+- Confidence: 0.90
 
-Expletive possible:
-"Avant qu'il ne parte"
-(Before he leaves)
-
-Logical negation:
-"Avant qu'il ne parte plus"
-(Before he no longer leaves)
-
-Key difference: Presence of logical marker (plus)
+"Je vais au cinéma"
+- No triggers
+- Confidence: 0.95
 ```
 
-### 3. Impersonal Expressions (peu s'en faut)
-```
-Pattern variations:
+## Implementation Details
 
-Expletive possible:
-"Peu s'en faut qu'il ne réussisse"
-(He almost succeeds)
+### Trigger Detection
+- Uses regex patterns
+- Handles common variations
+- Case insensitive
+- Whitespace tolerant
 
-Without expletive:
-"Peu s'en faut qu'il réussisse"
-(He almost succeeds)
+### Subjunctive Detection
+- Pattern matching for common forms
+- Comprehensive verb list
+- Handles irregular verbs
+- Accent-aware matching
 
-Key difference: Optional nature of expletive ne
-```
+### Ne Detection
+- Identifies standalone "ne"
+- Handles elided forms (n')
+- Excludes "ne...pas" constructions
 
-## Required Analysis Factors
+## Error Cases
 
-### 1. Pattern Presence (30% confidence)
-- Identifies potential expletive context
-- Not sufficient alone
-- Must be complete pattern, not partial match
+### Invalid Classifications
+- Logical negation (ne...pas) - Not analyzed
+- Ambiguous cases - Default to non-expletive
+- Unknown patterns - Default to non-expletive
 
-### 2. Structural Analysis (30% confidence)
-- Complete clause structure
-- Proper subordinate clause
-- Verb form analysis
-
-### 3. Logical Negation Check (20% confidence)
-- Check for markers: pas, point, plus, jamais, etc.
-- Analyze marker position and relevance
-- Consider impact on meaning
-
-### 4. Context Analysis (20% confidence)
-- Semantic meaning
-- Complete sentence structure
-- Related clauses
-
-## Confidence Adjustments
-
-### Negative Factors
-- Presence of logical markers: -50%
-- Incomplete clause structure: -30%
-- Ambiguous context: -25%
-
-### Positive Factors
-- Complete pattern match: +30%
-- Valid structure: +30%
-- Clear semantic context: +20%
-
-## Implementation Guidelines
-
-### 1. Pattern Detection
-```javascript
-// INCORRECT
-if (hasPattern(text, 'peur que')) {
-  return 'EXPLETIVE';
-}
-
-// CORRECT
-const analysis = {
-  hasPattern: hasPattern(text, 'peur que'),
-  hasLogicalMarkers: checkLogicalMarkers(text),
-  structure: analyzeStructure(text),
-  context: analyzeContext(text)
-};
-
-return determineType(analysis);
-```
-
-### 2. Confidence Calculation
-```javascript
-const confidence = calculateConfidence({
-  hasPattern: 0.3,          // Base for pattern
-  hasCompleteStructure: 0.3, // Structure analysis
-  noLogicalMarkers: 0.2,    // Negation check
-  validContext: 0.2         // Context analysis
-});
-
-// Apply adjustments
-if (hasLogicalMarkers) confidence *= 0.5;
-if (!completeStructure) confidence *= 0.7;
-if (ambiguousContext) confidence *= 0.75;
-```
-
-## Common Mistakes to Avoid
-
-### 1. Pattern Overreliance
-❌ Assuming pattern presence guarantees expletive ne
-✓ Use patterns as initial indicators only
-
-### 2. Ignoring Logical Markers
-❌ Missing presence of pas, point, plus, etc.
-✓ Always check for logical negation markers
-
-### 3. Incomplete Analysis
-❌ Analyzing pattern in isolation
-✓ Consider all contextual factors
-
-### 4. Overconfidence
-❌ High confidence based on pattern alone
-✓ Adjust confidence based on all factors
-
-## Testing Guidelines
-
-### 1. Pattern Variations
-Test sentences with:
-- Same pattern, different negation types
-- Different patterns, same negation type
-- Ambiguous cases
-- Incomplete patterns
-
-### 2. Logical Markers
-Test combinations with:
-- Various logical negation markers
-- Different marker positions
-- Multiple markers
-
-### 3. Structure Analysis
-Test cases with:
-- Complete and incomplete clauses
-- Various verb forms
-- Different subordinate structures
-
-## Maintenance Notes
-
-### Regular Updates Needed For:
-1. Pattern database
-2. Confidence calculations
-3. Analysis rules
-4. Test cases
-
-### Performance Monitoring:
-1. Track confidence accuracy
-2. Monitor pattern effectiveness
-3. Analyze error patterns
-4. Update rules based on findings
+### Edge Cases
+- Multiple triggers - Use first match
+- Complex sentences - Analyze main clause
+- Unknown verb forms - Conservative classification
