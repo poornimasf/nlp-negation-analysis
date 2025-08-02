@@ -1,58 +1,74 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import './NegationAnalyzer.css';
 
 export const TrainingDataSection = ({ onDataLoad }) => {
   const [error, setError] = useState(null);
   const [showFormat, setShowFormat] = useState(false);
 
-  const handleFileUpload = async (event) => {
-    const file = event.target.files[0];
+  const handleFileUpload = useCallback((event) => {
+    setError(null);
+    const file = event.target.files?.[0];
     if (!file) return;
 
-    try {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = JSON.parse(e.target.result);
-          const formattedData = Array.isArray(data) ? { examples: data } : data;
-          
-          if (!validateTrainingData(formattedData)) {
-            setError('Invalid training data format');
-            return;
-          }
-
-          onDataLoad(formattedData);
-          setError(null);
-        } catch (err) {
-          setError('Error parsing JSON: ' + err.message);
+    // Read file as text
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result;
+        if (typeof content !== 'string') {
+          throw new Error('Invalid file content');
         }
-      };
 
-      reader.onerror = () => {
-        setError('Error reading file');
-      };
+        // Parse JSON
+        const jsonData = JSON.parse(content);
+        
+        // Convert array to object if needed
+        const data = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
 
+        // Validate structure
+        if (!data || !data.examples || !Array.isArray(data.examples)) {
+          throw new Error('Invalid data structure. Expected { examples: [...] }');
+        }
+
+        // Process each example
+        const processedData = {
+          examples: data.examples.map((example, index) => {
+            if (!example || typeof example !== 'object') {
+              throw new Error(`Invalid example at index ${index}`);
+            }
+
+            // Clean and validate the example
+            return {
+              text: String(example.text || '').trim(),
+              has_expletive_ne: Boolean(example.has_expletive_ne),
+              classification: Boolean(example.classification),
+              trigger: ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger) 
+                ? example.trigger 
+                : null,
+              ne_position: example.ne_position !== null ? Number(example.ne_position) : null
+            };
+          })
+        };
+
+        // Call the callback with processed data
+        onDataLoad(processedData);
+      } catch (err) {
+        console.error('Error processing file:', err);
+        setError(`Error processing file: ${err.message}`);
+      }
+    };
+
+    reader.onerror = () => {
+      setError('Error reading file');
+    };
+
+    try {
       reader.readAsText(file);
     } catch (err) {
-      setError('Error loading file: ' + err.message);
+      setError(`Error reading file: ${err.message}`);
     }
-  };
-
-  const validateTrainingData = (data) => {
-    if (!data || !data.examples || !Array.isArray(data.examples)) {
-      return false;
-    }
-
-    return data.examples.every(example => (
-      example &&
-      typeof example === 'object' &&
-      typeof example.text === 'string' &&
-      typeof example.has_expletive_ne === 'boolean' &&
-      typeof example.classification === 'boolean' &&
-      (example.trigger === null || ['peur que', 'avant que', 'peu s\'en faut'].includes(example.trigger)) &&
-      (example.ne_position === null || typeof example.ne_position === 'number')
-    ));
-  };
+  }, [onDataLoad]);
 
   const formatExample = {
     "examples": [
@@ -95,7 +111,7 @@ export const TrainingDataSection = ({ onDataLoad }) => {
             
             <h5>Field Descriptions:</h5>
             <ul>
-              <li><strong>text</strong>: The French sentence</li>
+              <li><strong>text</strong>: The French sentence (whitespace will be trimmed)</li>
               <li><strong>has_expletive_ne</strong>: true if 'ne' is present</li>
               <li><strong>classification</strong>: true for expletive possible, false for not possible</li>
               <li><strong>trigger</strong>: One of: "peur que", "avant que", "peu s'en faut", or null</li>
@@ -112,7 +128,13 @@ export const TrainingDataSection = ({ onDataLoad }) => {
           onChange={handleFileUpload}
           className="file-input"
         />
-        {error && <div className="error-message">{error}</div>}
+        {error && (
+          <div className="error-message">
+            {error}
+            <br />
+            <small>Check the console for more details.</small>
+          </div>
+        )}
       </div>
     </div>
   );
