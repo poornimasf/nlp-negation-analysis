@@ -1,0 +1,53 @@
+{
+  "examples": [
+    {
+      "text": "J'ai peur qu'il vienne",
+      "has_expletive_ne": true,
+      "classification": true,
+      "trigger": "peur que",
+      "ne_position": 14
+    },
+    {
+      "text": "Je crains qu'il parte",
+      "has_expletive_ne": true,
+      "classification": true,
+      "trigger": "craindre que",
+      "ne_position": 13
+    },
+    {
+      "text": "Avant qu'elle arrive",
+      "has_expletive_ne": true,
+      "classification": true,
+      "trigger": "avant que",
+      "ne_position": 11
+    },
+    {
+      "text": "C'est le meilleur film que j'aie vu",
+      "has_expletive_ne": true,
+      "classification": true,
+      "trigger": "le meilleur que",
+      "ne_position": 27
+    },
+    {
+      "text": "C'est le seul livre qu'il ait lu",
+      "has_expletive_ne": true,
+      "classification": true,
+      "trigger": "le seul que",
+      "ne_position": 23
+    },
+    {
+      "text": "Je vais au cinéma",
+      "has_expletive_ne": false,
+      "classification": false,
+      "trigger": null,
+      "ne_position": null
+    },
+    {
+      "text": "Il lit un livre",
+      "has_expletive_ne": false,
+      "classification": false,
+      "trigger": null,
+      "ne_position": null
+    }
+  ]
+}
