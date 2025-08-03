@@ -1,13 +1,20 @@
 .App {
   text-align: center;
+  min-height: 100vh;
+  background-color: #f8f9fa;
 }
 
-.App-header {
-  background-color: #282c34;
+.app-header {
+  background-color: #fff;
   padding: 20px;
-  color: white;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.App-link {
-  color: #61dafb;
+.app-header h1 {
+  margin: 0;
+  color: #1565c0;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
 }
