@@ -31,6 +31,9 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
     result += `"${bestMatch.text}"\n`;
     result += `- In training data: ${bestMatch.has_expletive_ne ? 'Contains expletive ne' : 'Does not contain ne'}\n`;
     result += `- Similarity score: ${Math.round(bestMatch.similarity * 100)}%\n`;
+    result += `- Classification basis: ${bestMatch.has_expletive_ne ? 
+      'Best match contains ne' : 
+      'Best match does not contain ne'}\n`;
   } else {
     result += `- No close matches in training data\n`;
     result += `- Defaulting to no 'ne' marker\n`;

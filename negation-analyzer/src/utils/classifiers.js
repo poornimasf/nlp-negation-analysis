@@ -270,18 +270,23 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
     // Check if the example has expletive ne
     if (example.has_expletive_ne === true) {
       acc.expletive += weight;
+      // If this is our best match and it has ne, that's strong evidence
+      if (weight === similarExamples[0].similarity) {
+        acc.bestMatchHasNe = true;
+      }
     } else {
       acc.nonExpletive += weight;
     }
     return acc;
-  }, { expletive: 0, nonExpletive: 0 });
+  }, { expletive: 0, nonExpletive: 0, bestMatchHasNe: false });
 
   // Calculate confidence and determine classification
   const totalWeight = weightedVotes.expletive + weightedVotes.nonExpletive;
   const confidence = Math.max(weightedVotes.expletive, weightedVotes.nonExpletive) / totalWeight;
 
   // Determine if ne marker would be appropriate
-  const shouldHaveNe = weightedVotes.expletive > weightedVotes.nonExpletive;
+  // If our best match has ne, or if we have significant expletive weight, classify as expletive
+  const shouldHaveNe = weightedVotes.bestMatchHasNe || weightedVotes.expletive > weightedVotes.nonExpletive;
 
   // If ne is appropriate, determine position
   let nePosition = null;
