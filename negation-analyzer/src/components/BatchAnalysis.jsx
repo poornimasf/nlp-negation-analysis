@@ -14,7 +14,6 @@ export const BatchAnalysis = ({
     <div className="card">
       <h3 className="title">Batch Analysis</h3>
       <div className="form-group">
-        <label htmlFor="batch-input">Enter Multiple Sentences:</label>
         <div className="input-group">
           <textarea
             id="batch-input"

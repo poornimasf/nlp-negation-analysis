@@ -1,6 +1,7 @@
 import React from 'react';
 import './NegationAnalyzer.css';
 import './TrainingData.css';
+import './InfoBox.css';
 
 export const ModeSelector = ({ analysisMode, setAnalysisMode, setInfoBoxExpanded, isInfoBoxExpanded }) => {
   const handleInfoClick = (e) => {
