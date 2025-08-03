@@ -1,101 +1,43 @@
 import { normalizeText } from './textProcessing';
 import { classifyWithSVM, trainSVMModel } from './svmClassifier';
 
-// CroissantLLM classification for Hybrid mode
-export const classifyExpletive = async (text) => {
-  try {
-    if (!text) {
-      throw new Error('No text provided');
-    }
-
-    if (!process.env.REACT_APP_HF_TOKEN) {
-      throw new Error('Missing HF_TOKEN');
-    }
-
-    const response = await fetch(
-      'https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud/',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.REACT_APP_HF_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          inputs: `Example 1 (Expletive Negation):
-Sentence: "Je crains qu'il ne vienne trop tard."
-Analysis: The verb "craindre" triggers expletive ne. There is no actual negation intended.
-Classification: EXPLETIVE
-Reasoning: The negation particle "ne" is used idiomatically with verbs of fear.
-Conclusion: EXPLETIVE
-
-Example 2 (Logical Negation):
-Sentence: "Je ne veux pas qu'il parte."
-Analysis: This sentence uses "ne ... pas" to directly negate the verb "vouloir". The negation is intentional and affects the meaning.
-Classification: LOGICAL
-Reasoning: The negative construction changes the speaker's intention and is semantically negative.
-Conclusion: LOGICAL
-
-Now analyze the following French sentence to determine whether the sentence previously contained **expletive negation** or **logical negation**:
-
-"${text}"
-
-Your task:
-1. Determine if the sentence previously contained **expletive negation** (e.g., *Je crains qu'il ne vienne*) or **logical negation** (e.g., *Je ne veux pas*).
-2. Analyze the **negation trigger(s)**, grammatical **structure**, and **context**.
-3. Provide a final classification: \`EXPLETIVE\` or \`LOGICAL\`.
-
-Respond in the following format: 
-Analysis: [your detailed reasoning]
-Classification: [EXPLETIVE or LOGICAL]`
-        })
-      }
-    );
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        throw new Error('429: Rate limit exceeded');
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    return Array.isArray(result) && result.length > 0 && result[0].generated_text 
-      ? result[0].generated_text 
-      : 'No analysis available';
-  } catch (error) {
-    console.error('CroissantLLM Error:', error);
-    throw error;
-  }
-};
-
-// Common trigger patterns
+// Trigger patterns that might allow expletive ne
 const TRIGGER_PATTERNS = {
   FEAR: [
-    /peur\s+que/i,
-    /craindre/i,
-    /redouter/i,
-    /douter/i
+    /peur\s+qu[e']/i,
+    /craindre?\s+qu[e']/i,
+    /redouter?\s+qu[e']/i
   ],
   TEMPORAL: [
-    /avant\s+que/i,
-    /jusqu['']à\s+ce\s+que/i
+    /avant\s+qu[e']/i
   ],
   IMPERSONAL: [
-    /peu\s+s['']en\s+faut/i,
-    /il\s+s['']en\s+faut/i
+    /peu\s+s['']en\s+faut\s+qu[e']/i
+  ],
+  RELATIVE: [
+    // Superlative constructions
+    /le\s+(?:meilleur|mieux)\s+qu[e']/i,
+    // Restrictive constructions
+    /le\s+(?:seul|unique)\s+qu[e']/i,
+    // Ordinal constructions
+    /le\s+(?:premier|dernier)\s+qu[e']/i
   ]
 };
 
-// Extract trigger pattern from text
+// Extract trigger with its position
 function extractTrigger(text) {
   const normalizedText = normalizeText(text.toLowerCase());
   
   for (const [category, patterns] of Object.entries(TRIGGER_PATTERNS)) {
     for (const pattern of patterns) {
-      if (pattern.test(normalizedText)) {
+      const match = normalizedText.match(pattern);
+      if (match) {
         return {
           category,
-          pattern: pattern.source
+          pattern: pattern.source,
+          trigger: match[0],
+          position: match.index,
+          isRelative: category === 'RELATIVE'
         };
       }
     }
@@ -103,33 +45,65 @@ function extractTrigger(text) {
   return null;
 }
 
-// Calculate text similarity considering trigger patterns
+// Find que/qu' position with context
+function findQuePosition(text, triggerInfo) {
+  if (!triggerInfo) return null;
+  
+  const normalizedText = normalizeText(text.toLowerCase());
+  const triggerEnd = triggerInfo.position + triggerInfo.trigger.length;
+  
+  // Look for que/qu' after the trigger
+  const afterTrigger = normalizedText.slice(triggerEnd);
+  const queMatch = afterTrigger.match(/qu[e']/i);
+  
+  if (queMatch) {
+    const quePos = triggerEnd + queMatch.index + queMatch[0].length;
+    
+    // Verify this que belongs to our trigger
+    const betweenText = normalizedText.slice(triggerEnd, triggerEnd + queMatch.index);
+    const hasIntervening = /[.!?]|\bet\b|\bmais\b/.test(betweenText);
+    
+    if (!hasIntervening) {
+      return quePos;
+    }
+  }
+  
+  return null;
+}
+
+// Calculate similarity between sentences
 function calculateSimilarity(text1, text2) {
-  // Normalize texts
   const norm1 = normalizeText(text1.toLowerCase());
   const norm2 = normalizeText(text2.toLowerCase());
 
-  // Get words (excluding common words)
-  const commonWords = new Set(['le', 'la', 'les', 'un', 'une', 'des', 'de', 'du', 'à', 'au', 'aux']);
+  // Get triggers
+  const trigger1 = extractTrigger(norm1);
+  const trigger2 = extractTrigger(norm2);
+
+  // Check for same trigger category
+  const triggerMatch = trigger1 && trigger2 && trigger1.category === trigger2.category;
+  
+  // Get words (excluding common words and ne)
+  const commonWords = new Set(['le', 'la', 'les', 'un', 'une', 'des', 'de', 'du', 'à', 'au', 'aux', 'ne', 'n']);
   const words1 = norm1.split(/\s+/).filter(w => !commonWords.has(w));
   const words2 = norm2.split(/\s+/).filter(w => !commonWords.has(w));
 
-  // Check for shared trigger patterns
-  const trigger1 = extractTrigger(norm1);
-  const trigger2 = extractTrigger(norm2);
-  const triggerBonus = (trigger1 && trigger2 && trigger1.category === trigger2.category) ? 0.3 : 0;
-
   // Calculate word similarity
-  const intersection = words1.filter(word => words2.some(w2 => w2.includes(word) || word.includes(w2)));
+  const intersection = words1.filter(word => words2.includes(word));
   const union = [...new Set([...words1, ...words2])];
   
-  const baseSimilarity = intersection.length / union.length;
-  
-  // Add trigger bonus but cap at 0.95
-  return Math.min(baseSimilarity + triggerBonus, 0.95);
+  let similarity = intersection.length / union.length;
+
+  // Boost score for matching triggers
+  if (triggerMatch) {
+    similarity += 0.3;
+  }
+
+  // Cap at 0.95
+  return Math.min(similarity, 0.95);
 }
 
-// Binary classifier for Training Data mode
+// Binary classifier focusing on ne marker appropriateness
 export const classifyWithBinaryClassifier = (text, trainingData) => {
   if (!text) {
     throw new Error('No text provided');
@@ -139,22 +113,21 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
     throw new Error('No training data available');
   }
 
-  // Extract trigger from input text
+  // Extract trigger and find que position
   const inputTrigger = extractTrigger(text);
+  const quePosition = findQuePosition(text, inputTrigger);
 
   // Find similar examples
   const similarExamples = trainingData
     .map(example => ({
       ...example,
-      similarity: calculateSimilarity(text, example.text)
+      similarity: calculateSimilarity(text, example.text),
+      trigger: extractTrigger(example.text)
     }))
     .filter(example => {
-      // Lower threshold for examples with matching trigger patterns
-      const threshold = inputTrigger && extractTrigger(example.text)?.category === inputTrigger.category
-        ? 0.3  // Lower threshold for matching triggers
-        : 0.4; // Higher threshold for non-matching triggers
-      
-      return example.similarity > threshold;
+      // Require matching trigger category and reasonable similarity
+      return example.trigger?.category === inputTrigger?.category &&
+             example.similarity > 0.3;
     })
     .sort((a, b) => b.similarity - a.similarity)
     .slice(0, 5); // Keep top 5 matches
@@ -163,39 +136,74 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
     return {
       matches: [],
       confidence: 0.5,
-      classification: 'UNCERTAIN',
-      message: 'No similar examples found in training data'
+      classification: false, // Default to no expletive if no matches
+      message: 'No similar examples found in training data',
+      nePosition: null
     };
   }
 
-  // Weight examples by similarity
-  const weightedCounts = similarExamples.reduce((acc, example) => {
+  // Analyze similar examples to determine if ne marker would be appropriate
+  const weightedVotes = similarExamples.reduce((acc, example) => {
     const weight = example.similarity;
-    acc[example.classification] = (acc[example.classification] || 0) + weight;
+    // Check if the example has expletive ne
+    if (example.has_expletive_ne === true) {
+      acc.expletive += weight;
+    } else {
+      acc.nonExpletive += weight;
+    }
     return acc;
-  }, {});
+  }, { expletive: 0, nonExpletive: 0 });
 
-  // Calculate confidence and get majority classification
-  const totalWeight = Object.values(weightedCounts).reduce((a, b) => a + b, 0);
-  const maxWeight = Math.max(...Object.values(weightedCounts));
-  const confidence = maxWeight / totalWeight;
+  // Calculate confidence and determine classification
+  const totalWeight = weightedVotes.expletive + weightedVotes.nonExpletive;
+  const confidence = Math.max(weightedVotes.expletive, weightedVotes.nonExpletive) / totalWeight;
 
-  const classification = Object.entries(weightedCounts)
-    .reduce((a, b) => weightedCounts[a[0]] > weightedCounts[b[0]] ? a : b)[0];
+  // Determine if ne marker would be appropriate
+  const shouldHaveNe = weightedVotes.expletive > weightedVotes.nonExpletive;
+
+  // If ne is appropriate, determine position
+  let nePosition = null;
+  if (shouldHaveNe && quePosition) {
+    // Get positions from similar examples with ne
+    const examplesWithNe = similarExamples.filter(ex => ex.has_expletive_ne && ex.ne_position !== null);
+    if (examplesWithNe.length > 0) {
+      // Use position from most similar example with ne
+      const bestExample = examplesWithNe[0];
+      const exampleQue = findQuePosition(bestExample.text, extractTrigger(bestExample.text));
+      if (exampleQue && bestExample.ne_position) {
+        // Calculate relative position from que and apply to new sentence
+        const relativePos = bestExample.ne_position - exampleQue;
+        nePosition = quePosition + relativePos;
+      } else {
+        // Fallback: place after que
+        nePosition = quePosition;
+      }
+    } else {
+      // Fallback: place after que
+      nePosition = quePosition;
+    }
+  }
 
   // Generate detailed message
+  const contextInfo = inputTrigger?.isRelative ? ' (relative clause)' : '';
   const message = `Found ${similarExamples.length} similar example${similarExamples.length > 1 ? 's' : ''} ` +
-    `(best match: ${Math.round(similarExamples[0].similarity * 100)}% similar)`;
+    `${contextInfo}. ${shouldHaveNe ? 'Ne marker would be appropriate' : 'Ne marker would not be appropriate'}`;
 
   return {
     matches: similarExamples,
     confidence,
-    classification,
-    message
+    classification: shouldHaveNe,
+    message,
+    nePosition,
+    originalText: text,
+    context: {
+      triggerType: inputTrigger?.category || null,
+      quePosition
+    }
   };
 };
 
-// Main classification function that handles both modes
+// Main classification function
 export const classify = (text, trainingData, mode = 'BINARY') => {
   if (!text) {
     throw new Error('No text provided');
@@ -208,12 +216,13 @@ export const classify = (text, trainingData, mode = 'BINARY') => {
   // Use appropriate classifier based on mode
   switch (mode) {
     case 'SVM':
-      return classifyWithSVM(text, null, trainingData);
+      const svmModel = trainSVMModel(trainingData);
+      return classifyWithSVM(text, svmModel, trainingData);
     case 'BINARY':
     default:
       return classifyWithBinaryClassifier(text, trainingData);
   }
 };
 
-// Export additional utilities for SVM
+// Export additional utilities
 export { trainSVMModel } from './svmClassifier';
