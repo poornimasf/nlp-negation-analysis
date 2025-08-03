@@ -6,6 +6,7 @@ import { formatRuleBasedResult, formatHybridResult, formatTrainingResult } from 
 import { highlight, determineClassification } from '../utils/textProcessing';
 import { handleFileUpload as processFileUpload } from '../utils/trainingDataManager';
 import { classifyExpletive, classify } from '../utils/classifiers';
+import { calculateNePosition, formatWithNe } from '../utils/nePositionCalculator';
 import { BatchAnalysis } from './BatchAnalysis';
 import { ModeSelector, ModeInfoBox } from './AnalysisModes';
 import { TrainingDataSection } from './TrainingDataSection';
@@ -101,10 +102,6 @@ const SimpleNegationAnalyzer = () => {
           let formattedResult;
           let classification;
           let proposedSentence = null;
-
-import { calculateNePosition, formatWithNe } from '../utils/nePositionCalculator';
-
-// ... rest of imports ...
 
           switch (analysisMode) {
             case 'RULE_BASED':
