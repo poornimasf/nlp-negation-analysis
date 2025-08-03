@@ -25,12 +25,12 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
       result += `- Recommendation: No 'ne' marker needed\n`;
     }
     
-    // Add best match example
+    // Add best match example with clearer labeling
     const bestMatch = trainingAnalysis.matches[0];
-    result += `\nBest matching example:\n`;
+    result += `\nMost similar training example:\n`;
     result += `"${bestMatch.text}"\n`;
-    result += `- Classification: ${bestMatch.has_expletive_ne ? 'Uses ne' : 'No ne'}\n`;
-    result += `- Similarity: ${Math.round(bestMatch.similarity * 100)}%\n`;
+    result += `- In training data: ${bestMatch.has_expletive_ne ? 'Contains expletive ne' : 'Does not contain ne'}\n`;
+    result += `- Similarity score: ${Math.round(bestMatch.similarity * 100)}%\n`;
   } else {
     result += `- No close matches in training data\n`;
     result += `- Defaulting to no 'ne' marker\n`;
