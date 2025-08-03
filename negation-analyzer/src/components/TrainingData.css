@@ -1,60 +1,97 @@
+/* Training Data Preview Section */
 .training-preview {
-  margin-top: 20px;
+  margin: 20px 0;
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
 }
 
 .training-preview h3 {
-  margin: 0 0 15px 0;
-  color: #212529;
+  margin: 0;
+  padding: 20px;
+  color: #1565c0;
   font-size: 18px;
+  font-weight: 500;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
 }
 
 .training-table {
-  overflow-x: auto;
-  margin-top: 10px;
+  padding: 0 20px;
 }
 
 .training-table table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 15px 0;
 }
 
 .training-table th {
   background-color: #f8f9fa;
-  padding: 12px;
-  text-align: left;
-  border-bottom: 2px solid #dee2e6;
   color: #495057;
   font-weight: 600;
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 2px solid #dee2e6;
+  font-size: 14px;
 }
 
 .training-table td {
-  padding: 12px;
-  border-bottom: 1px solid #dee2e6;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e9ecef;
   color: #212529;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
-.training-table .text-cell {
-  max-width: 300px;
+/* Column-specific styles */
+.training-table td:first-child {  /* ID column */
+  width: 60px;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.training-table .text-cell {  /* Text column */
+  max-width: 400px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.training-table .classification-cell {
-  width: 150px;
+.training-table .classification-cell {  /* Classification column */
+  width: 180px;
 }
 
+.training-table td:last-child {  /* Language column */
+  width: 100px;
+  color: #6c757d;
+}
+
+/* Row hover effect */
+.training-table tr:hover td {
+  background-color: #f8f9fa;
+}
+
+/* Alternating row colors */
+.training-table tr:nth-child(even) td {
+  background-color: #fafbfc;
+}
+
+.training-table tr:nth-child(even):hover td {
+  background-color: #f8f9fa;
+}
+
+/* Classification tags */
 .classification-tag {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 13px;
   font-weight: 500;
+  line-height: 1.4;
 }
 
 .classification-tag.with-negation {
@@ -69,22 +106,23 @@
   border: 1px solid #eeeeee;
 }
 
+/* Table footer */
 .table-footer {
-  margin-top: 10px;
-  padding: 10px;
-  text-align: center;
+  padding: 12px 20px;
+  background-color: #f8f9fa;
   color: #6c757d;
-  font-size: 14px;
-  border-top: 1px solid #dee2e6;
+  font-size: 13px;
+  border-top: 1px solid #e9ecef;
+  text-align: right;
 }
 
-/* Training Stats */
+/* Training Stats Section */
 .training-stats {
-  margin-top: 20px;
+  margin: 20px 0;
   padding: 20px;
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .stats-grid {
@@ -95,20 +133,48 @@
 }
 
 .stat-card {
-  padding: 15px;
+  padding: 20px;
   background-color: #f8f9fa;
   border-radius: 8px;
   text-align: center;
+  border: 1px solid #e9ecef;
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
 }
 
 .stat-number {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 600;
   color: #1565c0;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 
 .stat-label {
   font-size: 14px;
-  color: #6c757d;
+  color: #495057;
+  font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .training-table {
+    padding: 0 10px;
+  }
+
+  .training-table th,
+  .training-table td {
+    padding: 10px;
+  }
+
+  .training-table .text-cell {
+    max-width: 200px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+  }
 }

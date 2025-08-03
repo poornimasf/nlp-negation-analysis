@@ -1,173 +1,125 @@
-import React, { useState } from 'react';
-import './NegationAnalyzer.css';
+import React from 'react';
+import './TrainingData.css';
 
 export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrainingData, uploadError }) => {
-  const [showFormat, setShowFormat] = useState(false);
-  const [showPreview, setShowPreview] = useState(true);
-
-  const formatExample = {
-    "examples": [
-      {
-        "text": "J'ai peur qu'il ne vienne",
-        "has_expletive_ne": true,
-        "classification": true,
-        "trigger": "peur que",
-        "ne_position": 3
-      },
-      {
-        "text": "Je vais au cinéma",
-        "has_expletive_ne": false,
-        "classification": false,
-        "trigger": null,
-        "ne_position": null
-      }
-    ]
-  };
-
-  const renderPreview = () => {
-    if (!trainingData?.examples?.length) {
-      return null;
-    }
-
-    const stats = {
-      total: trainingData.examples.length,
-      withNe: trainingData.examples.filter(ex => ex.has_expletive_ne).length,
-      expletivePossible: trainingData.examples.filter(ex => ex.classification).length,
-      triggers: {
-        'peur que': 0,
-        'avant que': 0,
-        'peu s\'en faut': 0
-      }
-    };
-
-    // Count triggers
-    trainingData.examples.forEach(ex => {
-      if (ex.trigger && stats.triggers.hasOwnProperty(ex.trigger)) {
-        stats.triggers[ex.trigger]++;
-      }
-    });
-
-    return (
-      <div className="preview-section">
-        <div className="preview-header">
-          <h4>Training Data Preview</h4>
-          <button onClick={() => setShowPreview(!showPreview)} className="toggle-button">
-            {showPreview ? 'Hide' : 'Show'} Preview
-          </button>
-        </div>
-
-        {showPreview && (
-          <>
-            <div className="stats-section">
-              <h5>Statistics</h5>
-              <div className="stats-grid">
-                <div className="stats-column">
-                  <p>Total examples: {stats.total}</p>
-                  <p>With NE: {stats.withNe}</p>
-                  <p>Expletive possible: {stats.expletivePossible}</p>
-                </div>
-                <div className="stats-column">
-                  <p>Triggers:</p>
-                  <ul>
-                    {Object.entries(stats.triggers).map(([trigger, count]) => (
-                      <li key={trigger}>{trigger}: {count}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div className="examples-preview">
-              <h5>Examples</h5>
-              <div className="examples-table-container">
-                <table className="examples-table">
-                  <thead>
-                    <tr>
-                      <th>Text</th>
-                      <th>Has NE</th>
-                      <th>Expletive</th>
-                      <th>Trigger</th>
-                      <th>NE Position</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {trainingData.examples.slice(0, 5).map((example, index) => (
-                      <tr key={index} className={example.has_expletive_ne ? 'has-ne' : ''}>
-                        <td>{example.text}</td>
-                        <td>{example.has_expletive_ne ? 'Yes' : 'No'}</td>
-                        <td>{example.classification ? 'Yes' : 'No'}</td>
-                        <td>{example.trigger || '-'}</td>
-                        <td>{example.ne_position || '-'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                {trainingData.examples.length > 5 && (
-                  <p className="more-examples">
-                    And {trainingData.examples.length - 5} more examples...
-                  </p>
-                )}
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-    );
-  };
-
   return (
-    <div className="training-data-section">
-      <h3>Training Data Analysis</h3>
-      <p className="section-description">
-        Upload JSON file in the format shown below.
-      </p>
-      
-      <div className="format-toggle" onClick={() => setShowFormat(!showFormat)}>
-        <span className="toggle-icon">{showFormat ? '▼' : '▶'}</span>
-        <span className="toggle-text">Show JSON Format Details</span>
+    <div className="training-section">
+      <div className="training-upload">
+        <h3>Upload Training Data</h3>
+        <p>Upload a CSV or JSON file with training examples to improve the model's accuracy.</p>
+        
+        <div className="upload-area">
+          <label htmlFor="file-upload" className="upload-label">
+            Choose File (CSV, JSON)
+          </label>
+          <input
+            id="file-upload"
+            type="file"
+            accept=".csv,.json,.xlsx,.xls"
+            onChange={handleFileUpload}
+            className="file-input"
+          />
+          
+          {uploadError && (
+            <div className="error-message">
+              <strong>Error:</strong> {uploadError}
+            </div>
+          )}
+        </div>
       </div>
-      
-      {showFormat && (
-        <div className="info-box">
-          <h4>Expected JSON Format:</h4>
-          <div className="format-explanation">
-            <p>Required format:</p>
-            <pre>{JSON.stringify(formatExample, null, 2)}</pre>
+
+      {/* Training Data Preview */}
+      {trainingData && trainingData.examples && trainingData.examples.length > 0 && (
+        <div className="training-preview">
+          <h3>Training Data Preview</h3>
+          <div className="training-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Text</th>
+                  <th>Classification</th>
+                  <th>Language</th>
+                </tr>
+              </thead>
+              <tbody>
+                {trainingData.examples.slice(0, 10).map((item, index) => (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td className="text-cell">{item.text}</td>
+                    <td className="classification-cell">
+                      <span className={`classification-tag ${
+                        item.classification?.toLowerCase().includes('with') || 
+                        item.classification?.toLowerCase().includes('expletive') 
+                          ? 'with-negation' 
+                          : 'without-negation'
+                      }`}>
+                        {item.classification}
+                      </span>
+                    </td>
+                    <td>{item.language || 'French'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
             
-            <h5>Field Descriptions:</h5>
-            <ul>
-              <li><strong>text</strong>: The French sentence (whitespace will be trimmed)</li>
-              <li><strong>has_expletive_ne</strong>: true if 'ne' is present</li>
-              <li><strong>classification</strong>: true for expletive possible, false for not possible</li>
-              <li><strong>trigger</strong>: One of: "peur que", "avant que", "peu s'en faut", or null</li>
-              <li><strong>ne_position</strong>: Position of 'ne' if present (1-based), null if not</li>
-            </ul>
+            {trainingData.examples.length > 10 && (
+              <div className="table-footer">
+                Showing 10 of {trainingData.examples.length} examples
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      <div className="upload-section">
-        <input
-          type="file"
-          accept=".json"
-          onChange={handleFileUpload}
-          className="file-input"
-        />
-        {uploadError && (
-          <div className="error-message">
-            {uploadError}
-            <br />
-            <small>Check the console for more details.</small>
+      {/* Training Stats */}
+      {trainingData && trainingData.examples && trainingData.examples.length > 0 && (
+        <div className="training-stats">
+          <h3>Training Data Statistics</h3>
+          <div className="stats-grid">
+            <div className="stat-card">
+              <div className="stat-number">{trainingData.examples.length}</div>
+              <div className="stat-label">Total Examples</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-number">
+                {trainingData.examples.filter(ex => 
+                  ex.classification?.toLowerCase().includes('with') || 
+                  ex.classification?.toLowerCase().includes('expletive')
+                ).length}
+              </div>
+              <div className="stat-label">With Negation</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-number">
+                {trainingData.examples.filter(ex => 
+                  !ex.classification?.toLowerCase().includes('with') && 
+                  !ex.classification?.toLowerCase().includes('expletive')
+                ).length}
+              </div>
+              <div className="stat-label">Without Negation</div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-number">
+                {Math.round((trainingData.examples.filter(ex => 
+                  ex.classification?.toLowerCase().includes('with') || 
+                  ex.classification?.toLowerCase().includes('expletive')
+                ).length / trainingData.examples.length) * 100)}%
+              </div>
+              <div className="stat-label">Negation Ratio</div>
+            </div>
           </div>
-        )}
-        {trainingData?.examples?.length > 0 && (
+        </div>
+      )}
+
+      {/* Clear Data Button */}
+      {trainingData && trainingData.examples && trainingData.examples.length > 0 && (
+        <div className="training-actions">
           <button onClick={clearTrainingData} className="clear-button">
             Clear Training Data
           </button>
-        )}
-      </div>
-
-      {renderPreview()}
+        </div>
+      )}
     </div>
   );
 };
