@@ -106,12 +106,27 @@ const SimpleNegationAnalyzer = () => {
             case 'RULE_BASED':
               formattedResult = formatRuleBasedResult(analysis);
               classification = await determineClassification(sentence, formattedResult);
+              // Generate proposed sentence if expletive
+              if (classification === 'Expletive' && analysis.evidence?.nePosition !== null) {
+                const beforeNe = sentence.slice(0, analysis.evidence.nePosition);
+                const afterNe = sentence.slice(analysis.evidence.nePosition);
+                proposedSentence = `${beforeNe}ne ${afterNe}`;
+              }
               break;
 
             case 'HYBRID': {
               const llmAnalysis = await classifyExpletive(sentence);
               formattedResult = formatHybridResult(analysis, llmAnalysis);
               classification = llmAnalysis.classification || await determineClassification(sentence, formattedResult);
+              // Generate proposed sentence based on LLM analysis
+              if (llmAnalysis.classification === 'EXPLETIVE' && llmAnalysis.nePosition) {
+                const nePos = sentence.indexOf(llmAnalysis.nePosition.replace('After ', ''));
+                if (nePos !== -1) {
+                  const beforeNe = sentence.slice(0, nePos);
+                  const afterNe = sentence.slice(nePos);
+                  proposedSentence = `${beforeNe}ne ${afterNe}`;
+                }
+              }
               break;
             }
 
