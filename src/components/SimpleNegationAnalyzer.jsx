@@ -24,6 +24,16 @@ const SimpleNegationAnalyzer = () => {
   const [uploadError, setUploadError] = useState(null);
 
   // File upload handler
+  // Expected JSON structure:
+  // [
+  //   {
+  //     "text": "Qu'en était-il de la vie de vos personnages avant qu'ils ne soient des aventuriers?",
+  //     "has_expletive_ne": true,
+  //     "classification": true,
+  //     "trigger": "avant que",
+  //     "ne_position": 60
+  //   }
+  // ]
   const handleFileUpload = async (event) => {
     event.preventDefault();
     const file = event.target.files[0];
@@ -80,7 +90,9 @@ const SimpleNegationAnalyzer = () => {
                 } else if (header === 'trigger') {
                   obj.trigger = value || '';
                 } else if (header === 'ne_position') {
-                  obj.ne_position = value ? parseFloat(value) : null;
+                  // Accept both integer and decimal numbers
+                  const position = parseInt(value, 10);
+                  obj.ne_position = isNaN(position) ? null : position;
                 }
               });
               return obj;
