@@ -1,6 +1,16 @@
 import React from 'react';
 import { exportToXLSX } from '../utils/exportUtils';
 
+// ===== TRAINING DATA MODE LOGIC =====
+// WARNING: This section handles the core Training Data functionality.
+// Any changes to this logic should be made with extreme caution and
+// thoroughly tested with the training dataset.
+// Key components:
+// 1. Position extraction from analysis
+// 2. Sentence modification with 'ne'
+// 3. Classification based on position validity
+// ====================================
+
 export const BatchAnalysis = ({
   batchInput,
   setBatchInput,
@@ -177,27 +187,58 @@ export const BatchAnalysis = ({
                         </span>
                       </td>
                       <td style={{ padding: '12px' }}>
-                        {(analysisMode === 'HYBRID' ? 
-                          prediction.toLowerCase().includes('expletive') : 
-                          prediction === 'Expletive') && result.proposedSentence ? (
-                          <div style={{
-                            backgroundColor: '#f8f9fa',
-                            padding: '8px',
-                            borderRadius: '4px',
-                            border: '1px solid #e9ecef'
-                          }}>
-                            <span dangerouslySetInnerHTML={{
-                              __html: result.proposedSentence.replace(
-                                /\bne\b/g,
-                                '<span style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500">ne</span>'
-                              )
-                            }} />
-                          </div>
-                        ) : (
-                          <span style={{ color: '#6c757d', fontStyle: 'italic' }}>
-                            No changes proposed
-                          </span>
-                        )}
+                        {(() => {
+                          if (analysisMode === 'TRAINING_DATA' && prediction === 'Expletive') {
+                            // Extract recommended position from analysis
+                            const posMatch = result.label.match(/Recommended NE position: (\d+)/i);
+                            if (posMatch) {
+                              const nePosition = parseInt(posMatch[1], 10);
+                              // Insert 'ne' at the recommended position
+                              const beforeNe = result.text.slice(0, nePosition);
+                              const afterNe = result.text.slice(nePosition);
+                              const proposedText = `${beforeNe}ne ${afterNe}`;
+                              
+                              return (
+                                <div style={{
+                                  backgroundColor: '#f8f9fa',
+                                  padding: '8px',
+                                  borderRadius: '4px',
+                                  border: '1px solid #e9ecef'
+                                }}>
+                                  <span dangerouslySetInnerHTML={{
+                                    __html: proposedText.replace(
+                                      /\bne\b/g,
+                                      '<span style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500">ne</span>'
+                                    )
+                                  }} />
+                                </div>
+                              );
+                            }
+                          } else if (analysisMode === 'HYBRID' ? 
+                            prediction.toLowerCase().includes('expletive') : 
+                            prediction === 'Expletive') {
+                            return result.proposedSentence ? (
+                              <div style={{
+                                backgroundColor: '#f8f9fa',
+                                padding: '8px',
+                                borderRadius: '4px',
+                                border: '1px solid #e9ecef'
+                              }}>
+                                <span dangerouslySetInnerHTML={{
+                                  __html: result.proposedSentence.replace(
+                                    /\bne\b/g,
+                                    '<span style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500">ne</span>'
+                                  )
+                                }} />
+                              </div>
+                            ) : null;
+                          }
+                          return (
+                            <span style={{ color: '#6c757d', fontStyle: 'italic' }}>
+                              No changes proposed
+                            </span>
+                          );
+                        })()}
                       </td>
                     </tr>
                   );
