@@ -6,15 +6,18 @@ class NegationAnalyzer {
     this.EXPLETIVE_TRIGGERS = [
       {
         pattern: /\b(?:avoir\s+)?peur\s+qu[e']/i,
-        name: 'peur que'
+        name: 'peur que',
+        weight: 1.0
       },
       {
         pattern: /\bavant\s+qu[e']/i,
-        name: 'avant que'
+        name: 'avant que',
+        weight: 1.0
       },
       {
         pattern: /\bpeu\s+s['']en\s+faut\s+qu[e']/i,
-        name: 'peu s\'en faut'
+        name: 'peu s\'en faut',
+        weight: 1.0
       }
     ];
 
@@ -69,7 +72,7 @@ class NegationAnalyzer {
     if (foundTriggers.length > 0 && !hasSubjunctive) {
       return {
         type: 'NON_EXPLETIVE',
-        confidence: 0.90,
+        confidence: 0.9,
         evidence: {
           trigger: foundTriggers[0].name,
           hasSubjunctive: false,
