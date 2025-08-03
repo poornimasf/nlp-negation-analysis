@@ -2,7 +2,14 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
   const { type, confidence, evidence } = analysis;
   const confidencePercent = Math.round(confidence * 100);
   
-  let result = `${type} (${confidencePercent}% confidence)\n`;
+  // Validate expletive classification - must have valid position
+  const isValidExpletive = type === 'Expletive' && 
+                          evidence.nePosition !== null && 
+                          evidence.nePosition !== undefined && 
+                          evidence.nePosition >= 0;
+  
+  // Start building result
+  let result = `${isValidExpletive ? 'Expletive' : 'No Expletive'} (${confidencePercent}% confidence)\n`;
   result += `Based on training data analysis:\n`;
   
   if (trainingAnalysis.matches && trainingAnalysis.matches.length > 0) {
@@ -15,8 +22,8 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
     }
     
     // Add ne marker recommendation
-    if (type === 'Expletive') {
-      result += `- Recommendation: Add 'ne' marker at position ${evidence.nePosition || 'null'}\n`;
+    if (isValidExpletive) {
+      result += `- Recommendation: Add 'ne' marker at position ${evidence.nePosition}\n`;
     } else {
       result += `- Recommendation: No 'ne' marker needed (position: null)\n`;
     }
