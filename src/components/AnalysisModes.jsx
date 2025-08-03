@@ -1,51 +1,110 @@
 import React from 'react';
 import './NegationAnalyzer.css';
 
-const AnalysisModes = ({ currentMode, onModeChange }) => {
+export const ModeSelector = ({ analysisMode, setAnalysisMode, setInfoBoxExpanded }) => {
   return (
-    <div className="analysis-modes">
-      <h3>Analysis Mode</h3>
-      <div className="mode-selector">
-        <select 
-          value={currentMode} 
-          onChange={(e) => onModeChange(e.target.value)}
-        >
-          <option value="training">Training Data Analysis</option>
-          <option value="rule">Rule-Based Analysis</option>
-        </select>
-      </div>
-
-      <div className="mode-info">
-        {currentMode === 'training' ? (
-          <div className="info-box">
-            <h4>Training Data Analysis Mode</h4>
-            <p>Uses example-based learning to identify expletive negation.</p>
-            <ul>
-              <li>Matches against known examples</li>
-              <li>Supports three trigger patterns:
-                <ul>
-                  <li>peur que</li>
-                  <li>avant que</li>
-                  <li>peu s'en faut</li>
-                </ul>
-              </li>
-              <li>Provides NE placement suggestions based on examples</li>
-            </ul>
-          </div>
-        ) : (
-          <div className="info-box">
-            <h4>Rule-Based Analysis Mode</h4>
-            <p>Uses predefined linguistic rules to analyze negation.</p>
-            <ul>
-              <li>Pattern-based detection</li>
-              <li>Comprehensive trigger analysis</li>
-              <li>Context-aware classification</li>
-            </ul>
-          </div>
-        )}
-      </div>
+    <div className="mode-selector">
+      <label htmlFor="analysis-mode">Analysis Mode:</label>
+      <select
+        id="analysis-mode"
+        value={analysisMode}
+        onChange={(e) => setAnalysisMode(e.target.value)}
+        className="select"
+      >
+        <option value="TRAINING_DATA">Training Data Analysis</option>
+        <option value="RULE_BASED">Rule-Based Analysis</option>
+        <option value="HYBRID">Hybrid Analysis</option>
+        <option value="SVM_ANALYSIS">SVM Analysis</option>
+      </select>
+      <button 
+        onClick={() => setInfoBoxExpanded(true)}
+        className="info-icon"
+        aria-label="Show mode information"
+      >
+        ℹ️
+      </button>
     </div>
   );
 };
 
-export default AnalysisModes;
+export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
+  if (!isExpanded) return null;
+
+  const getModeInfo = () => {
+    switch (mode) {
+      case 'TRAINING_DATA':
+        return {
+          title: 'Training Data Analysis Mode',
+          description: 'Uses example-based learning to identify expletive negation.',
+          features: [
+            'Matches against known examples',
+            'Supports multiple trigger patterns',
+            'Provides NE placement suggestions based on examples',
+            'Considers subjunctive mood and clause boundaries'
+          ]
+        };
+      case 'RULE_BASED':
+        return {
+          title: 'Rule-Based Analysis Mode',
+          description: 'Uses predefined linguistic rules to analyze negation.',
+          features: [
+            'Pattern-based detection',
+            'Comprehensive trigger analysis',
+            'Context-aware classification',
+            'Grammatical structure analysis'
+          ]
+        };
+      case 'HYBRID':
+        return {
+          title: 'Hybrid Analysis Mode',
+          description: 'Combines rule-based analysis with machine learning.',
+          features: [
+            'Enhanced accuracy through combined approach',
+            'LLM-based classification',
+            'Pattern verification',
+            'Context-sensitive analysis'
+          ]
+        };
+      case 'SVM_ANALYSIS':
+        return {
+          title: 'SVM Analysis Mode',
+          description: 'Uses Support Vector Machine learning for classification.',
+          features: [
+            'Machine learning based classification',
+            'Feature extraction from examples',
+            'Statistical pattern recognition',
+            'Confidence scoring'
+          ]
+        };
+      default:
+        return {
+          title: 'Analysis Mode',
+          description: 'Select an analysis mode to begin.',
+          features: []
+        };
+    }
+  };
+
+  const info = getModeInfo();
+
+  return (
+    <div className="info-box">
+      <div className="info-header">
+        <h4>{info.title}</h4>
+        <button 
+          onClick={() => setExpanded(false)}
+          className="close-button"
+          aria-label="Close information"
+        >
+          ×
+        </button>
+      </div>
+      <p>{info.description}</p>
+      <ul>
+        {info.features.map((feature, index) => (
+          <li key={index}>{feature}</li>
+        ))}
+      </ul>
+    </div>
+  );
+};

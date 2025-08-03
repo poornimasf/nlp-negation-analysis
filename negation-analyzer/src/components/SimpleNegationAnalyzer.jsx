@@ -17,7 +17,7 @@ const SimpleNegationAnalyzer = () => {
   const [batchResults, setBatchResults] = useState([]);
   const [batchLoading, setBatchLoading] = useState(false);
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
-  const [analysisMode, setAnalysisMode] = useState('RULE_BASED');
+  const [analysisMode, setAnalysisMode] = useState('TRAINING_DATA');
   const [useTrainingEnhancement, setUseTrainingEnhancement] = useState(false);
   const [infoBoxExpanded, setInfoBoxExpanded] = useState(false);
   const [trainingData, setTrainingData] = useState({ examples: [] });

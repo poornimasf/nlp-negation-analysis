@@ -1,161 +1,110 @@
 import React from 'react';
+import './NegationAnalyzer.css';
 
-export const ModeSelector = ({ analysisMode, setAnalysisMode }) => (
-  <div style={{ 
-    backgroundColor: '#e3f2fd', 
-    padding: '15px', 
-    borderRadius: '8px', 
-    marginBottom: '20px',
-    border: '2px solid #2196f3'
-  }}>
-    <h4>🔍 Analysis Mode:</h4>
-    <select
-      value={analysisMode}
-      onChange={(e) => setAnalysisMode(e.target.value)}
-      style={{
-        width: '100%',
-        padding: '8px',
-        marginBottom: '10px',
-        borderRadius: '4px',
-        border: '1px solid #2196f3',
-        fontSize: '16px'
-      }}
-    >
-      <option value="RULE_BASED">Pattern-Based Analysis</option>
-      <option value="HYBRID">Hybrid (Patterns + CroissantLLM)</option>
-      <option value="TRAINING_DATA">Training Data Analysis</option>
-      <option value="SVM_ANALYSIS">SVM Analysis</option>
-    </select>
-    
-    <p style={{ 
-      marginTop: '10px',
-      padding: '10px',
-      backgroundColor: 'rgba(255,255,255,0.7)',
-      borderRadius: '4px',
-      border: '1px solid #2196f3'
-    }}>
-      {analysisMode === 'RULE_BASED' && (
-        "🔍 Analyzes French linguistic patterns and markers"
-      )}
-      {analysisMode === 'HYBRID' && (
-        "🔄 Combines pattern analysis with CroissantLLM for enhanced accuracy"
-      )}
-      {analysisMode === 'TRAINING_DATA' && (
-        "📚 Uses your examples to train a custom classifier"
-      )}
-      {analysisMode === 'SVM_ANALYSIS' && (
-        "🤖 Uses Support Vector Machine with linear kernel for classification"
-      )}
-    </p>
-  </div>
-);
+export const ModeSelector = ({ analysisMode, setAnalysisMode, setInfoBoxExpanded }) => {
+  return (
+    <div className="mode-selector">
+      <label htmlFor="analysis-mode">Analysis Mode:</label>
+      <select
+        id="analysis-mode"
+        value={analysisMode}
+        onChange={(e) => setAnalysisMode(e.target.value)}
+        className="select"
+      >
+        <option value="TRAINING_DATA">Training Data Analysis</option>
+        <option value="RULE_BASED">Rule-Based Analysis</option>
+        <option value="HYBRID">Hybrid Analysis</option>
+        <option value="SVM_ANALYSIS">SVM Analysis</option>
+      </select>
+      <button 
+        onClick={() => setInfoBoxExpanded(true)}
+        className="info-icon"
+        aria-label="Show mode information"
+      >
+        ℹ️
+      </button>
+    </div>
+  );
+};
 
 export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
-  const getContent = () => {
+  if (!isExpanded) return null;
+
+  const getModeInfo = () => {
     switch (mode) {
+      case 'TRAINING_DATA':
+        return {
+          title: 'Training Data Analysis Mode',
+          description: 'Uses example-based learning to identify expletive negation.',
+          features: [
+            'Matches against known examples',
+            'Supports multiple trigger patterns',
+            'Provides NE placement suggestions based on examples',
+            'Considers subjunctive mood and clause boundaries'
+          ]
+        };
       case 'RULE_BASED':
         return {
-          title: '🔍 Pattern-Based Analysis',
-          color: '#2196f3',
-          items: [
-            'Detects logical negation markers',
-            'Identifies expletive triggers',
-            'Analyzes subjunctive mood',
-            'Provides confidence-based results'
+          title: 'Rule-Based Analysis Mode',
+          description: 'Uses predefined linguistic rules to analyze negation.',
+          features: [
+            'Pattern-based detection',
+            'Comprehensive trigger analysis',
+            'Context-aware classification',
+            'Grammatical structure analysis'
           ]
         };
       case 'HYBRID':
         return {
-          title: '🔄 Hybrid Analysis',
-          color: '#4caf50',
-          items: [
-            'Combines pattern detection with LLM',
-            'Enhanced accuracy for ambiguous cases',
-            'Detailed evidence collection',
-            'Confidence blending'
-          ]
-        };
-      case 'TRAINING_DATA':
-        return {
-          title: '📚 Training Data Analysis',
-          color: '#9c27b0',
-          description: '🎯 Complete User Control: Upload your own training examples to enhance analysis accuracy. The system uses ONLY your uploaded data - no hidden datasets or external training sources.',
-          items: [
-            'Uses your custom examples',
-            'Similarity-based matching',
-            'Transparent decision making',
-            'Confidence from similar cases'
+          title: 'Hybrid Analysis Mode',
+          description: 'Combines rule-based analysis with machine learning.',
+          features: [
+            'Enhanced accuracy through combined approach',
+            'LLM-based classification',
+            'Pattern verification',
+            'Context-sensitive analysis'
           ]
         };
       case 'SVM_ANALYSIS':
         return {
-          title: '🤖 SVM Analysis',
-          color: '#ff5722',
-          description: '🎯 Advanced Machine Learning: Utilizes Support Vector Machine with linear kernel for precise classification based on your training data.',
-          items: [
-            'Linear kernel SVM classifier',
-            'Optimal hyperplane separation',
-            'High-dimensional feature analysis',
-            'Margin-based confidence scoring'
+          title: 'SVM Analysis Mode',
+          description: 'Uses Support Vector Machine learning for classification.',
+          features: [
+            'Machine learning based classification',
+            'Feature extraction from examples',
+            'Statistical pattern recognition',
+            'Confidence scoring'
           ]
         };
       default:
-        return null;
+        return {
+          title: 'Analysis Mode',
+          description: 'Select an analysis mode to begin.',
+          features: []
+        };
     }
   };
 
-  const content = getContent();
-  if (!content) return null;
+  const info = getModeInfo();
 
   return (
-    <div style={{ 
-      backgroundColor: '#fff', 
-      border: `1px solid ${content.color}`,
-      borderRadius: '8px', 
-      marginBottom: '20px',
-      overflow: 'hidden'
-    }}>
-      <div 
-        onClick={() => setExpanded(!isExpanded)}
-        style={{
-          padding: '12px 15px',
-          cursor: 'pointer',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          backgroundColor: '#fff',
-          borderBottom: isExpanded ? `1px solid ${content.color}` : 'none'
-        }}
-      >
-        <h4 style={{ margin: 0, fontSize: '14px', color: content.color }}>
-          {content.title}
-        </h4>
-        <span style={{ fontSize: '12px', color: content.color }}>
-          {isExpanded ? '▼ Hide Details' : '▶ Show Details'}
-        </span>
+    <div className="info-box">
+      <div className="info-header">
+        <h4>{info.title}</h4>
+        <button 
+          onClick={() => setExpanded(false)}
+          className="close-button"
+          aria-label="Close information"
+        >
+          ×
+        </button>
       </div>
-      {isExpanded && (
-        <div style={{ padding: '15px' }}>
-          {content.description && (
-            <div style={{
-              backgroundColor: '#f3e5f5',
-              border: '1px solid #ce93d8',
-              borderRadius: '6px',
-              padding: '12px',
-              marginBottom: '15px',
-              fontSize: '14px',
-              color: '#4a148c'
-            }}>
-              {content.description}
-            </div>
-          )}
-          <ul style={{ margin: '10px 0', paddingLeft: '20px' }}>
-            {content.items.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <p>{info.description}</p>
+      <ul>
+        {info.features.map((feature, index) => (
+          <li key={index}>{feature}</li>
+        ))}
+      </ul>
     </div>
   );
 };
