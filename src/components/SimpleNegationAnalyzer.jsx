@@ -102,15 +102,23 @@ const SimpleNegationAnalyzer = () => {
           let classification;
           let proposedSentence = null;
 
+import { calculateNePosition, formatWithNe } from '../utils/nePositionCalculator';
+
+// ... rest of imports ...
+
           switch (analysisMode) {
             case 'RULE_BASED':
               formattedResult = formatRuleBasedResult(analysis);
               classification = await determineClassification(sentence, formattedResult);
               // Generate proposed sentence if expletive
-              if (classification === 'Expletive' && analysis.evidence?.nePosition !== null) {
-                const beforeNe = sentence.slice(0, analysis.evidence.nePosition);
-                const afterNe = sentence.slice(analysis.evidence.nePosition);
-                proposedSentence = `${beforeNe}ne ${afterNe}`;
+              if (classification === 'Expletive' && analysis.evidence?.trigger) {
+                const triggerInfo = {
+                  trigger: analysis.evidence.trigger,
+                  position: sentence.toLowerCase().indexOf(analysis.evidence.trigger.toLowerCase()),
+                  category: analysis.evidence.triggerType
+                };
+                const nePosition = calculateNePosition(sentence, triggerInfo, 'RULE_BASED');
+                proposedSentence = formatWithNe(sentence, nePosition);
               }
               break;
 
@@ -122,9 +130,7 @@ const SimpleNegationAnalyzer = () => {
               if (llmAnalysis.classification === 'EXPLETIVE' && llmAnalysis.nePosition) {
                 const nePos = sentence.indexOf(llmAnalysis.nePosition.replace('After ', ''));
                 if (nePos !== -1) {
-                  const beforeNe = sentence.slice(0, nePos);
-                  const afterNe = sentence.slice(nePos);
-                  proposedSentence = `${beforeNe}ne ${afterNe}`;
+                  proposedSentence = formatWithNe(sentence, nePos);
                 }
               }
               break;
@@ -155,10 +161,14 @@ const SimpleNegationAnalyzer = () => {
                 classification = displayType;
                 
                 // Generate proposed sentence if expletive
-                if (trainingAnalysis.classification === true && trainingAnalysis.nePosition !== null) {
-                  const beforeNe = sentence.slice(0, trainingAnalysis.nePosition);
-                  const afterNe = sentence.slice(trainingAnalysis.nePosition);
-                  proposedSentence = `${beforeNe}ne ${afterNe}`;
+                if (trainingAnalysis.classification === true && trainingAnalysis.context?.trigger) {
+                  const triggerInfo = {
+                    trigger: trainingAnalysis.context.trigger,
+                    position: sentence.toLowerCase().indexOf(trainingAnalysis.context.trigger.toLowerCase()),
+                    category: trainingAnalysis.context.triggerType
+                  };
+                  const nePosition = calculateNePosition(sentence, triggerInfo, mode);
+                  proposedSentence = formatWithNe(sentence, nePosition);
                 }
               } else {
                 formattedResult = formatRuleBasedResult(analysis);
