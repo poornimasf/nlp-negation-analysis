@@ -27,7 +27,7 @@ export const ModeSelector = ({ analysisMode, setAnalysisMode, setInfoBoxExpanded
       >
         <option value="TRAINING_DATA">Training Data Analysis</option>
         <option value="RULE_BASED">Rule-Based Analysis</option>
-        <option value="HYBRID">Hybrid Analysis</option>
+        <option value="HYBRID">CroissantLLM Analysis</option>
         <option value="SVM_ANALYSIS">SVM Analysis</option>
       </select>
       <button 
@@ -76,13 +76,13 @@ export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
         };
       case 'HYBRID':
         return {
-          title: 'Hybrid Analysis Mode',
-          description: 'Combines rule-based analysis with machine learning.',
+          title: 'CroissantLLM Analysis Mode',
+          description: 'Uses CroissantLLM, a specialized language model trained on French expletive negation patterns.',
           features: [
-            'Enhanced accuracy through combined approach',
-            'LLM-based classification',
-            'Pattern verification',
-            'Context-sensitive analysis'
+            'Advanced linguistic pattern recognition',
+            'Context-aware expletive detection',
+            'Precise ne placement suggestions',
+            'Detailed confidence scoring'
           ]
         };
       case 'SVM_ANALYSIS':

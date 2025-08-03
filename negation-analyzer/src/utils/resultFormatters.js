@@ -78,22 +78,41 @@ export const formatRuleBasedResult = (analysis) => {
 };
 
 export const formatHybridResult = (analysis, llmAnalysis) => {
-  const { type, confidence } = analysis;
+  const { confidence } = analysis;
   const confidencePercent = Math.round(confidence * 100);
   
-  let result = `${type} (${confidencePercent}% confidence)\n`;
-  result += `Combined analysis:\n`;
-  result += `- Rule-based: ${analysis.type}\n`;
-  result += `- LLM analysis: ${llmAnalysis.classification}\n`;
+  let result = `CroissantLLM Analysis (${confidencePercent}% confidence)\n\n`;
   
+  // Show LLM analysis details
+  result += `LLM Classification: ${llmAnalysis.classification}\n`;
+  
+  if (llmAnalysis.confidence) {
+    result += `Model Confidence: ${Math.round(llmAnalysis.confidence * 100)}%\n`;
+  }
+
+  if (llmAnalysis.trigger) {
+    result += `Detected Trigger: "${llmAnalysis.trigger}"\n`;
+  }
+
+  if (llmAnalysis.nePosition) {
+    result += `Suggested NE Position: ${llmAnalysis.nePosition}\n`;
+  }
+
   if (llmAnalysis.explanation) {
-    result += `\nLLM explanation:\n${llmAnalysis.explanation}\n`;
+    result += `\nLinguistic Analysis:\n${llmAnalysis.explanation}\n`;
+  }
+
+  if (llmAnalysis.patterns) {
+    result += '\nDetected Patterns:\n';
+    llmAnalysis.patterns.forEach(pattern => {
+      result += `- ${pattern}\n`;
+    });
   }
 
   // Show proposed sentence if available
   if (llmAnalysis.proposedSentence) {
-    result += `\nProposed sentence:\n"${llmAnalysis.proposedSentence}"\n`;
+    result += `\nProposed Sentence:\n"${llmAnalysis.proposedSentence}"\n`;
   }
-  
+
   return result;
 };
