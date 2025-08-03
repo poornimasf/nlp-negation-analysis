@@ -10,13 +10,6 @@ export const BatchAnalysis = ({
   handleBatchAnalyze,
   analysisMode
 }) => {
-  // Helper function to determine ne marker form
-  const getNEMarker = (text, position) => {
-    const afterPosition = text.slice(position).trim();
-    const nextWordStartsWithVowel = /^[aeiouéèêëàâîïôöûüùh]/i.test(afterPosition);
-    return nextWordStartsWithVowel ? "n'" : "ne ";
-  };
-
   return (
     <div className="card">
       <h3 className="title">Batch Analysis</h3>
@@ -134,9 +127,6 @@ export const BatchAnalysis = ({
                   <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
                     Prediction
                   </th>
-                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
-                    Proposed Sentence
-                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -182,62 +172,6 @@ export const BatchAnalysis = ({
                         }}>
                           {prediction}
                         </span>
-                      </td>
-                      <td style={{ padding: '12px' }}>
-                        {(() => {
-                          if (analysisMode === 'TRAINING_DATA' && prediction === 'Expletive') {
-                            // Extract recommended position from analysis
-                            const posMatch = result.label.match(/Recommendation: Add 'ne' marker at position (\d+)/i);
-                            if (posMatch) {
-                              const nePosition = parseInt(posMatch[1], 10);
-                              const neMarker = getNEMarker(result.text, nePosition);
-                              
-                              // Insert appropriate marker at the recommended position
-                              const beforeNe = result.text.slice(0, nePosition);
-                              const afterNe = result.text.slice(nePosition);
-                              const proposedText = `${beforeNe}${neMarker}${afterNe}`;
-                              
-                              return (
-                                <div style={{
-                                  backgroundColor: '#f8f9fa',
-                                  padding: '8px',
-                                  borderRadius: '4px',
-                                  border: '1px solid #e9ecef'
-                                }}>
-                                  <span dangerouslySetInnerHTML={{
-                                    __html: proposedText.replace(
-                                      /\b(ne |n')\b/g,
-                                      match => `<span style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500">${match}</span>`
-                                    )
-                                  }} />
-                                </div>
-                              );
-                            }
-                          } else if (analysisMode === 'HYBRID' ? 
-                            prediction.toLowerCase().includes('expletive') : 
-                            prediction === 'Expletive') {
-                            return result.proposedSentence ? (
-                              <div style={{
-                                backgroundColor: '#f8f9fa',
-                                padding: '8px',
-                                borderRadius: '4px',
-                                border: '1px solid #e9ecef'
-                              }}>
-                                <span dangerouslySetInnerHTML={{
-                                  __html: result.proposedSentence.replace(
-                                    /\b(ne |n')\b/g,
-                                    match => `<span style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500">${match}</span>`
-                                  )
-                                }} />
-                              </div>
-                            ) : null;
-                          }
-                          return (
-                            <span style={{ color: '#6c757d', fontStyle: 'italic' }}>
-                              No changes proposed
-                            </span>
-                          );
-                        })()}
                       </td>
                     </tr>
                   );
