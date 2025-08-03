@@ -25,6 +25,7 @@ const SimpleNegationAnalyzer = () => {
 
   // File upload handler
   const handleFileUpload = async (event) => {
+    event.preventDefault();
     const file = event.target.files[0];
     setUploadError(null);
 
@@ -36,7 +37,25 @@ const SimpleNegationAnalyzer = () => {
       reader.onload = async (e) => {
         try {
           const content = e.target.result;
-          const jsonData = JSON.parse(content);
+          let jsonData;
+
+          if (file.name.endsWith('.json')) {
+            jsonData = JSON.parse(content);
+          } else if (file.name.endsWith('.csv')) {
+            // Simple CSV parsing
+            const lines = content.split('\n').filter(line => line.trim());
+            const headers = lines[0].split(',');
+            jsonData = lines.slice(1).map(line => {
+              const values = line.split(',');
+              const obj = {};
+              headers.forEach((header, index) => {
+                obj[header.trim()] = values[index]?.trim() || '';
+              });
+              return obj;
+            });
+          } else {
+            throw new Error('Unsupported file format. Please use JSON or CSV files.');
+          }
           
           // Convert array to object if needed
           const processedData = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;

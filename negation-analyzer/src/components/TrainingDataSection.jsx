@@ -1,45 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './TrainingData.css';
 
 export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrainingData, uploadError }) => {
-  const [isDragging, setIsDragging] = useState(false);
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      processFile(file);
-    }
-  };
-
-  const handleFileSelect = (e) => {
-    e.preventDefault();
-    const file = e.target.files[0];
-    if (file) {
-      processFile(file);
-    }
-  };
-
-  const processFile = async (file) => {
-    // Reset file input
-    const fileInput = document.getElementById('file-upload');
-    if (fileInput) {
-      fileInput.value = '';
-    }
-
-    // Call parent handler
-    handleFileUpload({ target: { files: [file] } });
+  // Helper function to safely check classification
+  const isExpletiveClassification = (classification) => {
+    if (!classification || typeof classification !== 'string') return false;
+    const lowerClass = classification.toLowerCase();
+    return lowerClass.includes('with') || lowerClass.includes('expletive');
   };
 
   return (
@@ -48,12 +15,7 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
         <h3>Upload Training Data</h3>
         <p>Upload a CSV or JSON file with training examples to improve the model's accuracy.</p>
         
-        <div 
-          className={`upload-area ${isDragging ? 'dragging' : ''}`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
+        <div className="upload-area">
           <div className="upload-content">
             <div className="upload-icon">📄</div>
             <label htmlFor="file-upload" className="upload-label">
@@ -64,9 +26,9 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
               id="file-upload"
               type="file"
               accept=".csv,.json"
-              onChange={handleFileSelect}
+              onChange={handleFileUpload}
               className="file-input"
-              onClick={(e) => e.target.value = null}  // Reset file input on click
+              onClick={(e) => e.target.value = null}
             />
           </div>
           
@@ -79,7 +41,7 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
       </div>
 
       {/* Training Data Preview */}
-      {trainingData && trainingData.examples && trainingData.examples.length > 0 && (
+      {trainingData?.examples?.length > 0 && (
         <div className="training-preview">
           <h3>Training Data Preview</h3>
           <div className="training-table">
@@ -96,16 +58,21 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
                 {trainingData.examples.slice(0, 10).map((item, index) => (
                   <tr key={index}>
                     <td>{index + 1}</td>
-                    <td className="text-cell">{item.text}</td>
+                    <td className="text-cell">{item.text || 'N/A'}</td>
                     <td className="classification-cell">
-                      <span className={`classification-tag ${
-                        item.classification?.toLowerCase().includes('with') || 
-                        item.classification?.toLowerCase().includes('expletive') 
-                          ? 'with-negation' 
-                          : 'without-negation'
-                      }`}>
-                        {item.classification}
-                      </span>
+                      {item.classification ? (
+                        <span className={`classification-tag ${
+                          isExpletiveClassification(item.classification)
+                            ? 'with-negation' 
+                            : 'without-negation'
+                        }`}>
+                          {item.classification}
+                        </span>
+                      ) : (
+                        <span className="classification-tag without-negation">
+                          Unclassified
+                        </span>
+                      )}
                     </td>
                     <td>{item.language || 'French'}</td>
                   </tr>
@@ -123,7 +90,7 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
       )}
 
       {/* Training Stats */}
-      {trainingData && trainingData.examples && trainingData.examples.length > 0 && (
+      {trainingData?.examples?.length > 0 && (
         <div className="training-stats">
           <h3>Training Data Statistics</h3>
           <div className="stats-grid">
@@ -133,27 +100,20 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
             </div>
             <div className="stat-card">
               <div className="stat-number">
-                {trainingData.examples.filter(ex => 
-                  ex.classification?.toLowerCase().includes('with') || 
-                  ex.classification?.toLowerCase().includes('expletive')
-                ).length}
+                {trainingData.examples.filter(ex => isExpletiveClassification(ex.classification)).length}
               </div>
               <div className="stat-label">With Negation</div>
             </div>
             <div className="stat-card">
               <div className="stat-number">
-                {trainingData.examples.filter(ex => 
-                  !ex.classification?.toLowerCase().includes('with') && 
-                  !ex.classification?.toLowerCase().includes('expletive')
-                ).length}
+                {trainingData.examples.filter(ex => !isExpletiveClassification(ex.classification)).length}
               </div>
               <div className="stat-label">Without Negation</div>
             </div>
             <div className="stat-card">
               <div className="stat-number">
                 {Math.round((trainingData.examples.filter(ex => 
-                  ex.classification?.toLowerCase().includes('with') || 
-                  ex.classification?.toLowerCase().includes('expletive')
+                  isExpletiveClassification(ex.classification)
                 ).length / trainingData.examples.length) * 100)}%
               </div>
               <div className="stat-label">Negation Ratio</div>
@@ -163,7 +123,7 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
       )}
 
       {/* Clear Data Button */}
-      {trainingData && trainingData.examples && trainingData.examples.length > 0 && (
+      {trainingData?.examples?.length > 0 && (
         <div className="training-actions">
           <button onClick={clearTrainingData} className="clear-button">
             Clear Training Data
