@@ -38,7 +38,7 @@
   box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
 
-.info-icon {
+.info-button {
   padding: 8px;
   background: none;
   border: none;
@@ -46,11 +46,22 @@
   font-size: 20px;
   color: #6c757d;
   transition: color 0.15s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 50%;
 }
 
-.info-icon:hover {
+.info-button:hover {
   color: #495057;
-  background: none;
+  background-color: #e9ecef;
+}
+
+.info-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 0.2rem rgba(108,117,125,.25);
 }
 
 /* Info Box Styles */

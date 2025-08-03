@@ -18,10 +18,11 @@ export const ModeSelector = ({ analysisMode, setAnalysisMode, setInfoBoxExpanded
       </select>
       <button 
         onClick={() => setInfoBoxExpanded(true)}
-        className="info-icon"
+        className="info-button"
         aria-label="Show mode information"
+        type="button"
       >
-        ℹ️
+        <span role="img" aria-hidden="true">ℹ️</span>
       </button>
     </div>
   );
@@ -95,6 +96,7 @@ export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
           onClick={() => setExpanded(false)}
           className="close-button"
           aria-label="Close information"
+          type="button"
         >
           ×
         </button>

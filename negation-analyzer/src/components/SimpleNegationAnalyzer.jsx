@@ -249,6 +249,7 @@ const SimpleNegationAnalyzer = () => {
         <ModeSelector 
           analysisMode={analysisMode}
           setAnalysisMode={setAnalysisMode}
+          setInfoBoxExpanded={setInfoBoxExpanded}
         />
 
         <ModeInfoBox
