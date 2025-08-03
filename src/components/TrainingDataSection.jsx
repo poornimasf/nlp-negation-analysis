@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './TrainingData.css';
 
 export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrainingData, uploadError }) => {
+  const [showPreview, setShowPreview] = useState(true);
+
   // Helper function to safely check classification
   const isExpletiveClassification = (item) => {
     return item.has_expletive_ne === true || item.classification === true;
@@ -11,19 +13,19 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
     <div className="training-section">
       <div className="training-upload">
         <h3>Upload Training Data</h3>
-        <p>Upload a CSV or JSON file with training examples to improve the model's accuracy.</p>
+        <p>Upload a JSON file with training examples to improve the model's accuracy.</p>
         
         <div className="upload-area">
           <div className="upload-content">
             <div className="upload-icon">📄</div>
             <label htmlFor="file-upload" className="upload-label">
-              Choose File or Drag & Drop
+              Choose File
             </label>
-            <div className="upload-formats">Supported formats: CSV, JSON</div>
+            <div className="upload-formats">Supported format: JSON</div>
             <input
               id="file-upload"
               type="file"
-              accept=".csv,.json"
+              accept=".json"
               onChange={handleFileUpload}
               className="file-input"
               onClick={(e) => e.target.value = null}
@@ -38,8 +40,20 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
         </div>
       </div>
 
-      {/* Training Data Preview */}
+      {/* Preview Toggle */}
       {trainingData?.examples?.length > 0 && (
+        <div className="preview-toggle">
+          <button 
+            onClick={() => setShowPreview(!showPreview)}
+            className="toggle-button"
+          >
+            {showPreview ? 'Hide Preview' : 'Show Preview'}
+          </button>
+        </div>
+      )}
+
+      {/* Training Data Preview */}
+      {trainingData?.examples?.length > 0 && showPreview && (
         <div className="training-preview">
           <h3>Training Data Preview</h3>
           <div className="training-table">
@@ -88,7 +102,7 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
       )}
 
       {/* Training Stats */}
-      {trainingData?.examples?.length > 0 && (
+      {trainingData?.examples?.length > 0 && showPreview && (
         <div className="training-stats">
           <h3>Training Data Statistics</h3>
           <div className="stats-grid">
