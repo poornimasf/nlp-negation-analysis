@@ -110,23 +110,33 @@ Conclusion: [final EXPLETIVE or LOGICAL determination]`;
 // Trigger patterns that might allow expletive ne
 const TRIGGER_PATTERNS = {
   FEAR: [
-    /peur\s+qu[e']/i,
-    /craindre?\s+qu[e']/i,
-    /redouter?\s+qu[e']/i
+    /peur\s+qu(?:e|')/i,     // peur que, peur qu'
+    /craindre?\s+qu(?:e|')/i,  // craindre que, crains qu', craignent que
+    /redouter?\s+qu(?:e|')/i,  // redouter que, redoute qu'
+    /avoir\s+peur\s+qu(?:e|')/i,  // avoir peur que, ai peur qu', avait peur que
+    /a(?:i|s|vais|vait|vaient|yant)\s+peur\s+qu(?:e|')/i  // all conjugations of avoir peur que
   ],
   TEMPORAL: [
-    /avant\s+qu[e']/i
+    /avant\s+qu(?:e|')/i,    // avant que, avant qu'
+    /jusqu['']à\s+ce\s+qu(?:e|')/i  // jusqu'à ce que, jusqu'à ce qu'
   ],
   IMPERSONAL: [
-    /peu\s+s['']en\s+faut\s+qu[e']/i
+    /peu\s+s['']en\s+(?:faut|fallait|faudrait|faudra)\s+qu(?:e|')/i,  // all tenses of peu s'en faut
+    /il\s+s['']en\s+(?:faut|fallait|faudrait|faudra)\s+(?:de\s+)?peu\s+qu(?:e|')/i  // il s'en faut de peu que variations
   ],
   RELATIVE: [
     // Superlative constructions
-    /le\s+(?:meilleur|mieux)\s+qu[e']/i,
+    /le\s+(?:meilleur|mieux)\s+qu(?:e|')/i,
+    /la\s+(?:meilleure?)\s+qu(?:e|')/i,
+    /les\s+(?:meilleurs?|meilleures?)\s+qu(?:e|')/i,
     // Restrictive constructions
-    /le\s+(?:seul|unique)\s+qu[e']/i,
+    /le\s+(?:seul|unique)\s+qu(?:e|')/i,
+    /la\s+(?:seule|unique)\s+qu(?:e|')/i,
+    /les\s+(?:seuls|seules|uniques)\s+qu(?:e|')/i,
     // Ordinal constructions
-    /le\s+(?:premier|dernier)\s+qu[e']/i
+    /le\s+(?:premier|dernier)\s+qu(?:e|')/i,
+    /la\s+(?:première|dernière)\s+qu(?:e|')/i,
+    /les\s+(?:premiers|premières|derniers|dernières)\s+qu(?:e|')/i
   ]
 };
 
