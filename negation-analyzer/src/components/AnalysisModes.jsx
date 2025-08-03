@@ -5,7 +5,15 @@ import './TrainingData.css';
 export const ModeSelector = ({ analysisMode, setAnalysisMode, setInfoBoxExpanded }) => {
   const handleInfoClick = (e) => {
     e.preventDefault();
-    setInfoBoxExpanded(true);
+    if (isExpanded) {
+      setInfoBoxExpanded(false);
+    } else {
+      setInfoBoxExpanded(true);
+      // Auto-close after 5 seconds
+      setTimeout(() => {
+        setInfoBoxExpanded(false);
+      }, 5000);
+    }
   };
 
   const handleInfoDoubleClick = (e) => {

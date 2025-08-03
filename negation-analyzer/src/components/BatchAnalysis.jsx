@@ -1,5 +1,5 @@
 import React from 'react';
-import * as XLSX from 'xlsx';
+// Remove unused XLSX import
 
 export const BatchAnalysis = ({
   batchInput,
