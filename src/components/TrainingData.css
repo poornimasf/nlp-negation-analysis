@@ -141,9 +141,17 @@
   width: 180px;
 }
 
-.training-table td:last-child {  /* Language column */
+.training-table .trigger-cell {  /* Trigger column */
+  width: 120px;
+  color: #1565c0;
+}
+
+.training-table .position-cell {  /* NE Position column */
   width: 100px;
-  color: #6c757d;
+  text-align: center;
+  color: #1565c0;
+  font-family: monospace;
+  font-size: 14px;
 }
 
 /* Row hover effect */

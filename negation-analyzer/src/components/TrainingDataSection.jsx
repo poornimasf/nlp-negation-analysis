@@ -50,6 +50,7 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
                   <th>Text</th>
                   <th>Classification</th>
                   <th>Trigger</th>
+                  <th>NE Position</th>
                 </tr>
               </thead>
               <tbody>
@@ -68,6 +69,9 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
                     </td>
                     <td className="trigger-cell">
                       {item.trigger || 'N/A'}
+                    </td>
+                    <td className="position-cell">
+                      {item.ne_position !== null ? item.ne_position : 'N/A'}
                     </td>
                   </tr>
                 ))}
