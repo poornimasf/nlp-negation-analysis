@@ -1,10 +1,16 @@
 import React from 'react';
 import './NegationAnalyzer.css';
+import './TrainingData.css';
 
 export const ModeSelector = ({ analysisMode, setAnalysisMode, setInfoBoxExpanded }) => {
   const handleInfoClick = (e) => {
     e.preventDefault();
     setInfoBoxExpanded(true);
+  };
+
+  const handleInfoDoubleClick = (e) => {
+    e.preventDefault();
+    setInfoBoxExpanded(false);
   };
 
   return (
@@ -22,6 +28,7 @@ export const ModeSelector = ({ analysisMode, setAnalysisMode, setInfoBoxExpanded
       </select>
       <button 
         onClick={handleInfoClick}
+        onDoubleClick={handleInfoDoubleClick}
         className="info-button"
         aria-label="Show mode information"
         type="button"
