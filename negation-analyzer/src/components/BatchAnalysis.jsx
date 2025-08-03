@@ -190,7 +190,7 @@ export const BatchAnalysis = ({
                         {(() => {
                           if (analysisMode === 'TRAINING_DATA' && prediction === 'Expletive') {
                             // Extract recommended position from analysis
-                            const posMatch = result.label.match(/Recommended NE position: (\d+)/i);
+                            const posMatch = result.label.match(/Recommendation: Add 'ne' marker at position (\d+)/i);
                             if (posMatch) {
                               const nePosition = parseInt(posMatch[1], 10);
                               // Insert 'ne' at the recommended position
