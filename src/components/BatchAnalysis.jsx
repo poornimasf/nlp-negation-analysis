@@ -121,7 +121,14 @@ export const BatchAnalysis = ({
                       borderBottom: '1px solid #dee2e6'
                     }}>
                       <td style={{ padding: '12px', maxWidth: '200px' }}>
-                        {result.text}
+                        {result.text && result.label.match(/trigger: "(.*?)"/i) ? (
+                          <span dangerouslySetInnerHTML={{
+                            __html: result.text.replace(
+                              new RegExp(result.label.match(/trigger: "(.*?)"/i)[1], 'i'),
+                              match => `<span style="background-color: #e3f2fd; padding: 2px 4px; border-radius: 2px; color: #1565c0; font-weight: 500">${match}</span>`
+                            )
+                          }} />
+                        ) : result.text}
                       </td>
                       <td style={{ padding: '12px' }}>
                         <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{result.label}</pre>

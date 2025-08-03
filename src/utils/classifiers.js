@@ -292,8 +292,9 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
 
   // Generate detailed message
   const contextInfo = inputTrigger?.isRelative ? ' (relative clause)' : '';
+  const triggerInfo = inputTrigger ? `\nTrigger: "${inputTrigger.trigger}"` : '';
   const message = `Found ${similarExamples.length} similar example${similarExamples.length > 1 ? 's' : ''} ` +
-    `${contextInfo}. ${shouldHaveNe ? 'Ne marker would be appropriate' : 'Ne marker would not be appropriate'}`;
+    `${contextInfo}. ${shouldHaveNe ? 'Ne marker would be appropriate' : 'Ne marker would not be appropriate'}${triggerInfo}`;
 
   return {
     matches: similarExamples,
@@ -304,6 +305,7 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
     originalText: text,
     context: {
       triggerType: inputTrigger?.category || null,
+      trigger: inputTrigger?.trigger || null,
       quePosition
     }
   };
