@@ -1,24 +1,74 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './TrainingData.css';
 
 export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrainingData, uploadError }) => {
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  const handleFileSelect = (e) => {
+    e.preventDefault();
+    const file = e.target.files[0];
+    if (file) {
+      processFile(file);
+    }
+  };
+
+  const processFile = async (file) => {
+    // Reset file input
+    const fileInput = document.getElementById('file-upload');
+    if (fileInput) {
+      fileInput.value = '';
+    }
+
+    // Call parent handler
+    handleFileUpload({ target: { files: [file] } });
+  };
+
   return (
     <div className="training-section">
       <div className="training-upload">
         <h3>Upload Training Data</h3>
         <p>Upload a CSV or JSON file with training examples to improve the model's accuracy.</p>
         
-        <div className="upload-area">
-          <label htmlFor="file-upload" className="upload-label">
-            Choose File (CSV, JSON)
-          </label>
-          <input
-            id="file-upload"
-            type="file"
-            accept=".csv,.json,.xlsx,.xls"
-            onChange={handleFileUpload}
-            className="file-input"
-          />
+        <div 
+          className={`upload-area ${isDragging ? 'dragging' : ''}`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <div className="upload-content">
+            <div className="upload-icon">📄</div>
+            <label htmlFor="file-upload" className="upload-label">
+              Choose File or Drag & Drop
+            </label>
+            <div className="upload-formats">Supported formats: CSV, JSON</div>
+            <input
+              id="file-upload"
+              type="file"
+              accept=".csv,.json"
+              onChange={handleFileSelect}
+              className="file-input"
+              onClick={(e) => e.target.value = null}  // Reset file input on click
+            />
+          </div>
           
           {uploadError && (
             <div className="error-message">
