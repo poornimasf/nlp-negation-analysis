@@ -17,7 +17,15 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
     
     // Add ne marker recommendation
     if (type === 'Expletive' && evidence.nePosition !== null && evidence.nePosition >= 0) {
-      result += `- Recommendation: Add 'ne' marker at position ${evidence.nePosition}\n`;
+      // Check if the next word starts with a vowel or silent h
+      const textAfterPosition = analysis.text?.slice(evidence.nePosition)?.trim() || '';
+      const useApostrophe = /^[aeiouéèêëàâîïôöûüùh]/i.test(textAfterPosition);
+      const markerType = useApostrophe ? "n'" : "ne";
+      
+      result += `- Recommendation: Add '${markerType}' marker at position ${evidence.nePosition}\n`;
+      if (useApostrophe) {
+        result += `  (Using 'n'' form before vowel/silent h)\n`;
+      }
     } else {
       result += `- Recommendation: No 'ne' marker needed (position: null)\n`;
     }
