@@ -1,5 +1,5 @@
-import { classify } from '../classifiers';
-import testCases from './test_cases.json';
+const { classify } = require('../classifiers');
+const testCases = require('./test_cases.json');
 
 describe('French Negation Classifier', () => {
   const trainingData = testCases.examples;
