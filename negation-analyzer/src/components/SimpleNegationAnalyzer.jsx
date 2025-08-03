@@ -124,13 +124,13 @@ const SimpleNegationAnalyzer = () => {
                 // Map boolean classification to display format
                 const displayType = trainingAnalysis.classification === true ? 'Expletive' : 'No Expletive';
                 
-                // Create analysis object with display format
+                // Create analysis object with display format and trigger info
                 const analysisObj = {
                   type: displayType,
                   confidence: trainingAnalysis.confidence,
                   evidence: {
                     details: trainingAnalysis.message,
-                    trigger: trainingAnalysis.context?.triggerType || null,
+                    trigger: trainingAnalysis.context?.trigger || null,
                     hasSubjunctive: trainingAnalysis.context?.hasSubjunctive || false,
                     nePosition: trainingAnalysis.nePosition
                   }

@@ -1,3 +1,44 @@
+export const formatTrainingResult = (analysis, trainingAnalysis) => {
+  const { type, confidence, evidence } = analysis;
+  const confidencePercent = Math.round(confidence * 100);
+  
+  let result = `${type} (${confidencePercent}% confidence)\n`;
+  result += `Based on training data analysis:\n`;
+  
+  if (trainingAnalysis.matches && trainingAnalysis.matches.length > 0) {
+    result += `- Found ${trainingAnalysis.matches.length} similar examples\n`;
+    result += `- Best match confidence: ${Math.round(trainingAnalysis.confidence * 100)}%\n`;
+    
+    // Add trigger information
+    if (evidence.trigger) {
+      result += `- Trigger: "${evidence.trigger}"\n`;
+    }
+    
+    // Add ne marker recommendation
+    if (type === 'Expletive') {
+      result += `- Recommendation: Add 'ne' marker`;
+      if (evidence.nePosition !== null) {
+        result += ` at position ${evidence.nePosition}`;
+      }
+      result += '\n';
+    } else {
+      result += `- Recommendation: No 'ne' marker needed\n`;
+    }
+    
+    // Add best match example
+    const bestMatch = trainingAnalysis.matches[0];
+    result += `\nBest matching example:\n`;
+    result += `"${bestMatch.text}"\n`;
+    result += `- Classification: ${bestMatch.has_expletive_ne ? 'Uses ne' : 'No ne'}\n`;
+    result += `- Similarity: ${Math.round(bestMatch.similarity * 100)}%\n`;
+  } else {
+    result += `- No close matches in training data\n`;
+    result += `- Defaulting to no 'ne' marker\n`;
+  }
+  
+  return result;
+};
+
 export const formatRuleBasedResult = (analysis) => {
   const { type, confidence, evidence } = analysis;
   
@@ -12,8 +53,8 @@ export const formatRuleBasedResult = (analysis) => {
     result += `\nEvidence:\n`;
     result += `- ${evidence.details}\n`;
     
-    if (evidence.triggers) {
-      result += `- Found triggers: ${JSON.stringify(evidence.triggers)}\n`;
+    if (evidence.trigger) {
+      result += `- Found trigger: "${evidence.trigger}"\n`;
     }
     
     if (evidence.hasSubjunctive) {
@@ -23,23 +64,11 @@ export const formatRuleBasedResult = (analysis) => {
     if (evidence.hasOptionalNe) {
       result += `- Contains optional 'ne'\n`;
     }
-  }
-  
-  return result;
-};
 
-export const formatTrainingResult = (analysis, trainingAnalysis) => {
-  const { type, confidence } = analysis;
-  const confidencePercent = Math.round(confidence * 100);
-  
-  let result = `${type} (${confidencePercent}% confidence)\n`;
-  result += `Based on training data analysis:\n`;
-  
-  if (trainingAnalysis.matches && trainingAnalysis.matches.length > 0) {
-    result += `- Found ${trainingAnalysis.matches.length} similar examples\n`;
-    result += `- Best match confidence: ${Math.round(trainingAnalysis.confidence * 100)}%\n`;
-  } else {
-    result += `- No close matches in training data\n`;
+    // Show proposed sentence if available
+    if (evidence.proposedSentence) {
+      result += `\nProposed sentence:\n"${evidence.proposedSentence}"\n`;
+    }
   }
   
   return result;
@@ -56,6 +85,11 @@ export const formatHybridResult = (analysis, llmAnalysis) => {
   
   if (llmAnalysis.explanation) {
     result += `\nLLM explanation:\n${llmAnalysis.explanation}\n`;
+  }
+
+  // Show proposed sentence if available
+  if (llmAnalysis.proposedSentence) {
+    result += `\nProposed sentence:\n"${llmAnalysis.proposedSentence}"\n`;
   }
   
   return result;
