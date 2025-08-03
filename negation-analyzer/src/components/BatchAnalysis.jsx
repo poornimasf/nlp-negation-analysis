@@ -148,7 +148,7 @@ export const BatchAnalysis = ({
                         </span>
                       </td>
                       <td style={{ padding: '12px' }}>
-                        {prediction === 'Expletive' && result.proposedSentence ? (
+                        {(prediction === 'Expletive' || result.classification === 'Expletive') && result.proposedSentence ? (
                           <div style={{
                             backgroundColor: '#f8f9fa',
                             padding: '8px',

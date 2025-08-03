@@ -181,6 +181,11 @@ import { calculateNePosition, formatWithNe } from '../utils/nePositionCalculator
               classification = await determineClassification(sentence, formattedResult);
           }
 
+          // Add debug logging
+          console.log('Analysis Mode:', analysisMode);
+          console.log('Classification:', classification);
+          console.log('Proposed Sentence:', proposedSentence);
+
           results.push({
             id: index + 1,
             text: sentence,
