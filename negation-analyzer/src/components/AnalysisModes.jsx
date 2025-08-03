@@ -2,6 +2,11 @@ import React from 'react';
 import './NegationAnalyzer.css';
 
 export const ModeSelector = ({ analysisMode, setAnalysisMode, setInfoBoxExpanded }) => {
+  const handleInfoClick = (e) => {
+    e.preventDefault();
+    setInfoBoxExpanded(true);
+  };
+
   return (
     <div className="mode-selector">
       <label htmlFor="analysis-mode">Analysis Mode:</label>
@@ -9,7 +14,6 @@ export const ModeSelector = ({ analysisMode, setAnalysisMode, setInfoBoxExpanded
         id="analysis-mode"
         value={analysisMode}
         onChange={(e) => setAnalysisMode(e.target.value)}
-        className="select"
       >
         <option value="TRAINING_DATA">Training Data Analysis</option>
         <option value="RULE_BASED">Rule-Based Analysis</option>
@@ -17,12 +21,12 @@ export const ModeSelector = ({ analysisMode, setAnalysisMode, setInfoBoxExpanded
         <option value="SVM_ANALYSIS">SVM Analysis</option>
       </select>
       <button 
-        onClick={() => setInfoBoxExpanded(true)}
+        onClick={handleInfoClick}
         className="info-button"
         aria-label="Show mode information"
         type="button"
       >
-        <span role="img" aria-hidden="true">ℹ️</span>
+        ℹ️
       </button>
     </div>
   );
@@ -30,6 +34,11 @@ export const ModeSelector = ({ analysisMode, setAnalysisMode, setInfoBoxExpanded
 
 export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
   if (!isExpanded) return null;
+
+  const handleClose = (e) => {
+    e.preventDefault();
+    setExpanded(false);
+  };
 
   const getModeInfo = () => {
     switch (mode) {
@@ -93,7 +102,7 @@ export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
       <div className="info-header">
         <h4>{info.title}</h4>
         <button 
-          onClick={() => setExpanded(false)}
+          onClick={handleClose}
           className="close-button"
           aria-label="Close information"
           type="button"
