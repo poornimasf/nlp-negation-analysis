@@ -114,15 +114,21 @@ const TRIGGER_PATTERNS = {
     /craindre?\s+qu(?:e|')/i,  // craindre que, crains qu', craignent que
     /redouter?\s+qu(?:e|')/i,  // redouter que, redoute qu'
     /avoir\s+peur\s+qu(?:e|')/i,  // avoir peur que, ai peur qu', avait peur que
-    /a(?:i|s|vais|vait|vaient|yant)\s+peur\s+qu(?:e|')/i  // all conjugations of avoir peur que
+    // All tenses of avoir + peur
+    /(?:a|ai|as|avais|avait|avaient|aurai|auras|aurait|aurais|auraient|ayant|auront|aura)\s+peur\s+qu(?:e|')/i
   ],
   TEMPORAL: [
-    /avant\s+qu(?:e|')/i,    // avant que, avant qu'
+    /avant\s+(?:que\s+de\s+|qu(?:e|'))/i,    // avant que, avant qu', avant que de
     /jusqu['']à\s+ce\s+qu(?:e|')/i  // jusqu'à ce que, jusqu'à ce qu'
   ],
   IMPERSONAL: [
-    /peu\s+s['']en\s+(?:faut|fallait|faudrait|faudra)\s+qu(?:e|')/i,  // all tenses of peu s'en faut
-    /il\s+s['']en\s+(?:faut|fallait|faudrait|faudra)\s+(?:de\s+)?peu\s+qu(?:e|')/i  // il s'en faut de peu que variations
+    // Present, imperfect, conditional, future tenses
+    /peu\s+s['']en\s+(?:faut|fallait|faudrait|faudra)\s+qu(?:e|')/i,
+    // All variations of "il s'en faut/fallait/etc. de peu que"
+    /il\s+s['']en\s+(?:faut|fallait|faudrait|faudra|est\s+fallu)\s+(?:de\s+)?peu\s+qu(?:e|')/i,
+    // Past tense variations
+    /il\s+s['']en\s+est\s+fallu\s+(?:de\s+)?peu\s+qu(?:e|')/i,
+    /peu\s+s['']en\s+est\s+fallu\s+qu(?:e|')/i
   ],
   RELATIVE: [
     // Superlative constructions
