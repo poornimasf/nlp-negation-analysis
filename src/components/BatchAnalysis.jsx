@@ -1,5 +1,5 @@
 import React from 'react';
-// Remove unused XLSX import
+import { exportToXLSX } from '../utils/exportUtils';
 
 export const BatchAnalysis = ({
   batchInput,
@@ -80,8 +80,32 @@ export const BatchAnalysis = ({
       {/* Results section */}
       {batchResults.length > 0 && !batchLoading && (
         <div className="result-section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-            <h3>Results ({batchResults.length} sentences):</h3>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            marginBottom: '15px',
+            padding: '0 10px'
+          }}>
+            <h3>Results ({batchResults.length} sentences)</h3>
+            <button
+              onClick={() => exportToXLSX(batchResults, analysisMode)}
+              className="download-button"
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#28a745',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontSize: '14px'
+              }}
+            >
+              <span>📥</span> Download XLSX
+            </button>
           </div>
 
           <div style={{ overflowX: 'auto' }}>
@@ -147,7 +171,7 @@ export const BatchAnalysis = ({
                         </span>
                       </td>
                       <td style={{ padding: '12px' }}>
-                        {(prediction === 'Expletive' || result.classification === 'Expletive') && result.proposedSentence ? (
+                        {prediction === 'Expletive' && result.proposedSentence ? (
                           <div style={{
                             backgroundColor: '#f8f9fa',
                             padding: '8px',
