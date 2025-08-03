@@ -134,9 +134,15 @@ export const BatchAnalysis = ({
               </thead>
               <tbody>
                 {batchResults.map((result, index) => {
-                  // Extract classification from analysis
-                  const predictionMatch = result.label.match(/^(Expletive|No Expletive)/);
-                  const prediction = predictionMatch ? predictionMatch[1] : 'Uncertain';
+                  // Extract classification from analysis based on mode
+                  let prediction;
+                  if (analysisMode === 'HYBRID') { // CroissantLLM
+                    const llmMatch = result.label.match(/LLM Classification: (.*?)(?:\n|$)/);
+                    prediction = llmMatch ? llmMatch[1].trim() : 'Uncertain';
+                  } else {
+                    const predictionMatch = result.label.match(/^(Expletive|No Expletive)/);
+                    prediction = predictionMatch ? predictionMatch[1] : 'Uncertain';
+                  }
                   
                   return (
                     <tr key={result.id} style={{
@@ -161,17 +167,19 @@ export const BatchAnalysis = ({
                           padding: '4px 8px',
                           borderRadius: '4px',
                           fontSize: '0.9em',
-                          backgroundColor: prediction === 'Expletive' ? '#e3f2fd' : '#f5f5f5',
-                          color: prediction === 'Expletive' ? '#1565c0' : '#757575',
+                          backgroundColor: prediction.toLowerCase().includes('expletive') ? '#e3f2fd' : '#f5f5f5',
+                          color: prediction.toLowerCase().includes('expletive') ? '#1565c0' : '#757575',
                           border: `1px solid ${
-                            prediction === 'Expletive' ? '#bbdefb' : '#eeeeee'
+                            prediction.toLowerCase().includes('expletive') ? '#bbdefb' : '#eeeeee'
                           }`
                         }}>
                           {prediction}
                         </span>
                       </td>
                       <td style={{ padding: '12px' }}>
-                        {prediction === 'Expletive' && result.proposedSentence ? (
+                        {(analysisMode === 'HYBRID' ? 
+                          prediction.toLowerCase().includes('expletive') : 
+                          prediction === 'Expletive') && result.proposedSentence ? (
                           <div style={{
                             backgroundColor: '#f8f9fa',
                             padding: '8px',
