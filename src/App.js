@@ -1,11 +1,11 @@
 import React from 'react';
 import './App.css';
-import EnhancedNegationAnalyzer from './components/EnhancedNegationAnalyzer';
+import SimpleNegationAnalyzer from './components/SimpleNegationAnalyzer';
 
 function App() {
   return (
     <div className="App">
-      <EnhancedNegationAnalyzer />
+      <SimpleNegationAnalyzer />
     </div>
   );
 }
