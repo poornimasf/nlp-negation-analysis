@@ -16,13 +16,9 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
     
     // Add ne marker recommendation
     if (type === 'Expletive') {
-      result += `- Recommendation: Add 'ne' marker`;
-      if (evidence.nePosition !== null) {
-        result += ` at position ${evidence.nePosition}`;
-      }
-      result += '\n';
+      result += `- Recommendation: Add 'ne' marker at position ${evidence.nePosition || 'null'}\n`;
     } else {
-      result += `- Recommendation: No 'ne' marker needed\n`;
+      result += `- Recommendation: No 'ne' marker needed (position: null)\n`;
     }
     
     // Add best match example with clearer labeling
