@@ -3,10 +3,8 @@ import './TrainingData.css';
 
 export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrainingData, uploadError }) => {
   // Helper function to safely check classification
-  const isExpletiveClassification = (classification) => {
-    if (!classification || typeof classification !== 'string') return false;
-    const lowerClass = classification.toLowerCase();
-    return lowerClass.includes('with') || lowerClass.includes('expletive');
+  const isExpletiveClassification = (item) => {
+    return item.has_expletive_ne === true || item.classification === true;
   };
 
   return (
@@ -51,7 +49,7 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
                   <th>ID</th>
                   <th>Text</th>
                   <th>Classification</th>
-                  <th>Language</th>
+                  <th>Trigger</th>
                 </tr>
               </thead>
               <tbody>
@@ -60,21 +58,17 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
                     <td>{index + 1}</td>
                     <td className="text-cell">{item.text || 'N/A'}</td>
                     <td className="classification-cell">
-                      {item.classification ? (
-                        <span className={`classification-tag ${
-                          isExpletiveClassification(item.classification)
-                            ? 'with-negation' 
-                            : 'without-negation'
-                        }`}>
-                          {item.classification}
-                        </span>
-                      ) : (
-                        <span className="classification-tag without-negation">
-                          Unclassified
-                        </span>
-                      )}
+                      <span className={`classification-tag ${
+                        isExpletiveClassification(item)
+                          ? 'with-negation' 
+                          : 'without-negation'
+                      }`}>
+                        {isExpletiveClassification(item) ? 'Expletive' : 'No Expletive'}
+                      </span>
                     </td>
-                    <td>{item.language || 'French'}</td>
+                    <td className="trigger-cell">
+                      {item.trigger || 'N/A'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -100,20 +94,20 @@ export const TrainingDataSection = ({ trainingData, handleFileUpload, clearTrain
             </div>
             <div className="stat-card">
               <div className="stat-number">
-                {trainingData.examples.filter(ex => isExpletiveClassification(ex.classification)).length}
+                {trainingData.examples.filter(ex => isExpletiveClassification(ex)).length}
               </div>
               <div className="stat-label">With Negation</div>
             </div>
             <div className="stat-card">
               <div className="stat-number">
-                {trainingData.examples.filter(ex => !isExpletiveClassification(ex.classification)).length}
+                {trainingData.examples.filter(ex => !isExpletiveClassification(ex)).length}
               </div>
               <div className="stat-label">Without Negation</div>
             </div>
             <div className="stat-card">
               <div className="stat-number">
                 {Math.round((trainingData.examples.filter(ex => 
-                  isExpletiveClassification(ex.classification)
+                  isExpletiveClassification(ex)
                 ).length / trainingData.examples.length) * 100)}%
               </div>
               <div className="stat-label">Negation Ratio</div>

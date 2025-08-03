@@ -40,32 +40,58 @@ const SimpleNegationAnalyzer = () => {
           let jsonData;
 
           if (file.name.endsWith('.json')) {
-            jsonData = JSON.parse(content);
+            const rawData = JSON.parse(content);
+            // Check if it's an array of objects with the expected structure
+            if (Array.isArray(rawData) && rawData.length > 0 && 
+                rawData[0].hasOwnProperty('text') && 
+                (rawData[0].hasOwnProperty('has_expletive_ne') || 
+                 rawData[0].hasOwnProperty('classification'))) {
+              jsonData = { examples: rawData };
+            } else {
+              throw new Error('Invalid JSON structure. Expected array of objects with text and classification fields.');
+            }
           } else if (file.name.endsWith('.csv')) {
             // Simple CSV parsing
             const lines = content.split('\n').filter(line => line.trim());
-            const headers = lines[0].split(',');
-            jsonData = lines.slice(1).map(line => {
+            const headers = lines[0].toLowerCase().split(',');
+            const requiredFields = ['text'];
+            const missingFields = requiredFields.filter(field => !headers.includes(field));
+            
+            if (missingFields.length > 0) {
+              throw new Error(`Missing required fields in CSV: ${missingFields.join(', ')}`);
+            }
+
+            const examples = lines.slice(1).map(line => {
               const values = line.split(',');
-              const obj = {};
+              const obj = {
+                text: '',
+                has_expletive_ne: false,
+                classification: false,
+                trigger: '',
+                ne_position: null
+              };
+              
               headers.forEach((header, index) => {
-                obj[header.trim()] = values[index]?.trim() || '';
+                const value = values[index]?.trim();
+                if (header === 'text') {
+                  obj.text = value || '';
+                } else if (header === 'has_expletive_ne' || header === 'classification') {
+                  obj[header] = value?.toLowerCase() === 'true';
+                } else if (header === 'trigger') {
+                  obj.trigger = value || '';
+                } else if (header === 'ne_position') {
+                  obj.ne_position = value ? parseFloat(value) : null;
+                }
               });
               return obj;
             });
+            
+            jsonData = { examples };
           } else {
             throw new Error('Unsupported file format. Please use JSON or CSV files.');
           }
           
-          // Convert array to object if needed
-          const processedData = Array.isArray(jsonData) ? { examples: jsonData } : jsonData;
-          
-          // Validate structure
-          if (!processedData || !processedData.examples || !Array.isArray(processedData.examples)) {
-            throw new Error('Invalid data structure. Expected { examples: [...] }');
-          }
-          
-          setTrainingData(processedData);
+          setTrainingData(jsonData);
           setUseTrainingEnhancement(true);
         } catch (err) {
           console.error('Error processing file:', err);
