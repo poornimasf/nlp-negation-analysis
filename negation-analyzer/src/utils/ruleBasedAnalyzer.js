@@ -4,30 +4,25 @@
  */
 
 // Core patterns
-const AVANT_QUE_PATTERN = {
-    pattern: /\b(?:avant\s+(?:que|qu['']))\b/i,
-    name: 'avant que'
-};
-
-// Main clause patterns
-const MAIN_CLAUSE_PATTERNS = {
-    // Basic verbs
-    BASIC_VERBS: {
-        ETRE: /\b(?:suis|es|est|sommes|êtes|sont)\b/i,
-        AVOIR: /\b(?:ai|as|a|avons|avez|ont)\b/i
+const TRIGGER_PATTERNS = {
+    // Triggers that can take expletive ne (but don't always require it)
+    AVANT_QUE: {
+        pattern: /\b(?:avant\s+(?:que|qu['']))\b/i,
+        name: 'avant que',
+        requiresSubjunctive: true,
+        allowsExpletive: true  // Can have expletive ne but not required
     },
-    // Action verbs suggesting intentional action
-    ACTION_VERBS: /\b(?:faire|agir|intervenir|préparer|commencer|finir|partir|arriver|venir)\b/i,
-    // Modal verbs indicating necessity/intention
-    MODAL_VERBS: /\b(?:dois|doit|devons|devez|doivent|veux|veut|voulons|voulez|veulent|peux|peut|pouvons|pouvez|peuvent)\b/i,
-    // Temporal markers
-    TEMPORAL_MARKERS: /\b(?:maintenant|bientôt|rapidement|vite|tout\s+de\s+suite|immédiatement|déjà)\b/i,
-    // Tenses
-    TENSES: {
-        PRESENT: /\b(?:suis|es|est|sommes|êtes|sont|ai|as|a|avons|avez|ont|fais|fait|faisons|faites|font)\b/i,
-        FUTURE: /\b(?:serai|seras|sera|serons|serez|seront|aurai|auras|aura|aurons|aurez|auront)\b/i,
-        PAST: /\b(?:étais|était|étions|étiez|étaient|avais|avait|avions|aviez|avaient)\b/i,
-        CONDITIONAL: /\b(?:serais|serait|serions|seriez|seraient|aurais|aurait|aurions|auriez|auraient)\b/i
+    PEUR_QUE: {
+        pattern: /\b(?:peur\s+(?:que|qu['']))\b/i,
+        name: 'peur que',
+        requiresSubjunctive: true,
+        allowsExpletive: true
+    },
+    PEU_SEN_FAUT: {
+        pattern: /\b(?:peu\s+s['']en\s+faut)\b/i,
+        name: 'peu s\'en faut',
+        requiresSubjunctive: true,
+        allowsExpletive: true
     }
 };
 
@@ -89,42 +84,8 @@ const checkSubjunctiveForm = (verb) => {
 };
 
 /**
- * Analyze main clause structure
- * @param {string} text - Text before avant que
- * @returns {Object} - Main clause analysis
- */
-const analyzeMainClause = (text) => {
-    // Basic SVO pattern check
-    const hasSVO = /\b(?:\w+\s+){0,2}(?:suis|es|est|sommes|êtes|sont|ai|as|a|avons|avez|ont)\b.*?\b\w+\b/i.test(text);
-    
-    // Check for temporal markers
-    const hasTemporalMarker = MAIN_CLAUSE_PATTERNS.TEMPORAL_MARKERS.test(text);
-    
-    // Check for action verbs
-    const hasActionVerb = MAIN_CLAUSE_PATTERNS.ACTION_VERBS.test(text);
-    
-    // Check for modal verbs
-    const hasModal = MAIN_CLAUSE_PATTERNS.MODAL_VERBS.test(text);
-    
-    // Analyze tense
-    const tenses = Object.entries(MAIN_CLAUSE_PATTERNS.TENSES).reduce((acc, [tense, pattern]) => {
-        acc[tense] = pattern.test(text);
-        return acc;
-    }, {});
-
-    return {
-        hasSVO,
-        hasTemporalMarker,
-        hasActionVerb,
-        hasModal,
-        tenses,
-        isComplete: hasSVO || (hasActionVerb && text.split(/\s+/).length > 2)
-    };
-};
-
-/**
  * Analyze complement clause structure
- * @param {string} text - Text after avant que
+ * @param {string} text - Text after trigger
  * @returns {Object} - Complement clause analysis
  */
 const analyzeComplementClause = (text) => {
@@ -165,156 +126,78 @@ const analyzeComplementClause = (text) => {
 };
 
 /**
- * Analyze relationship between clauses
- * @param {Object} mainClause - Main clause analysis
- * @param {Object} complementClause - Complement clause analysis
- * @returns {Object} - Relationship analysis
- */
-const analyzeClauseRelationship = (mainClause, complementClause) => {
-    return {
-        // Check temporal sequence
-        hasProperSequence: mainClause.hasActionVerb && complementClause.hasSubjunctive,
-        
-        // Check for logical connection
-        hasLogicalConnection: mainClause.hasTemporalMarker || mainClause.hasModal,
-        
-        // Check for proper subordination
-        hasProperSubordination: mainClause.hasSVO && complementClause.properQueUsage,
-        
-        // Check for balanced structure
-        hasBalancedStructure: !(/\b(?:que|qu[''])\b/i.test(mainClause)) && 
-            complementClause.hasSubjectAfterQue
-    };
-};
-
-/**
- * Analyze position for ne/n'
- * @param {Object} complementClause - Complement clause analysis
- * @returns {Object|null} - Position analysis
- */
-const analyzeNePosition = (complementClause) => {
-    if (!complementClause.verbInfo) return null;
-
-    const words = complementClause.text.split(/\s+/);
-    const verbIndex = words.findIndex(word => 
-        word.toLowerCase() === complementClause.verbInfo.verb.toLowerCase()
-    );
-
-    if (verbIndex === -1) return null;
-
-    // Find subject (typically right after que/qu')
-    const subjectMatch = complementClause.text.match(/\b(?:que|qu[''])\s+(\w+)\b/i);
-    
-    return {
-        subjectPosition: subjectMatch ? 
-            complementClause.text.slice(0, subjectMatch.index).split(/\s+/).length : null,
-        verbPosition: verbIndex,
-        recommendedPosition: verbIndex - 1,
-        isValidPosition: verbIndex > 0
-    };
-};
-
-/**
- * Calculate structural score
- * @param {Object} analysis - Complete structural analysis
- * @returns {number} - Score between 0 and 1
- */
-const calculateStructuralScore = (analysis) => {
-    let score = 0;
-    const weights = {
-        mainClause: 0.3,
-        complementClause: 0.4,
-        relationship: 0.2,
-        position: 0.1
-    };
-
-    // Main clause structure (max 0.3)
-    if (analysis.mainClause.hasSVO) score += weights.mainClause * 0.5;
-    if (analysis.mainClause.hasActionVerb || analysis.mainClause.hasModal) {
-        score += weights.mainClause * 0.5;
-    }
-
-    // Complement clause structure (max 0.4)
-    if (analysis.complementClause.properQueUsage) score += weights.complementClause * 0.3;
-    if (analysis.complementClause.hasSubjunctive) score += weights.complementClause * 0.4;
-    if (analysis.complementClause.hasCompleteVerbalStructure) {
-        score += weights.complementClause * 0.3;
-    }
-
-    // Relationship between clauses (max 0.2)
-    if (analysis.relationship.hasProperSequence) score += weights.relationship * 0.5;
-    if (analysis.relationship.hasProperSubordination) score += weights.relationship * 0.5;
-
-    // Position analysis (max 0.1)
-    if (analysis.position?.isValidPosition) score += weights.position;
-
-    return score;
-};
-
-/**
  * Main analysis function
  * @param {string} text - Text to analyze
  * @returns {Object} - Complete analysis
  */
 export const analyzeText = (text) => {
-    const match = text.match(AVANT_QUE_PATTERN.pattern);
-    if (!match) {
+    // Check for triggers that allow expletive ne
+    let foundTrigger = null;
+    let triggerMatch = null;
+
+    for (const [key, config] of Object.entries(TRIGGER_PATTERNS)) {
+        const match = text.match(config.pattern);
+        if (match) {
+            foundTrigger = config;
+            triggerMatch = match;
+            break;
+        }
+    }
+
+    if (!foundTrigger) {
         return {
             type: 'No Expletive',
-            confidence: 0.90,
+            confidence: 0.95,
             evidence: {
-                details: 'No avant que/avant qu\' found',
+                details: 'No trigger that allows expletive ne found',
                 recommendNe: false
             }
         };
     }
 
-    // Split text at avant que
-    const triggerIndex = match.index;
-    const beforeTrigger = text.slice(0, triggerIndex).trim();
-    const afterTrigger = text.slice(triggerIndex + match[0].length).trim();
+    // Split text at trigger
+    const triggerIndex = triggerMatch.index;
+    const afterTrigger = text.slice(triggerIndex + triggerMatch[0].length).trim();
 
-    // Perform structural analysis
-    const mainClause = analyzeMainClause(beforeTrigger);
+    // Analyze complement clause
     const complementClause = analyzeComplementClause(afterTrigger);
-    const relationship = analyzeClauseRelationship(mainClause, complementClause);
-    const position = analyzeNePosition(complementClause);
-
-    // Calculate structural score
-    const structuralScore = calculateStructuralScore({
-        mainClause,
-        complementClause,
-        relationship,
-        position
-    });
 
     // Build evidence points
     const evidencePoints = [];
-    if (mainClause.isComplete) evidencePoints.push('Complete main clause');
-    if (mainClause.hasActionVerb) evidencePoints.push('Action verb in main clause');
-    if (mainClause.hasTemporalMarker) evidencePoints.push('Temporal marker present');
-    if (complementClause.hasSubjunctive) {
-        evidencePoints.push(`Subjunctive verb found: ${complementClause.verbInfo.verb}`);
-        if (complementClause.verbInfo.isSpecificMatch) {
-            evidencePoints.push(`Specific subjunctive form matched: ${complementClause.verbInfo.type}`);
+    evidencePoints.push(`Found trigger "${foundTrigger.name}" that allows expletive ne`);
+
+    if (foundTrigger.requiresSubjunctive) {
+        if (complementClause.hasSubjunctive) {
+            evidencePoints.push(`Required subjunctive found: "${complementClause.verbInfo.verb}"`);
+            if (complementClause.verbInfo.isSpecificMatch) {
+                evidencePoints.push(`Specific subjunctive form matched: ${complementClause.verbInfo.type}`);
+            }
+        } else {
+            evidencePoints.push('Required subjunctive not found - expletive ne not possible');
+            return {
+                type: 'No Expletive',
+                confidence: 0.90,
+                evidence: {
+                    trigger: foundTrigger.name,
+                    details: evidencePoints.join('; '),
+                    hasSubjunctive: false,
+                    complementClause
+                }
+            };
         }
     }
-    if (relationship.hasProperSequence) evidencePoints.push('Proper temporal sequence');
-    if (position?.isValidPosition) evidencePoints.push('Valid ne position found');
 
+    // Even with subjunctive and trigger, expletive ne is optional
     return {
         type: 'Expletive',
-        confidence: Math.min(structuralScore, 0.95),
+        confidence: 0.85, // Lower confidence since it's optional
         evidence: {
-            trigger: AVANT_QUE_PATTERN.name,
+            trigger: foundTrigger.name,
             hasSubjunctive: complementClause.hasSubjunctive,
             details: evidencePoints.join('; '),
-            structuralScore,
-            mainClause,
             complementClause,
-            relationship,
-            position,
-            nePosition: position?.recommendedPosition || null
+            nePosition: complementClause.verbInfo ? complementClause.verbInfo.position : null,
+            note: 'Expletive ne is allowed but optional with this trigger'
         }
     };
 };
