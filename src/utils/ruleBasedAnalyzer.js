@@ -6,7 +6,7 @@
 const TRIGGER_PATTERNS = {
   AVANT_QUE: {
     pattern: /\bavant\s+(?:que|qu[''])/i,
-    confidence: 0.95,  // High confidence due to strong correlation
+    confidence: 0.85, // Standard confidence - can be either expletive or non-expletive
     requiresSubjunctive: true,
     name: 'avant que'
   },
@@ -82,44 +82,15 @@ const findVerb = (clause) => {
  * @returns {Object} - Analysis result
  */
 export const analyzeText = (text) => {
-  // Check for avant que pattern first
-  const avantQueMatch = text.match(TRIGGER_PATTERNS.AVANT_QUE.pattern);
-  if (avantQueMatch) {
-    const clauseAnalysis = analyzeComplementClause(text, 'avant que');
-    if (clauseAnalysis?.hasClause) {
-      const verbInfo = findVerb(clauseAnalysis.clause);
-      
-      // For avant que, strongly recommend ne if there's a complement clause
-      const confidence = clauseAnalysis.hasSubjunctive ? 0.95 : 0.85;
-      const details = clauseAnalysis.hasSubjunctive ?
-        'Found "avant que" with subjunctive complement clause - strongly indicates expletive ne' :
-        'Found "avant que" with complement clause - likely indicates expletive ne';
-
-      return {
-        type: 'Expletive',
-        confidence,
-        evidence: {
-          trigger: 'avant que',
-          hasSubjunctive: clauseAnalysis.hasSubjunctive,
-          details,
-          verbInfo,
-          clausePosition: clauseAnalysis.position,
-          recommendNe: true,
-          nePosition: verbInfo ? clauseAnalysis.position + verbInfo.position : null
-        }
-      };
-    }
-  }
-
-  // Check other triggers if avant que not found
+  // Check all triggers with equal priority
   for (const [key, config] of Object.entries(TRIGGER_PATTERNS)) {
-    if (key === 'AVANT_QUE') continue; // Already checked
-
     const match = text.match(config.pattern);
     if (match) {
       const clauseAnalysis = analyzeComplementClause(text, config.name);
       if (clauseAnalysis?.hasClause) {
         const verbInfo = findVerb(clauseAnalysis.clause);
+        
+        // Base confidence on presence of subjunctive, not on trigger type
         const confidence = clauseAnalysis.hasSubjunctive ? config.confidence : config.confidence * 0.8;
 
         return {
