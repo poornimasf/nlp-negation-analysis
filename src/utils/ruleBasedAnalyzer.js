@@ -31,22 +31,61 @@ const MAIN_CLAUSE_PATTERNS = {
     }
 };
 
-// Subjunctive patterns for complement clause
+// Subjunctive patterns with comprehensive verb coverage
 const SUBJUNCTIVE_PATTERNS = {
+    // Basic verbs
     ETRE: /\b(?:sois|soit|soyons|soyez|soient)\b/i,
     AVOIR: /\b(?:aie|ait|ayons|ayez|aient)\b/i,
     FAIRE: /\b(?:fasse|fasses|fassions|fassiez|fassent)\b/i,
     ALLER: /\b(?:aille|ailles|allions|alliez|aillent)\b/i,
     VENIR: /\b(?:vienne|viennes|venions|veniez|viennent)\b/i,
+    
+    // Modal verbs
     POUVOIR: /\b(?:puisse|puisses|puissions|puissiez|puissent)\b/i,
     DEVOIR: /\b(?:doive|doives|devions|deviez|doivent)\b/i,
+    VOULOIR: /\b(?:veuille|veuilles|voulions|vouliez|veuillent)\b/i,
+    
+    // Common verbs
     SAVOIR: /\b(?:sache|saches|sachions|sachiez|sachent)\b/i,
     PRENDRE: /\b(?:prenne|prennes|prenions|preniez|prennent)\b/i,
     METTRE: /\b(?:mette|mettes|mettions|mettiez|mettent)\b/i,
     DIRE: /\b(?:dise|dises|disions|disiez|disent)\b/i,
     VOIR: /\b(?:voie|voies|voyions|voyiez|voient)\b/i,
     FINIR: /\b(?:finisse|finisses|finissions|finissiez|finissent)\b/i,
-    PARTIR: /\b(?:parte|partes|partions|partiez|partent)\b/i
+    PARTIR: /\b(?:parte|partes|partions|partiez|partent)\b/i,
+    
+    // Reflexive verbs (including s'/se forms)
+    ACCROCHER: /\b(?:s['']|se\s+)?(?:accroche|accroches|accrochions|accrochiez|accrochent)\b/i,
+    ATTENDRE: /\b(?:s['']|se\s+)?(?:attende|attendes|attendions|attendiez|attendent)\b/i,
+    OCCUPER: /\b(?:s['']|se\s+)?(?:occupe|occupes|occupions|occupiez|occupent)\b/i,
+    INQUIETER: /\b(?:s['']|se\s+)?(?:inquiète|inquiètes|inquiétions|inquiétiez|inquiètent)\b/i,
+    LEVER: /\b(?:s['']|se\s+)?(?:lève|lèves|levions|leviez|lèvent)\b/i,
+    ASSEOIR: /\b(?:s['']|se\s+)?(?:asseye|asseyes|asseyions|asseyiez|asseyent|assoie|assoies|assoyions|assoyiez|assoient)\b/i,
+    TENIR: /\b(?:s['']|se\s+)?(?:tienne|tiennes|tenions|teniez|tiennent)\b/i,
+    
+    // Generic patterns for regular verbs
+    ER_VERBS: /\b(?:s['']|se\s+)?(?:\w+e|\w+es|\w+ions|\w+iez|\w+ent)\b/i,
+    IR_VERBS: /\b(?:s['']|se\s+)?(?:\w+isse|\w+isses|\w+issions|\w+issiez|\w+issent)\b/i,
+    RE_VERBS: /\b(?:s['']|se\s+)?(?:\w+e|\w+es|\w+ions|\w+iez|\w+ent)\b/i
+};
+
+/**
+ * Check if a verb form matches subjunctive patterns
+ * @param {string} verb - Verb to check
+ * @returns {Object|null} - Match information if found
+ */
+const checkSubjunctiveForm = (verb) => {
+    // First check specific verb patterns
+    for (const [type, pattern] of Object.entries(SUBJUNCTIVE_PATTERNS)) {
+        if (pattern.test(verb)) {
+            return {
+                type,
+                pattern,
+                isSpecificMatch: type !== 'ER_VERBS' && type !== 'IR_VERBS' && type !== 'RE_VERBS'
+            };
+        }
+    }
+    return null;
 };
 
 /**
@@ -95,16 +134,17 @@ const analyzeComplementClause = (text) => {
     // Check for subject after que/qu'
     const hasSubjectAfterQue = /\b(?:que|qu[''])(?:\s+\w+){1,2}\b/i.test(text);
     
-    // Find subjunctive verb
+    // Find potential verb forms
+    const words = text.split(/\s+/);
     let verbInfo = null;
-    for (const [verb, pattern] of Object.entries(SUBJUNCTIVE_PATTERNS)) {
-        const match = text.match(pattern);
-        if (match) {
+    
+    for (const word of words) {
+        const subjunctiveMatch = checkSubjunctiveForm(word);
+        if (subjunctiveMatch) {
             verbInfo = {
-                verb: match[0],
-                type: verb,
-                position: match.index,
-                pattern: pattern.toString()
+                verb: word,
+                ...subjunctiveMatch,
+                position: text.indexOf(word)
             };
             break;
         }
@@ -253,7 +293,12 @@ export const analyzeText = (text) => {
     if (mainClause.isComplete) evidencePoints.push('Complete main clause');
     if (mainClause.hasActionVerb) evidencePoints.push('Action verb in main clause');
     if (mainClause.hasTemporalMarker) evidencePoints.push('Temporal marker present');
-    if (complementClause.hasSubjunctive) evidencePoints.push('Subjunctive in complement');
+    if (complementClause.hasSubjunctive) {
+        evidencePoints.push(`Subjunctive verb found: ${complementClause.verbInfo.verb}`);
+        if (complementClause.verbInfo.isSpecificMatch) {
+            evidencePoints.push(`Specific subjunctive form matched: ${complementClause.verbInfo.type}`);
+        }
+    }
     if (relationship.hasProperSequence) evidencePoints.push('Proper temporal sequence');
     if (position?.isValidPosition) evidencePoints.push('Valid ne position found');
 
