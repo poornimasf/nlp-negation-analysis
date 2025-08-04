@@ -24,8 +24,16 @@ const validateExample = (example) => {
   }
   
   // NE position validation
-  if (example.has_expletive_ne === true && typeof example.ne_position !== 'number') {
-    errors.push('ne_position required when has_expletive_ne is true');
+  if (example.has_expletive_ne === true) {
+    if (typeof example.ne_position !== 'number') {
+      errors.push('ne_position required when has_expletive_ne is true');
+    } else {
+      // Validate that ne_position is a valid word index
+      const wordCount = example.text.trim().split(/\s+/).length;
+      if (example.ne_position < 0 || example.ne_position >= wordCount) {
+        errors.push(`ne_position (${example.ne_position}) must be a valid word index (0 to ${wordCount - 1})`);
+      }
+    }
   }
   if (example.has_expletive_ne === false && example.ne_position !== null) {
     errors.push('ne_position must be null when has_expletive_ne is false');
@@ -38,107 +46,42 @@ const validateExample = (example) => {
 };
 
 /**
- * Parse and validate training data
- * @param {Object} data - Raw training data
- * @returns {Object} - Parsed and validated data with statistics
+ * Convert text position to word index
+ * @param {string} text - The full text
+ * @param {number} charPosition - Character position in the text
+ * @returns {number} - Word index at that position
  */
-export const parseTrainingData = (data) => {
-  if (!data || !Array.isArray(data.examples)) {
-    throw new Error('Invalid training data format');
-  }
-  
-  const validationResults = data.examples.map((example, index) => ({
-    index,
-    ...validateExample(example)
-  }));
-  
-  const invalidExamples = validationResults.filter(r => !r.isValid);
-  if (invalidExamples.length > 0) {
-    throw new Error(
-      'Invalid examples found:\n' +
-      invalidExamples.map(e => 
-        `Example ${e.index}: ${e.errors.join(', ')}`
-      ).join('\n')
-    );
-  }
-  
-  return {
-    examples: data.examples,
-    stats: analyzeTrainingData(data.examples)
-  };
-};
-
-/**
- * Analyze training data for patterns and statistics
- * @param {Array} examples - Validated training examples
- * @returns {Object} - Analysis statistics
- */
-const analyzeTrainingData = (examples) => {
-  const stats = {
-    total: examples.length,
-    expletive: {
-      total: 0,
-      withNe: 0,
-      withoutNe: 0,
-      byTrigger: {}
-    },
-    nonExpletive: 0
-  };
-  
-  // Initialize trigger stats
-  VALID_TRIGGERS.forEach(trigger => {
-    stats.expletive.byTrigger[trigger] = {
-      total: 0,
-      withNe: 0,
-      withoutNe: 0,
-      nePositions: []
-    };
-  });
-  
-  // Analyze examples
-  examples.forEach(example => {
-    if (example.classification) {
-      stats.expletive.total++;
-      if (example.has_expletive_ne) {
-        stats.expletive.withNe++;
-      } else {
-        stats.expletive.withoutNe++;
-      }
-      
-      // Track trigger statistics
-      const triggerStats = stats.expletive.byTrigger[example.trigger];
-      triggerStats.total++;
-      if (example.has_expletive_ne) {
-        triggerStats.withNe++;
-        triggerStats.nePositions.push(example.ne_position);
-      } else {
-        triggerStats.withoutNe++;
-      }
-    } else {
-      stats.nonExpletive++;
-    }
-  });
-  
-  return stats;
+const charPositionToWordIndex = (text, charPosition) => {
+  const beforePosition = text.slice(0, charPosition);
+  return beforePosition.trim().split(/\s+/).length - 1;
 };
 
 /**
  * Find NE position relative to trigger
  * @param {string} text - The sentence text
  * @param {string} trigger - The trigger phrase
- * @param {number} absoluteNePosition - The absolute position of ne in the text
+ * @param {number} neWordIndex - The word index where ne appears (0-based)
  * @returns {boolean} - Whether the ne appears after the trigger
  */
-const isNeAfterTrigger = (text, trigger, absoluteNePosition) => {
-  const triggerIndex = text.toLowerCase().indexOf(trigger.toLowerCase());
-  return triggerIndex >= 0 && absoluteNePosition > triggerIndex + trigger.length;
+const isNeAfterTrigger = (text, trigger, neWordIndex) => {
+  const words = text.toLowerCase().split(/\s+/);
+  const triggerWords = trigger.toLowerCase().split(/\s+/);
+  
+  // Find trigger's last word position
+  for (let i = 0; i <= words.length - triggerWords.length; i++) {
+    if (triggerWords.every((word, j) => words[i + j].includes(word))) {
+      const triggerLastWordIndex = i + triggerWords.length - 1;
+      return neWordIndex > triggerLastWordIndex;
+    }
+  }
+  return false;
 };
 
 /**
  * Find most common NE position for a trigger
  * @param {Array} examples - Training examples
  * @param {string} trigger - The trigger to analyze
- * @returns {number|null} - Most common NE position or null
+ * @returns {Object|null} - Position information or null
  */
 export const findCommonNePosition = (examples, trigger) => {
   // Only consider examples where ne appears after the trigger
@@ -153,31 +96,39 @@ export const findCommonNePosition = (examples, trigger) => {
   // Count position frequencies
   const positionCounts = {};
   relevantExamples.forEach(ex => {
-    positionCounts[ex.ne_position] = (positionCounts[ex.ne_position] || 0) + 1;
+    // Store both position and the word that follows ne
+    const words = ex.text.split(/\s+/);
+    const followingWord = words[ex.ne_position + 1] || '';
+    
+    if (!positionCounts[ex.ne_position]) {
+      positionCounts[ex.ne_position] = {
+        count: 0,
+        examples: [],
+        followingWords: new Set()
+      };
+    }
+    positionCounts[ex.ne_position].count++;
+    positionCounts[ex.ne_position].examples.push(ex.text);
+    positionCounts[ex.ne_position].followingWords.add(followingWord.toLowerCase());
   });
   
   // Find most common position
-  return Number(
-    Object.entries(positionCounts)
-      .sort(([,a], [,b]) => b - a)[0][0]
-  );
-};
-
-/**
- * Get training examples for a specific trigger
- * @param {Array} examples - Training examples
- * @param {string} trigger - The trigger to find examples for
- * @returns {Array} - Matching examples
- */
-export const getExamplesForTrigger = (examples, trigger) => {
-  return examples.filter(ex => ex.trigger === trigger);
+  const [position, stats] = Object.entries(positionCounts)
+    .sort(([,a], [,b]) => b.count - a.count)[0];
+    
+  return {
+    position: Number(position),
+    frequency: stats.count / relevantExamples.length,
+    examples: stats.examples.slice(0, 3),
+    followingWords: Array.from(stats.followingWords)
+  };
 };
 
 /**
  * Check if a sentence matches training data patterns
  * @param {string} text - The sentence to analyze
  * @param {Array} examples - Training examples
- * @returns {Object} - Analysis result
+ * @returns {Object} - Analysis result with word-based positions
  */
 export const analyzeSentence = (text, examples) => {
   // Find matching trigger
@@ -186,16 +137,17 @@ export const analyzeSentence = (text, examples) => {
     return {
       classification: false,
       trigger: null,
-      suggestedNePosition: null
+      suggestedPosition: null
     };
   }
   
   // Get suggested NE position from training data
-  const suggestedNePosition = findCommonNePosition(examples, trigger);
+  const positionInfo = findCommonNePosition(examples, trigger);
   
   return {
     classification: true,
     trigger,
-    suggestedNePosition
+    suggestedPosition: positionInfo?.position ?? null,
+    positionInfo
   };
 };
