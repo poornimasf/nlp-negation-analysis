@@ -1,129 +1,150 @@
 /**
- * Patterns that can trigger expletive negation
+ * Rule-based analyzer for French expletive negation
  */
-const EXPLETIVE_TRIGGERS = {
-  FEAR: [
-    'peur que',
-    'avoir peur que',
-    'craindre que',
-    'redouter que',
-    'de peur que',
-    'par peur que'
-  ],
-  TEMPORAL: [
-    'avant que',
-    'en attendant que',
-    "jusqu'à ce que"
-  ],
-  IMPERSONAL: [
-    "peu s'en faut que",
-    "il s'en faut que",
-    "il s'en faut de peu que"
-  ]
-};
 
-/**
- * Find trigger pattern in text
- */
-const findTrigger = (text) => {
-  const lowerText = text.toLowerCase();
-  
-  for (const category of Object.values(EXPLETIVE_TRIGGERS)) {
-    for (const pattern of category) {
-      if (lowerText.includes(pattern)) {
-        return pattern;
-      }
-    }
+// Trigger patterns with confidence levels
+const TRIGGER_PATTERNS = {
+  AVANT_QUE: {
+    pattern: /\bavant\s+(?:que|qu[''])/i,
+    confidence: 0.95,  // High confidence due to strong correlation
+    requiresSubjunctive: true,
+    name: 'avant que'
+  },
+  PEUR_QUE: {
+    pattern: /\bpeur\s+(?:que|qu[''])/i,
+    confidence: 0.85,
+    requiresSubjunctive: true,
+    name: 'peur que'
+  },
+  PEU_SEN_FAUT: {
+    pattern: /\bpeu\s+s['']en\s+faut/i,
+    confidence: 0.80,
+    requiresSubjunctive: true,
+    name: 'peu s\'en faut'
   }
-  
-  return null;
 };
 
-/**
- * Find position of 'ne' in text
- */
-const findNePosition = (text) => {
-  const words = text
-    .replace(/(['''])/g, " $1 ")
-    .split(/\s+/)
-    .filter(word => word.length > 0);
-    
-  const neIndex = words.findIndex(word => 
-    word === 'ne' || 
-    word === "n'" || 
-    word === "n'" || 
-    word === "n'");
-    
-  return neIndex >= 0 ? neIndex + 1 : null;
-};
+// Subjunctive verb patterns
+const SUBJUNCTIVE_PATTERNS = [
+  /\b(?:soit|sois|soyons|soyez|soient)\b/i,
+  /\b(?:ait|aie|ayons|ayez|aient)\b/i,
+  /\b(?:fasse|fasses|fassions|fassiez|fassent)\b/i,
+  /\b(?:aille|ailles|allions|alliez|aillent)\b/i,
+  /\b(?:vienne|viennes|venions|veniez|viennent)\b/i,
+  /\b(?:puisse|puisses|puissions|puissiez|puissent)\b/i,
+  // Add more subjunctive forms as needed
+];
 
 /**
- * Analyze a sentence for expletive negation
+ * Check for complement clause after trigger
+ * @param {string} text - Full text
+ * @param {string} trigger - Trigger phrase found
+ * @returns {Object} - Clause analysis result
  */
-export const analyzeSentence = (text) => {
-  // Find trigger pattern
-  const trigger = findTrigger(text);
-  
-  // If no trigger, it's not an expletive context
-  if (!trigger) {
-    return {
-      classification: false, // not expletive
-      trigger: null,
-      hasNe: false,
-      nePosition: null,
-      confidence: 1.0
-    };
-  }
+const analyzeComplementClause = (text, trigger) => {
+  const triggerIndex = text.toLowerCase().indexOf(trigger.toLowerCase());
+  if (triggerIndex === -1) return null;
 
-  // Find 'ne' position
-  const nePosition = findNePosition(text);
-  
-  // Calculate confidence based on trigger and context
-  let confidence = 0.8; // Base confidence with trigger
-  
-  // Return analysis
+  const afterTrigger = text.slice(triggerIndex + trigger.length).trim();
+  const hasClause = /\b\w+\b.*\b\w+\b/i.test(afterTrigger); // At least two words
+  const hasSubjunctive = SUBJUNCTIVE_PATTERNS.some(pattern => pattern.test(afterTrigger));
+
   return {
-    classification: true, // expletive possible
-    trigger,
-    hasNe: nePosition !== null,
-    nePosition,
-    confidence
+    hasClause,
+    hasSubjunctive,
+    clause: afterTrigger,
+    position: triggerIndex + trigger.length
   };
 };
 
 /**
- * Get suggested NE position for a sentence
+ * Find verb in complement clause
+ * @param {string} clause - The complement clause text
+ * @returns {Object|null} - Verb information if found
  */
-export const suggestNePosition = (text, trigger) => {
-  if (!trigger) return null;
-  
-  const words = text
-    .replace(/(['''])/g, " $1 ")
-    .split(/\s+/)
-    .filter(word => word.length > 0);
-    
-  // Find trigger position
-  const triggerStart = words
-    .findIndex(word => trigger.startsWith(word.toLowerCase()));
-    
-  if (triggerStart < 0) return null;
-  
-  // NE typically comes 2-3 words after the trigger
-  const suggestedPos = triggerStart + 2;
-  
-  return suggestedPos < words.length ? suggestedPos + 1 : null;
+const findVerb = (clause) => {
+  for (const pattern of SUBJUNCTIVE_PATTERNS) {
+    const match = clause.match(pattern);
+    if (match) {
+      return {
+        verb: match[0],
+        position: match.index,
+        isSubjunctive: true
+      };
+    }
+  }
+  return null;
 };
 
 /**
- * Format analysis results for display
+ * Analyze text for expletive negation using rule-based approach
+ * @param {string} text - Text to analyze
+ * @returns {Object} - Analysis result
  */
-export const formatAnalysis = (analysis) => {
+export const analyzeText = (text) => {
+  // Check for avant que pattern first
+  const avantQueMatch = text.match(TRIGGER_PATTERNS.AVANT_QUE.pattern);
+  if (avantQueMatch) {
+    const clauseAnalysis = analyzeComplementClause(text, 'avant que');
+    if (clauseAnalysis?.hasClause) {
+      const verbInfo = findVerb(clauseAnalysis.clause);
+      
+      // For avant que, strongly recommend ne if there's a complement clause
+      const confidence = clauseAnalysis.hasSubjunctive ? 0.95 : 0.85;
+      const details = clauseAnalysis.hasSubjunctive ?
+        'Found "avant que" with subjunctive complement clause - strongly indicates expletive ne' :
+        'Found "avant que" with complement clause - likely indicates expletive ne';
+
+      return {
+        type: 'Expletive',
+        confidence,
+        evidence: {
+          trigger: 'avant que',
+          hasSubjunctive: clauseAnalysis.hasSubjunctive,
+          details,
+          verbInfo,
+          clausePosition: clauseAnalysis.position,
+          recommendNe: true,
+          nePosition: verbInfo ? clauseAnalysis.position + verbInfo.position : null
+        }
+      };
+    }
+  }
+
+  // Check other triggers if avant que not found
+  for (const [key, config] of Object.entries(TRIGGER_PATTERNS)) {
+    if (key === 'AVANT_QUE') continue; // Already checked
+
+    const match = text.match(config.pattern);
+    if (match) {
+      const clauseAnalysis = analyzeComplementClause(text, config.name);
+      if (clauseAnalysis?.hasClause) {
+        const verbInfo = findVerb(clauseAnalysis.clause);
+        const confidence = clauseAnalysis.hasSubjunctive ? config.confidence : config.confidence * 0.8;
+
+        return {
+          type: 'Expletive',
+          confidence,
+          evidence: {
+            trigger: config.name,
+            hasSubjunctive: clauseAnalysis.hasSubjunctive,
+            details: `Found "${config.name}" with ${clauseAnalysis.hasSubjunctive ? 'subjunctive' : ''} complement clause`,
+            verbInfo,
+            clausePosition: clauseAnalysis.position,
+            recommendNe: clauseAnalysis.hasSubjunctive,
+            nePosition: verbInfo ? clauseAnalysis.position + verbInfo.position : null
+          }
+        };
+      }
+    }
+  }
+
   return {
-    classification: analysis.classification,
-    type: analysis.classification ? 'Expletive Possible' : 'Not Expletive',
-    trigger: analysis.trigger || 'None',
-    hasNe: analysis.hasNe ? 'Yes' : 'No',
-    nePosition: analysis.nePosition || 'N/A',
-    confidence: `${Math.round(analysis.confidence * 100)}%`
+    type: 'No Expletive',
+    confidence: 0.90,
+    evidence: {
+      details: 'No valid trigger patterns found',
+      recommendNe: false
+    }
   };
 };
