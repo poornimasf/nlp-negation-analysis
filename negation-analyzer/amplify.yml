@@ -4,16 +4,14 @@ applications:
       phases:
         preBuild:
           commands:
-            - cd negation-analyzer
-            - rm -rf node_modules package-lock.json
-            - npm install --no-package-lock
+            - npm ci
         build:
           commands:
             - npm run build
       artifacts:
-        baseDirectory: negation-analyzer/build
+        baseDirectory: build
         files:
           - '**/*'
       cache:
         paths:
-          - negation-analyzer/node_modules/**/*
+          - node_modules/**/*
