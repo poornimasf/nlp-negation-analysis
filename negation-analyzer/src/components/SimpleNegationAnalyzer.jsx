@@ -182,11 +182,11 @@ const SimpleNegationAnalyzer = () => {
                     classification: trainingAnalysis.classification ? 'Expletive' : 'No Expletive',
                     confidence: trainingAnalysis.confidence,
                     analysis: {
-                        trigger: trainingAnalysis.context?.trigger ? {
-                            trigger: trainingAnalysis.context.trigger,
-                            category: trainingAnalysis.context.category,
-                            subcategory: trainingAnalysis.context.subcategory,
-                            context: sentence
+                        trigger: trainingAnalysis.analysis?.trigger ? {
+                            trigger: trainingAnalysis.analysis.trigger.trigger,
+                            category: trainingAnalysis.analysis.trigger.category,
+                            subcategory: trainingAnalysis.analysis.trigger.subcategory,
+                            context: trainingAnalysis.analysis.trigger.context
                         } : null,
                         trainingData: {
                             similarExamples: trainingAnalysis.matches || []

@@ -352,7 +352,15 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
       trigger: inputTrigger?.trigger || null,
       quePosition
     },
-    weightedVotes  // Include the weighted votes in the result
+    analysis: {
+      trigger: {
+        trigger: inputTrigger?.trigger || null,
+        category: inputTrigger?.category || null,
+        subcategory: inputTrigger?.subcategory || null,
+        context: text
+      }
+    },
+    weightedVotes
   };
 };
 
