@@ -1,155 +1,72 @@
-export const formatTrainingResult = (analysis, trainingAnalysis) => {
-    const { type, confidence, evidence } = analysis;
-    const confidencePercent = Math.round(confidence * 100);
+/**
+ * Format training data analysis results with comprehensive information
+ */
+export const formatTrainingResult = (analysis) => {
+    let result = 'Training Data Analysis\n';
+    result += '-----------------\n\n';
     
-    let result = `${type} (${confidencePercent}% confidence)\n`;
-    result += `Based on training data analysis:\n`;
+    // Classification and Confidence
+    result += `Classification: ${analysis.classification}\n`;
+    result += `Confidence: ${Math.round(analysis.confidence * 100)}%\n\n`;
     
-    if (trainingAnalysis.matches && trainingAnalysis.matches.length > 0) {
-        result += `- Found ${trainingAnalysis.matches.length} similar examples\n`;
-        result += `- Best match confidence: ${Math.round(trainingAnalysis.confidence * 100)}%\n`;
-        
-        // Add trigger information
-        if (evidence.trigger) {
-            result += `- Trigger: "${evidence.trigger}"\n`;
+    // Context Analysis
+    result += 'Context Analysis:\n';
+    if (analysis.analysis.context) {
+        const ctx = analysis.analysis.context;
+        if (ctx.precedingSentence) {
+            result += `- Previous: "${ctx.precedingSentence}"\n`;
         }
-        
-        // Add marker recommendation only if we have a position
-        if (evidence.nePosition !== null && evidence.markerForm) {
-            result += `- Recommendation: Add '${evidence.markerForm}' before subjunctive verb "${evidence.verb}"\n`;
-            result += `  • ${evidence.positionReason}\n`;
-            if (evidence.markerForm === "n'") {
-                result += `  • Using 'n'' form because verb starts with vowel/silent h\n`;
-            }
-            result += `  • Verb "${evidence.verb}" is in subjunctive form\n`;
+        result += `- Current: "${ctx.currentSentence}"\n`;
+        if (ctx.followingSentence) {
+            result += `- Following: "${ctx.followingSentence}"\n`;
         }
-        
-        // Add best match example with detailed comparison
-        result += `\nMost similar training example:\n`;
-        result += `"${trainingAnalysis.matches[0].text}"\n`;
-        result += `- Similarity breakdown:\n`;
-        result += `  • Overall match: ${Math.round(trainingAnalysis.confidence * 100)}%\n`;
-        if (evidence.similarity?.structural) {
-            result += `  • Structure match: ${Math.round(evidence.similarity.structural * 100)}%\n`;
-        }
-        if (evidence.similarity?.context) {
-            result += `  • Context match: ${Math.round(evidence.similarity.context * 100)}%\n`;
-        }
-        
-        // Add alternative matches if available
-        if (trainingAnalysis.matches.length > 1) {
-            result += `\nOther relevant examples:\n`;
-            trainingAnalysis.matches.slice(1, 3).forEach((match, idx) => {
-                result += `${idx + 2}. "${match.text}"\n`;
-            });
-        }
+    }
+    
+    // Trigger Analysis
+    result += '\nTrigger Analysis:\n';
+    if (analysis.analysis.trigger) {
+        const trigger = analysis.analysis.trigger;
+        result += `- Found: "${trigger.trigger}"\n`;
+        result += `- Category: ${trigger.category}\n`;
+        result += `- Context: "${trigger.context}"\n`;
     } else {
-        result += `- No close matches in training data\n`;
+        result += '- No trigger found\n';
     }
     
-    return result;
-};
-
-export const formatRuleBasedResult = (analysis) => {
-    const { type, confidence, evidence } = analysis;
-    const confidencePercent = Math.round(confidence * 100);
+    // Structure Analysis
+    result += '\nStructure Analysis:\n';
+    if (analysis.analysis.structure) {
+        const structure = analysis.analysis.structure;
+        result += `- Before trigger: "${structure.precedingContext}"\n`;
+        result += `- After trigger: "${structure.followingContext}"\n`;
+    }
     
-    // Ensure type is properly formatted for prediction extraction
-    const formattedType = type === 'Expletive' ? 'Expletive' : 'No Expletive';
-    let result = `${formattedType} (${confidencePercent}% confidence)\n`;
-    
-    if (evidence) {
-        result += `\nEvidence:\n`;
-        
-        // Add structural score if available
-        if (evidence.structuralScore !== undefined) {
-            result += `- Structural analysis score: ${Math.round(evidence.structuralScore * 100)}%\n`;
-        }
-        
-        // Add detailed evidence points
-        if (evidence.details) {
-            const points = evidence.details.split('; ');
-            points.forEach(point => {
-                result += `- ${point}\n`;
-            });
-        }
-        
-        if (evidence.trigger) {
-            result += `- Found trigger: "${evidence.trigger}"\n`;
-        }
-        
-        // Add subjunctive information
-        if (evidence.hasSubjunctive) {
-            result += `- Contains subjunctive mood\n`;
-            if (evidence.complementClause?.verbInfo) {
-                const verbInfo = evidence.complementClause.verbInfo;
-                result += `  • Subjunctive verb: "${verbInfo.verb}"\n`;
-                if (verbInfo.isSpecificMatch) {
-                    result += `  • Specific form: ${verbInfo.type}\n`;
-                }
+    // Training Data Matches
+    if (analysis.analysis.trainingData.similarExamples.length > 0) {
+        result += '\nSimilar Examples:\n';
+        analysis.analysis.trainingData.similarExamples.forEach((example, idx) => {
+            result += `${idx + 1}. "${example.text}"\n`;
+            result += `   - Similarity: ${Math.round(example.similarity * 100)}%\n`;
+            if (example.trigger) {
+                result += `   - Trigger: "${example.trigger}"\n`;
             }
-        }
-        
-        // Add clause structure information
-        if (evidence.mainClause?.isComplete) {
-            result += `- Complete main clause structure\n`;
-        }
-        if (evidence.relationship?.hasProperSequence) {
-            result += `- Proper temporal sequence\n`;
-        }
-        
-        // Add ne position information if available
-        if (evidence.nePosition !== null) {
-            result += `\nRecommended ne position:\n`;
-            result += `- Word position: ${evidence.nePosition}\n`;
-            if (evidence.position?.isValidPosition) {
-                result += `- Valid position between subject and verb\n`;
-            }
-        }
-
-        // Add proposed sentence if available
-        if (evidence.proposedSentence) {
-            result += `\nProposed sentence:\n"${evidence.proposedSentence}"\n`;
-        }
-    }
-    
-    return result;
-};
-
-export const formatHybridResult = (analysis, llmAnalysis) => {
-    const { confidence } = analysis;
-    const confidencePercent = Math.round(confidence * 100);
-    
-    let result = `CroissantLLM Analysis (${confidencePercent}% confidence)\n\n`;
-    
-    result += `LLM Classification: ${llmAnalysis.classification}\n`;
-    
-    if (llmAnalysis.confidence) {
-        result += `Model Confidence: ${Math.round(llmAnalysis.confidence * 100)}%\n`;
-    }
-
-    if (llmAnalysis.trigger) {
-        result += `Detected Trigger: "${llmAnalysis.trigger}"\n`;
-    }
-
-    if (llmAnalysis.nePosition) {
-        result += `Suggested NE Position: ${llmAnalysis.nePosition}\n`;
-    }
-
-    if (llmAnalysis.explanation) {
-        result += `\nLinguistic Analysis:\n${llmAnalysis.explanation}\n`;
-    }
-
-    if (llmAnalysis.patterns) {
-        result += '\nDetected Patterns:\n';
-        llmAnalysis.patterns.forEach(pattern => {
-            result += `- ${pattern}\n`;
+            result += `   - Classification: ${example.has_expletive_ne ? 'Expletive' : 'No Expletive'}\n`;
         });
     }
-
-    if (llmAnalysis.proposedSentence) {
-        result += `\nProposed Sentence:\n"${llmAnalysis.proposedSentence}"\n`;
+    
+    // Evidence Summary
+    result += '\nEvidence Summary:\n';
+    analysis.details.forEach(detail => {
+        result += `- ${detail}\n`;
+    });
+    
+    // Weighted Evidence
+    if (analysis.evidence.weightedEvidence) {
+        result += '\nWeighted Evidence:\n';
+        const weights = analysis.evidence.weightedEvidence;
+        result += `- Expletive support: ${Math.round(weights.expletive * 100)}%\n`;
+        result += `- Non-expletive support: ${Math.round(weights.nonExpletive * 100)}%\n`;
     }
-
+    
     return result;
 };
