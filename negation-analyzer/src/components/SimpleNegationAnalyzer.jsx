@@ -175,7 +175,6 @@ const SimpleNegationAnalyzer = () => {
               if (useTrainingEnhancement && trainingData.examples.length > 0) {
                 const mode = analysisMode === 'SVM_ANALYSIS' ? 'SVM' : 'BINARY';
                 const trainingAnalysis = classify(sentence, trainingData.examples, mode);
-                const ruleBasedResult = formatRuleBasedResult(analysis);
                 
                 // Create properly formatted analysis object
                 const analysisObj = {
@@ -207,8 +206,8 @@ const SimpleNegationAnalyzer = () => {
                     ]
                 };
                 
-                // Combine training and rule-based results
-                formattedResult = `=== Training Data Analysis ===\n${formatTrainingResult(analysisObj)}\n\n=== Rule-Based Analysis ===\n${ruleBasedResult}`;
+                // Only show training data analysis
+                formattedResult = formatTrainingResult(analysisObj);
                 classification = analysisObj.classification;
                 
                 // Generate proposed sentence if expletive
