@@ -196,8 +196,8 @@ const SimpleNegationAnalyzer = () => {
                         triggerCategory: trainingAnalysis.context?.category,
                         triggerSubcategory: trainingAnalysis.context?.subcategory,
                         weightedEvidence: {
-                            expletive: trainingAnalysis.confidence,
-                            nonExpletive: 1 - trainingAnalysis.confidence
+                            expletive: trainingAnalysis.weightedVotes?.expletive || 0,
+                            nonExpletive: trainingAnalysis.weightedVotes?.nonExpletive || 0
                         }
                     },
                     details: [

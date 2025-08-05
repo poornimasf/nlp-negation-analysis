@@ -44,10 +44,13 @@ export const formatTrainingResult = (analysis) => {
     
     // Weighted Evidence
     if (analysis.evidence?.weightedEvidence) {
-        result += '\nConfidence Breakdown:\n';
         const weights = analysis.evidence.weightedEvidence;
-        result += `- Expletive: ${Math.round(weights.expletive * 100)}%\n`;
-        result += `- Non-expletive: ${Math.round(weights.nonExpletive * 100)}%\n`;
+        const total = weights.expletive + weights.nonExpletive;
+        if (total > 0) {
+            result += '\nConfidence Breakdown:\n';
+            result += `- Expletive: ${Math.round((weights.expletive / total) * 100)}%\n`;
+            result += `- Non-expletive: ${Math.round((weights.nonExpletive / total) * 100)}%\n`;
+        }
     }
     
     return result;

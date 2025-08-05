@@ -328,7 +328,8 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
       subcategory: inputTrigger?.subcategory || null,
       trigger: inputTrigger?.trigger || null,
       quePosition
-    }
+    },
+    weightedVotes  // Include the weighted votes in the result
   };
 };
 
