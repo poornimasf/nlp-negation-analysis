@@ -225,7 +225,7 @@ function calculateSimilarity(text1, text2) {
   return Math.min(similarity, 0.95);
 }
 
-// Binary classifier focusing on ne marker appropriateness
+  // Binary classifier focusing on ne marker appropriateness
 export const classifyWithBinaryClassifier = (text, trainingData) => {
   if (!text) {
     throw new Error('No text provided');
@@ -254,11 +254,31 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
     .sort((a, b) => b.similarity - a.similarity)
     .slice(0, 5); // Keep top 5 matches
 
+  // For known triggers that allow expletive ne, start with high base confidence
+  const isKnownTrigger = inputTrigger && ['TEMPORAL', 'FEAR', 'IMPERSONAL'].includes(inputTrigger.category);
+  let baseConfidence = isKnownTrigger ? 0.85 : 0.5;
+
   if (similarExamples.length === 0) {
+    // If no similar examples but we have a known trigger, still classify as expletive
+    if (isKnownTrigger) {
+      return {
+        matches: [],
+        confidence: baseConfidence,
+        classification: true, // Expletive for known triggers
+        message: `No close matches found, but "${inputTrigger.trigger}" allows expletive ne`,
+        nePosition: quePosition ? quePosition + 1 : null,
+        originalText: text,
+        context: {
+          triggerType: inputTrigger.category,
+          trigger: inputTrigger.trigger,
+          quePosition
+        }
+      };
+    }
     return {
       matches: [],
       confidence: 0.5,
-      classification: false, // Default to no expletive if no matches
+      classification: false,
       message: 'No similar examples found in training data',
       nePosition: null
     };
@@ -267,10 +287,8 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
   // Analyze similar examples to determine if ne marker would be appropriate
   const weightedVotes = similarExamples.reduce((acc, example) => {
     const weight = example.similarity;
-    // Check if the example has expletive ne
     if (example.has_expletive_ne === true) {
       acc.expletive += weight;
-      // If this is our best match and it has ne, that's strong evidence
       if (weight === similarExamples[0].similarity) {
         acc.bestMatchHasNe = true;
       }
@@ -280,46 +298,50 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
     return acc;
   }, { expletive: 0, nonExpletive: 0, bestMatchHasNe: false });
 
+  // For known triggers, boost expletive weight
+  if (isKnownTrigger) {
+    weightedVotes.expletive += baseConfidence;
+  }
+
   // Calculate confidence and determine classification
   const totalWeight = weightedVotes.expletive + weightedVotes.nonExpletive;
-  const confidence = Math.max(weightedVotes.expletive, weightedVotes.nonExpletive) / totalWeight;
+  const confidence = Math.max(
+    baseConfidence,
+    Math.max(weightedVotes.expletive, weightedVotes.nonExpletive) / totalWeight
+  );
 
   // Determine if ne marker would be appropriate
-  // If our best match has ne, or if we have significant expletive weight, classify as expletive
-  const shouldHaveNe = weightedVotes.bestMatchHasNe || weightedVotes.expletive > weightedVotes.nonExpletive;
+  // For known triggers, always allow ne
+  const shouldHaveNe = isKnownTrigger || weightedVotes.bestMatchHasNe || 
+                      weightedVotes.expletive > weightedVotes.nonExpletive;
 
   // If ne is appropriate, determine position
   let nePosition = null;
   if (shouldHaveNe && quePosition) {
-    // Get positions from similar examples with ne
     const examplesWithNe = similarExamples.filter(ex => ex.has_expletive_ne && ex.ne_position !== null);
     if (examplesWithNe.length > 0) {
-      // Use position from most similar example with ne
       const bestExample = examplesWithNe[0];
       const exampleQue = findQuePosition(bestExample.text, extractTrigger(bestExample.text));
       if (exampleQue && bestExample.ne_position) {
-        // Calculate relative position from que and apply to new sentence
         const relativePos = bestExample.ne_position - exampleQue;
         nePosition = quePosition + relativePos;
       } else {
-        // Fallback: place after que
-        nePosition = quePosition;
+        nePosition = quePosition + 1; // Default: right after que
       }
     } else {
-      // Fallback: place after que
-      nePosition = quePosition;
+      nePosition = quePosition + 1; // Default: right after que
     }
   }
 
   // Generate detailed message
   const contextInfo = inputTrigger?.isRelative ? ' (relative clause)' : '';
-  const triggerInfo = inputTrigger ? `\nTrigger: "${inputTrigger.trigger}"` : '';
+  const triggerInfo = inputTrigger ? `\nTrigger: "${inputTrigger.trigger}" (${inputTrigger.category})` : '';
   const message = `Found ${similarExamples.length} similar example${similarExamples.length > 1 ? 's' : ''} ` +
     `${contextInfo}. ${shouldHaveNe ? 'Ne marker would be appropriate' : 'Ne marker would not be appropriate'}${triggerInfo}`;
 
   return {
     matches: similarExamples,
-    confidence,
+    confidence: isKnownTrigger ? 0.85 : confidence, // Use standard confidence for known triggers
     classification: shouldHaveNe,
     message,
     nePosition,
