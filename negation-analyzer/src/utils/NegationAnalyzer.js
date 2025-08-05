@@ -1,102 +1,160 @@
 import { normalizeText } from './textProcessing';
+import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS, CONFIDENCE_LEVELS } from './patterns';
 
 class NegationAnalyzer {
   constructor() {
-    // Only the three official triggers from PRODUCTION_STATE.md
-    this.EXPLETIVE_TRIGGERS = [
-      {
-        pattern: /\b(?:avoir\s+)?peur\s+qu[e']/i,
-        name: 'peur que',
-        weight: 1.0
-      },
-      {
-        pattern: /\bavant\s+qu[e']/i,
-        name: 'avant que',
-        weight: 1.0
-      },
-      {
-        pattern: /\bpeu\s+s['']en\s+faut\s+qu[e']/i,
-        name: 'peu s\'en faut',
-        weight: 1.0
+    this.TRIGGER_PATTERNS = TRIGGER_PATTERNS;
+    this.SUBJUNCTIVE_PATTERNS = SUBJUNCTIVE_PATTERNS;
+    this.CONFIDENCE_LEVELS = CONFIDENCE_LEVELS;
+  }
+
+  // Extract trigger with subcategory
+  extractTrigger(text) {
+    const normalizedText = normalizeText(text.toLowerCase());
+    
+    // Check TEMPORAL category with subcategories
+    if (this.TRIGGER_PATTERNS.TEMPORAL) {
+      for (const [subcategory, patterns] of Object.entries(this.TRIGGER_PATTERNS.TEMPORAL)) {
+        for (const pattern of patterns) {
+          const match = normalizedText.match(pattern);
+          if (match) {
+            return {
+              category: 'TEMPORAL',
+              subcategory,
+              pattern: pattern.source,
+              trigger: match[0],
+              position: match.index
+            };
+          }
+        }
       }
-    ];
+    }
 
-    // Subjunctive is required for expletive ne
-    this.SUBJUNCTIVE_PATTERNS = [
-      /\b(?:sois|soit|soyons|soyez|soient)\b/i,  // être
-      /\b(?:aie|aies|ait|ayons|ayez|aient)\b/i,  // avoir
-      /\b(?:fasse|fasses|fasse|fassions|fassiez|fassent)\b/i,  // faire
-      /\b(?:puisse|puisses|puisse|puissions|puissiez|puissent)\b/i,  // pouvoir
-      /\b(?:vienne|viennes|vienne|venions|veniez|viennent)\b/i,  // venir
-      /\b(?:prenne|prennes|prenne|prenions|preniez|prennent)\b/i,  // prendre
-      /\b(?:tienne|tiennes|tienne|tenions|teniez|tiennent)\b/i,  // tenir
-      /\b(?:parte|partes|parte|partions|partiez|partent)\b/i  // partir
-    ];
+    // Check other categories
+    for (const [category, patterns] of Object.entries(this.TRIGGER_PATTERNS)) {
+      if (category === 'TEMPORAL') continue;
+      
+      const categoryPatterns = Array.isArray(patterns) ? patterns : [patterns];
+      for (const pattern of categoryPatterns) {
+        const match = normalizedText.match(pattern);
+        if (match) {
+          return {
+            category,
+            pattern: pattern.source,
+            trigger: match[0],
+            position: match.index
+          };
+        }
+      }
+    }
+    return null;
+  }
 
-    // Pattern for optional ne
-    this.OPTIONAL_NE = /\b(?:n['e])\b/i;
+  // Check for subjunctive forms
+  hasSubjunctive(text) {
+    for (const [type, pattern] of Object.entries(this.SUBJUNCTIVE_PATTERNS)) {
+      if (pattern.pattern.test(text)) {
+        return {
+          found: true,
+          type,
+          priority: pattern.priority || 0
+        };
+      }
+    }
+    return { found: false };
+  }
+
+  // Find que/qu' position
+  findQuePosition(text, triggerInfo) {
+    if (!triggerInfo) return null;
+    
+    const normalizedText = normalizeText(text.toLowerCase());
+    const triggerEnd = triggerInfo.position + triggerInfo.trigger.length;
+    
+    const afterTrigger = normalizedText.slice(triggerEnd);
+    const queMatch = afterTrigger.match(/qu[e']/i);
+    
+    if (queMatch) {
+      const quePos = triggerEnd + queMatch.index + queMatch[0].length;
+      const betweenText = normalizedText.slice(triggerEnd, triggerEnd + queMatch.index);
+      const hasIntervening = /[.!?]|\bet\b|\bmais\b/.test(betweenText);
+      
+      if (!hasIntervening) {
+        return quePos;
+      }
+    }
+    return null;
   }
 
   async analyzeNegation(text) {
     const normalizedText = normalizeText(text);
     
-    // Find expletive triggers
-    const foundTriggers = this.EXPLETIVE_TRIGGERS.filter(trigger => 
-      trigger.pattern.test(normalizedText)
-    );
-
-    // Check for subjunctive - required for expletive ne
-    const hasSubjunctive = this.hasSubjunctive(normalizedText);
+    // Find trigger with subcategory
+    const foundTrigger = this.extractTrigger(normalizedText);
+    
+    // Check for subjunctive
+    const subjunctiveInfo = this.hasSubjunctive(normalizedText);
+    
+    // Find que position
+    const quePosition = foundTrigger ? this.findQuePosition(normalizedText, foundTrigger) : null;
     
     // Check for optional ne
-    const hasOptionalNe = this.OPTIONAL_NE.test(normalizedText);
+    const hasOptionalNe = /\b(?:n['e])\b/i.test(normalizedText);
 
-    // Expletive case: Must have BOTH trigger AND subjunctive
-    if (foundTriggers.length > 0 && hasSubjunctive) {
-      const trigger = foundTriggers[0].name;
-      return {
-        type: 'EXPLETIVE',
-        confidence: hasOptionalNe ? 0.95 : 0.85,
-        evidence: {
-          trigger,
-          hasSubjunctive: true,
-          hasOptionalNe,
-          details: `Found expletive trigger "${trigger}" with subjunctive mood`
-        }
-      };
-    }
-
-    // Non-expletive cases:
-    
-    // 1. Has trigger but no subjunctive
-    if (foundTriggers.length > 0 && !hasSubjunctive) {
-      return {
-        type: 'NON_EXPLETIVE',
-        confidence: 0.9,
-        evidence: {
-          trigger: foundTriggers[0].name,
-          hasSubjunctive: false,
-          hasOptionalNe,
-          details: 'Found trigger but missing required subjunctive mood'
-        }
-      };
-    }
-
-    // 2. No expletive triggers at all
-    return {
-      type: 'NON_EXPLETIVE',
-      confidence: 0.95,
-      evidence: {
-        trigger: null,
-        hasSubjunctive,
-        hasOptionalNe,
-        details: 'No expletive triggers found'
-      }
+    // Build evidence object
+    const evidence = {
+      trigger: foundTrigger?.trigger || null,
+      category: foundTrigger?.category || null,
+      subcategory: foundTrigger?.subcategory || null,
+      hasSubjunctive: subjunctiveInfo.found,
+      subjunctiveType: subjunctiveInfo.type,
+      hasOptionalNe,
+      quePosition,
+      details: []
     };
-  }
 
-  hasSubjunctive(text) {
-    return this.SUBJUNCTIVE_PATTERNS.some(pattern => pattern.test(text));
+    // Add trigger evidence
+    if (foundTrigger) {
+      evidence.details.push(`Found trigger "${foundTrigger.trigger}"`);
+      if (foundTrigger.category === 'TEMPORAL' && foundTrigger.subcategory) {
+        evidence.details.push(`Temporal usage: ${foundTrigger.subcategory.toLowerCase()}`);
+      }
+    } else {
+      evidence.details.push('No expletive triggers found');
+    }
+
+    // Add subjunctive evidence
+    if (subjunctiveInfo.found) {
+      evidence.details.push(`Found subjunctive form (${subjunctiveInfo.type})`);
+    } else if (foundTrigger) {
+      evidence.details.push('Missing required subjunctive mood');
+    }
+
+    // Determine classification and confidence
+    if (foundTrigger && subjunctiveInfo.found) {
+      // Expletive case: Has trigger and subjunctive
+      return {
+        type: 'Expletive',
+        confidence: hasOptionalNe ? 
+          this.CONFIDENCE_LEVELS.NO_TRIGGER : 
+          this.CONFIDENCE_LEVELS.EXPLETIVE,
+        evidence
+      };
+    } else if (foundTrigger && !subjunctiveInfo.found) {
+      // Has trigger but no subjunctive
+      return {
+        type: 'No Expletive',
+        confidence: this.CONFIDENCE_LEVELS.NO_SUBJUNCTIVE,
+        evidence
+      };
+    } else {
+      // No expletive triggers
+      return {
+        type: 'No Expletive',
+        confidence: this.CONFIDENCE_LEVELS.NO_TRIGGER,
+        evidence
+      };
+    }
   }
 }
 
