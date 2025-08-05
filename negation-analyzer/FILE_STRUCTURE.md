@@ -37,15 +37,15 @@ Primary component handling negation analysis with:
 
 #### Analysis Modes
 1. **Rule-Based Analysis**
-   - Pattern and context analysis
-   - Confidence scoring system
-   - Always proposes NE placement
+   - Pattern and context analysis with subcategories
+   - Standardized confidence scoring
+   - NE placement based on trigger type
    - Multiple validation steps
 
 2. **Training Data Analysis**
-   - Pure example-based learning
-   - No rule-based fallback
-   - Always proposes NE placement
+   - Example-based learning with pattern enhancement
+   - Weighted similarity scoring
+   - Pattern-aware NE placement
    - Independent verification
 
 #### Core Functions
@@ -58,114 +58,163 @@ const analyzeText = async (text) => {
   return {
     analysis,
     proposal,
-    confidence: calculateConfidence(analysis)
+    confidence: analysis.confidence
   };
 };
 ```
 
-### neProposer.js
-Handles NE placement logic:
+### patterns.js
+Defines trigger patterns and categories:
 
 ```javascript
-// Rule-Based NE placement
-function proposeFromRules(text) {
-  // Pattern analysis
-  // Context validation
-  // Confidence calculation
-  // Always returns proposal with NE
-}
+export const TRIGGER_PATTERNS = {
+    TEMPORAL: {
+        SEQUENCE: [/* Pure temporal patterns */],
+        PREVENTIVE: [/* Prevention patterns */],
+        ANTICIPATORY: [/* Preparation patterns */],
+        DEFAULT: [/* General patterns */]
+    },
+    FEAR: [/* Fear patterns */],
+    IMPERSONAL: [/* Impersonal patterns */],
+    RELATIVE: [/* Relative patterns */]
+};
 
-// Training Data NE placement
-function proposeFromTrainingData(text, trainingData) {
-  // Example matching
-  // Position determination
-  // Always returns proposal with NE
+export const CONFIDENCE_LEVELS = {
+    NO_TRIGGER: 0.95,      // No trigger found
+    NO_SUBJUNCTIVE: 0.90,  // Missing required subjunctive
+    EXPLETIVE: 0.85,       // Valid expletive case
+    FALLBACK: 0.50        // Default case
+};
+```
+
+### NegationAnalyzer.js
+Core analysis implementation:
+
+```javascript
+class NegationAnalyzer {
+    constructor() {
+        this.TRIGGER_PATTERNS = TRIGGER_PATTERNS;
+        this.SUBJUNCTIVE_PATTERNS = SUBJUNCTIVE_PATTERNS;
+        this.CONFIDENCE_LEVELS = CONFIDENCE_LEVELS;
+    }
+
+    async analyzeNegation(text) {
+        const foundTrigger = this.extractTrigger(text);
+        const subjunctiveInfo = this.hasSubjunctive(text);
+        
+        return {
+            type: this.determineType(foundTrigger, subjunctiveInfo),
+            confidence: this.calculateConfidence(foundTrigger, subjunctiveInfo),
+            evidence: this.collectEvidence(foundTrigger, subjunctiveInfo)
+        };
+    }
 }
 ```
 
 ### Results Display
 ```javascript
-// Results table with NE proposals
-<td style={{ padding: '12px' }}>
-  <div dangerouslySetInnerHTML={{ 
-    __html: result.proposedSentence.replace(/\bNE\b/g, 
-      '<span style="background-color: #fff3cd; padding: 2px 4px; border-radius: 2px; font-weight: 500">NE</span>'
-    )
-  }}></div>
-</td>
+Training Data Analysis
+-----------------
+
+Classification: Expletive
+Confidence: 85%
+
+Trigger Analysis:
+- Found: "avant que"
+- Category: TEMPORAL
+- Subcategory: SEQUENCE
+- Usage: Pure temporal sequence
+
+Best Match:
+- Example: "..."
+- Similarity: XX%
+- Classification: Expletive
+
+Evidence Summary:
+- [Evidence points]
+
+Confidence Breakdown:
+- Expletive: 85%
+- Non-expletive: 15%
 ```
 
 ## Implementation Details
 
 ### Analysis Pipeline
 1. Text input processing
-2. Mode-specific analysis:
-   - Rule-based: Pattern + context analysis
-   - Training: Example matching
-3. NE placement proposal
-4. Result formatting
-5. Display with highlighting
+2. Trigger detection with subcategory analysis
+3. Subjunctive verification
+4. Evidence collection
+5. Confidence calculation
+6. Result formatting with detailed breakdown
 
 ### Confidence Scoring
 ```javascript
-// Rule-Based scoring
-const confidence = calculateConfidence({
-  hasPattern: 0.3,          // Pattern presence
-  hasCompleteStructure: 0.3, // Structure analysis
-  noLogicalMarkers: 0.2,    // Negation check
-  validContext: 0.2         // Context analysis
-});
+// Standardized confidence levels
+const CONFIDENCE_LEVELS = {
+    NO_TRIGGER: 0.95,      // Highest confidence: no trigger
+    NO_SUBJUNCTIVE: 0.90,  // High confidence: missing subjunctive
+    EXPLETIVE: 0.85,       // Standard expletive confidence
+    FALLBACK: 0.50        // Default/uncertain cases
+};
 
-// Training Data scoring
-const confidence = matchQuality ? 0.8 : 0.1;
+// Training Data confidence
+const confidence = Math.max(
+    baseConfidence,
+    weightedVotes.expletive / totalWeight
+);
 ```
 
 ### NE Placement Logic
 1. Rule-Based Mode:
-   - Pattern match: Primary placement
-   - Verb position: Secondary placement
-   - Beginning: Fallback placement
+   - Trigger subcategory analysis
+   - Position relative to que/qu'
+   - Context-aware placement
+   - Fallback strategies
 
 2. Training Data Mode:
-   - Example match: Use position
-   - No match: Beginning placement
+   - Similar example matching
+   - Pattern-aware positioning
+   - Weighted evidence consideration
+   - Default placements
 
 ## Error Handling
 - Input validation
-- Pattern matching errors
-- Training data validation
+- Pattern matching validation
+- Training data verification
+- Subcategory detection
 - Graceful fallbacks
 
 ## Best Practices
 
 ### Mode Selection
-- Use appropriate mode for case
-- Consider data availability
-- Monitor confidence scores
-- Validate results
+- Consider trigger subcategories
+- Evaluate confidence thresholds
+- Monitor similarity scores
+- Validate pattern matches
 
 ### Error Management
-- Graceful degradation
-- Clear error messages
-- Detailed logging
+- Detailed error reporting
+- Pattern validation
+- Training data verification
 - Recovery strategies
 
 ### Performance
 - Efficient pattern matching
+- Optimized subcategory detection
 - Quick training data lookup
 - Responsive UI updates
-- Error recovery
 
 ## Future Enhancements
 
 ### Planned Features
-- Enhanced pattern detection
-- Improved confidence scoring
-- Extended documentation
-- Additional test cases
+- Additional trigger subcategories
+- Enhanced similarity scoring
+- Improved confidence calculation
+- Extended pattern coverage
 
 ### Maintenance
-- Regular testing
+- Pattern validation
+- Subcategory verification
 - Performance monitoring
-- Error tracking
 - Documentation updates
