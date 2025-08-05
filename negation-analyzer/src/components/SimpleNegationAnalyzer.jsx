@@ -237,15 +237,25 @@ const SimpleNegationAnalyzer = () => {
           // Add debug logging
           console.log('Analysis Mode:', analysisMode);
           console.log('Raw Analysis:', analysis);
+          console.log('Training Analysis:', trainingAnalysis);
           console.log('Formatted Result:', formattedResult);
-          console.log('Proposed Sentence:', proposedSentence);
+
+          // Determine classification based on mode
+          let displayClassification;
+          if (analysisMode === 'TRAINING_DATA' && trainingAnalysis) {
+            displayClassification = trainingAnalysis.classification ? 'Expletive' : 'No Expletive';
+          } else {
+            displayClassification = analysis.type || 'Unknown';
+          }
+
+          console.log('Final Classification:', displayClassification);
 
           results.push({
             id: index + 1,
             text: sentence,
             highlightedText: highlight(sentence),
             label: formattedResult,
-            classification: analysis.classification || analysis.type || 'Unknown',  // Use explicit classification
+            classification: displayClassification,
             proposedSentence
           });
 
