@@ -21,7 +21,11 @@ export const TRIGGER_PATTERNS = {
         PREVENTIVE: [
             // Actions to prevent something
             /(?:arrêter|empêcher|éviter|prévenir)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // arrêter/empêcher/etc. avant que
-            /(?:fermer|ranger|cacher)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // fermer/ranger/etc. avant que
+            /(?:fermer|ranger|cacher|prendre|mettre)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // fermer/ranger/etc. avant que
+            // Preventive actions with objects
+            /(?:prendre|mettre)\s+(?:le|la|les|un|une|des)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // prendre/mettre + object
+            // Safety/precaution verbs
+            /(?:protéger|couvrir|abriter)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // protection verbs
         ],
         ANTICIPATORY: [
             // Preparation for future event
