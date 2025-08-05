@@ -7,7 +7,8 @@ export const normalizeText = (text) => {
 export const highlight = (text) => {
     // Handle TEMPORAL category with subcategories
     if (TRIGGER_PATTERNS.TEMPORAL) {
-        for (const [subcategory, patterns] of Object.entries(TRIGGER_PATTERNS.TEMPORAL)) {
+        // Check patterns in each subcategory
+        for (const patterns of Object.values(TRIGGER_PATTERNS.TEMPORAL)) {
             for (const pattern of patterns) {
                 const match = text.match(pattern);
                 if (match) {
