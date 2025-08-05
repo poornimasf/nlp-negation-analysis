@@ -103,12 +103,23 @@ export const formatTrainingResult = (analysis) => {
         result += '\nBest Match:\n';
         result += `- Example: "${bestMatch.text}"\n`;
         result += `- Similarity: ${Math.round(bestMatch.similarity * 100)}%\n`;
-        result += `- Classification: ${bestMatch.has_expletive_ne ? 'Expletive' : 'No Expletive'}\n`;
+        result += `- Example's Classification: ${bestMatch.has_expletive_ne ? 'Expletive' : 'No Expletive'}\n`;
+        result += `- Note: This is a similar example but final classification is based on all evidence\n`;
     }
     
     // Evidence Summary with enhanced explanation
     if (analysis.details?.length > 0) {
         result += '\nEvidence Summary:\n';
+        result += `- Found ${analysis.analysis?.trainingData?.similarExamples?.length || 0} similar examples\n`;
+        if (analysis.evidence?.weightedEvidence) {
+            const weights = analysis.evidence.weightedEvidence;
+            const total = weights.expletive + weights.nonExpletive;
+            if (total > 0) {
+                const expletivePercent = Math.round((weights.expletive / total) * 100);
+                result += `- ${expletivePercent}% of similar examples use expletive ne\n`;
+                result += `- Based on all evidence, ${analysis.classification} is more likely\n`;
+            }
+        }
         analysis.details.forEach(detail => {
             result += `- ${detail}\n`;
         });
