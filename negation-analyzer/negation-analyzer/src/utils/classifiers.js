@@ -114,21 +114,42 @@ Conclusion: [final EXPLETIVE or LOGICAL determination]`;
   }
 };
 
-// Extract trigger with its position
+// Extract trigger with its position and subcategory
 function extractTrigger(text) {
   const normalizedText = normalizeText(text.toLowerCase());
   
   for (const [category, patterns] of Object.entries(TRIGGER_PATTERNS)) {
-    for (const pattern of patterns) {
-      const match = normalizedText.match(pattern);
-      if (match) {
-        return {
-          category,
-          pattern: pattern.source,
-          trigger: match[0],
-          position: match.index,
-          isRelative: category === 'RELATIVE'
-        };
+    // Special handling for TEMPORAL category with subcategories
+    if (category === 'TEMPORAL' && typeof patterns === 'object' && !Array.isArray(patterns)) {
+      for (const [subcategory, subPatterns] of Object.entries(patterns)) {
+        for (const pattern of subPatterns) {
+          const match = normalizedText.match(pattern);
+          if (match) {
+            return {
+              category,
+              subcategory,
+              pattern: pattern.source,
+              trigger: match[0],
+              position: match.index,
+              isRelative: false
+            };
+          }
+        }
+      }
+    } else {
+      // Regular pattern matching for other categories
+      const categoryPatterns = Array.isArray(patterns) ? patterns : [patterns];
+      for (const pattern of categoryPatterns) {
+        const match = normalizedText.match(pattern);
+        if (match) {
+          return {
+            category,
+            pattern: pattern.source,
+            trigger: match[0],
+            position: match.index,
+            isRelative: category === 'RELATIVE'
+          };
+        }
       }
     }
   }

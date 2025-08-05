@@ -1,4 +1,75 @@
 /**
+ * Format training data analysis results
+ */
+export const formatTrainingResult = (analysis) => {
+    let result = 'Training Data Analysis\n';
+    result += '-----------------\n\n';
+    
+    // Classification and Confidence
+    result += `Classification: ${analysis.classification}\n`;
+    result += `Confidence: ${Math.round(analysis.confidence * 100)}%\n\n`;
+    
+    // Trigger Analysis
+    result += 'Trigger Analysis:\n';
+    if (analysis.analysis?.trigger) {
+        const trigger = analysis.analysis.trigger;
+        result += `- Found: "${trigger.trigger}"\n`;
+        result += `- Category: ${trigger.category}\n`;
+        
+        // Add subcategory for avant que
+        if (trigger.category === 'TEMPORAL' && trigger.trigger.includes('avant')) {
+            result += `- Subcategory: ${trigger.subcategory || 'DEFAULT'}\n`;
+            result += `- Usage: ${getAvantQueUsageDescription(trigger.subcategory)}\n`;
+        }
+    } else {
+        result += '- No trigger found\n';
+    }
+    
+    // Best Match Example
+    if (analysis.analysis?.trainingData?.similarExamples?.length > 0) {
+        const bestMatch = analysis.analysis.trainingData.similarExamples[0];
+        result += '\nBest Match:\n';
+        result += `- Example: "${bestMatch.text}"\n`;
+        result += `- Similarity: ${Math.round(bestMatch.similarity * 100)}%\n`;
+        result += `- Classification: ${bestMatch.has_expletive_ne ? 'Expletive' : 'No Expletive'}\n`;
+    }
+    
+    // Evidence Summary
+    if (analysis.details?.length > 0) {
+        result += '\nEvidence Summary:\n';
+        analysis.details.forEach(detail => {
+            result += `- ${detail}\n`;
+        });
+    }
+    
+    // Weighted Evidence
+    if (analysis.evidence?.weightedEvidence) {
+        result += '\nConfidence Breakdown:\n';
+        const weights = analysis.evidence.weightedEvidence;
+        result += `- Expletive: ${Math.round(weights.expletive * 100)}%\n`;
+        result += `- Non-expletive: ${Math.round(weights.nonExpletive * 100)}%\n`;
+    }
+    
+    return result;
+};
+
+/**
+ * Get description for avant que subcategory
+ */
+function getAvantQueUsageDescription(subcategory) {
+    switch (subcategory) {
+        case 'SEQUENCE':
+            return 'Pure temporal sequence';
+        case 'PREVENTIVE':
+            return 'Action to prevent something';
+        case 'ANTICIPATORY':
+            return 'Preparation for future event';
+        default:
+            return 'General temporal usage';
+    }
+}
+
+/**
  * Format rule-based analysis results
  */
 export const formatRuleBasedResult = (analysis) => {
@@ -19,6 +90,11 @@ export const formatRuleBasedResult = (analysis) => {
             result += `- Found: "${evidence.trigger}"\n`;
             if (evidence.category) {
                 result += `- Category: ${evidence.category}\n`;
+                // Add subcategory for avant que
+                if (evidence.category === 'TEMPORAL' && evidence.trigger.includes('avant')) {
+                    result += `- Subcategory: ${evidence.subcategory || 'DEFAULT'}\n`;
+                    result += `- Usage: ${getAvantQueUsageDescription(evidence.subcategory)}\n`;
+                }
             }
         }
         
@@ -81,55 +157,6 @@ export const formatRuleBasedResult = (analysis) => {
 };
 
 /**
- * Format training data analysis results
- */
-export const formatTrainingResult = (analysis) => {
-    let result = 'Training Data Analysis\n';
-    result += '-----------------\n\n';
-    
-    // Classification and Confidence
-    result += `Classification: ${analysis.classification}\n`;
-    result += `Confidence: ${Math.round(analysis.confidence * 100)}%\n\n`;
-    
-    // Trigger Analysis
-    result += 'Trigger Analysis:\n';
-    if (analysis.analysis?.trigger) {
-        const trigger = analysis.analysis.trigger;
-        result += `- Found: "${trigger.trigger}"\n`;
-        result += `- Category: ${trigger.category}\n`;
-    } else {
-        result += '- No trigger found\n';
-    }
-    
-    // Best Match Example
-    if (analysis.analysis?.trainingData?.similarExamples?.length > 0) {
-        const bestMatch = analysis.analysis.trainingData.similarExamples[0];
-        result += '\nBest Match:\n';
-        result += `- Example: "${bestMatch.text}"\n`;
-        result += `- Similarity: ${Math.round(bestMatch.similarity * 100)}%\n`;
-        result += `- Classification: ${bestMatch.has_expletive_ne ? 'Expletive' : 'No Expletive'}\n`;
-    }
-    
-    // Evidence Summary
-    if (analysis.details?.length > 0) {
-        result += '\nEvidence Summary:\n';
-        analysis.details.forEach(detail => {
-            result += `- ${detail}\n`;
-        });
-    }
-    
-    // Weighted Evidence
-    if (analysis.evidence?.weightedEvidence) {
-        result += '\nConfidence Breakdown:\n';
-        const weights = analysis.evidence.weightedEvidence;
-        result += `- Expletive: ${Math.round(weights.expletive * 100)}%\n`;
-        result += `- Non-expletive: ${Math.round(weights.nonExpletive * 100)}%\n`;
-    }
-    
-    return result;
-};
-
-/**
  * Format hybrid analysis results
  */
 export const formatHybridResult = (analysis, llmAnalysis) => {
@@ -147,6 +174,11 @@ export const formatHybridResult = (analysis, llmAnalysis) => {
     if (llmAnalysis.trigger) {
         result += 'Pattern Analysis:\n';
         result += `- Trigger: "${llmAnalysis.trigger}"\n`;
+        if (llmAnalysis.trigger.includes('avant')) {
+            result += `- Category: TEMPORAL\n`;
+            result += `- Subcategory: ${llmAnalysis.subcategory || 'DEFAULT'}\n`;
+            result += `- Usage: ${getAvantQueUsageDescription(llmAnalysis.subcategory)}\n`;
+        }
     }
 
     // Detected patterns
