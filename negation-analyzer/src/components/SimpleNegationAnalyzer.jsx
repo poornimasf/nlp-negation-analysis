@@ -208,8 +208,8 @@ const SimpleNegationAnalyzer = () => {
                 
                 // Only show training data analysis
                 formattedResult = formatTrainingResult(analysisObj);
-                // Set classification directly from analysisObj
-                classification = analysisObj.classification;
+                // Set classification explicitly from analysisObj
+                classification = analysisObj.classification;  // This will be used in the Prediction column
                 
                 // Generate proposed sentence if expletive
                 if (trainingAnalysis.classification && trainingAnalysis.context?.trigger) {
@@ -242,9 +242,8 @@ const SimpleNegationAnalyzer = () => {
           console.log('Formatted Result:', formattedResult);
           console.log('Proposed Sentence:', proposedSentence);
 
-          // For training data mode, use the classification directly from analysisObj
-          const finalClassification = analysisMode === 'TRAINING_DATA' && useTrainingEnhancement ? 
-            (trainingAnalysis?.classification ? 'Expletive' : 'No Expletive') :
+          // For training data mode, use the classification directly
+          const finalClassification = classification || 
             (formattedResult.includes('Classification: Expletive') ? 'Expletive' : 
              formattedResult.includes('Classification: No Expletive') ? 'No Expletive' : 
              'Unknown');
