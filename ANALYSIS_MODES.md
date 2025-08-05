@@ -1,128 +1,120 @@
-# Analysis Modes Documentation
+# Analysis Modes
 
-## Overview
-The system provides two distinct analysis modes for French negation analysis, each with its own approach to NE placement prediction.
+## Rule-Based Mode
+The default mode that uses pattern matching and grammatical rules.
 
-## 1. Rule-Based Analysis
+### Output Format
+```
+Rule-Based Analysis
+-----------------
+Classification: [Expletive/No Expletive]
+Confidence: XX%
 
-### Description
-Pattern-based analysis using predefined linguistic rules and triggers, with comprehensive context analysis.
+Trigger Analysis:
+- Found: [trigger]
+- Category: [category]
+- Subcategory: [subcategory]
+- Usage: [usage description]
 
-### Key Features
-- French linguistic pattern detection
-- Complete clause structure analysis
-- Logical marker detection
-- Context-aware confidence scoring
-
-### Pattern Analysis
-Important: Pattern presence alone does not determine negation type. Analysis includes:
-1. Pattern Detection
-   - Fear expressions (peur que)
-   - Temporal expressions (avant que)
-   - Impersonal expressions (peu s'en faut)
-
-2. Context Analysis
-   - Logical marker detection (pas, point, jamais, etc.)
-   - Clause structure completeness
-   - Semantic context evaluation
-
-3. Confidence Scoring
-   - Pattern presence: 30%
-   - Structure analysis: 30%
-   - Logical negation check: 20%
-   - Context analysis: 20%
-   - Adjustments based on markers and structure
-
-### NE Placement Strategy
-Always proposes NE placement with varying confidence:
-1. Pattern-based placement (0.3-0.9 confidence)
-2. Verb-based placement (0.3 confidence)
-3. Fallback to beginning (0.1 confidence)
-
-## 2. Training Data Analysis
-
-### Description
-Pure example-based learning using provided training data.
-
-### Key Features
-- Exact pattern matching from examples
-- No rule-based fallback
-- Confidence based on match quality
-- Independent verification capability
-
-### Training Data Format
-```json
-[
-  {
-    "text": "J'ai peur qu'il vienne",
-    "pattern": "avoir peur que",
-    "nePosition": 3,
-    "classification": "Expletive",
-    "confidence": 0.85
-  }
-]
+Details:
+- [Analysis points...]
 ```
 
-### NE Placement Strategy
-Always proposes NE placement:
-1. Training example match (0.8 confidence)
-2. Fallback to beginning (0.1 confidence)
+## Training Data Mode
+Uses example-based learning with similarity matching.
 
-## Results Display
+### Output Format
+```
+Training Data Analysis
+-----------------
 
-### Columns
-1. Sentence: Original input
-2. Analysis: Detailed analysis results
-3. Prediction: Classification result
-4. Highlighted: Visual pattern highlighting
-5. Proposed Sentence: NE placement suggestion
-   - Shows "NE" in highlighted format
-   - Always provides a proposal
-   - Confidence indicated in analysis
+Classification: [Expletive/No Expletive]
+Should be "[Classification]" because:
+- Has [category] trigger "[trigger]"
+- Uses subjunctive form (if present)
+- [Subcategory-specific reason]
+- [Register-specific indicators]
 
-### Styling
-- NE Display: Capitalized "NE" with highlight
-- Regular text: Standard black color
-- Confidence levels: Shown in analysis details
+Confidence: XX%
 
-## Mode Selection
+Trigger Analysis:
+- Found: [trigger]
+- Category: [category]
+- Subcategory: [subcategory]
+- Usage: [usage description]
 
-### Rule-Based Mode Best For
-- Standard French constructions
-- Pattern-based analysis
-- Comprehensive linguistic analysis
-- High-precision requirements
+Best Match:
+- Example: "[matched example]"
+- Similarity: XX%
+- Classification: [Expletive/No Expletive]
 
-### Training Data Mode Best For
-- Corpus-specific analysis
-- Example-based learning
-- Pattern discovery
-- Independent verification
+Evidence Summary:
+- Found [X] similar examples
+- [Evidence details...]
+Trigger: [trigger] ([category])
 
-## Implementation Notes
+Confidence Factors:
+- Well-formed subjunctive structure (indicates proper grammatical form)
+- Clear temporal marker (indicates potential for expletive ne)
+- Historical/literary register (common context for expletive ne)
+- [Other relevant factors...]
 
-### Rule-Based Implementation
-- Comprehensive pattern analysis
-- Multiple validation steps
-- Confidence-based scoring
-- Always returns proposal
+Confidence Breakdown:
+- Expletive: XX% (based on similar examples)
+- Non-expletive: XX% (based on similar examples)
+```
 
-### Training Data Implementation
-- Pure example matching
-- No rule-based fallback
-- Independent operation
-- Always returns proposal
+### Subcategory Explanations
+For temporal triggers (avant que):
 
-## Best Practices
+- SEQUENCE: "Describes pure temporal sequence (common for expletive ne)"
+- PREVENTIVE: "Indicates preventive action (strong case for expletive ne)"
+- ANTICIPATORY: "Shows preparation for future event (often uses expletive ne)"
+- DEFAULT: "Shows temporal relationship"
 
-### Mode Selection
-- Use appropriate mode for use case
-- Consider data availability
-- Monitor confidence scores
-- Validate results
+### Register Analysis
+Considers various registers that influence ne usage:
+- Historical/literary
+- Formal/academic
+- Technical/scientific
+- Colloquial/informal
 
-### Data Management
-- Maintain quality training data
-- Regular pattern updates
-- Monitor confidence trends
-- Track analysis accuracy
+## SVM Analysis Mode
+Uses Support Vector Machine learning for classification.
+
+### Output Format
+```
+SVM Analysis
+-----------
+Classification: [Expletive/No Expletive]
+Confidence: XX%
+
+Features:
+- [Feature list...]
+
+Model Decision:
+- [Decision details...]
+```
+
+## Hybrid Mode
+Combines rule-based analysis with LLM-based classification.
+
+### Output Format
+```
+Hybrid Analysis
+--------------
+Classification: [EXPLETIVE/LOGICAL]
+Confidence: XX%
+
+Pattern Analysis:
+- [Pattern details...]
+
+Linguistic Analysis:
+- [Analysis points...]
+
+NE Position:
+- [Position details...]
+
+Suggestion:
+[Proposed sentence]
+```
