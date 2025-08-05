@@ -142,7 +142,8 @@ const SimpleNegationAnalyzer = () => {
           switch (analysisMode) {
             case 'RULE_BASED':
               formattedResult = formatRuleBasedResult(analysis);
-              classification = await determineClassification(sentence, formattedResult);
+              // Set classification directly from the analysis result
+              classification = analysis.type === 'Expletive' ? 'Expletive' : 'No Expletive';
               // Generate proposed sentence if expletive
               if (classification === 'Expletive' && analysis.evidence?.trigger) {
                 const triggerInfo = {
@@ -208,8 +209,8 @@ const SimpleNegationAnalyzer = () => {
                 
                 // Only show training data analysis
                 formattedResult = formatTrainingResult(analysisObj);
-                // Set classification explicitly from analysisObj
-                classification = analysisObj.classification;  // This will be used in the Prediction column
+                // Set classification directly based on training analysis
+                classification = trainingAnalysis.classification ? 'Expletive' : 'No Expletive';
                 
                 // Generate proposed sentence if expletive
                 if (trainingAnalysis.classification && trainingAnalysis.context?.trigger) {
@@ -224,7 +225,7 @@ const SimpleNegationAnalyzer = () => {
                 }
               } else {
                 formattedResult = formatRuleBasedResult(analysis);
-                classification = await determineClassification(sentence, formattedResult);
+                classification = analysis.type === 'Expletive' ? 'Expletive' : 'No Expletive';
               }
               break;
 
@@ -239,20 +240,12 @@ const SimpleNegationAnalyzer = () => {
           console.log('Formatted Result:', formattedResult);
           console.log('Proposed Sentence:', proposedSentence);
 
-          // For training data mode, use the classification directly
-          const finalClassification = classification || 
-            (formattedResult.includes('Classification: Expletive') ? 'Expletive' : 
-             formattedResult.includes('Classification: No Expletive') ? 'No Expletive' : 
-             'Unknown');
-
-          console.log('Final Classification:', finalClassification);
-
           results.push({
             id: index + 1,
             text: sentence,
             highlightedText: highlight(sentence),
             label: formattedResult,
-            classification: finalClassification,
+            classification: classification,  // Use classification directly
             proposedSentence
           });
 
