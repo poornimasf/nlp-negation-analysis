@@ -39,25 +39,6 @@ export const TRIGGER_PATTERNS = {
             // General temporal avant que
             /avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // Any other avant que
         ]
-        PREVENTIVE: [
-            // Actions to prevent something - with conjugations
-            /(?:arrêter|arrête|arrêtes|arrêtez|arrêtent|empêcher|empêche|empêches|empêchez|empêchent|éviter|évite|évites|évitez|évitent|prévenir|préviens|prévient|prévenez|préviennent)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,
-            // Preventive actions with objects - include conjugations and possessive pronouns
-            /(?:prendre|prends|prenez|prennent|mettre|mets|met|mettez|mettent)\s+(?:le|la|les|un|une|des|mon|ton|son|notre|votre|leur|mes|tes|ses|nos|vos|leurs)\s+\w+(?:\s+\w+)*\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,
-            // General preventive verbs with conjugations
-            /(?:fermer|ferme|fermes|fermez|ferment|ranger|range|ranges|rangez|rangent|cacher|cache|caches|cachez|cachent)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,
-            // Safety/precaution verbs with conjugations
-            /(?:protéger|protège|protèges|protégez|protègent|couvrir|couvre|couvres|couvrez|couvrent|abriter|abrite|abrites|abritez|abritent)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i
-        ],
-        ANTICIPATORY: [
-            // Preparation for future event
-            /(?:préparer|organiser|planifier)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // préparer/organiser/etc. avant que
-            /(?:se\s+préparer|se\s+tenir\s+prêt)\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // se préparer/se tenir prêt avant que
-        ],
-        DEFAULT: [
-            // General temporal avant que
-            /avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // Any other avant que
-        ]
     },
     IMPERSONAL: [
         // Present, imperfect, conditional, future tenses
