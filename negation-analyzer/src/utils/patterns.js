@@ -19,14 +19,14 @@ export const TRIGGER_PATTERNS = {
             /(?:être|avoir)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // être/avoir + adj/noun avant que
         ],
         PREVENTIVE: [
-            // Actions to prevent something
-            /(?:arrêter|empêcher|éviter|prévenir)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // arrêter/empêcher/etc. avant que
+            // Actions to prevent something - with conjugations
+            /(?:arrêter|arrête|arrêtes|arrêtez|arrêtent|empêcher|empêche|empêches|empêchez|empêchent|éviter|évite|évites|évitez|évitent|prévenir|préviens|prévient|prévenez|préviennent)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,
             // Preventive actions with objects - include conjugations and possessive pronouns
             /(?:prendre|prends|prenez|prennent|mettre|mets|met|mettez|mettent)\s+(?:le|la|les|un|une|des|mon|ton|son|notre|votre|leur|mes|tes|ses|nos|vos|leurs)\s+\w+(?:\s+\w+)*\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,
-            // General preventive verbs
-            /(?:fermer|ranger|cacher|prendre|mettre)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,
-            // Safety/precaution verbs
-            /(?:protéger|couvrir|abriter)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // protection verbs
+            // General preventive verbs with conjugations
+            /(?:fermer|ferme|fermes|fermez|ferment|ranger|range|ranges|rangez|rangent|cacher|cache|caches|cachez|cachent)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,
+            // Safety/precaution verbs with conjugations
+            /(?:protéger|protège|protèges|protégez|protègent|couvrir|couvre|couvres|couvrez|couvrent|abriter|abrite|abrites|abritez|abritent)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i
         ],
         ANTICIPATORY: [
             // Preparation for future event
