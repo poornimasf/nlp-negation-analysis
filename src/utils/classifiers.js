@@ -121,12 +121,19 @@ function extractTrigger(text) {
   
   // Check TEMPORAL category first
   if (TRIGGER_PATTERNS.TEMPORAL) {
-    // Check subcategories in specific order: PREVENTIVE, ANTICIPATORY, SEQUENCE, DEFAULT
+    // Check subcategories in specific order
     const subcategoryOrder = ['PREVENTIVE', 'ANTICIPATORY', 'SEQUENCE', 'DEFAULT'];
     
     for (const subcategory of subcategoryOrder) {
       const patterns = TRIGGER_PATTERNS.TEMPORAL[subcategory];
       console.log(`\nChecking ${subcategory} patterns...`);
+      
+      // Skip DEFAULT if we're checking a historical sequence
+      if (subcategory === 'DEFAULT' && 
+          text.match(/(?:en|pendant|durant|après)\s+\d{4}|(?:guerre|bataille|opération|campagne)/i)) {
+        console.log('Skipping DEFAULT for historical sequence');
+        continue;
+      }
       
       for (const pattern of patterns) {
         console.log(`Testing pattern: ${pattern.source}`);

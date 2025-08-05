@@ -15,8 +15,12 @@ export const TRIGGER_PATTERNS = {
     TEMPORAL: {
         SEQUENCE: [
             // Pure temporal sequence
-            /(?:partir|arriver|commencer|finir)\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // partir/arriver/commencer/finir avant que
-            /(?:être|avoir)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // être/avoir + adj/noun avant que
+            /(?:partir|arriver|commencer|finir|conduire|entraîner|mener)\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // partir/arriver/etc. avant que
+            /(?:être|avoir|se\s+passer)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // être/avoir + adj/noun avant que
+            // Historical sequence indicators
+            /(?:en|pendant|durant|après|suite\s+[àa])\s+\w+(?:\s+\w+){0,3}\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // temporal prepositions
+            // Default sequence (when not matching preventive or anticipatory)
+            /\w+(?:\s+\w+){0,5}\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // any words followed by avant que, if no other matches
         ],
         PREVENTIVE: [
             // Actions to prevent something - with conjugations
