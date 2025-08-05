@@ -40,6 +40,7 @@ export const highlight = (text) => {
 };
 
 export const determineClassification = async (text, analysis) => {
+    // Extract classification directly from the analysis text
     if (analysis.includes('Classification: Expletive')) {
         return 'Expletive';
     }

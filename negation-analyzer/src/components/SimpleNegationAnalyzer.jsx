@@ -242,7 +242,10 @@ const SimpleNegationAnalyzer = () => {
             text: sentence,
             highlightedText: highlight(sentence),
             label: formattedResult,
-            classification,
+            // Use the classification directly from the analysis
+            classification: formattedResult.includes('Classification: Expletive') ? 'Expletive' : 
+                          formattedResult.includes('Classification: No Expletive') ? 'No Expletive' : 
+                          'Unknown',
             proposedSentence
           });
 
