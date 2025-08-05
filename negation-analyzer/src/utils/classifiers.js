@@ -122,18 +122,11 @@ function extractTrigger(text) {
   // Check TEMPORAL category first
   if (TRIGGER_PATTERNS.TEMPORAL) {
     // Check subcategories in specific order
-    const subcategoryOrder = ['PREVENTIVE', 'ANTICIPATORY', 'SEQUENCE', 'DEFAULT'];
+    const subcategoryOrder = ['SEQUENCE', 'PREVENTIVE', 'ANTICIPATORY', 'DEFAULT'];
     
     for (const subcategory of subcategoryOrder) {
       const patterns = TRIGGER_PATTERNS.TEMPORAL[subcategory];
       console.log(`\nChecking ${subcategory} patterns...`);
-      
-      // Skip DEFAULT if we're checking a historical sequence
-      if (subcategory === 'DEFAULT' && 
-          text.match(/(?:en|pendant|durant|après)\s+\d{4}|(?:guerre|bataille|opération|campagne)/i)) {
-        console.log('Skipping DEFAULT for historical sequence');
-        continue;
-      }
       
       for (const pattern of patterns) {
         console.log(`Testing pattern: ${pattern.source}`);
@@ -259,6 +252,7 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
 
   // Extract trigger and find que position
   const inputTrigger = extractTrigger(text);
+  console.log('Input Trigger:', inputTrigger);  // Add debug logging
   const quePosition = findQuePosition(text, inputTrigger);
 
   // Find similar examples
@@ -269,12 +263,20 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
       trigger: extractTrigger(example.text)
     }))
     .filter(example => {
+      // Debug logging
+      console.log('Comparing with example:', {
+        text: example.text,
+        trigger: example.trigger,
+        similarity: example.similarity
+      });
       // Require matching trigger category and reasonable similarity
       return example.trigger?.category === inputTrigger?.category &&
              example.similarity > 0.3;
     })
     .sort((a, b) => b.similarity - a.similarity)
     .slice(0, 5); // Keep top 5 matches
+
+  console.log('Similar Examples:', similarExamples);  // Add debug logging
 
   // For known triggers that allow expletive ne, use appropriate base confidence
   const isKnownTrigger = inputTrigger && ['TEMPORAL', 'FEAR', 'IMPERSONAL'].includes(inputTrigger.category);

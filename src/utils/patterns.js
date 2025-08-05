@@ -15,13 +15,30 @@ export const TRIGGER_PATTERNS = {
     TEMPORAL: {
         SEQUENCE: [
             // Pure temporal sequence
-            /(?:partir|arriver|commencer|finir|conduire|entraîner|mener)\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // partir/arriver/etc. avant que
-            /(?:être|avoir|se\s+passer)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // être/avoir + adj/noun avant que
+            /(?:partir|arriver|commencer|finir)\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // partir/arriver/commencer/finir avant que
+            /(?:être|avoir)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // être/avoir + adj/noun avant que
             // Historical sequence indicators
-            /(?:en|pendant|durant|après|suite\s+[àa])\s+\w+(?:\s+\w+){0,3}\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // temporal prepositions
-            // Default sequence (when not matching preventive or anticipatory)
-            /\w+(?:\s+\w+){0,5}\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // any words followed by avant que, if no other matches
+            /(?:en|pendant|durant|après)\s+\w+(?:\s+\w+){0,3}\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // temporal prepositions
         ],
+        PREVENTIVE: [
+            // Actions to prevent something - with conjugations
+            /(?:arrêter|arrête|arrêtes|arrêtez|arrêtent|empêcher|empêche|empêches|empêchez|empêchent|éviter|évite|évites|évitez|évitent|prévenir|préviens|prévient|prévenez|préviennent)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,
+            // Preventive actions with objects - include conjugations and possessive pronouns
+            /(?:prendre|prends|prenez|prennent|mettre|mets|met|mettez|mettent)\s+(?:le|la|les|un|une|des|mon|ton|son|notre|votre|leur|mes|tes|ses|nos|vos|leurs)\s+\w+(?:\s+\w+)*\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,
+            // General preventive verbs with conjugations
+            /(?:fermer|ferme|fermes|fermez|ferment|ranger|range|ranges|rangez|rangent|cacher|cache|caches|cachez|cachent)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,
+            // Safety/precaution verbs with conjugations
+            /(?:protéger|protège|protèges|protégez|protègent|couvrir|couvre|couvres|couvrez|couvrent|abriter|abrite|abrites|abritez|abritent)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i
+        ],
+        ANTICIPATORY: [
+            // Preparation for future event
+            /(?:préparer|organiser|planifier)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // préparer/organiser/etc. avant que
+            /(?:se\s+préparer|se\s+tenir\s+prêt)\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // se préparer/se tenir prêt avant que
+        ],
+        DEFAULT: [
+            // General temporal avant que
+            /avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // Any other avant que
+        ]
         PREVENTIVE: [
             // Actions to prevent something - with conjugations
             /(?:arrêter|arrête|arrêtes|arrêtez|arrêtent|empêcher|empêche|empêches|empêchez|empêchent|éviter|évite|évites|évitez|évitent|prévenir|préviens|prévient|prévenez|préviennent)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,
