@@ -175,33 +175,50 @@ const SimpleNegationAnalyzer = () => {
                 const mode = analysisMode === 'SVM_ANALYSIS' ? 'SVM' : 'BINARY';
                 const trainingAnalysis = classify(sentence, trainingData.examples, mode);
                 
-                // Map boolean classification to display format
-                const displayType = trainingAnalysis.classification === true ? 'Expletive' : 'No Expletive';
-                
-                // Create analysis object with display format and trigger info
+                // Create properly formatted analysis object
                 const analysisObj = {
-                  type: displayType,
-                  confidence: trainingAnalysis.confidence,
-                  evidence: {
-                    details: trainingAnalysis.message,
-                    trigger: trainingAnalysis.context?.trigger || null,
-                    hasSubjunctive: trainingAnalysis.context?.hasSubjunctive || false,
-                    nePosition: trainingAnalysis.nePosition
-                  }
+                    classification: trainingAnalysis.classification ? 'Expletive' : 'No Expletive',
+                    confidence: trainingAnalysis.confidence,
+                    analysis: {
+                        context: {
+                            currentSentence: sentence
+                        },
+                        trigger: trainingAnalysis.context?.trigger ? {
+                            trigger: trainingAnalysis.context.trigger,
+                            category: trainingAnalysis.context.triggerType,
+                            context: sentence
+                        } : null,
+                        structure: trainingAnalysis.context?.structure || null,
+                        trainingData: {
+                            similarExamples: trainingAnalysis.matches || []
+                        }
+                    },
+                    evidence: {
+                        hasKnownTrigger: trainingAnalysis.context?.triggerType != null,
+                        triggerCategory: trainingAnalysis.context?.triggerType,
+                        weightedEvidence: {
+                            expletive: trainingAnalysis.confidence,
+                            nonExpletive: 1 - trainingAnalysis.confidence
+                        }
+                    },
+                    details: [
+                        trainingAnalysis.message,
+                        ...(trainingAnalysis.context?.details || [])
+                    ]
                 };
                 
-                formattedResult = formatTrainingResult(analysisObj, trainingAnalysis);
-                classification = displayType;
+                formattedResult = formatTrainingResult(analysisObj);
+                classification = analysisObj.classification;
                 
                 // Generate proposed sentence if expletive
-                if (trainingAnalysis.classification === true && trainingAnalysis.context?.trigger) {
-                  const triggerInfo = {
-                    trigger: trainingAnalysis.context.trigger,
-                    position: sentence.toLowerCase().indexOf(trainingAnalysis.context.trigger.toLowerCase()),
-                    category: trainingAnalysis.context.triggerType
-                  };
-                  const nePosition = calculateNePosition(sentence, triggerInfo, mode);
-                  proposedSentence = formatWithNe(sentence, nePosition);
+                if (trainingAnalysis.classification && trainingAnalysis.context?.trigger) {
+                    const triggerInfo = {
+                        trigger: trainingAnalysis.context.trigger,
+                        position: sentence.toLowerCase().indexOf(trainingAnalysis.context.trigger.toLowerCase()),
+                        category: trainingAnalysis.context.triggerType
+                    };
+                    const nePosition = calculateNePosition(sentence, triggerInfo, mode);
+                    proposedSentence = formatWithNe(sentence, nePosition);
                 }
               } else {
                 formattedResult = formatRuleBasedResult(analysis);
