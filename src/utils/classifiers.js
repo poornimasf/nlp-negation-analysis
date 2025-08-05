@@ -117,39 +117,49 @@ Conclusion: [final EXPLETIVE or LOGICAL determination]`;
 // Extract trigger with its position and subcategory
 function extractTrigger(text) {
   const normalizedText = normalizeText(text.toLowerCase());
+  console.log('Analyzing text:', normalizedText);
   
-  for (const [category, patterns] of Object.entries(TRIGGER_PATTERNS)) {
-    // Special handling for TEMPORAL category with subcategories
-    if (category === 'TEMPORAL' && typeof patterns === 'object' && !Array.isArray(patterns)) {
-      for (const [subcategory, subPatterns] of Object.entries(patterns)) {
-        for (const pattern of subPatterns) {
-          const match = normalizedText.match(pattern);
-          if (match) {
-            return {
-              category,
-              subcategory,
-              pattern: pattern.source,
-              trigger: match[0],
-              position: match.index,
-              isRelative: false
-            };
-          }
-        }
-      }
-    } else {
-      // Regular pattern matching for other categories
-      const categoryPatterns = Array.isArray(patterns) ? patterns : [patterns];
-      for (const pattern of categoryPatterns) {
+  // Check TEMPORAL category first
+  if (TRIGGER_PATTERNS.TEMPORAL) {
+    // Check subcategories in specific order: PREVENTIVE, ANTICIPATORY, SEQUENCE, DEFAULT
+    const subcategoryOrder = ['PREVENTIVE', 'ANTICIPATORY', 'SEQUENCE', 'DEFAULT'];
+    
+    for (const subcategory of subcategoryOrder) {
+      const patterns = TRIGGER_PATTERNS.TEMPORAL[subcategory];
+      console.log(`Checking ${subcategory} patterns:`, patterns);
+      
+      for (const pattern of patterns) {
         const match = normalizedText.match(pattern);
         if (match) {
+          console.log(`Found match in ${subcategory}:`, match[0]);
           return {
-            category,
+            category: 'TEMPORAL',
+            subcategory,
             pattern: pattern.source,
             trigger: match[0],
             position: match.index,
-            isRelative: category === 'RELATIVE'
+            isRelative: false
           };
         }
+      }
+    }
+  }
+
+  // Check other categories
+  for (const [category, patterns] of Object.entries(TRIGGER_PATTERNS)) {
+    if (category === 'TEMPORAL') continue;
+    
+    const categoryPatterns = Array.isArray(patterns) ? patterns : [patterns];
+    for (const pattern of categoryPatterns) {
+      const match = normalizedText.match(pattern);
+      if (match) {
+        return {
+          category,
+          pattern: pattern.source,
+          trigger: match[0],
+          position: match.index,
+          isRelative: category === 'RELATIVE'
+        };
       }
     }
   }
