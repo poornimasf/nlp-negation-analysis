@@ -126,12 +126,17 @@ function extractTrigger(text) {
     
     for (const subcategory of subcategoryOrder) {
       const patterns = TRIGGER_PATTERNS.TEMPORAL[subcategory];
-      console.log(`Checking ${subcategory} patterns:`, patterns);
+      console.log(`\nChecking ${subcategory} patterns...`);
       
       for (const pattern of patterns) {
+        console.log(`Testing pattern: ${pattern.source}`);
         const match = normalizedText.match(pattern);
         if (match) {
-          console.log(`Found match in ${subcategory}:`, match[0]);
+          console.log(`✓ Found match in ${subcategory}:`, {
+            match: match[0],
+            position: match.index,
+            fullText: normalizedText
+          });
           return {
             category: 'TEMPORAL',
             subcategory,
@@ -141,6 +146,7 @@ function extractTrigger(text) {
             isRelative: false
           };
         }
+        console.log('✗ No match');
       }
     }
   }
@@ -149,10 +155,16 @@ function extractTrigger(text) {
   for (const [category, patterns] of Object.entries(TRIGGER_PATTERNS)) {
     if (category === 'TEMPORAL') continue;
     
+    console.log(`\nChecking ${category} patterns...`);
     const categoryPatterns = Array.isArray(patterns) ? patterns : [patterns];
     for (const pattern of categoryPatterns) {
+      console.log(`Testing pattern: ${pattern.source}`);
       const match = normalizedText.match(pattern);
       if (match) {
+        console.log(`✓ Found match in ${category}:`, {
+          match: match[0],
+          position: match.index
+        });
         return {
           category,
           pattern: pattern.source,
@@ -161,8 +173,10 @@ function extractTrigger(text) {
           isRelative: category === 'RELATIVE'
         };
       }
+      console.log('✗ No match');
     }
   }
+  console.log('\nNo matches found in any category');
   return null;
 }
 
