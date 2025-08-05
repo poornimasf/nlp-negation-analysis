@@ -148,7 +148,8 @@ const SimpleNegationAnalyzer = () => {
                 const triggerInfo = {
                   trigger: analysis.evidence.trigger,
                   position: sentence.toLowerCase().indexOf(analysis.evidence.trigger.toLowerCase()),
-                  category: analysis.evidence.triggerType
+                  category: analysis.evidence.category,
+                  subcategory: analysis.evidence.subcategory
                 };
                 const nePosition = calculateNePosition(sentence, triggerInfo, 'RULE_BASED');
                 proposedSentence = formatWithNe(sentence, nePosition);
@@ -182,7 +183,8 @@ const SimpleNegationAnalyzer = () => {
                     analysis: {
                         trigger: trainingAnalysis.context?.trigger ? {
                             trigger: trainingAnalysis.context.trigger,
-                            category: trainingAnalysis.context.triggerType,
+                            category: trainingAnalysis.context.category,
+                            subcategory: trainingAnalysis.context.subcategory,
                             context: sentence
                         } : null,
                         trainingData: {
@@ -190,8 +192,9 @@ const SimpleNegationAnalyzer = () => {
                         }
                     },
                     evidence: {
-                        hasKnownTrigger: trainingAnalysis.context?.triggerType != null,
-                        triggerCategory: trainingAnalysis.context?.triggerType,
+                        hasKnownTrigger: trainingAnalysis.context?.category != null,
+                        triggerCategory: trainingAnalysis.context?.category,
+                        triggerSubcategory: trainingAnalysis.context?.subcategory,
                         weightedEvidence: {
                             expletive: trainingAnalysis.confidence,
                             nonExpletive: 1 - trainingAnalysis.confidence
@@ -204,14 +207,15 @@ const SimpleNegationAnalyzer = () => {
                 };
                 
                 formattedResult = formatTrainingResult(analysisObj);
-                classification = analysisObj.classification;  // Use the same classification
+                classification = analysisObj.classification;
                 
                 // Generate proposed sentence if expletive
                 if (trainingAnalysis.classification && trainingAnalysis.context?.trigger) {
                     const triggerInfo = {
                         trigger: trainingAnalysis.context.trigger,
                         position: sentence.toLowerCase().indexOf(trainingAnalysis.context.trigger.toLowerCase()),
-                        category: trainingAnalysis.context.triggerType
+                        category: trainingAnalysis.context.category,
+                        subcategory: trainingAnalysis.context.subcategory
                     };
                     const nePosition = calculateNePosition(sentence, triggerInfo, mode);
                     proposedSentence = formatWithNe(sentence, nePosition);
