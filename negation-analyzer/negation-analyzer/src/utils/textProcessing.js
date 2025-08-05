@@ -5,9 +5,27 @@ export const normalizeText = (text) => {
 };
 
 export const highlight = (text) => {
-    // Find trigger in text
-    for (const patterns of Object.values(TRIGGER_PATTERNS)) {
-        for (const pattern of patterns) {
+    // Handle TEMPORAL category with subcategories
+    if (TRIGGER_PATTERNS.TEMPORAL) {
+        for (const [subcategory, patterns] of Object.entries(TRIGGER_PATTERNS.TEMPORAL)) {
+            for (const pattern of patterns) {
+                const match = text.match(pattern);
+                if (match) {
+                    const before = text.slice(0, match.index);
+                    const trigger = match[0];
+                    const after = text.slice(match.index + trigger.length);
+                    return `${before}<mark>${trigger}</mark>${after}`;
+                }
+            }
+        }
+    }
+
+    // Handle other categories
+    for (const [category, patterns] of Object.entries(TRIGGER_PATTERNS)) {
+        if (category === 'TEMPORAL') continue; // Skip TEMPORAL as it's handled above
+        
+        const categoryPatterns = Array.isArray(patterns) ? patterns : [patterns];
+        for (const pattern of categoryPatterns) {
             const match = text.match(pattern);
             if (match) {
                 const before = text.slice(0, match.index);
