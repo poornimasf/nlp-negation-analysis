@@ -1,4 +1,20 @@
 /**
+ * Get description for avant que subcategory
+ */
+function getAvantQueUsageDescription(subcategory) {
+    switch (subcategory) {
+        case 'SEQUENCE':
+            return 'Pure temporal sequence';
+        case 'PREVENTIVE':
+            return 'Action to prevent something';
+        case 'ANTICIPATORY':
+            return 'Preparation for future event';
+        default:
+            return 'General temporal usage';
+    }
+}
+
+/**
  * Format training data analysis results
  */
 export const formatTrainingResult = (analysis) => {
@@ -76,5 +92,149 @@ export const formatTrainingResult = (analysis) => {
         }
     }
     
+    return result;
+};
+
+/**
+ * Format rule-based analysis results
+ */
+export const formatRuleBasedResult = (analysis) => {
+    const { type, confidence, evidence } = analysis;
+    const confidencePercent = Math.round(confidence * 100);
+    
+    let result = 'Rule-Based Analysis\n';
+    result += '-----------------\n\n';
+    
+    // Classification and confidence
+    result += `Classification: ${type}\n`;
+    result += `Confidence: ${confidencePercent}%\n\n`;
+    
+    if (evidence) {
+        // Trigger information
+        if (evidence.trigger) {
+            result += 'Trigger Analysis:\n';
+            result += `- Found: "${evidence.trigger}"\n`;
+            if (evidence.category) {
+                result += `- Category: ${evidence.category}\n`;
+                // Add subcategory for avant que
+                if (evidence.category === 'TEMPORAL' && evidence.trigger.includes('avant')) {
+                    result += `- Subcategory: ${evidence.subcategory || 'DEFAULT'}\n`;
+                    result += `- Usage: ${getAvantQueUsageDescription(evidence.subcategory)}\n`;
+                }
+            }
+        }
+        
+        // Complement clause analysis
+        if (evidence.complementClause) {
+            result += '\nClause Analysis:\n';
+            const clause = evidence.complementClause;
+            
+            // Structure
+            if (clause.structure) {
+                result += '- Structure:\n';
+                if (clause.structure.subject) {
+                    result += `  * Subject: "${clause.structure.subject.word}"\n`;
+                }
+                if (clause.structure.verb) {
+                    result += `  * Verb: "${clause.structure.verb.word}"\n`;
+                }
+                if (clause.structure.pattern) {
+                    result += `  * Pattern: ${clause.structure.pattern}\n`;
+                }
+            }
+
+            // Subjunctive
+            if (clause.hasSubjunctive) {
+                result += '- Subjunctive:\n';
+                if (clause.verbInfo) {
+                    result += `  * Form: ${clause.verbInfo.verb}\n`;
+                    if (clause.verbInfo.type) {
+                        result += `  * Type: ${clause.verbInfo.type}\n`;
+                    }
+                }
+            }
+        }
+
+        // Additional evidence points
+        if (evidence.details) {
+            result += '\nDetails:\n';
+            const points = Array.isArray(evidence.details) 
+                ? evidence.details 
+                : evidence.details.split('; ');
+            points.forEach(point => {
+                result += `- ${point}\n`;
+            });
+        }
+        
+        // Ne position information
+        if (evidence.nePosition !== undefined && evidence.nePosition !== null) {
+            result += '\nNE Position:\n';
+            result += `- Suggested position: ${evidence.nePosition}\n`;
+        }
+
+        // Notes
+        if (evidence.note) {
+            result += '\nNote:\n';
+            result += `- ${evidence.note}\n`;
+        }
+    }
+    
+    return result;
+};
+
+/**
+ * Format hybrid analysis results
+ */
+export const formatHybridResult = (analysis, llmAnalysis) => {
+    let result = 'Hybrid Analysis\n';
+    result += '--------------\n\n';
+    
+    // Classification and confidence
+    result += `Classification: ${llmAnalysis.classification}\n`;
+    if (llmAnalysis.confidence) {
+        const llmConfidence = Math.round(llmAnalysis.confidence * 100);
+        result += `Confidence: ${llmConfidence}%\n\n`;
+    }
+
+    // Pattern analysis
+    if (llmAnalysis.trigger) {
+        result += 'Pattern Analysis:\n';
+        result += `- Trigger: "${llmAnalysis.trigger}"\n`;
+        if (llmAnalysis.trigger.includes('avant')) {
+            result += `- Category: TEMPORAL\n`;
+            result += `- Subcategory: ${llmAnalysis.subcategory || 'DEFAULT'}\n`;
+            result += `- Usage: ${getAvantQueUsageDescription(llmAnalysis.subcategory)}\n`;
+        }
+    }
+
+    // Detected patterns
+    if (llmAnalysis.patterns) {
+        result += '\nDetected Patterns:\n';
+        llmAnalysis.patterns.forEach(pattern => {
+            result += `- ${pattern}\n`;
+        });
+    }
+
+    // Linguistic analysis
+    if (llmAnalysis.explanation) {
+        result += '\nLinguistic Analysis:\n';
+        const points = llmAnalysis.explanation.split('. ').filter(s => s.trim());
+        points.forEach(point => {
+            result += `- ${point}\n`;
+        });
+    }
+
+    // NE position
+    if (llmAnalysis.nePosition) {
+        result += '\nNE Position:\n';
+        result += `- Suggested position: ${llmAnalysis.nePosition}\n`;
+    }
+
+    // Suggestion
+    if (llmAnalysis.proposedSentence) {
+        result += '\nSuggestion:\n';
+        result += `"${llmAnalysis.proposedSentence}"\n`;
+    }
+
     return result;
 };
