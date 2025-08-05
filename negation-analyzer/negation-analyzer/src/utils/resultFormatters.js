@@ -40,6 +40,26 @@ export const formatTrainingResult = (analysis) => {
         analysis.details.forEach(detail => {
             result += `- ${detail}\n`;
         });
+
+        // Add confidence factors when we have a temporal trigger
+        if (analysis.evidence?.triggerCategory === 'TEMPORAL') {
+            result += '\nConfidence Factors:\n';
+            if (analysis.evidence?.hasSubjunctive) {
+                result += '- Well-formed subjunctive structure\n';
+            }
+            if (analysis.evidence?.trigger?.includes('avant')) {
+                result += '- Clear temporal sequence marker\n';
+            }
+            // Check for formal/literary register indicators
+            if (text.includes('dont') || text.includes('autrefois') || 
+                text.includes('puis') || text.includes('y')) {
+                result += '- Historical/literary register\n';
+            }
+            // Check for expletive ne
+            if (analysis.evidence?.hasOptionalNe) {
+                result += '- Presence of expletive ne\n';
+            }
+        }
     }
     
     // Weighted Evidence
