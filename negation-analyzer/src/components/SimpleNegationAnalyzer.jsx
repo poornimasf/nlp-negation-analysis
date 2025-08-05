@@ -233,9 +233,6 @@ const SimpleNegationAnalyzer = () => {
               classification = await determineClassification(sentence, formattedResult);
           }
 
-          // Extract classification from analysis text
-          const analysisClassification = await determineClassification(sentence, formattedResult);
-          
           // Add debug logging
           console.log('Analysis Mode:', analysisMode);
           console.log('Raw Classification:', classification);
