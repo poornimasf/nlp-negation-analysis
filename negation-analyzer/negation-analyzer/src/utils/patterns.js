@@ -12,10 +12,27 @@ export const TRIGGER_PATTERNS = {
         // All tenses of avoir + peur
         /(?:a|ai|as|avais|avait|avaient|aurai|auras|aurait|aurais|auraient|ayant|auront|aura)\s+peur\s+qu(?:e|')/i
     ],
-    TEMPORAL: [
-        /avant\s+(?:que\s+de\s+|qu(?:e|'))/i,    // avant que, avant qu', avant que de
-        /jusqu['']à\s+ce\s+qu(?:e|')/i  // jusqu'à ce que, jusqu'à ce qu'
-    ],
+    TEMPORAL: {
+        SEQUENCE: [
+            // Pure temporal sequence
+            /(?:partir|arriver|commencer|finir)\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // partir/arriver/commencer/finir avant que
+            /(?:être|avoir)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // être/avoir + adj/noun avant que
+        ],
+        PREVENTIVE: [
+            // Actions to prevent something
+            /(?:arrêter|empêcher|éviter|prévenir)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // arrêter/empêcher/etc. avant que
+            /(?:fermer|ranger|cacher)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // fermer/ranger/etc. avant que
+        ],
+        ANTICIPATORY: [
+            // Preparation for future event
+            /(?:préparer|organiser|planifier)\s+\w+\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i,  // préparer/organiser/etc. avant que
+            /(?:se\s+préparer|se\s+tenir\s+prêt)\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // se préparer/se tenir prêt avant que
+        ],
+        DEFAULT: [
+            // General temporal avant que
+            /avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // Any other avant que
+        ]
+    },
     IMPERSONAL: [
         // Present, imperfect, conditional, future tenses
         /peu\s+s['']en\s+(?:faut|fallait|faudrait|faudra)\s+qu(?:e|')/i,
