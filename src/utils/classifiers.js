@@ -308,10 +308,9 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
 
   // Calculate confidence and determine classification
   const totalWeight = weightedVotes.expletive + weightedVotes.nonExpletive;
-  const confidence = Math.max(
-    baseConfidence,
-    Math.max(weightedVotes.expletive, weightedVotes.nonExpletive) / totalWeight
-  );
+  const confidence = totalWeight > 0 ? 
+    Math.max(weightedVotes.expletive, weightedVotes.nonExpletive) / totalWeight :
+    baseConfidence;
 
   // Determine if ne marker would be appropriate based on similar examples
   const shouldHaveNe = weightedVotes.expletive > weightedVotes.nonExpletive;
