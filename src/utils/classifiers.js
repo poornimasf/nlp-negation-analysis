@@ -324,7 +324,8 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
     nePosition,
     originalText: text,
     context: {
-      triggerType: inputTrigger?.category || null,
+      category: inputTrigger?.category || null,
+      subcategory: inputTrigger?.subcategory || null,
       trigger: inputTrigger?.trigger || null,
       quePosition
     }
