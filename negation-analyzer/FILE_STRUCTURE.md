@@ -7,7 +7,7 @@ negation-analyzer/
 ├── src/
 │   ├── components/
 │   │   ├── SimpleNegationAnalyzer.jsx    # Main analysis component (Active in Production)
-│   │   ├── BatchAnalysis.jsx             # Batch processing component (Implemented but Disabled)
+│   │   ├── BatchAnalysis.jsx             # Batch processing component
 │   │   ├── AnalysisModes.jsx            # Mode selection components
 │   │   ├── TrainingDataSection.jsx      # Training data management
 │   │   └── NegationAnalyzer.css         # Component styles
@@ -23,198 +23,171 @@ negation-analyzer/
 │   ├── config/
 │   │   └── featureFlags.js              # Feature flag configuration
 │   └── App.js                           # Root application component
-├── docs/
-│   └── ANALYSIS_RULES.md                # Detailed analysis documentation
-├── public/
-│   └── index.html                       # HTML template
-└── package.json                         # Dependencies and scripts
 ```
 
-## Key Components
+## File Interactions
 
-### SimpleNegationAnalyzer.jsx
-Primary component handling negation analysis with:
-
-#### Analysis Modes
-1. **Rule-Based Analysis**
-   - Pattern and context analysis with subcategories
-   - Standardized confidence scoring
-   - NE placement based on trigger type
-   - Multiple validation steps
-
-2. **Training Data Analysis**
-   - Example-based learning with pattern enhancement
-   - Weighted similarity scoring
-   - Pattern-aware NE placement
-   - Independent verification
-
-#### Core Functions
-```javascript
-// Main classification and proposal function
-const analyzeText = async (text) => {
-  const analysis = await analyzer.analyzeNegation(text);
-  const proposal = proposeNePlacement(text, analysisMode, trainingData);
-  
-  return {
-    analysis,
-    proposal,
-    confidence: analysis.confidence
-  };
-};
+### Core Analysis Flow
+```
+SimpleNegationAnalyzer.jsx
+    │
+    ├── patterns.js (via NegationAnalyzer.js)
+    │   └── Defines trigger patterns and categories
+    │
+    ├── NegationAnalyzer.js
+    │   ├── Uses patterns.js for trigger detection
+    │   ├── Performs core analysis
+    │   └── Returns analysis results
+    │
+    ├── classifiers.js
+    │   ├── Uses patterns.js for classification
+    │   └── Handles training data analysis
+    │
+    ├── resultFormatters.js
+    │   └── Formats analysis results for display
+    │
+    └── textProcessing.js
+        └── Handles text highlighting and processing
 ```
 
-### patterns.js
-Defines trigger patterns and categories:
-
-```javascript
-export const TRIGGER_PATTERNS = {
-    TEMPORAL: {
-        SEQUENCE: [/* Pure temporal patterns */],
-        PREVENTIVE: [/* Prevention patterns */],
-        ANTICIPATORY: [/* Preparation patterns */],
-        DEFAULT: [/* General patterns */]
-    },
-    FEAR: [/* Fear patterns */],
-    IMPERSONAL: [/* Impersonal patterns */],
-    RELATIVE: [/* Relative patterns */]
-};
-
-export const CONFIDENCE_LEVELS = {
-    NO_TRIGGER: 0.95,      // No trigger found
-    NO_SUBJUNCTIVE: 0.90,  // Missing required subjunctive
-    EXPLETIVE: 0.85,       // Valid expletive case
-    FALLBACK: 0.50        // Default case
-};
+### Pattern Detection Flow
+```
+patterns.js
+    │
+    ├── TRIGGER_PATTERNS
+    │   ├── TEMPORAL (with subcategories)
+    │   │   ├── SEQUENCE
+    │   │   ├── PREVENTIVE
+    │   │   ├── ANTICIPATORY
+    │   │   └── DEFAULT
+    │   ├── FEAR
+    │   ├── IMPERSONAL
+    │   └── RELATIVE
+    │
+    ├── SUBJUNCTIVE_PATTERNS
+    │   └── Used for verb form detection
+    │
+    └── CONFIDENCE_LEVELS
+        └── Used for scoring analysis
 ```
 
-### NegationAnalyzer.js
-Core analysis implementation:
+### Analysis Modes Flow
 
+1. Rule-Based Mode:
+```
+Text Input → NegationAnalyzer.js → patterns.js → Analysis Result
+    │                                                  │
+    └──────────────> resultFormatters.js <────────────┘
+```
+
+2. Training Data Mode:
+```
+Text Input → classifiers.js → patterns.js → Training Analysis
+    │            │               │              │
+    │            └── Training Examples          │
+    │                                          │
+    └──────────> resultFormatters.js <─────────┘
+```
+
+3. Hybrid Mode:
+```
+Text Input → NegationAnalyzer.js → patterns.js → Base Analysis
+    │            │                                    │
+    │            └─> classifiers.js → LLM Analysis   │
+    │                                                │
+    └──────────> resultFormatters.js <──────────────┘
+```
+
+### Data Flow Example
+
+For a sentence like "Prends ton parapluie avant qu'il ne pleuve":
+
+1. SimpleNegationAnalyzer.jsx receives input
+2. NegationAnalyzer.js:
+   - Uses patterns.js to identify "avant qu'" as TEMPORAL trigger
+   - Detects subcategory (PREVENTIVE) based on verb patterns
+   - Checks for subjunctive form
+   - Builds evidence object
+
+3. Analysis Object Structure:
 ```javascript
-class NegationAnalyzer {
-    constructor() {
-        this.TRIGGER_PATTERNS = TRIGGER_PATTERNS;
-        this.SUBJUNCTIVE_PATTERNS = SUBJUNCTIVE_PATTERNS;
-        this.CONFIDENCE_LEVELS = CONFIDENCE_LEVELS;
-    }
-
-    async analyzeNegation(text) {
-        const foundTrigger = this.extractTrigger(text);
-        const subjunctiveInfo = this.hasSubjunctive(text);
-        
-        return {
-            type: this.determineType(foundTrigger, subjunctiveInfo),
-            confidence: this.calculateConfidence(foundTrigger, subjunctiveInfo),
-            evidence: this.collectEvidence(foundTrigger, subjunctiveInfo)
-        };
+{
+    type: 'Expletive',
+    confidence: 0.85,
+    evidence: {
+        trigger: 'avant qu'',
+        category: 'TEMPORAL',
+        subcategory: 'PREVENTIVE',
+        hasSubjunctive: true,
+        // ...other evidence
     }
 }
 ```
 
-### Results Display
-```javascript
-Training Data Analysis
------------------
-
-Classification: Expletive
-Confidence: 85%
-
+4. resultFormatters.js formats output:
+```
 Trigger Analysis:
-- Found: "avant que"
+- Found: "avant qu'"
 - Category: TEMPORAL
-- Subcategory: SEQUENCE
-- Usage: Pure temporal sequence
-
-Best Match:
-- Example: "..."
-- Similarity: XX%
-- Classification: Expletive
-
-Evidence Summary:
-- [Evidence points]
-
-Confidence Breakdown:
-- Expletive: 85%
-- Non-expletive: 15%
+- Subcategory: PREVENTIVE
+- Usage: Action to prevent something
 ```
 
 ## Implementation Details
 
-### Analysis Pipeline
-1. Text input processing
-2. Trigger detection with subcategory analysis
-3. Subjunctive verification
-4. Evidence collection
-5. Confidence calculation
-6. Result formatting with detailed breakdown
+### Pattern Matching Process
+1. patterns.js defines trigger categories and patterns
+2. NegationAnalyzer.js uses these patterns for detection
+3. classifiers.js uses patterns for training data analysis
+4. Results flow back to SimpleNegationAnalyzer.jsx
 
-### Confidence Scoring
-```javascript
-// Standardized confidence levels
-const CONFIDENCE_LEVELS = {
-    NO_TRIGGER: 0.95,      // Highest confidence: no trigger
-    NO_SUBJUNCTIVE: 0.90,  // High confidence: missing subjunctive
-    EXPLETIVE: 0.85,       // Standard expletive confidence
-    FALLBACK: 0.50        // Default/uncertain cases
-};
+### Evidence Collection
+1. NegationAnalyzer.js gathers evidence:
+   - Trigger detection
+   - Category/subcategory identification
+   - Subjunctive verification
+   - Position analysis
 
-// Training Data confidence
-const confidence = Math.max(
-    baseConfidence,
-    weightedVotes.expletive / totalWeight
-);
-```
+2. Evidence flows through:
+   - Rule-based analysis
+   - Training data comparison
+   - Result formatting
 
-### NE Placement Logic
-1. Rule-Based Mode:
-   - Trigger subcategory analysis
-   - Position relative to que/qu'
-   - Context-aware placement
-   - Fallback strategies
-
-2. Training Data Mode:
-   - Similar example matching
-   - Pattern-aware positioning
-   - Weighted evidence consideration
-   - Default placements
-
-## Error Handling
-- Input validation
-- Pattern matching validation
-- Training data verification
-- Subcategory detection
-- Graceful fallbacks
+### Result Processing
+1. Analysis results are formatted by resultFormatters.js
+2. Different formats for each analysis mode
+3. Consistent structure maintained throughout
 
 ## Best Practices
 
-### Mode Selection
-- Consider trigger subcategories
-- Evaluate confidence thresholds
-- Monitor similarity scores
-- Validate pattern matches
+### File Organization
+- Keep pattern definitions in patterns.js
+- Core analysis in NegationAnalyzer.js
+- Formatting logic in resultFormatters.js
+- UI components separate from analysis logic
 
-### Error Management
-- Detailed error reporting
-- Pattern validation
-- Training data verification
-- Recovery strategies
+### Data Flow
+- Use consistent object structures
+- Pass complete evidence objects
+- Maintain category/subcategory information
+- Handle all analysis modes consistently
 
-### Performance
-- Efficient pattern matching
-- Optimized subcategory detection
-- Quick training data lookup
-- Responsive UI updates
+### Error Handling
+- Validate at each step
+- Provide clear error messages
+- Maintain error context
+- Handle graceful fallbacks
 
 ## Future Enhancements
 
 ### Planned Features
-- Additional trigger subcategories
-- Enhanced similarity scoring
-- Improved confidence calculation
-- Extended pattern coverage
+- Enhanced pattern detection
+- Additional subcategories
+- Improved confidence scoring
+- Extended documentation
 
 ### Maintenance
-- Pattern validation
-- Subcategory verification
-- Performance monitoring
-- Documentation updates
+- Keep patterns.js updated
+- Validate pattern interactions
+- Monitor analysis accuracy
+- Update documentation
