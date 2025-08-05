@@ -1,34 +1,31 @@
-/**
- * Normalize text for analysis
- * - Trim whitespace
- * - Handle special characters
- * - Normalize spaces
- */
+import { TRIGGER_PATTERNS } from './patterns';
+
 export const normalizeText = (text) => {
-  if (!text) return '';
-  
-  return text
-    .trim()
-    // Normalize spaces
-    .replace(/\s+/g, ' ')
-    // Normalize quotes and apostrophes
-    .replace(/[''′]/g, "'")
-    .replace(/[""]/g, '"');
+    return text.trim();
 };
 
-/**
- * Highlight specific patterns in text
- */
 export const highlight = (text) => {
-  if (!text) return '';
-  return text;
+    // Find trigger in text
+    for (const patterns of Object.values(TRIGGER_PATTERNS)) {
+        for (const pattern of patterns) {
+            const match = text.match(pattern);
+            if (match) {
+                const before = text.slice(0, match.index);
+                const trigger = match[0];
+                const after = text.slice(match.index + trigger.length);
+                return `${before}<mark>${trigger}</mark>${after}`;
+            }
+        }
+    }
+    return text;
 };
 
-/**
- * Determine classification based on analysis
- */
-export const determineClassification = async (text, formattedResult) => {
-  // Extract classification from formatted result
-  const match = formattedResult.match(/^(Expletive|No Expletive)/i);
-  return match ? match[1] : 'Uncertain';
+export const determineClassification = async (text, analysis) => {
+    if (analysis.includes('Classification: Expletive')) {
+        return 'Expletive';
+    }
+    if (analysis.includes('Classification: No Expletive')) {
+        return 'No Expletive';
+    }
+    return 'Unknown';
 };

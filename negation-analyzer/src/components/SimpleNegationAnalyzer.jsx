@@ -180,15 +180,11 @@ const SimpleNegationAnalyzer = () => {
                     classification: trainingAnalysis.classification ? 'Expletive' : 'No Expletive',
                     confidence: trainingAnalysis.confidence,
                     analysis: {
-                        context: {
-                            currentSentence: sentence
-                        },
                         trigger: trainingAnalysis.context?.trigger ? {
                             trigger: trainingAnalysis.context.trigger,
                             category: trainingAnalysis.context.triggerType,
                             context: sentence
                         } : null,
-                        structure: trainingAnalysis.context?.structure || null,
                         trainingData: {
                             similarExamples: trainingAnalysis.matches || []
                         }
@@ -208,7 +204,7 @@ const SimpleNegationAnalyzer = () => {
                 };
                 
                 formattedResult = formatTrainingResult(analysisObj);
-                classification = analysisObj.classification;
+                classification = analysisObj.classification;  // Use the same classification
                 
                 // Generate proposed sentence if expletive
                 if (trainingAnalysis.classification && trainingAnalysis.context?.trigger) {
