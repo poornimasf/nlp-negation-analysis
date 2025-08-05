@@ -238,15 +238,25 @@ const SimpleNegationAnalyzer = () => {
           
           // Add debug logging
           console.log('Analysis Mode:', analysisMode);
-          console.log('Analysis Classification:', analysisClassification);
+          console.log('Raw Classification:', classification);
+          console.log('Formatted Result:', formattedResult);
           console.log('Proposed Sentence:', proposedSentence);
+
+          // For training data mode, use the classification directly from analysisObj
+          const finalClassification = analysisMode === 'TRAINING_DATA' && useTrainingEnhancement ? 
+            (trainingAnalysis?.classification ? 'Expletive' : 'No Expletive') :
+            (formattedResult.includes('Classification: Expletive') ? 'Expletive' : 
+             formattedResult.includes('Classification: No Expletive') ? 'No Expletive' : 
+             'Unknown');
+
+          console.log('Final Classification:', finalClassification);
 
           results.push({
             id: index + 1,
             text: sentence,
             highlightedText: highlight(sentence),
             label: formattedResult,
-            classification: analysisClassification,  // Use the extracted classification
+            classification: finalClassification,
             proposedSentence
           });
 
