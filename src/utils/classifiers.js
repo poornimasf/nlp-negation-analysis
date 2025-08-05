@@ -1,150 +1,6 @@
 import { normalizeText } from './textProcessing';
 import { classifyWithSVM, trainSVMModel } from './svmClassifier';
-
-// CroissantLLM classification for Hybrid mode
-export const classifyExpletive = async (text) => {
-  try {
-    if (!text) {
-      throw new Error('No text provided');
-    }
-
-    if (!process.env.REACT_APP_HF_TOKEN) {
-      throw new Error('Missing HF_TOKEN');
-    }
-
-    const prompt = `Example 1 (Expletive Negation):
-Sentence: "Je crains qu'il ne vienne trop tard."
-Analysis: The verb "craindre" with "que" introduces a subjunctive clause. No logical negation markers (pas, point, jamais) are present. The "ne" appears in a fear context without negation markers.
-Classification: EXPLETIVE
-Reasoning: While "craindre que" can suggest expletive negation, the key evidence is the absence of logical negation markers and the complete subjunctive clause structure.
-NE Position: After "qu'il"
-Conclusion: EXPLETIVE
-
-Example 2 (Logical Negation):
-Sentence: "Je ne veux pas qu'il parte."
-Analysis: Contains the complete logical negation structure "ne...pas". The negation directly modifies the verb "vouloir" and changes its meaning.
-Classification: LOGICAL
-Reasoning: The presence of both "ne" and "pas" forms a complete logical negation that semantically negates the action.
-NE Position: Before "veux"
-Conclusion: LOGICAL
-
-Now analyze the following French sentence to determine whether it previously contained **expletive negation** or **logical negation**:
-
-"${text}"
-
-Your task:
-1. Analyze the complete grammatical structure and context.
-2. Check specifically for logical negation markers (pas, point, jamais, etc.).
-3. Consider the full clause structure and semantic meaning.
-4. Determine the most likely position for "ne" based on the analysis.
-
-Important: The presence of verbs like "craindre" or expressions like "avant que" alone is NOT sufficient to determine expletive negation. Consider all contextual factors.
-
-Respond in the following format: 
-Analysis: [focus on complete structure, markers, and context]
-Classification: [EXPLETIVE or LOGICAL]
-Reasoning: [explain why this classification is chosen, considering all factors]
-NE Position: [specify where "ne" should be placed]
-Conclusion: [final EXPLETIVE or LOGICAL determination]`;
-
-    const response = await fetch(
-      'https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud/',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.REACT_APP_HF_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          inputs: prompt
-        })
-      }
-    );
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        throw new Error('429: Rate limit exceeded');
-      }
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    
-    // Extract the analysis from the response
-    if (Array.isArray(result) && result.length > 0) {
-      const generatedText = result[0].generated_text;
-      
-      // Parse the structured response
-      const analysisMatch = generatedText.match(/Analysis:\s*(.*?)(?=Classification:|$)/s);
-      const classificationMatch = generatedText.match(/Classification:\s*(EXPLETIVE|LOGICAL)/i);
-      const reasoningMatch = generatedText.match(/Reasoning:\s*(.*?)(?=NE Position:|$)/s);
-      const nePositionMatch = generatedText.match(/NE Position:\s*(.*?)(?=Conclusion:|$)/s);
-      const conclusionMatch = generatedText.match(/Conclusion:\s*(EXPLETIVE|LOGICAL)/i);
-      
-      return {
-        analysis: analysisMatch ? analysisMatch[1].trim() : '',
-        classification: (classificationMatch && classificationMatch[1]) ? 
-          classificationMatch[1].toUpperCase() : 'UNCERTAIN',
-        reasoning: reasoningMatch ? reasoningMatch[1].trim() : '',
-        nePosition: nePositionMatch ? nePositionMatch[1].trim() : '',
-        conclusion: (conclusionMatch && conclusionMatch[1]) ? 
-          conclusionMatch[1].toUpperCase() : undefined,
-        confidence: 0.85,
-        rawResponse: generatedText
-      };
-    }
-    
-    return {
-      analysis: 'No analysis available',
-      classification: 'UNCERTAIN',
-      reasoning: '',
-      confidence: 0.5,
-      rawResponse: result
-    };
-  } catch (error) {
-    console.error('CroissantLLM Error:', error);
-    throw error;
-  }
-};
-
-// Trigger patterns that might allow expletive ne
-const TRIGGER_PATTERNS = {
-  FEAR: [
-    /peur\s+qu(?:e|')/i,     // peur que, peur qu'
-    /craindre?\s+qu(?:e|')/i,  // craindre que, crains qu', craignent que
-    /redouter?\s+qu(?:e|')/i,  // redouter que, redoute qu'
-    /avoir\s+peur\s+qu(?:e|')/i,  // avoir peur que, ai peur qu', avait peur que
-    // All tenses of avoir + peur
-    /(?:a|ai|as|avais|avait|avaient|aurai|auras|aurait|aurais|auraient|ayant|auront|aura)\s+peur\s+qu(?:e|')/i
-  ],
-  TEMPORAL: [
-    /avant\s+(?:que\s+de\s+|qu(?:e|'))/i,    // avant que, avant qu', avant que de
-    /jusqu['']à\s+ce\s+qu(?:e|')/i  // jusqu'à ce que, jusqu'à ce qu'
-  ],
-  IMPERSONAL: [
-    // Present, imperfect, conditional, future tenses
-    /peu\s+s['']en\s+(?:faut|fallait|faudrait|faudra)\s+qu(?:e|')/i,
-    // All variations of "il s'en faut/fallait/etc. de peu que"
-    /il\s+s['']en\s+(?:faut|fallait|faudrait|faudra|est\s+fallu)\s+(?:de\s+)?peu\s+qu(?:e|')/i,
-    // Past tense variations
-    /il\s+s['']en\s+est\s+fallu\s+(?:de\s+)?peu\s+qu(?:e|')/i,
-    /peu\s+s['']en\s+est\s+fallu\s+qu(?:e|')/i
-  ],
-  RELATIVE: [
-    // Superlative constructions
-    /le\s+(?:meilleur|mieux)\s+qu(?:e|')/i,
-    /la\s+(?:meilleure?)\s+qu(?:e|')/i,
-    /les\s+(?:meilleurs?|meilleures?)\s+qu(?:e|')/i,
-    // Restrictive constructions
-    /le\s+(?:seul|unique)\s+qu(?:e|')/i,
-    /la\s+(?:seule|unique)\s+qu(?:e|')/i,
-    /les\s+(?:seuls|seules|uniques)\s+qu(?:e|')/i,
-    // Ordinal constructions
-    /le\s+(?:premier|dernier)\s+qu(?:e|')/i,
-    /la\s+(?:première|dernière)\s+qu(?:e|')/i,
-    /les\s+(?:premiers|premières|derniers|dernières)\s+qu(?:e|')/i
-  ]
-};
+import { TRIGGER_PATTERNS, CONFIDENCE_LEVELS } from './patterns';
 
 // Extract trigger with its position
 function extractTrigger(text) {
@@ -225,7 +81,7 @@ function calculateSimilarity(text1, text2) {
   return Math.min(similarity, 0.95);
 }
 
-  // Binary classifier focusing on ne marker appropriateness
+// Binary classifier focusing on ne marker appropriateness
 export const classifyWithBinaryClassifier = (text, trainingData) => {
   if (!text) {
     throw new Error('No text provided');
@@ -254,33 +110,26 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
     .sort((a, b) => b.similarity - a.similarity)
     .slice(0, 5); // Keep top 5 matches
 
-  // For known triggers that allow expletive ne, start with high base confidence
+  // For known triggers that allow expletive ne, use appropriate base confidence
   const isKnownTrigger = inputTrigger && ['TEMPORAL', 'FEAR', 'IMPERSONAL'].includes(inputTrigger.category);
-  let baseConfidence = isKnownTrigger ? 0.85 : 0.5;
+  let baseConfidence = isKnownTrigger ? CONFIDENCE_LEVELS.EXPLETIVE : CONFIDENCE_LEVELS.FALLBACK;
 
   if (similarExamples.length === 0) {
-    // If no similar examples but we have a known trigger, still classify as expletive
-    if (isKnownTrigger) {
-      return {
-        matches: [],
-        confidence: baseConfidence,
-        classification: true, // Expletive for known triggers
-        message: `No close matches found, but "${inputTrigger.trigger}" allows expletive ne`,
-        nePosition: quePosition ? quePosition + 1 : null,
-        originalText: text,
-        context: {
-          triggerType: inputTrigger.category,
-          trigger: inputTrigger.trigger,
-          quePosition
-        }
-      };
-    }
+    // Even with known trigger, we need training data to determine if ne was likely
     return {
       matches: [],
-      confidence: 0.5,
-      classification: false,
-      message: 'No similar examples found in training data',
-      nePosition: null
+      confidence: baseConfidence,
+      classification: false, // Default to no expletive without evidence
+      message: isKnownTrigger ? 
+        `"${inputTrigger.trigger}" allows optional expletive ne, but no similar examples found` :
+        'No similar examples found in training data',
+      nePosition: null,
+      originalText: text,
+      context: {
+        triggerType: inputTrigger?.category || null,
+        trigger: inputTrigger?.trigger || null,
+        quePosition
+      }
     };
   }
 
@@ -298,11 +147,6 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
     return acc;
   }, { expletive: 0, nonExpletive: 0, bestMatchHasNe: false });
 
-  // For known triggers, boost expletive weight
-  if (isKnownTrigger) {
-    weightedVotes.expletive += baseConfidence;
-  }
-
   // Calculate confidence and determine classification
   const totalWeight = weightedVotes.expletive + weightedVotes.nonExpletive;
   const confidence = Math.max(
@@ -310,10 +154,8 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
     Math.max(weightedVotes.expletive, weightedVotes.nonExpletive) / totalWeight
   );
 
-  // Determine if ne marker would be appropriate
-  // For known triggers, always allow ne
-  const shouldHaveNe = isKnownTrigger || weightedVotes.bestMatchHasNe || 
-                      weightedVotes.expletive > weightedVotes.nonExpletive;
+  // Determine if ne marker would be appropriate based on similar examples
+  const shouldHaveNe = weightedVotes.expletive > weightedVotes.nonExpletive;
 
   // If ne is appropriate, determine position
   let nePosition = null;
@@ -337,11 +179,11 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
   const contextInfo = inputTrigger?.isRelative ? ' (relative clause)' : '';
   const triggerInfo = inputTrigger ? `\nTrigger: "${inputTrigger.trigger}" (${inputTrigger.category})` : '';
   const message = `Found ${similarExamples.length} similar example${similarExamples.length > 1 ? 's' : ''} ` +
-    `${contextInfo}. ${shouldHaveNe ? 'Ne marker would be appropriate' : 'Ne marker would not be appropriate'}${triggerInfo}`;
+    `${contextInfo}. ${shouldHaveNe ? 'Evidence suggests expletive ne was likely' : 'Evidence suggests expletive ne was unlikely'}${triggerInfo}`;
 
   return {
     matches: similarExamples,
-    confidence: isKnownTrigger ? 0.85 : confidence, // Use standard confidence for known triggers
+    confidence,
     classification: shouldHaveNe,
     message,
     nePosition,
@@ -374,7 +216,3 @@ export const classify = (text, trainingData, mode = 'BINARY') => {
       return classifyWithBinaryClassifier(text, trainingData);
   }
 };
-
-// Export additional utilities
-export { trainSVMModel } from './svmClassifier';
-export { normalizeText } from './textProcessing';
