@@ -236,7 +236,7 @@ const SimpleNegationAnalyzer = () => {
 
           // Add debug logging
           console.log('Analysis Mode:', analysisMode);
-          console.log('Raw Classification:', classification);
+          console.log('Raw Analysis:', analysis);
           console.log('Formatted Result:', formattedResult);
           console.log('Proposed Sentence:', proposedSentence);
 
@@ -245,7 +245,7 @@ const SimpleNegationAnalyzer = () => {
             text: sentence,
             highlightedText: highlight(sentence),
             label: formattedResult,
-            classification: classification,  // Use classification directly
+            classification: analysis.classification || analysis.type || 'Unknown',  // Use explicit classification
             proposedSentence
           });
 

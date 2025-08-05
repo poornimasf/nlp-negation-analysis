@@ -135,6 +135,7 @@ class NegationAnalyzer {
       // Expletive case: Has trigger and subjunctive
       return {
         type: 'Expletive',
+        classification: 'Expletive',  // Add explicit classification
         confidence: hasOptionalNe ? 
           this.CONFIDENCE_LEVELS.NO_TRIGGER : 
           this.CONFIDENCE_LEVELS.EXPLETIVE,
@@ -144,6 +145,7 @@ class NegationAnalyzer {
       // Has trigger but no subjunctive
       return {
         type: 'No Expletive',
+        classification: 'No Expletive',  // Add explicit classification
         confidence: this.CONFIDENCE_LEVELS.NO_SUBJUNCTIVE,
         evidence
       };
@@ -151,6 +153,7 @@ class NegationAnalyzer {
       // No expletive triggers
       return {
         type: 'No Expletive',
+        classification: 'No Expletive',  // Add explicit classification
         confidence: this.CONFIDENCE_LEVELS.NO_TRIGGER,
         evidence
       };
