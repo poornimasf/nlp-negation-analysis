@@ -1,6 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { TrainingDataSection } from './TrainingDataSection';
 import { analyzeSentence, formatAnalysis } from '../utils/ruleBasedAnalyzer';
+import { classify } from '../utils/classifiers';
+import { formatTrainingResult } from '../utils/resultFormatters';
 import './NegationAnalyzer.css';
 
 const NegationAnalyzer = () => {
@@ -40,7 +42,12 @@ const NegationAnalyzer = () => {
         ? analyzeWithTrainingData(text, trainingData)
         : analyzeSentence(text);
 
-      setAnalysis(formatAnalysis(result));
+      // Format the result appropriately
+      const formattedResult = mode === 'training'
+        ? formatTrainingResult(result)
+        : formatAnalysis(result);
+
+      setAnalysis(formattedResult);
       setError(null);
     } catch (err) {
       console.error('Analysis error:', err);
@@ -49,31 +56,35 @@ const NegationAnalyzer = () => {
   };
 
   const analyzeWithTrainingData = (text, data) => {
-    // Find matching examples
-    const matches = data.examples.filter(ex => 
-      ex.text.toLowerCase().includes(text.toLowerCase()) ||
-      text.toLowerCase().includes(ex.text.toLowerCase())
-    );
-
-    if (matches.length === 0) {
+    try {
+      // Use the proper training data classifier
+      const result = classify(text, data.examples, 'BINARY');
+      
+      // Convert boolean classification to string format
+      const classificationString = result.classification ? 'Expletive' : 'No Expletive';
+      
       return {
-        classification: false,
-        trigger: null,
-        hasNe: false,
-        nePosition: null,
-        confidence: 1.0
+        classification: classificationString,
+        confidence: result.confidence,
+        analysis: result,
+        details: result.matches || [],
+        evidence: {
+          weightedEvidence: {
+            expletive: result.matches?.filter(m => m.has_expletive_ne).length || 0,
+            nonExpletive: result.matches?.filter(m => !m.has_expletive_ne).length || 0
+          }
+        }
+      };
+    } catch (error) {
+      console.error('Training data analysis error:', error);
+      return {
+        classification: 'undefined',
+        confidence: 0.5,
+        analysis: null,
+        details: [],
+        evidence: {}
       };
     }
-
-    // Use the best match
-    const bestMatch = matches[0];
-    return {
-      classification: bestMatch.classification,
-      trigger: bestMatch.trigger,
-      hasNe: bestMatch.has_expletive_ne,
-      nePosition: bestMatch.ne_position,
-      confidence: 0.8
-    };
   };
 
   return (
