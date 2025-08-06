@@ -10,6 +10,7 @@ const SimpleNegationAnalyzer = () => {
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState(null);
   const [trainingData, setTrainingData] = useState(null);
+  const [uploadError, setUploadError] = useState(null);
 
   const handleInputChange = (event) => {
     setInputText(event.target.value);
@@ -17,10 +18,65 @@ const SimpleNegationAnalyzer = () => {
     setError(null);
   };
 
-  const handleTrainingData = useCallback((data) => {
-    console.log('Received training data:', data);
-    setTrainingData(data);
-    setError(null);
+  const handleFileUpload = useCallback((event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    setUploadError(null);
+    
+    if (file.type !== 'application/json') {
+      setUploadError('Please upload a JSON file');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        
+        // Validate the data structure
+        if (!data.examples || !Array.isArray(data.examples)) {
+          setUploadError('Invalid JSON format. Expected an object with "examples" array');
+          return;
+        }
+
+        // Validate each example
+        const validExamples = data.examples.filter(example => {
+          return example.text && 
+                 typeof example.has_expletive_ne === 'boolean' &&
+                 typeof example.classification === 'boolean';
+        });
+
+        if (validExamples.length === 0) {
+          setUploadError('No valid examples found. Each example needs: text, has_expletive_ne, classification');
+          return;
+        }
+
+        const processedData = {
+          ...data,
+          examples: validExamples
+        };
+
+        setTrainingData(processedData);
+        setError(null);
+        console.log('Training data loaded:', processedData);
+        
+      } catch (parseError) {
+        setUploadError('Invalid JSON file: ' + parseError.message);
+      }
+    };
+
+    reader.onerror = () => {
+      setUploadError('Error reading file');
+    };
+
+    reader.readAsText(file);
+  }, []);
+
+  const clearTrainingData = useCallback(() => {
+    setTrainingData(null);
+    setUploadError(null);
+    setAnalysis(null);
   }, []);
 
   const analyzeWithTrainingData = (text, data) => {
@@ -97,7 +153,12 @@ const SimpleNegationAnalyzer = () => {
       </div>
       
       {mode === 'training' && (
-        <TrainingDataSection onDataLoad={handleTrainingData} />
+        <TrainingDataSection 
+          trainingData={trainingData}
+          handleFileUpload={handleFileUpload}
+          clearTrainingData={clearTrainingData}
+          uploadError={uploadError}
+        />
       )}
       
       <div className="input-section">
