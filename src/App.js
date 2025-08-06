@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import NegationAnalyzer from './components/NegationAnalyzer';
+import SimpleNegationAnalyzer from './components/SimpleNegationAnalyzer';
 
 function App() {
   return (
@@ -8,7 +8,7 @@ function App() {
       <header className="app-header">
         <h1>French Expletive Negation Analysis</h1>
       </header>
-      <NegationAnalyzer />
+      <SimpleNegationAnalyzer />
     </div>
   );
 }
