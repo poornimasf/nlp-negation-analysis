@@ -415,7 +415,20 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   if (avantQueAnalysis && avantQueAnalysis.bothConditionsMet) {
     // Use a multiplicative boost to ensure linguistic rules always win
     const currentTotal = adjustedExpletive + adjustedNonExpletive;
-    adjustedExpletive = Math.max(adjustedExpletive + 5.0, currentTotal * 0.75); // Ensure at least 75% likelihood
+    const beforeBoost = adjustedExpletive;
+    const minimumTarget = currentTotal * 0.75;
+    const additionBoost = adjustedExpletive + 5.0;
+    
+    adjustedExpletive = Math.max(additionBoost, minimumTarget);
+    
+    console.log('🏛️ Avant que boost calculation:', {
+      beforeBoost,
+      currentTotal,
+      minimumTarget,
+      additionBoost,
+      finalAdjustedExpletive: adjustedExpletive,
+      shouldWin: adjustedExpletive > adjustedNonExpletive
+    });
     console.log('🏛️ Avant que boost: Strong boost applied (both conditions met) - expletive now favored');
   } else {
     console.log('❌ Avant que boost NOT applied - conditions not met');
