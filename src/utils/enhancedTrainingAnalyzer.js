@@ -413,21 +413,24 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   });
   
   if (avantQueAnalysis && avantQueAnalysis.bothConditionsMet) {
-    // Use a multiplicative boost to ensure linguistic rules always win
-    const currentTotal = adjustedExpletive + adjustedNonExpletive;
+    // DECISIVE BOOST: Ensure linguistic rules always win when both conditions are met
     const beforeBoost = adjustedExpletive;
-    const minimumTarget = currentTotal * 0.75;
-    const additionBoost = adjustedExpletive + 5.0;
     
-    adjustedExpletive = Math.max(additionBoost, minimumTarget);
+    // Strategy: Make expletive votes at least 20% higher than non-expletive
+    const guaranteedWin = adjustedNonExpletive * 1.2;
+    const minimumBoost = adjustedExpletive + 5.0;
+    
+    // Use the higher of the two to guarantee victory
+    adjustedExpletive = Math.max(guaranteedWin, minimumBoost);
     
     console.log('🏛️ Avant que boost calculation:', {
       beforeBoost,
-      currentTotal,
-      minimumTarget,
-      additionBoost,
+      adjustedNonExpletive,
+      guaranteedWin,
+      minimumBoost,
       finalAdjustedExpletive: adjustedExpletive,
-      shouldWin: adjustedExpletive > adjustedNonExpletive
+      shouldWin: adjustedExpletive > adjustedNonExpletive,
+      winMargin: adjustedExpletive - adjustedNonExpletive
     });
     console.log('🏛️ Avant que boost: Strong boost applied (both conditions met) - expletive now favored');
   } else {
