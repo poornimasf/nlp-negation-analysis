@@ -245,6 +245,13 @@ function detectSubjunctiveAfterAvantQue(clause) {
   }
   
   // NEW: Handle text normalization artifact "e l'..." from "avant qu'..." - FIXED FOR PUNCTUATION
+  console.log('🔍 Testing normalization regex directly:', {
+    testText: "e l'alarme retentisse ?",
+    regexTest1: /^e\s+l'\s+\w+\s+\w+/.test(afterAvantQue),
+    regexTest2: /^e\s+(l')\s+(\w+)\s+(\w+)/.test(afterAvantQue),
+    regexTest3: /^e\s+(l')\s+(\w+)\s+(\w+)(?:\s*[?])?/.test(afterAvantQue)
+  });
+  
   const normalizationMatch = afterAvantQue.match(/^e\s+(l'|la|les?|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+(\w+)\s+(\w+)(?:\s*[?!.,;:])?/i);
   console.log('🔍 Normalization artifact pattern match:', normalizationMatch);
   console.log('🔍 Normalization pattern debug:', {
