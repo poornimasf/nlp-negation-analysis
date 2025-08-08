@@ -18,7 +18,7 @@ function getAvantQueUsageDescription(subcategory) {
  * Format rule-based analysis results
  */
 export const formatRuleBasedResult = (analysis) => {
-    const { type, confidence, evidence } = analysis;
+    const { type, confidence, evidence, enhancedAvantQue } = analysis;
     const confidencePercent = Math.round(confidence * 100);
     
     let result = 'Rule-Based Analysis\n';
@@ -27,6 +27,32 @@ export const formatRuleBasedResult = (analysis) => {
     // Classification and confidence
     result += `Classification: ${type}\n`;
     result += `Confidence: ${confidencePercent}%\n\n`;
+    
+    // Enhanced avant que analysis (if present)
+    if (enhancedAvantQue && enhancedAvantQue.isAvantQue) {
+        result += 'Enhanced Avant Que Analysis:\n';
+        result += `- Classification: ${enhancedAvantQue.classification}\n`;
+        result += `- Confidence: ${Math.round(enhancedAvantQue.confidence * 100)}%\n`;
+        result += `- Reasoning: ${enhancedAvantQue.classificationReason}\n\n`;
+        
+        result += 'Linguistic Analysis:\n';
+        result += `- Complement Clause: ${enhancedAvantQue.complementClause.isComplementClause ? 'Present' : 'Absent'} (${Math.round(enhancedAvantQue.complementClause.confidence * 100)}% confidence)\n`;
+        result += `- Subjunctive Mood: ${enhancedAvantQue.subjunctiveMood.hasSubjunctive ? 'Present' : 'Absent'} (${Math.round(enhancedAvantQue.subjunctiveMood.confidence * 100)}% confidence)\n`;
+        
+        if (enhancedAvantQue.complementClause.indicators && enhancedAvantQue.complementClause.indicators.length > 0) {
+            result += `- Complement Indicators: ${enhancedAvantQue.complementClause.indicators.join(', ')}\n`;
+        }
+        
+        if (enhancedAvantQue.subjunctiveMood.hasSubjunctive) {
+            result += `- Subjunctive Verb: "${enhancedAvantQue.subjunctiveMood.verb}" (${enhancedAvantQue.subjunctiveMood.verbType})\n`;
+        }
+        
+        result += '\nDetailed Reasoning:\n';
+        enhancedAvantQue.reasoning.forEach(reason => {
+            result += `- ${reason}\n`;
+        });
+        result += '\n';
+    }
     
     if (evidence) {
         // Trigger information

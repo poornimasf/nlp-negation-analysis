@@ -116,6 +116,32 @@ Confidence Breakdown:
 - Non-expletive: 25% (based on similar examples)
 ```
 
+### Enhanced Avant Que Analysis
+
+For sentences containing "avant que", the system provides additional linguistic analysis:
+
+```
+Enhanced Avant Que Analysis:
+- Classification: Expletive
+- Confidence: 92%
+- Reasoning: Both complement clause and subjunctive mood present - expletive negation highly likely
+
+Linguistic Analysis:
+- Complement Clause: Present (95% confidence)
+- Subjunctive Mood: Present (90% confidence)
+- Complement Indicators: Subject pronoun: "elle"
+- Subjunctive Verb: "parte" (PARTIR)
+
+Detailed Reasoning:
+- ✓ Finite complement clause detected (95% confidence)
+- ✓ Subjunctive mood confirmed: "parte" (90% confidence)
+```
+
+This enhanced analysis considers:
+- **Complement Clause Detection**: Whether "avant que" introduces a finite clause with a subject and verb
+- **Subjunctive Mood Analysis**: Precise identification of subjunctive verb forms
+- **Combined Assessment**: Expletive negation is most likely when both conditions are met
+
 ## Similarity Matching Algorithm
 
 The system uses several factors to find similar examples:

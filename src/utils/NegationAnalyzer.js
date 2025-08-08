@@ -1,5 +1,6 @@
 import { normalizeText } from './textProcessing';
 import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS, CONFIDENCE_LEVELS } from './patterns';
+import { enhanceAvantQueAnalysis } from './avantQueAnalyzer';
 
 class NegationAnalyzer {
   constructor() {
@@ -101,6 +102,12 @@ class NegationAnalyzer {
     // Check for optional ne
     const hasOptionalNe = /\b(?:n['e])\b/i.test(normalizedText);
 
+    // Enhanced avant que analysis
+    let enhancedAvantQue = null;
+    if (foundTrigger && foundTrigger.trigger.includes('avant')) {
+      enhancedAvantQue = enhanceAvantQueAnalysis(text, foundTrigger);
+    }
+
     // Build evidence object
     const evidence = {
       trigger: foundTrigger?.trigger || null,
@@ -130,7 +137,27 @@ class NegationAnalyzer {
       evidence.details.push('Missing required subjunctive mood');
     }
 
-    // Determine classification and confidence
+    // Enhanced avant que analysis takes precedence
+    if (enhancedAvantQue && enhancedAvantQue.isAvantQue) {
+      // Add enhanced analysis details to evidence
+      evidence.details.push(`Enhanced avant que analysis: ${enhancedAvantQue.classificationReason}`);
+      if (enhancedAvantQue.complementClause.isComplementClause) {
+        evidence.details.push('Complement clause detected');
+      }
+      if (enhancedAvantQue.subjunctiveMood.hasSubjunctive) {
+        evidence.details.push(`Subjunctive mood confirmed: ${enhancedAvantQue.subjunctiveMood.verb}`);
+      }
+
+      return {
+        type: enhancedAvantQue.classification,
+        classification: enhancedAvantQue.classification,
+        confidence: enhancedAvantQue.confidence,
+        evidence,
+        enhancedAvantQue // Include enhanced analysis in results
+      };
+    }
+
+    // Determine classification and confidence using original logic
     if (foundTrigger && subjunctiveInfo.found) {
       // Expletive case: Has trigger and subjunctive
       return {
