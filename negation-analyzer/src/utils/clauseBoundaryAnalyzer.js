@@ -423,16 +423,16 @@ function analyzeVerbForSubjunctive(verb, context) {
     return result;
   }
   
-  // Regular -ER verbs (like parler → parle)
-  if (normalizedVerb.match(/\w+e$/i) && normalizedVerb.length > 2) {
+  // Regular -ER verbs (like parler → parle, parlent)
+  if (normalizedVerb.match(/\w+e$/i) || normalizedVerb.match(/\w+ent$/i)) {
     // Exclude common words that aren't verbs
     const excludeWords = ['que', 'de', 'le', 'me', 'te', 'se', 'ne', 'ce'];
-    if (!excludeWords.includes(normalizedVerb)) {
+    if (!excludeWords.includes(normalizedVerb) && normalizedVerb.length > 2) {
       const result = {
         verb: normalizedVerb,
         type: 'ER_REGULAR',
         priority: 1,
-        confidence: 0.60, // Lower confidence due to ambiguity
+        confidence: normalizedVerb.endsWith('ent') ? 0.65 : 0.60, // Slightly higher confidence for -ent forms
         position: context.indexOf(verb)
       };
       console.log('✅ Regular -ER subjunctive found:', result);
