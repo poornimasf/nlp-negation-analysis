@@ -244,8 +244,8 @@ function detectSubjunctiveAfterAvantQue(clause) {
     }
   }
   
-  // NEW: Handle text normalization artifact "e l'..." from "avant qu'..."
-  const normalizationMatch = afterAvantQue.match(/^e\s+(l'|la|les?|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+(\w+)\s+(\w+)/i);
+  // NEW: Handle text normalization artifact "e l'..." from "avant qu'..." - FIXED FOR PUNCTUATION
+  const normalizationMatch = afterAvantQue.match(/^e\s+(l'|la|les?|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+(\w+)\s+(\w+)(?:\s*[?!.,;:])?/i);
   console.log('🔍 Normalization artifact pattern match:', normalizationMatch);
   console.log('🔍 Normalization pattern debug:', {
     textStart: afterAvantQue.substring(0, 30),
