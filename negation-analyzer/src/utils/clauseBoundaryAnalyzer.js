@@ -429,12 +429,35 @@ function analyzeVerbForSubjunctive(verb, context) {
     // Exclude common words that aren't verbs
     const excludeWords = ['que', 'de', 'le', 'me', 'te', 'se', 'ne', 'ce'];
     if (!excludeWords.includes(normalizedVerb) && normalizedVerb.length > 2) {
+      
+      // CONTEXTUAL ANALYSIS: Reduce confidence for potentially ambiguous forms
+      let confidence = normalizedVerb.endsWith('ent') ? 0.65 : 0.60;
+      
+      // Check for indicators of indicative usage (factual/historical context)
+      const indicativeIndicators = [
+        // Historical/factual context indicators
+        /\b(?:avait|était|fut|eut|avaient|étaient|furent|eurent)\b/i.test(context), // Past tense in context
+        /\b(?:en|dans|vers|depuis)\s+\d{4}\b/i.test(context), // Year dates (historical)
+        /\b(?:quelques|plusieurs)\s+(?:mois|années|jours)\b/i.test(context), // Time expressions
+        /\b(?:village|ville|pays|région)\b/i.test(context), // Geographic/factual terms
+        // Proper noun subjects often indicate factual usage
+        /\b[A-Z][a-z]+\s+[A-Z][a-z]+\b/.test(context) // Proper names like "Thompson arrive"
+      ];
+      
+      const indicativeCount = indicativeIndicators.filter(Boolean).length;
+      
+      if (indicativeCount >= 2) {
+        confidence *= 0.7; // Reduce confidence by 30% for likely indicative usage
+        console.log(`🔍 Contextual analysis: ${indicativeCount} indicative indicators found, reducing confidence to ${confidence.toFixed(2)}`);
+      }
+      
       const result = {
         verb: normalizedVerb,
         type: 'ER_REGULAR',
         priority: 1,
-        confidence: normalizedVerb.endsWith('ent') ? 0.65 : 0.60, // Slightly higher confidence for -ent forms
-        position: context.indexOf(verb)
+        confidence: confidence,
+        position: context.indexOf(verb),
+        contextualNote: indicativeCount >= 2 ? 'Possibly indicative usage in historical/factual context' : null
       };
       console.log('✅ Regular -ER subjunctive found:', result);
       return result;
