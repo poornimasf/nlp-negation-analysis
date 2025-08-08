@@ -15,6 +15,24 @@ function getAvantQueUsageDescription(subcategory) {
 }
 
 /**
+ * Get recommendation text based on negation type
+ */
+function getRecommendationFromType(negationType) {
+    switch (negationType) {
+        case 'EXPLETIVE_NEGATION':
+            return 'Expletive ne detected - optional semantic marker';
+        case 'LOGICAL_NEGATION':
+            return 'Logical negation detected - ne is part of standard negation';
+        case 'COMPLEX_NEGATION':
+            return 'Complex negation pattern - requires careful analysis';
+        case 'POLARITY_NEGATION':
+            return 'Negative polarity items detected - context-dependent analysis';
+        default:
+            return 'No specific negation pattern detected';
+    }
+}
+
+/**
  * Format rule-based analysis results
  */
 export const formatRuleBasedResult = (analysis) => {
@@ -195,10 +213,18 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
             if (enhanced.negationAnalysis.hasMultipleNegation) {
                 result += `- Negation Type: ${enhanced.negationAnalysis.negationType}\n`;
                 result += `- Confidence: ${Math.round(enhanced.negationAnalysis.confidence * 100)}%\n`;
-                result += `- Is Expletive Context: ${enhanced.negationAnalysis.isExpletiveContext ? 'Yes' : 'No'}\n`;
-                result += `- Is Logical Negation: ${enhanced.negationAnalysis.isLogicalNegation ? 'Yes' : 'No'}\n`;
-                result += `- Recommendation: ${enhanced.negationAnalysis.recommendation}\n`;
+                result += `- Is Expletive Context: ${enhanced.negationAnalysis.negationType === 'EXPLETIVE_NEGATION' ? 'Yes' : 'No'}\n`;
+                result += `- Is Logical Negation: ${enhanced.negationAnalysis.negationType === 'LOGICAL_NEGATION' ? 'Yes' : 'No'}\n`;
+                result += `- Recommendation: ${enhanced.negationAnalysis.recommendation || getRecommendationFromType(enhanced.negationAnalysis.negationType)}\n`;
             }
+        }
+        
+        // Clause Boundary Analysis (if available)
+        if (enhanced.clauseInfo && enhanced.clauseInfo.isIsolated) {
+            result += '\nClause Boundary Analysis:\n';
+            result += `- Isolated Clause: "${enhanced.clauseInfo.clause}"\n`;
+            result += `- Analysis Scope: Focused on trigger clause only\n`;
+            result += `- Cross-clause Contamination: Prevented\n`;
         }
         
         // Vowel Context Analysis

@@ -7,6 +7,7 @@ import { normalizeText } from './textProcessing';
 import { enhanceAvantQueAnalysis } from './avantQueAnalyzer';
 import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS } from './patterns';
 import { analyzeAmbiguityAndNegation } from './ambiguityNegationAnalyzer';
+import { extractTriggerClause, detectSubjunctiveInClause, analyzeMultipleNegationInClause } from './clauseBoundaryAnalyzer';
 
 // Enhanced trigger patterns with additional constructions
 const ENHANCED_TRIGGER_PATTERNS = {
@@ -299,18 +300,41 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   }
   
   const inputTrigger = extractEnhancedTrigger(text);
-  const inputSubjunctive = detectSubjunctiveMood(text);
+  
+  // Extract the specific clause containing the trigger for focused analysis
+  let triggerClause = text;
+  let clauseInfo = null;
+  if (inputTrigger) {
+    clauseInfo = extractTriggerClause(text, inputTrigger);
+    triggerClause = clauseInfo.clause;
+  }
+  
+  // Analyze subjunctive within the specific clause
+  const inputSubjunctive = inputTrigger ? 
+    detectSubjunctiveInClause(triggerClause, inputTrigger) : 
+    detectSubjunctiveMood(text);
+  
   const inputRegister = detectRegister(text);
   const inputDiscourse = detectDiscourseContext(text);
   
   // Enhanced avant que analysis if applicable
   let avantQueAnalysis = null;
   if (inputTrigger && inputTrigger.trigger.includes('avant')) {
-    avantQueAnalysis = enhanceAvantQueAnalysis(text, inputTrigger);
+    avantQueAnalysis = enhanceAvantQueAnalysis(triggerClause, inputTrigger);
   }
   
-  // Ambiguity and negation analysis
-  const ambiguityNegationAnalysis = analyzeAmbiguityAndNegation(text);
+  // Analyze ambiguity and negation within the specific clause
+  let ambiguityNegationAnalysis;
+  if (clauseInfo && clauseInfo.isIsolated) {
+    // Use clause-specific analysis for better accuracy
+    const clauseNegationAnalysis = analyzeMultipleNegationInClause(triggerClause);
+    ambiguityNegationAnalysis = {
+      ...analyzeAmbiguityAndNegation(text),
+      negation: clauseNegationAnalysis
+    };
+  } else {
+    ambiguityNegationAnalysis = analyzeAmbiguityAndNegation(text);
+  }
   
   // Find similar examples with enhanced similarity
   const enhancedExamples = trainingData
@@ -355,7 +379,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     return acc;
   }, { expletive: 0, nonExpletive: 0, totalWeight: 0 });
   
-  // Apply ambiguity and negation adjustments
+  // Apply ambiguity and negation adjustments (using clause-specific analysis)
   let adjustedExpletive = enhancedVotes.expletive;
   let adjustedNonExpletive = enhancedVotes.nonExpletive;
   
@@ -366,10 +390,10 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     adjustedExpletive += 0.1;
   }
   
-  // Negation type affects likelihood
-  if (ambiguityNegationAnalysis.negation.isLogicalNegation) {
+  // Negation type affects likelihood (now using clause-specific analysis)
+  if (ambiguityNegationAnalysis.negation.negationType === 'LOGICAL_NEGATION') {
     adjustedNonExpletive += 0.5; // Strong evidence against expletive
-  } else if (ambiguityNegationAnalysis.negation.isExpletiveContext) {
+  } else if (ambiguityNegationAnalysis.negation.negationType === 'EXPLETIVE_NEGATION') {
     adjustedExpletive += 0.4; // Strong evidence for expletive
   }
   
@@ -391,7 +415,8 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
       ambiguityAnalysis: ambiguityNegationAnalysis.ambiguity,
       negationAnalysis: ambiguityNegationAnalysis.negation,
       vowelContext: ambiguityNegationAnalysis.vowelContext,
-      combinedAnalysis: ambiguityNegationAnalysis.combinedAnalysis
+      combinedAnalysis: ambiguityNegationAnalysis.combinedAnalysis,
+      clauseInfo: clauseInfo // Add clause boundary information
     },
     enhancedVotes: {
       ...enhancedVotes,
