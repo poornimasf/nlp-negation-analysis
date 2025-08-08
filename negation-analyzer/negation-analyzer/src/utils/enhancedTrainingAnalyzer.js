@@ -8,6 +8,7 @@ import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS } from './patterns';
 import { analyzeAmbiguityAndNegation } from './ambiguityNegationAnalyzer';
 import { extractTriggerClause, detectSubjunctiveInClause, analyzeMultipleNegationInClause } from './clauseBoundaryAnalyzer';
 import { enhanceAvantQueAnalysisWithClause } from './enhancedAvantQueAnalyzer';
+import { createSurfaceForm } from './surfaceFormGenerator.js';
 
 // Enhanced trigger patterns with additional constructions
 const ENHANCED_TRIGGER_PATTERNS = {
@@ -489,19 +490,34 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   const actualExpletiveLikelihood = (adjustedExpletive + adjustedNonExpletive) > 0 ?
     adjustedExpletive / (adjustedExpletive + adjustedNonExpletive) : 0.5;
   
+  // Generate surface form for expletive classifications
+  const analysisResult = {
+    classification: shouldHaveNe,
+    confidence,
+    avantQueAnalysis,
+    linguisticAnalysis: {
+      trigger: inputTrigger,
+      detectedVerb: avantQueAnalysis?.subjunctiveMood?.verb
+    }
+  };
+  
+  const surfaceForm = createSurfaceForm(text, analysisResult);
+  
   console.log('🎯 FINAL RESULT:', {
     classification: shouldHaveNe,
     confidence: confidence,
     adjustedExpletive,
     adjustedNonExpletive,
     negationType: ambiguityNegationAnalysis.negation.negationType,
-    actualExpletiveLikelihood: actualExpletiveLikelihood
+    actualExpletiveLikelihood: actualExpletiveLikelihood,
+    surfaceForm: surfaceForm
   });
   
   return {
     classification: shouldHaveNe,
     confidence,
     matches: enhancedExamples,
+    surfaceForm: surfaceForm, // NEW: Add surface form prediction
     linguisticAnalysis: {
       trigger: inputTrigger,
       subjunctive: inputSubjunctive,
