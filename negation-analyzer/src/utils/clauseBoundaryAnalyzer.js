@@ -208,6 +208,12 @@ function detectSubjunctiveAfterAvantQue(clause) {
   // Pattern: subject pronoun + optional object pronouns + verb
   const pronounMatch = afterAvantQue.match(/\b(?:ils?|elles?|on|nous|vous|tu|je|j'|ce|c'|celui-ci|celle-ci|ceux-ci|celles-ci)\b\s+(?:(?:me|te|se|le|la|les|lui|leur|en|y)\s+)*(\w+)/i);
   console.log('🔍 Pronoun pattern match:', pronounMatch);
+  console.log('🔍 Pronoun pattern debug:', {
+    textStart: afterAvantQue.substring(0, 30),
+    hasElles: afterAvantQue.includes('elles'),
+    ellesPosition: afterAvantQue.indexOf('elles'),
+    wordBoundaryTest: /\belles\b/.test(afterAvantQue)
+  });
   if (pronounMatch) {
     const verb = pronounMatch[1];
     console.log('🔍 Extracted verb from pronoun pattern:', verb);
