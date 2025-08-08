@@ -295,11 +295,14 @@ export function calculateEnhancedSimilarity(text1, text2) {
  * Enhanced training data analysis with linguistic features
  */
 export function analyzeWithEnhancedFeatures(text, trainingData) {
+  console.log('🔍 ENHANCED ANALYSIS STARTING for:', text.substring(0, 50) + '...');
+  
   if (!text || !trainingData || trainingData.length === 0) {
     throw new Error('Invalid input for enhanced analysis');
   }
   
   const inputTrigger = extractEnhancedTrigger(text);
+  console.log('🎯 Input trigger found:', inputTrigger);
   
   // Extract the specific clause containing the trigger for focused analysis
   let triggerClause = text;
@@ -307,12 +310,15 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   if (inputTrigger) {
     clauseInfo = extractTriggerClause(text, inputTrigger);
     triggerClause = clauseInfo.clause;
+    console.log('📝 Extracted clause:', triggerClause);
+    console.log('🔧 Clause info:', clauseInfo);
   }
   
   // Analyze subjunctive within the specific clause
   const inputSubjunctive = inputTrigger ? 
     detectSubjunctiveInClause(triggerClause, inputTrigger) : 
     detectSubjunctiveMood(text);
+  console.log('📚 Subjunctive detected:', inputSubjunctive);
   
   const inputRegister = detectRegister(text);
   const inputDiscourse = detectDiscourseContext(text);
@@ -321,6 +327,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   let avantQueAnalysis = null;
   if (inputTrigger && inputTrigger.trigger.includes('avant')) {
     avantQueAnalysis = enhanceAvantQueAnalysisWithClause(triggerClause, inputTrigger);
+    console.log('🏛️ Avant que analysis:', avantQueAnalysis);
   }
   
   // Analyze ambiguity and negation within the specific clause only
@@ -339,6 +346,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
         expletiveLikelihood: clauseAmbiguityAnalysis.combinedAnalysis.expletiveLikelihood
       }
     };
+    console.log('🚫 Clause-specific negation analysis:', clauseNegationAnalysis);
   } else {
     ambiguityNegationAnalysis = analyzeAmbiguityAndNegation(text);
   }
@@ -366,6 +374,8 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     .sort((a, b) => b.similarity - a.similarity)
     .slice(0, 8); // Increased to 8 for better analysis
   
+  console.log('📊 Enhanced examples found:', enhancedExamples.length);
+  
   // Enhanced weighted voting
   const enhancedVotes = enhancedExamples.reduce((acc, example) => {
     let weight = example.similarity;
@@ -386,6 +396,8 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     return acc;
   }, { expletive: 0, nonExpletive: 0, totalWeight: 0 });
   
+  console.log('🗳️ Base votes:', enhancedVotes);
+  
   // Apply ambiguity and negation adjustments (using clause-specific analysis)
   let adjustedExpletive = enhancedVotes.expletive;
   let adjustedNonExpletive = enhancedVotes.nonExpletive;
@@ -393,21 +405,35 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   // Ambiguity increases expletive likelihood
   if (ambiguityNegationAnalysis.ambiguity.clarificationNeeded) {
     adjustedExpletive += 0.3;
+    console.log('📈 Ambiguity adjustment: +0.3 (clarification needed)');
   } else if (ambiguityNegationAnalysis.ambiguity.hasAmbiguity) {
     adjustedExpletive += 0.1;
+    console.log('📈 Ambiguity adjustment: +0.1 (has ambiguity)');
   }
   
   // Negation type affects likelihood (now using clause-specific analysis)
   if (ambiguityNegationAnalysis.negation.negationType === 'LOGICAL_NEGATION') {
     adjustedNonExpletive += 0.5; // Strong evidence against expletive
+    console.log('📉 Negation adjustment: +0.5 to non-expletive (logical negation)');
   } else if (ambiguityNegationAnalysis.negation.negationType === 'EXPLETIVE_NEGATION') {
     adjustedExpletive += 0.4; // Strong evidence for expletive
+    console.log('📈 Negation adjustment: +0.4 to expletive (expletive context)');
+  } else {
+    console.log('⚪ No negation adjustment (negationType: ' + ambiguityNegationAnalysis.negation.negationType + ')');
   }
   
   const shouldHaveNe = adjustedExpletive > adjustedNonExpletive;
   const confidence = (adjustedExpletive + adjustedNonExpletive) > 0 ? 
     Math.max(adjustedExpletive, adjustedNonExpletive) / (adjustedExpletive + adjustedNonExpletive) :
     0.5;
+  
+  console.log('🎯 FINAL RESULT:', {
+    classification: shouldHaveNe,
+    confidence: confidence,
+    adjustedExpletive,
+    adjustedNonExpletive,
+    negationType: ambiguityNegationAnalysis.negation.negationType
+  });
   
   return {
     classification: shouldHaveNe,
