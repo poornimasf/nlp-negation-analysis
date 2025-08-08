@@ -63,7 +63,11 @@ function analyzeComplementClauseInClause(normalizedClause) {
   const subjectPronouns = /\b(?:je|j'|tu|il|elle|on|nous|vous|ils|elles|ce|c')\b/i;
   const hasSubjectPronoun = subjectPronouns.test(normalizedClause);
   
-  // Look for noun subjects (articles + nouns) - ADDED
+  // Look for demonstrative pronouns - ADDED
+  const demonstrativePronouns = /\b(?:celui-ci|celle-ci|ceux-ci|celles-ci|celui-là|celle-là|ceux-là|celles-là)\b/i;
+  const hasDemonstrativePronoun = demonstrativePronouns.test(normalizedClause);
+  
+  // Look for noun subjects (articles + nouns)
   const nounSubjects = /\b(?:les?|la|l'|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+\w+/i;
   const hasNounSubject = nounSubjects.test(normalizedClause);
   
@@ -75,24 +79,30 @@ function analyzeComplementClauseInClause(normalizedClause) {
   const avantQuePronouns = /avant\s+qu[e']\s+(?:ils?|elles?|on|nous|vous|tu|je|j'|ce|c')\s+\w+/i;
   const hasAvantQuePronouns = avantQuePronouns.test(normalizedClause);
   
-  // Check for "avant que" followed by noun subject + verb pattern - ADDED
+  // Check for "avant que" followed by demonstrative pronouns + verb pattern - ADDED
+  const avantQueDemonstratives = /avant\s+qu[e']\s+(?:celui-ci|celle-ci|ceux-ci|celles-ci|celui-là|celle-là|ceux-là|celles-là)\s+\w+/i;
+  const hasAvantQueDemonstratives = avantQueDemonstratives.test(normalizedClause);
+  
+  // Check for "avant que" followed by noun subject + verb pattern
   const avantQueNouns = /avant\s+qu[e']\s+(?:les?|la|l'|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+\w+\s+\w+/i;
   const hasAvantQueNouns = avantQueNouns.test(normalizedClause);
   
-  const hasAvantQueSubjectVerb = hasAvantQuePronouns || hasAvantQueNouns;
+  const hasAvantQueSubjectVerb = hasAvantQuePronouns || hasAvantQueNouns || hasAvantQueDemonstratives;
   
   console.log('🔍 Complement clause evidence:', {
     hasSubjectPronoun,
+    hasDemonstrativePronoun,
     hasNounSubject,
     hasFiniteVerb,
     hasAvantQuePronouns,
+    hasAvantQueDemonstratives,
     hasAvantQueNouns,
     hasAvantQueSubjectVerb
   });
   
   // Calculate confidence based on evidence
   let confidence = 0;
-  if (hasSubjectPronoun || hasNounSubject) confidence += 0.4; // Any subject
+  if (hasSubjectPronoun || hasNounSubject || hasDemonstrativePronoun) confidence += 0.4; // Any subject
   if (hasFiniteVerb) confidence += 0.3;
   if (hasAvantQueSubjectVerb) confidence += 0.3;
   
@@ -108,7 +118,8 @@ function analyzeComplementClauseInClause(normalizedClause) {
     confidence: Math.min(confidence, 1.0),
     evidence: {
       hasSubjectPronoun,
-      hasNounSubject, // ADDED
+      hasDemonstrativePronoun, // ADDED
+      hasNounSubject,
       hasFiniteVerb,
       hasAvantQueSubjectVerb
     }
