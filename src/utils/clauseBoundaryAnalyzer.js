@@ -214,6 +214,15 @@ function detectSubjunctiveAfterAvantQue(clause) {
     return analyzeVerbForSubjunctive(verb, afterAvantQue);
   }
   
+  // NEW: Proper noun + object pronouns + verb pattern
+  const properNounMatch = afterAvantQue.match(/([A-Z]\w+)\s+(?:(?:me|te|se|le|la|les|lui|leur|en|y)\s+)*(\w+)/i);
+  console.log('🔍 Proper noun pattern match:', properNounMatch);
+  if (properNounMatch) {
+    const verb = properNounMatch[2];
+    console.log('🔍 Extracted verb from proper noun pattern:', verb);
+    return analyzeVerbForSubjunctive(verb, afterAvantQue);
+  }
+  
   // General article + noun + verb pattern (more careful)
   const articleMatch = afterAvantQue.match(/(?:la|l'|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+\w+\s+(\w+)/i);
   console.log('🔍 Article pattern match:', articleMatch);
