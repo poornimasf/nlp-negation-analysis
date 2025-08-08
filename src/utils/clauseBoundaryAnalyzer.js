@@ -252,10 +252,9 @@ function analyzeVerbForSubjunctive(verb, context) {
     ayez: { type: 'AVOIR', priority: 3, confidence: 0.95 },
     aient: { type: 'AVOIR', priority: 3, confidence: 0.95 },
     
-    // Common irregular verbs
+    // faire
     fasse: { type: 'FAIRE', priority: 3, confidence: 0.95 },
     fasses: { type: 'FAIRE', priority: 3, confidence: 0.95 },
-    fasse: { type: 'FAIRE', priority: 3, confidence: 0.95 },
     fassions: { type: 'FAIRE', priority: 3, confidence: 0.95 },
     fassiez: { type: 'FAIRE', priority: 3, confidence: 0.95 },
     fassent: { type: 'FAIRE', priority: 3, confidence: 0.95 },
@@ -263,7 +262,6 @@ function analyzeVerbForSubjunctive(verb, context) {
     // obtenir (for the specific example)
     obtienne: { type: 'OBTENIR', priority: 2, confidence: 0.85 },
     obtiennes: { type: 'OBTENIR', priority: 2, confidence: 0.85 },
-    obtienne: { type: 'OBTENIR', priority: 2, confidence: 0.85 },
     obtenions: { type: 'OBTENIR', priority: 2, confidence: 0.85 },
     obteniez: { type: 'OBTENIR', priority: 2, confidence: 0.85 },
     obtiennent: { type: 'OBTENIR', priority: 2, confidence: 0.85 }

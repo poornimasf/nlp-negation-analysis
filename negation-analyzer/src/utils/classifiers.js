@@ -1,6 +1,7 @@
 import { normalizeText } from './textProcessing';
 import { classifyWithSVM, trainSVMModel } from './svmClassifier';
 import { TRIGGER_PATTERNS, CONFIDENCE_LEVELS } from './patterns';
+import { analyzeWithEnhancedFeatures } from './enhancedTrainingAnalyzer';
 
 // Export all main functions
 export { trainSVMModel } from './svmClassifier';
@@ -387,8 +388,15 @@ export const classifyWithEnhancedBinaryClassifier = (text, trainingData) => {
 
   // Try enhanced analysis first
   try {
-    const { analyzeWithEnhancedFeatures } = require('./enhancedTrainingAnalyzer');
+    console.log('Using enhanced analysis for:', text.substring(0, 50) + '...');
     const enhancedResult = analyzeWithEnhancedFeatures(text, trainingData);
+    console.log('Enhanced result:', {
+      classification: enhancedResult.classification,
+      confidence: enhancedResult.confidence,
+      trigger: enhancedResult.linguisticAnalysis.trigger?.trigger,
+      subjunctive: enhancedResult.linguisticAnalysis.subjunctive?.verb,
+      negationType: enhancedResult.linguisticAnalysis.negationAnalysis?.negationType
+    });
     
     // Convert enhanced result to expected format
     const quePosition = findQuePosition(text, enhancedResult.linguisticAnalysis.trigger);
@@ -486,7 +494,7 @@ export const classifyWithEnhancedBinaryClassifier = (text, trainingData) => {
     };
     
   } catch (error) {
-    console.warn('Enhanced analysis failed, falling back to standard analysis:', error);
+    console.error('Enhanced analysis failed, falling back to standard analysis:', error);
     // Fall back to original implementation
     return classifyWithBinaryClassifier(text, trainingData);
   }
