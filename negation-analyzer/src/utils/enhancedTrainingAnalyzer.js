@@ -404,11 +404,21 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   
   // CRITICAL: Apply avant que analysis boost FIRST (strongest evidence)
   // Force deployment - ensure adaptive boost overrides training data bias
+  console.log('🔍 Checking avant que boost conditions:', {
+    hasAvantQueAnalysis: !!avantQueAnalysis,
+    isAvantQue: avantQueAnalysis?.isAvantQue,
+    bothConditionsMet: avantQueAnalysis?.bothConditionsMet,
+    complementClause: avantQueAnalysis?.complementClause?.isComplementClause,
+    subjunctiveMood: avantQueAnalysis?.subjunctiveMood?.hasSubjunctive
+  });
+  
   if (avantQueAnalysis && avantQueAnalysis.bothConditionsMet) {
     // Use a multiplicative boost to ensure linguistic rules always win
     const currentTotal = adjustedExpletive + adjustedNonExpletive;
     adjustedExpletive = Math.max(adjustedExpletive + 5.0, currentTotal * 0.75); // Ensure at least 75% likelihood
     console.log('🏛️ Avant que boost: Strong boost applied (both conditions met) - expletive now favored');
+  } else {
+    console.log('❌ Avant que boost NOT applied - conditions not met');
   }
   
   // Ambiguity increases expletive likelihood
