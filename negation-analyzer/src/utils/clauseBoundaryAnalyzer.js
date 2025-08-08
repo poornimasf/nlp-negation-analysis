@@ -235,6 +235,12 @@ function detectSubjunctiveAfterQue(clause) {
 function analyzeVerbForSubjunctive(verb, context) {
   const normalizedVerb = normalizeText(verb.toLowerCase());
   
+  console.log('🔍 Analyzing verb for subjunctive:', {
+    originalVerb: verb,
+    normalizedVerb: normalizedVerb,
+    context: context.substring(0, 50) + '...'
+  });
+  
   // High-priority subjunctive patterns
   const highPriorityPatterns = {
     // être
@@ -259,6 +265,13 @@ function analyzeVerbForSubjunctive(verb, context) {
     fassiez: { type: 'FAIRE', priority: 3, confidence: 0.95 },
     fassent: { type: 'FAIRE', priority: 3, confidence: 0.95 },
     
+    // venir (add the missing patterns)
+    vienne: { type: 'VENIR', priority: 3, confidence: 0.95 },
+    viennes: { type: 'VENIR', priority: 3, confidence: 0.95 },
+    venions: { type: 'VENIR', priority: 3, confidence: 0.95 },
+    veniez: { type: 'VENIR', priority: 3, confidence: 0.95 },
+    viennent: { type: 'VENIR', priority: 3, confidence: 0.95 },
+    
     // obtenir (for the specific example)
     obtienne: { type: 'OBTENIR', priority: 2, confidence: 0.85 },
     obtiennes: { type: 'OBTENIR', priority: 2, confidence: 0.85 },
@@ -267,17 +280,27 @@ function analyzeVerbForSubjunctive(verb, context) {
     obtiennent: { type: 'OBTENIR', priority: 2, confidence: 0.85 }
   };
   
+  console.log('🔍 Checking if verb is in patterns:', {
+    isInPatterns: !!highPriorityPatterns[normalizedVerb],
+    availablePatterns: Object.keys(highPriorityPatterns).filter(k => k.startsWith(normalizedVerb.charAt(0)))
+  });
+  
   // Check high-priority patterns first
   if (highPriorityPatterns[normalizedVerb]) {
     const pattern = highPriorityPatterns[normalizedVerb];
-    return {
+    const result = {
       verb: normalizedVerb,
       type: pattern.type,
       priority: pattern.priority,
       confidence: pattern.confidence,
       position: context.indexOf(verb)
     };
+    console.log('✅ Subjunctive found:', result);
+    return result;
   }
+  
+  console.log('❌ No subjunctive pattern matched for verb:', normalizedVerb);
+  return null;
   
   // Check regular subjunctive patterns
   if (normalizedVerb.match(/^.+(?:e|es|ions|iez|ent)$/)) {
