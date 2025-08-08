@@ -286,11 +286,12 @@ function detectSubjunctiveAfterAvantQue(clause) {
     return analyzeVerbForSubjunctive(verb, afterAvantQue);
   }
   
-  // General article + noun + verb pattern (more careful)
-  const articleMatch = afterAvantQue.match(/(?:la|l'|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+\w+\s+(\w+)/i);
+  // General article + noun + verb pattern - FIXED FOR CONTRACTIONS
+  const articleMatch = afterAvantQue.match(/(?:la|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+\w+\s+(\w+)|(?:l')\w+\s+(\w+)/i);
   console.log('🔍 Article pattern match:', articleMatch);
   if (articleMatch) {
-    const verb = articleMatch[1];
+    // Handle both regular articles and contractions
+    const verb = articleMatch[1] || articleMatch[2]; // First or second capture group
     console.log('🔍 Extracted verb from article pattern:', verb);
     return analyzeVerbForSubjunctive(verb, afterAvantQue);
   }
