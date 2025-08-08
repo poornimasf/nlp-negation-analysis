@@ -9,6 +9,7 @@ A specialized linguistic analysis platform for predicting whether removed "ne" m
 - [Implementation Details](negation-analyzer/FILE_STRUCTURE.md) - Detailed file structure and implementation guide
 - [Update Process](negation-analyzer/UPDATE_CHECKLIST.md) - Comprehensive testing and deployment checklist
 - [Analysis Modes](negation-analyzer/ANALYSIS_MODES.md) - Detailed description of analysis modes and features
+- [Training Data Guide](docs/TRAINING_DATA_GUIDE.md) - Complete guide for uploading and using training data
 
 ## Latest Updates (v2.6.0 - July 26, 2025)
 
@@ -36,11 +37,18 @@ The system analyzes French sentences where "ne" markers have been removed and pr
   - Context-aware confidence scoring
 
 #### 2. Training Data Analysis
-- ✅ **Example-Based Learning**:
+- ✅ **User-Uploaded Examples**:
+  - Upload JSON files with annotated French sentences
   - Text similarity matching for removed "ne" prediction
   - Confidence scoring based on similar examples
-  - Transparent example references
+  - Transparent example references with similarity scores
   - Pure ML-based decisions from user data
+- ✅ **Advanced Features**:
+  - Best match display with similarity percentages
+  - Weighted voting from multiple similar examples
+  - Detailed confidence breakdown
+  - Support for trigger-based categorization
+  - Real-time data preview and statistics
 
 #### 3. Priority System
 - **Either/Or Logic**: Choose Rule-Based OR Training Data analysis
@@ -126,10 +134,14 @@ Download results in multiple formats:
 - **TXT**: Human-readable reports
 
 ### Training Data Management
-- Upload CSV/JSON files with annotated examples
-- Preview and validate training data
-- Support for multiple trigger types
-- Statistics and quality metrics
+- Upload JSON files with annotated French sentence examples
+- Real-time preview with first 10 examples displayed
+- Comprehensive statistics dashboard (total examples, classification ratios)
+- Data validation with detailed error messages
+- Support for multiple trigger types and confidence levels
+- Session-based storage (client-side only, no server persistence)
+- Easy data clearing and re-upload functionality
+- See [Training Data Guide](docs/TRAINING_DATA_GUIDE.md) for complete documentation
 
 ### CroissantLLM Integration
 - French-specific language model
