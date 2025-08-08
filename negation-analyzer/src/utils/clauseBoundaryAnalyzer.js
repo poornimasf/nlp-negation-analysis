@@ -245,6 +245,16 @@ function detectSubjunctiveAfterAvantQue(clause) {
   }
   
   // NEW: Handle text normalization artifact "e l'..." from "avant qu'..." - FIXED FOR PUNCTUATION
+  console.log('🔍 Character-by-character analysis:', {
+    firstChars: afterAvantQue.substring(0, 20).split('').map((c, i) => `${i}: '${c}' (${c.charCodeAt(0)})`),
+    length: afterAvantQue.length,
+    startsWithE: afterAvantQue[0] === 'e',
+    secondChar: `'${afterAvantQue[1]}' (${afterAvantQue.charCodeAt(1)})`,
+    hasSpace: afterAvantQue[1] === ' ',
+    apostropheChar: `'${afterAvantQue[3]}' (${afterAvantQue.charCodeAt(3)})`,
+    isNormalApostrophe: afterAvantQue[3] === "'"
+  });
+  
   console.log('🔍 Testing normalization regex directly:', {
     testText: "e l'alarme retentisse ?",
     regexTest1: /^e\s+l'\s+\w+\s+\w+/.test(afterAvantQue),
