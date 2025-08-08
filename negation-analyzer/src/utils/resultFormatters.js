@@ -112,43 +112,12 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
     // Use the correct classification property (type from analysisObj)
     const classification = analysis.type || analysis.classification;
     
-    // Classification and Confidence with explanation
+    // Classification and Confidence
     result += `Classification: ${classification}\n`;
-    result += `Should be "${classification}" because:\n`;
+    const confidencePercent = Math.round((trainingAnalysis.confidence || 0) * 100);
+    result += `Confidence: ${confidencePercent}%\n\n`;
     
     // Enhanced linguistic analysis if available
-    if (trainingAnalysis?.enhancedAnalysis) {
-        const enhanced = trainingAnalysis.enhancedAnalysis;
-        
-        if (enhanced.trigger) {
-            result += `- Has ${enhanced.trigger.category?.toLowerCase() || 'trigger'} trigger "${enhanced.trigger.trigger}"\n`;
-        }
-        if (enhanced.subjunctive) {
-            result += `- Uses subjunctive form: "${enhanced.subjunctive.verb}" (${enhanced.subjunctive.type})\n`;
-        }
-        if (enhanced.register && enhanced.register.register !== 'NEUTRAL') {
-            result += `- Register: ${enhanced.register.register.toLowerCase()} (${Math.round(enhanced.register.confidence * 100)}% confidence)\n`;
-        }
-        if (enhanced.avantQueAnalysis && enhanced.avantQueAnalysis.isAvantQue) {
-            result += `- Enhanced avant que analysis: ${enhanced.avantQueAnalysis.bothConditionsMet ? 'Both conditions met' : 'Conditions not fully met'}\n`;
-        }
-    } else {
-        // Fallback to original analysis
-        if (trainingAnalysis?.context?.trigger) {
-            result += `- Has ${trainingAnalysis.context.category?.toLowerCase() || 'trigger'} trigger "${trainingAnalysis.context.trigger}"\n`;
-        }
-        if (analysis.evidence?.hasSubjunctive) {
-            result += `- Uses subjunctive form\n`;
-        }
-        if (trainingAnalysis?.context?.subcategory) {
-            result += `- ${getSubcategoryReason(trainingAnalysis.context.subcategory)}\n`;
-        }
-    }
-    result += '\n';
-    
-    result += `Confidence: ${Math.round(analysis.confidence * 100)}%\n\n`;
-    
-    // Enhanced Linguistic Analysis Section
     if (trainingAnalysis?.enhancedAnalysis) {
         const enhanced = trainingAnalysis.enhancedAnalysis;
         
@@ -157,196 +126,114 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
         // Trigger Analysis
         if (enhanced.trigger) {
             result += `- Trigger: "${enhanced.trigger.trigger}" (${enhanced.trigger.category})\n`;
-            if (enhanced.trigger.subcategory) {
+            if (enhanced.trigger.subcategory && enhanced.trigger.subcategory !== 'DEFAULT') {
                 result += `- Subcategory: ${enhanced.trigger.subcategory}\n`;
             }
         }
         
         // Subjunctive Analysis
         if (enhanced.subjunctive) {
-            result += `- Subjunctive: "${enhanced.subjunctive.verb}" (${enhanced.subjunctive.type})\n`;
-            result += `- Subjunctive Confidence: ${Math.round(enhanced.subjunctive.confidence * 100)}%\n`;
+            result += `- Subjunctive: "${enhanced.subjunctive.verb}" (${enhanced.subjunctive.type}, ${Math.round(enhanced.subjunctive.confidence * 100)}% confidence)\n`;
         } else {
             result += `- Subjunctive: Not detected\n`;
         }
         
-        // Register Analysis
-        if (enhanced.register) {
-            result += `- Register: ${enhanced.register.register}\n`;
-            if (enhanced.register.features.length > 0) {
+        // Register Analysis (only if not neutral)
+        if (enhanced.register && enhanced.register.register !== 'NEUTRAL') {
+            result += `- Register: ${enhanced.register.register} (${Math.round(enhanced.register.confidence * 100)}% confidence)\n`;
+            if (enhanced.register.features && enhanced.register.features.length > 0) {
                 result += `- Register Features: ${enhanced.register.features.join(', ')}\n`;
             }
         }
         
-        // Discourse Context
-        if (enhanced.discourse && enhanced.discourse.length > 0) {
-            result += `- Discourse Context: ${enhanced.discourse.map(d => d.type).join(', ')}\n`;
-        }
+        result += '\n';
         
         // Enhanced Avant Que Analysis
         if (enhanced.avantQueAnalysis && enhanced.avantQueAnalysis.isAvantQue) {
-            result += '\nEnhanced Avant Que Analysis:\n';
-            result += `- Complement Clause: ${enhanced.avantQueAnalysis.complementClause.isComplementClause ? 'Present' : 'Absent'} (${Math.round(enhanced.avantQueAnalysis.complementClause.confidence * 100)}% confidence)\n`;
-            result += `- Subjunctive Mood: ${enhanced.avantQueAnalysis.subjunctiveMood.hasSubjunctive ? 'Present' : 'Absent'} (${Math.round(enhanced.avantQueAnalysis.subjunctiveMood.confidence * 100)}% confidence)\n`;
-            result += `- Both Conditions Met: ${enhanced.avantQueAnalysis.bothConditionsMet ? 'Yes' : 'No'}\n`;
-            result += `- Reasoning: ${enhanced.avantQueAnalysis.classificationReason}\n`;
+            result += 'Enhanced Avant Que Analysis:\n';
+            const avantQue = enhanced.avantQueAnalysis;
+            
+            result += `- Complement Clause: ${avantQue.complementClause.isComplementClause ? 'Present' : 'Absent'} (${Math.round(avantQue.complementClause.confidence * 100)}% confidence)\n`;
+            result += `- Subjunctive Mood: ${avantQue.subjunctiveMood.hasSubjunctive ? 'Present' : 'Absent'} (${Math.round(avantQue.subjunctiveMood.confidence * 100)}% confidence)\n`;
+            result += `- Both Conditions Met: ${avantQue.bothConditionsMet ? 'Yes' : 'No'}\n`;
+            result += `- Reasoning: ${avantQue.classificationReason}\n\n`;
         }
         
-        // Ambiguity Analysis
-        if (enhanced.ambiguityAnalysis) {
-            result += '\nAmbiguity Analysis:\n';
-            result += `- Ambiguity Detected: ${enhanced.ambiguityAnalysis.hasAmbiguity ? 'Yes' : 'No'}\n`;
-            if (enhanced.ambiguityAnalysis.hasAmbiguity) {
-                result += `- Ambiguity Score: ${Math.round(enhanced.ambiguityAnalysis.ambiguityScore * 100)}%\n`;
-                result += `- Clarification Needed: ${enhanced.ambiguityAnalysis.clarificationNeeded ? 'Yes' : 'No'}\n`;
-                result += `- Recommendation: ${enhanced.ambiguityAnalysis.recommendation}\n`;
-                if (enhanced.ambiguityAnalysis.detectedAmbiguities.length > 0) {
-                    result += `- Ambiguity Types: ${enhanced.ambiguityAnalysis.detectedAmbiguities.map(a => a.type).join(', ')}\n`;
-                }
+        // Ambiguity Analysis (only if detected)
+        if (enhanced.ambiguityAnalysis && enhanced.ambiguityAnalysis.hasAmbiguity) {
+            result += 'Ambiguity Analysis:\n';
+            result += `- Ambiguity Detected: Yes\n`;
+            result += `- Ambiguity Score: ${Math.round(enhanced.ambiguityAnalysis.ambiguityScore * 100)}%\n`;
+            result += `- Clarification Needed: ${enhanced.ambiguityAnalysis.clarificationNeeded ? 'Yes' : 'No'}\n`;
+            result += `- Recommendation: ${enhanced.ambiguityAnalysis.recommendation}\n`;
+            if (enhanced.ambiguityAnalysis.detectedAmbiguities.length > 0) {
+                result += `- Ambiguity Types: ${enhanced.ambiguityAnalysis.detectedAmbiguities.map(a => a.type).join(', ')}\n`;
             }
+            result += '\n';
         }
         
         // Multiple Negation Analysis
         if (enhanced.negationAnalysis) {
-            result += '\nMultiple Negation Analysis:\n';
+            result += 'Multiple Negation Analysis:\n';
             result += `- Multiple Negation: ${enhanced.negationAnalysis.hasMultipleNegation ? 'Yes' : 'No'}\n`;
+            result += `- Negation Type: ${enhanced.negationAnalysis.negationType}\n`;
             if (enhanced.negationAnalysis.hasMultipleNegation) {
-                result += `- Negation Type: ${enhanced.negationAnalysis.negationType}\n`;
                 result += `- Confidence: ${Math.round(enhanced.negationAnalysis.confidence * 100)}%\n`;
                 result += `- Is Expletive Context: ${enhanced.negationAnalysis.negationType === 'EXPLETIVE_NEGATION' ? 'Yes' : 'No'}\n`;
                 result += `- Is Logical Negation: ${enhanced.negationAnalysis.negationType === 'LOGICAL_NEGATION' ? 'Yes' : 'No'}\n`;
                 result += `- Recommendation: ${enhanced.negationAnalysis.recommendation || getRecommendationFromType(enhanced.negationAnalysis.negationType)}\n`;
             }
+            result += '\n';
         }
         
-        // Clause Boundary Analysis (if available)
-        if (enhanced.clauseInfo && enhanced.clauseInfo.isIsolated) {
-            result += '\nClause Boundary Analysis:\n';
-            result += `- Isolated Clause: "${enhanced.clauseInfo.clause}"\n`;
-            result += `- Analysis Scope: Focused on trigger clause only\n`;
-            result += `- Cross-clause Contamination: Prevented\n`;
-        }
-        
-        // Vowel Context Analysis
+        // Vowel Context Analysis (if available)
         if (enhanced.vowelContext) {
-            result += '\nVowel Context Analysis:\n';
+            result += 'Vowel Context Analysis:\n';
             result += `- Surface Form: ${enhanced.vowelContext.form}\n`;
             result += `- Reason: ${enhanced.vowelContext.reason}\n`;
             if (enhanced.vowelContext.nextWord) {
                 result += `- Following Word: "${enhanced.vowelContext.nextWord}"\n`;
             }
+            result += '\n';
         }
         
         // Combined Analysis Summary
         if (enhanced.combinedAnalysis) {
-            result += '\nCombined Analysis Summary:\n';
+            result += 'Combined Analysis Summary:\n';
             result += `- Overall Recommendation: ${enhanced.combinedAnalysis.recommendation}\n`;
             result += `- Expletive Likelihood: ${Math.round(enhanced.combinedAnalysis.expletiveLikelihood * 100)}%\n`;
-            if (enhanced.combinedAnalysis.factors.length > 0) {
+            if (enhanced.combinedAnalysis.factors && enhanced.combinedAnalysis.factors.length > 0) {
                 result += `- Contributing Factors:\n`;
                 enhanced.combinedAnalysis.factors.forEach(factor => {
                     result += `  • ${factor}\n`;
                 });
             }
+            result += '\n';
         }
         
-        result += '\n';
+        // Clause Boundary Analysis (if available)
+        if (enhanced.clauseInfo && enhanced.clauseInfo.isIsolated) {
+            result += 'Clause Boundary Analysis:\n';
+            result += `- Isolated Clause: "${enhanced.clauseInfo.clause}"\n`;
+            result += `- Analysis Scope: Focused on trigger clause only\n`;
+            result += `- Cross-clause Contamination: Prevented\n\n`;
+        }
+        
     } else {
-        // Standard Trigger Analysis
-        result += 'Trigger Analysis:\n';
-        if (trainingAnalysis?.context?.trigger) {
-            const trigger = trainingAnalysis.context.trigger;
-            const category = trainingAnalysis.context.category;
-            const subcategory = trainingAnalysis.context.subcategory;
-            
-            result += `- Found: "${trigger}"\n`;
-            if (category) {
-                result += `- Category: ${category}\n`;
-            }
-            
-            // Add subcategory for avant que
-            if (category === 'TEMPORAL' && trigger.includes('avant')) {
-                result += `- Subcategory: ${subcategory || 'DEFAULT'}\n`;
-                result += `- Usage: ${getAvantQueUsageDescription(subcategory)}\n`;
-            }
-        } else {
-            result += '- No trigger found\n';
+        // Fallback for non-enhanced analysis
+        result += `Should be "${classification}" because:\n`;
+        if (analysis.evidence?.details) {
+            result += `- ${analysis.evidence.details}\n`;
         }
         result += '\n';
     }
     
-    // Best Match Example
-    if (trainingAnalysis?.matches?.length > 0) {
-        const bestMatch = trainingAnalysis.matches[0];
-        result += 'Best Match:\n';
-        result += `- Example: "${bestMatch.text}"\n`;
-        result += `- Similarity: ${Math.round(bestMatch.similarity * 100)}%\n`;
-        result += `- Example's Classification: ${bestMatch.has_expletive_ne ? 'Expletive' : 'No Expletive'}\n`;
-        
-        // Enhanced similarity features
-        if (bestMatch.features) {
-            const features = [];
-            if (bestMatch.features.triggerMatch) features.push('trigger match');
-            if (bestMatch.features.subjunctiveMatch) features.push('subjunctive match');
-            if (bestMatch.features.registerMatch) features.push('register match');
-            if (bestMatch.features.avantQueEnhanced) features.push('avant que enhanced');
-            
-            if (features.length > 0) {
-                result += `- Matching Features: ${features.join(', ')}\n`;
-            }
-        }
-        
-        result += `- Note: This is a similar example but final classification is based on all evidence\n`;
-        result += '\n';
-    }
-    
-    // Evidence Summary with enhanced explanation
-    if (trainingAnalysis?.message) {
-        result += 'Evidence Summary:\n';
-        result += `- Found ${trainingAnalysis.matches?.length || 0} similar examples\n`;
-        result += `- ${trainingAnalysis.message}\n`;
-        
-        if (trainingAnalysis.enhancedVotes || trainingAnalysis.weightedVotes) {
-            const weights = trainingAnalysis.enhancedVotes || trainingAnalysis.weightedVotes;
-            const total = weights.expletive + weights.nonExpletive;
-            if (total > 0) {
-                const expletivePercent = Math.round((weights.expletive / total) * 100);
-                result += `- ${expletivePercent}% of similar examples use expletive ne\n`;
-                result += `- Based on all evidence, ${classification} is more likely\n`;
-            }
-        }
-
-        // Add confidence factors
-        result += '\nConfidence Factors:\n';
-        if (analysis.evidence?.hasSubjunctive || trainingAnalysis?.enhancedAnalysis?.subjunctive) {
-            result += '- Well-formed subjunctive structure (indicates proper grammatical form)\n';
-        }
-        if (trainingAnalysis?.context?.trigger?.includes('avant') || trainingAnalysis?.enhancedAnalysis?.trigger?.trigger?.includes('avant')) {
-            result += '- Clear temporal marker (indicates potential for expletive ne)\n';
-        }
-        if (trainingAnalysis?.nePosition) {
-            result += '- Suggested ne position identified (strengthens classification)\n';
-        }
-        if (trainingAnalysis?.enhancedAnalysis?.register?.register === 'LITERARY') {
-            result += '- Literary register detected (increases expletive ne likelihood)\n';
-        }
-        
-        // Add register analysis
-        if (trainingAnalysis?.originalText) {
-            const text = trainingAnalysis.originalText;
-            if (text.includes('dont') || text.includes('autrefois') || 
-                text.includes('puis') || text.includes('y')) {
-                result += '- Historical/literary register (common context for expletive ne)\n';
-            }
-        }
-    }
-    
-    // Enhanced Weighted Evidence
+    // Enhanced Confidence Breakdown
     if (trainingAnalysis?.enhancedVotes) {
         const weights = trainingAnalysis.enhancedVotes;
         const total = weights.expletive + weights.nonExpletive;
         if (total > 0) {
-            result += '\nEnhanced Confidence Breakdown:\n';
+            result += 'Enhanced Confidence Breakdown:\n';
             result += `- Base Expletive: ${Math.round((weights.expletive / total) * 100)}% (from similar examples)\n`;
             result += `- Base Non-expletive: ${Math.round((weights.nonExpletive / total) * 100)}% (from similar examples)\n`;
             
@@ -354,25 +241,87 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
             if (weights.adjustedExpletive !== undefined && weights.adjustedNonExpletive !== undefined) {
                 const adjustedTotal = weights.adjustedExpletive + weights.adjustedNonExpletive;
                 if (adjustedTotal > 0) {
-                    result += `- Adjusted Expletive: ${Math.round((weights.adjustedExpletive / adjustedTotal) * 100)}% (includes ambiguity/negation factors)\n`;
-                    result += `- Adjusted Non-expletive: ${Math.round((weights.adjustedNonExpletive / adjustedTotal) * 100)}% (includes ambiguity/negation factors)\n`;
+                    result += `- Adjusted Expletive: ${Math.round((weights.adjustedExpletive / adjustedTotal) * 100)}% (includes linguistic rule adjustments)\n`;
+                    result += `- Adjusted Non-expletive: ${Math.round((weights.adjustedNonExpletive / adjustedTotal) * 100)}% (includes linguistic rule adjustments)\n`;
                     
-                    if (weights.ambiguityAdjustment !== undefined) {
-                        result += `- Ambiguity/Negation Adjustment: ${weights.ambiguityAdjustment > 0 ? '+' : ''}${Math.round(weights.ambiguityAdjustment * 100)}%\n`;
+                    // Show specific adjustments
+                    const baseExpletive = weights.expletive;
+                    const adjustment = weights.adjustedExpletive - baseExpletive;
+                    if (adjustment > 0) {
+                        result += `- Linguistic Rule Boost: +${adjustment.toFixed(1)} (avant que analysis, ambiguity, negation factors)\n`;
                     }
                 }
             }
             
-            result += `- Total Weight: ${weights.totalWeight.toFixed(2)} (includes linguistic feature bonuses)\n`;
+            result += `- Total Weight: ${weights.totalWeight.toFixed(2)} (includes linguistic feature bonuses)\n\n`;
         }
-    } else if (trainingAnalysis?.weightedVotes) {
-        const weights = trainingAnalysis.weightedVotes;
-        const total = weights.expletive + weights.nonExpletive;
-        if (total > 0) {
-            result += '\nConfidence Breakdown:\n';
-            result += `- Expletive: ${Math.round((weights.expletive / total) * 100)}% (based on similar examples)\n`;
-            result += `- Non-expletive: ${Math.round((weights.nonExpletive / total) * 100)}% (based on similar examples)\n`;
+    }
+    
+    // Best Match (if available)
+    if (trainingAnalysis?.matches && trainingAnalysis.matches.length > 0) {
+        const bestMatch = trainingAnalysis.matches[0];
+        result += 'Best Match:\n';
+        result += `- Example: "${bestMatch.text}"\n`;
+        result += `- Similarity: ${Math.round(bestMatch.similarity * 100)}%\n`;
+        result += `- Example's Classification: ${bestMatch.has_expletive_ne ? 'Expletive' : 'No Expletive'}\n`;
+        
+        if (bestMatch.features) {
+            const matchingFeatures = [];
+            if (bestMatch.features.triggerMatch) matchingFeatures.push('trigger match');
+            if (bestMatch.features.subjunctiveMatch) matchingFeatures.push('subjunctive match');
+            if (bestMatch.features.registerMatch) matchingFeatures.push('register match');
+            if (bestMatch.features.avantQueEnhanced) matchingFeatures.push('avant que enhanced');
+            
+            if (matchingFeatures.length > 0) {
+                result += `- Matching Features: ${matchingFeatures.join(', ')}\n`;
+            }
         }
+        
+        result += `- Note: Final classification is based on linguistic analysis combined with training examples\n\n`;
+    }
+    
+    // Evidence Summary
+    result += 'Evidence Summary:\n';
+    result += `- Found ${trainingAnalysis?.matches?.length || 0} similar examples\n`;
+    result += `- Enhanced analysis found ${trainingAnalysis?.matches?.length || 0} similar examples. Evidence suggests expletive ne was ${classification === 'Expletive' ? 'likely' : 'unlikely'}\n`;
+    
+    if (trainingAnalysis?.enhancedAnalysis?.trigger) {
+        result += `- Trigger: "${trainingAnalysis.enhancedAnalysis.trigger.trigger}" (${trainingAnalysis.enhancedAnalysis.trigger.category})\n`;
+    }
+    
+    if (trainingAnalysis?.enhancedAnalysis?.subjunctive) {
+        result += `- Subjunctive: ${trainingAnalysis.enhancedAnalysis.subjunctive.verb} (${trainingAnalysis.enhancedAnalysis.subjunctive.type}, ${Math.round(trainingAnalysis.enhancedAnalysis.subjunctive.confidence * 100)}% confidence)\n`;
+    }
+    
+    if (trainingAnalysis?.enhancedAnalysis?.avantQueAnalysis?.isAvantQue) {
+        result += `- Avant que analysis: ${trainingAnalysis.enhancedAnalysis.avantQueAnalysis.classificationReason}\n`;
+    }
+    
+    if (trainingAnalysis?.enhancedAnalysis?.negationAnalysis) {
+        result += `- Negation: ${trainingAnalysis.enhancedAnalysis.negationAnalysis.negationType} (${Math.round(trainingAnalysis.enhancedAnalysis.negationAnalysis.confidence * 100)}% confidence)\n`;
+    }
+    
+    // Final percentage from examples
+    if (trainingAnalysis?.matches && trainingAnalysis.matches.length > 0) {
+        const expletiveExamples = trainingAnalysis.matches.filter(ex => ex.has_expletive_ne === true).length;
+        const totalExamples = trainingAnalysis.matches.length;
+        const expletivePercent = Math.round((expletiveExamples / totalExamples) * 100);
+        result += `- ${expletivePercent}% of similar examples use expletive ne\n`;
+    }
+    
+    result += `- Based on all evidence, ${classification} is more likely\n\n`;
+    
+    // Confidence Factors
+    result += 'Confidence Factors:\n';
+    result += `- Well-formed linguistic structure (indicates proper grammatical analysis)\n`;
+    if (trainingAnalysis?.enhancedAnalysis?.trigger) {
+        result += `- Clear trigger marker (indicates potential for expletive ne)\n`;
+    }
+    if (trainingAnalysis?.enhancedAnalysis?.avantQueAnalysis?.bothConditionsMet) {
+        result += `- Both avant que conditions met (strong indicator for expletive ne)\n`;
+    }
+    if (trainingAnalysis?.enhancedAnalysis?.clauseInfo?.isIsolated) {
+        result += `- Clause boundary analysis applied (prevents cross-clause contamination)\n`;
     }
     
     return result;
