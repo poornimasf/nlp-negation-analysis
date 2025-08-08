@@ -36,8 +36,8 @@ export const TRIGGER_PATTERNS = {
             /(?:se\s+préparer|se\s+tenir\s+prêt)\s+avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // se préparer/se tenir prêt avant que
         ],
         DEFAULT: [
-            // General temporal avant que
-            /avant\s+(?:que\s+de\s+|qu(?:e|'))/i  // Any other avant que
+            // General temporal avant que - FIXED: Add word boundary to avoid false positives
+            /\bavant\s+(?:que\s+de\s+|qu(?:e|'))/i  // Any other avant que (with word boundary)
         ]
     },
     IMPERSONAL: [
