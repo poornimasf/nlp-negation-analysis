@@ -85,23 +85,35 @@ function determineNeForm(textAfterTrigger) {
  * @returns {Object|null} - Trigger information or null if not found
  */
 function extractTriggerInfo(enhancedAnalysis) {
+  console.log('🎨 extractTriggerInfo called with:', {
+    hasAvantQueAnalysis: !!enhancedAnalysis.avantQueAnalysis,
+    avantQueTrigger: enhancedAnalysis.avantQueAnalysis?.trigger,
+    hasLinguisticAnalysis: !!enhancedAnalysis.linguisticAnalysis,
+    linguisticTrigger: enhancedAnalysis.linguisticAnalysis?.trigger
+  });
+
   // Look for trigger information in various places
   if (enhancedAnalysis.avantQueAnalysis?.trigger) {
-    return {
+    const result = {
       type: 'avant_que',
       trigger: enhancedAnalysis.avantQueAnalysis.trigger,
       position: enhancedAnalysis.avantQueAnalysis.position
     };
+    console.log('🎨 Found trigger in avantQueAnalysis:', result);
+    return result;
   }
 
   // Check for trigger in linguistic analysis
   if (enhancedAnalysis.linguisticAnalysis?.trigger) {
-    return {
+    const result = {
       type: 'temporal',
       trigger: enhancedAnalysis.linguisticAnalysis.trigger
     };
+    console.log('🎨 Found trigger in linguisticAnalysis:', result);
+    return result;
   }
 
+  console.log('🎨 No trigger found in analysis');
   return null;
 }
 
@@ -112,27 +124,43 @@ function extractTriggerInfo(enhancedAnalysis) {
  * @returns {string|null} - Surface form or null if no change
  */
 function createSurfaceForm(originalSentence, analysisResult) {
+  console.log('🎨 createSurfaceForm called with:', {
+    originalSentence: originalSentence?.substring(0, 50) + '...',
+    classification: analysisResult.classification,
+    hasAvantQueAnalysis: !!analysisResult.avantQueAnalysis,
+    hasLinguisticAnalysis: !!analysisResult.linguisticAnalysis
+  });
+
   // Only for expletive classifications
   if (!analysisResult.classification) {
+    console.log('🎨 No surface form: classification is false');
     return null;
   }
 
   // Extract trigger information
   const triggerInfo = extractTriggerInfo(analysisResult);
+  console.log('🎨 Extracted trigger info:', triggerInfo);
+  
   if (!triggerInfo) {
+    console.log('🎨 No surface form: no trigger info found');
     return null;
   }
 
   // Get detected verb for elision rules
   const detectedVerb = analysisResult.avantQueAnalysis?.subjunctiveMood?.verb || 
                       analysisResult.linguisticAnalysis?.detectedVerb;
+  
+  console.log('🎨 Detected verb:', detectedVerb);
 
   // Generate surface form
-  return generateSurfaceForm(originalSentence, {
+  const result = generateSurfaceForm(originalSentence, {
     classification: analysisResult.classification,
     triggerInfo: triggerInfo,
     detectedVerb: detectedVerb
   });
+  
+  console.log('🎨 Generated surface form result:', result);
+  return result;
 }
 
 export {
