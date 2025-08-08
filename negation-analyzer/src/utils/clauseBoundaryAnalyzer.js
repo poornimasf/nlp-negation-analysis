@@ -292,6 +292,13 @@ function analyzeVerbForSubjunctive(verb, context) {
     fassiez: { type: 'FAIRE', priority: 3, confidence: 0.95 },
     fassent: { type: 'FAIRE', priority: 3, confidence: 0.95 },
     
+    // aller (MISSING - add all forms)
+    aille: { type: 'ALLER', priority: 3, confidence: 0.95 },
+    ailles: { type: 'ALLER', priority: 3, confidence: 0.95 },
+    aillions: { type: 'ALLER', priority: 3, confidence: 0.95 },
+    ailliez: { type: 'ALLER', priority: 3, confidence: 0.95 },
+    aillent: { type: 'ALLER', priority: 3, confidence: 0.95 },
+    
     // venir (add the missing patterns)
     vienne: { type: 'VENIR', priority: 3, confidence: 0.95 },
     viennes: { type: 'VENIR', priority: 3, confidence: 0.95 },
