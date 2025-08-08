@@ -292,7 +292,121 @@ function detectSubjunctiveAfterAvantQue(clause) {
     }
   }
   
-  // NEW: Proper noun + object pronouns + verb pattern (handle both cases)
+  // NEW PHASE 2: Reflexive verb patterns
+  // Handles: "avant qu'il se décide", "avant qu'elles se déclenchent", "avant qu'elle s'accroche"
+  const reflexiveMatch = afterAvantQue.match(/\b(?:ils?|elles?|on|nous|vous|tu|je|j')\b\s+(?:me|te|se|s')\s+(\w+)/i);
+  console.log('🔍 Reflexive pattern match:', reflexiveMatch);
+  if (reflexiveMatch) {
+    const verb = reflexiveMatch[1];
+    console.log('🔍 Reflexive pattern details:', {
+      subject: reflexiveMatch[0].split(' ')[0],
+      reflexivePronoun: reflexiveMatch[0].split(' ')[1],
+      verb: verb,
+      fullMatch: reflexiveMatch[0]
+    });
+    console.log('🔍 Extracted verb from reflexive pattern:', verb);
+    return analyzeVerbForSubjunctive(verb, afterAvantQue);
+  }
+  
+  // NEW PHASE 2: Complex pronoun patterns (indefinite pronouns)
+  // Handles: "avant qu'on récupère", "avant que quelqu'un vienne"
+  const indefinitePronounMatch = afterAvantQue.match(/\b(?:on|quelqu'un|quelque chose|chacun|personne)\s+(\w+)/i);
+  console.log('🔍 Indefinite pronoun pattern match:', indefinitePronounMatch);
+  if (indefinitePronounMatch) {
+    const verb = indefinitePronounMatch[1];
+    console.log('🔍 Indefinite pronoun pattern details:', {
+      pronoun: indefinitePronounMatch[0].replace(verb, '').trim(),
+      verb: verb,
+      fullMatch: indefinitePronounMatch[0]
+    });
+    console.log('🔍 Extracted verb from indefinite pronoun pattern:', verb);
+    return analyzeVerbForSubjunctive(verb, afterAvantQue);
+  }
+  
+  // NEW PHASE 2: Complex reflexive with object pronouns
+  // Handles: "avant qu'il s'en aille", "avant qu'elle s'y rende"
+  const complexReflexiveMatch = afterAvantQue.match(/\b(?:ils?|elles?|on|nous|vous|tu|je|j')\b\s+(?:s'en|s'y|se le|se la|se les)\s+(\w+)/i);
+  console.log('🔍 Complex reflexive pattern match:', complexReflexiveMatch);
+  if (complexReflexiveMatch) {
+    const verb = complexReflexiveMatch[1];
+    console.log('🔍 Complex reflexive pattern details:', {
+      subject: complexReflexiveMatch[0].split(' ')[0],
+      reflexiveComplex: complexReflexiveMatch[0].split(' ').slice(1, -1).join(' '),
+      verb: verb,
+      fullMatch: complexReflexiveMatch[0]
+    });
+    console.log('🔍 Extracted verb from complex reflexive pattern:', verb);
+    return analyzeVerbForSubjunctive(verb, afterAvantQue);
+  }
+  
+  // NEW PHASE 2: Indefinite article + noun + verb
+  // Handles: "avant qu'une famille soit", "avant qu'un problème survienne"
+  const indefiniteArticleMatch = afterAvantQue.match(/\b(?:un|une|des)\s+(\w+)\s+(\w+)/i);
+  console.log('🔍 Indefinite article pattern match:', indefiniteArticleMatch);
+  if (indefiniteArticleMatch) {
+    const noun = indefiniteArticleMatch[1];
+    const verb = indefiniteArticleMatch[2];
+    console.log('🔍 Indefinite article pattern details:', {
+      article: indefiniteArticleMatch[0].split(' ')[0],
+      noun: noun,
+      verb: verb,
+      fullMatch: indefiniteArticleMatch[0]
+    });
+    
+    // Check if the "verb" is actually a noun using POS analysis
+    const posAnalysis = enhancedPOSAnalysis(verb, afterAvantQue);
+    if (posAnalysis.shouldSkipVerbAnalysis) {
+      console.log('🔍 Indefinite article pattern: second word identified as noun, skipping');
+    } else {
+      console.log('🔍 Extracted verb from indefinite article pattern:', verb);
+      return analyzeVerbForSubjunctive(verb, afterAvantQue);
+    }
+  }
+  
+  // NEW PHASE 2: Enhanced passive voice recognition
+  // Handles: "avant que les fruits soient utilisables", "avant que le rideau soit levé"
+  const passiveVoiceMatch = afterAvantQue.match(/\b(?:le|la|les)\s+(\w+)\s+(soit|soient)\s+(\w+)/i);
+  console.log('🔍 Passive voice pattern match:', passiveVoiceMatch);
+  if (passiveVoiceMatch) {
+    const noun = passiveVoiceMatch[1];
+    const auxiliaryVerb = passiveVoiceMatch[2]; // soit/soient
+    const pastParticiple = passiveVoiceMatch[3];
+    console.log('🔍 Passive voice pattern details:', {
+      noun: noun,
+      auxiliaryVerb: auxiliaryVerb,
+      pastParticiple: pastParticiple,
+      fullMatch: passiveVoiceMatch[0]
+    });
+    
+    // Analyze the auxiliary verb (soit/soient) as the subjunctive
+    console.log('🔍 Extracted auxiliary verb from passive voice pattern:', auxiliaryVerb);
+    return analyzeVerbForSubjunctive(auxiliaryVerb, afterAvantQue);
+  }
+  
+  // NEW PHASE 2: Irregular subjunctive forms (imperfect subjunctive)
+  // Handles: "avant que l'heure fut trop tardive", "avant qu'il eût fini"
+  const irregularSubjunctiveMatch = afterAvantQue.match(/\b(?:le|la|les|l'|il|elle|ils|elles|on|je|tu|nous|vous)\s*(\w*)\s+(fut|fût|eût|vînt|prît|dît|fît|sût|voulût|pût)\b/i);
+  console.log('🔍 Irregular subjunctive pattern match:', irregularSubjunctiveMatch);
+  if (irregularSubjunctiveMatch) {
+    const subject = irregularSubjunctiveMatch[1];
+    const irregularVerb = irregularSubjunctiveMatch[2];
+    console.log('🔍 Irregular subjunctive pattern details:', {
+      subject: subject,
+      irregularVerb: irregularVerb,
+      fullMatch: irregularSubjunctiveMatch[0]
+    });
+    console.log('🔍 Extracted irregular subjunctive:', irregularVerb);
+    
+    // Create a special analysis for irregular subjunctives
+    return {
+      verb: irregularVerb,
+      isSubjunctive: true,
+      confidence: 0.95,
+      type: 'IRREGULAR_SUBJUNCTIVE',
+      reasoning: `Irregular subjunctive form: ${irregularVerb}`
+    };
+  }
+  
   const properNounMatch = afterAvantQue.match(/^([A-Za-z]\w+)\s+(?:(me|te|se|le|la|les|lui|leur|en|y)\s+)*(\w+)/i);
   console.log('🔍 Proper noun pattern match:', properNounMatch);
   if (properNounMatch) {

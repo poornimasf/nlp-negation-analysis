@@ -83,7 +83,58 @@ const SAFE_FRENCH_NOUNS = new Set([
   'tardive',   // late (adjective, never verb)
   'blessée',   // injured (past participle used as adjective)
   'submergée', // submerged (past participle used as adjective)
-  'révisés'    // revised (past participle used as adjective)
+  'révisés',   // revised (past participle used as adjective)
+  
+  // NEW PHASE 2: Additional terms from false negatives
+  'cérémonie', // ceremony
+  'rideau',    // curtain
+  'drapeau',   // flag
+  'tâche',     // task
+  'saveur',    // flavor
+  'vallée',    // valley
+  'battants',  // doors/shutters
+  'créature',  // creature
+  'conseil',   // council
+  'demandes',  // requests
+  'délais',    // deadline
+  'embryons',  // embryos
+  'échantillons', // samples
+  'personnage', // character
+  'jetons',    // tokens
+  'suivant',   // following/next
+  'troupes',   // troops
+  'fibres',    // fibers
+  'collagène', // collagen
+  'casier',    // record
+  'processus', // process
+  'approbation', // approval
+  'prêts',     // loans
+  'logement',  // housing
+  'agents',    // agents
+  'taux',      // rates
+  'intérêt',   // interest
+  'épisode',   // episode
+  'saison',    // season
+  'endroit',   // place
+  'baril',     // barrel
+  'pilote',    // pilot
+  'vaisseau',  // vessel
+  'chantage',  // blackmail
+  'film',      // film
+  'douches',   // showers
+  'garçons',   // boys
+  'lumière',   // light
+  'rosettes',  // rosettes
+  'fleurs',    // flowers
+  'cure',      // cure
+  'feuilles',  // leaves
+  'salade',    // salad
+  'repas',     // meal
+  'action',    // action
+  'imagination', // imagination
+  'envie',     // desire
+  'moment',    // moment
+  'poids'      // weight
 ]);
 
 /**
