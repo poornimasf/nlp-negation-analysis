@@ -215,16 +215,26 @@ function detectSubjunctiveAfterAvantQue(clause) {
   }
   
   // NEW: Proper noun + object pronouns + verb pattern (handle both cases)
-  const properNounMatch = afterAvantQue.match(/([A-Za-z]\w+)\s+(?:(?:me|te|se|le|la|les|lui|leur|en|y)\s+)*(\w+)/i);
+  const properNounMatch = afterAvantQue.match(/^([A-Za-z]\w+)\s+(?:(me|te|se|le|la|les|lui|leur|en|y)\s+)*(\w+)/i);
   console.log('🔍 Proper noun pattern match:', properNounMatch);
   if (properNounMatch) {
     const properNoun = properNounMatch[1];
-    const verb = properNounMatch[2];
+    const objectPronoun = properNounMatch[2]; // might be undefined
+    const verb = properNounMatch[3];
+    console.log('🔍 Proper noun pattern details:', {
+      properNoun,
+      objectPronoun,
+      verb,
+      fullMatch: properNounMatch[0]
+    });
+    
     // Only accept if it looks like a name (not a common word)
     const commonWords = ['que', 'qui', 'quoi', 'dont', 'où', 'comme', 'avec', 'sans', 'pour', 'dans', 'sur', 'sous', 'entre', 'parmi'];
     if (!commonWords.includes(properNoun.toLowerCase())) {
       console.log('🔍 Extracted verb from proper noun pattern:', verb);
       return analyzeVerbForSubjunctive(verb, afterAvantQue);
+    } else {
+      console.log('🔍 Proper noun rejected (common word):', properNoun);
     }
   }
   
