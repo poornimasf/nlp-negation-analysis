@@ -173,7 +173,12 @@ const SimpleNegationAnalyzer = () => {
 
             case 'TRAINING_DATA':
             case 'SVM_ANALYSIS':
+              console.log('🔍 TRAINING_DATA/SVM_ANALYSIS case entered');
+              console.log('🔍 useTrainingEnhancement:', useTrainingEnhancement);
+              console.log('🔍 trainingData.examples.length:', trainingData.examples.length);
+              
               if (useTrainingEnhancement && trainingData.examples.length > 0) {
+                console.log('🔍 Using enhanced training analysis');
                 // Use enhanced training analyzer that includes surface form generation
                 const { analyzeWithEnhancedFeatures } = await import('../utils/enhancedTrainingAnalyzer');
                 const trainingAnalysis = analyzeWithEnhancedFeatures(sentence, trainingData.examples);
@@ -228,6 +233,8 @@ const SimpleNegationAnalyzer = () => {
                     proposedSentence = formatWithNe(sentence, nePosition);
                 }
               } else {
+                console.log('🔍 NOT using enhanced training analysis - falling back to rule-based');
+                console.log('🔍 Fallback reason - useTrainingEnhancement:', useTrainingEnhancement, 'examples length:', trainingData.examples.length);
                 formattedResult = formatRuleBasedResult(analysis);
                 classification = analysis.type === 'Expletive' ? 'Expletive' : 'No Expletive';
               }
