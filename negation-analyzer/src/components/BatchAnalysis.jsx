@@ -134,6 +134,14 @@ export const BatchAnalysis = ({
               </thead>
               <tbody>
                 {batchResults.map((result, index) => {
+                  // Debug logging for surface form
+                  console.log(`🎨 UI Row ${index + 1}:`, {
+                    text: result.text?.substring(0, 30) + '...',
+                    hasSurfaceForm: !!result.surfaceForm,
+                    surfaceForm: result.surfaceForm,
+                    surfaceFormType: typeof result.surfaceForm
+                  });
+
                   // Extract classification from analysis based on mode
                   let prediction;
                   if (analysisMode === 'HYBRID') { // CroissantLLM
