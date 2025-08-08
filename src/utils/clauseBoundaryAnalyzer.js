@@ -4,6 +4,7 @@
  */
 
 import { normalizeText } from './textProcessing';
+import { enhancedPOSAnalysis } from './posAnalyzer';
 
 /**
  * Extract and isolate the clause containing a specific trigger
@@ -342,6 +343,13 @@ function analyzeVerbForSubjunctive(verb, context) {
     normalizedVerb: normalizedVerb,
     context: context.substring(0, 50) + '...'
   });
+  
+  // NEW: POS Analysis - Check if this is actually a noun
+  const posAnalysis = enhancedPOSAnalysis(verb, context);
+  if (posAnalysis.shouldSkipVerbAnalysis) {
+    console.log(`🔍 Skipping subjunctive analysis: ${posAnalysis.reasoning}`);
+    return null;
+  }
   
   // High-priority subjunctive patterns
   const highPriorityPatterns = {
