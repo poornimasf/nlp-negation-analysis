@@ -61,21 +61,26 @@ export const formatRuleBasedResult = (analysis) => {
 /**
  * Format training data analysis results
  */
-export const formatTrainingResult = (analysis) => {
+export const formatTrainingResult = (analysis, trainingAnalysis) => {
     let result = 'Training Data Analysis\n';
     result += '-----------------\n\n';
     
+    // Use the correct classification property (type from analysisObj)
+    const classification = analysis.type || analysis.classification;
+    
     // Classification and Confidence with explanation
-    result += `Classification: ${analysis.classification}\n`;
-    result += `Should be "${analysis.classification}" because:\n`;
-    if (analysis.analysis?.trigger) {
-        result += `- Has ${analysis.analysis.trigger.category.toLowerCase()} trigger "${analysis.analysis.trigger.trigger}"\n`;
+    result += `Classification: ${classification}\n`;
+    result += `Should be "${classification}" because:\n`;
+    
+    // Use trainingAnalysis data for detailed information
+    if (trainingAnalysis?.context?.trigger) {
+        result += `- Has ${trainingAnalysis.context.category?.toLowerCase() || 'trigger'} trigger "${trainingAnalysis.context.trigger}"\n`;
     }
     if (analysis.evidence?.hasSubjunctive) {
         result += '- Uses subjunctive form\n';
     }
-    if (analysis.evidence?.triggerSubcategory) {
-        result += `- ${getSubcategoryReason(analysis.evidence.triggerSubcategory)}\n`;
+    if (trainingAnalysis?.context?.subcategory) {
+        result += `- ${getSubcategoryReason(trainingAnalysis.context.subcategory)}\n`;
     }
     result += '\n';
     
@@ -83,23 +88,28 @@ export const formatTrainingResult = (analysis) => {
     
     // Trigger Analysis
     result += 'Trigger Analysis:\n';
-    if (analysis.analysis?.trigger) {
-        const trigger = analysis.analysis.trigger;
-        result += `- Found: "${trigger.trigger}"\n`;
-        result += `- Category: ${trigger.category}\n`;
+    if (trainingAnalysis?.context?.trigger) {
+        const trigger = trainingAnalysis.context.trigger;
+        const category = trainingAnalysis.context.category;
+        const subcategory = trainingAnalysis.context.subcategory;
+        
+        result += `- Found: "${trigger}"\n`;
+        if (category) {
+            result += `- Category: ${category}\n`;
+        }
         
         // Add subcategory for avant que
-        if (trigger.category === 'TEMPORAL' && trigger.trigger.includes('avant')) {
-            result += `- Subcategory: ${trigger.subcategory || 'DEFAULT'}\n`;
-            result += `- Usage: ${getAvantQueUsageDescription(trigger.subcategory)}\n`;
+        if (category === 'TEMPORAL' && trigger.includes('avant')) {
+            result += `- Subcategory: ${subcategory || 'DEFAULT'}\n`;
+            result += `- Usage: ${getAvantQueUsageDescription(subcategory)}\n`;
         }
     } else {
         result += '- No trigger found\n';
     }
     
     // Best Match Example
-    if (analysis.analysis?.trainingData?.similarExamples?.length > 0) {
-        const bestMatch = analysis.analysis.trainingData.similarExamples[0];
+    if (trainingAnalysis?.matches?.length > 0) {
+        const bestMatch = trainingAnalysis.matches[0];
         result += '\nBest Match:\n';
         result += `- Example: "${bestMatch.text}"\n`;
         result += `- Similarity: ${Math.round(bestMatch.similarity * 100)}%\n`;
@@ -108,37 +118,36 @@ export const formatTrainingResult = (analysis) => {
     }
     
     // Evidence Summary with enhanced explanation
-    if (analysis.details?.length > 0) {
+    if (trainingAnalysis?.message) {
         result += '\nEvidence Summary:\n';
-        result += `- Found ${analysis.analysis?.trainingData?.similarExamples?.length || 0} similar examples\n`;
-        if (analysis.evidence?.weightedEvidence) {
-            const weights = analysis.evidence.weightedEvidence;
+        result += `- Found ${trainingAnalysis.matches?.length || 0} similar examples\n`;
+        result += `- ${trainingAnalysis.message}\n`;
+        
+        if (trainingAnalysis.weightedVotes) {
+            const weights = trainingAnalysis.weightedVotes;
             const total = weights.expletive + weights.nonExpletive;
             if (total > 0) {
                 const expletivePercent = Math.round((weights.expletive / total) * 100);
                 result += `- ${expletivePercent}% of similar examples use expletive ne\n`;
-                result += `- Based on all evidence, ${analysis.classification} is more likely\n`;
+                result += `- Based on all evidence, ${classification} is more likely\n`;
             }
         }
-        analysis.details.forEach(detail => {
-            result += `- ${detail}\n`;
-        });
 
         // Add confidence factors
         result += '\nConfidence Factors:\n';
         if (analysis.evidence?.hasSubjunctive) {
             result += '- Well-formed subjunctive structure (indicates proper grammatical form)\n';
         }
-        if (analysis.evidence?.trigger?.includes('avant')) {
+        if (trainingAnalysis?.context?.trigger?.includes('avant')) {
             result += '- Clear temporal marker (indicates potential for expletive ne)\n';
         }
-        if (analysis.evidence?.hasOptionalNe) {
-            result += '- Presence of expletive ne (strengthens classification)\n';
+        if (trainingAnalysis?.nePosition) {
+            result += '- Suggested ne position identified (strengthens classification)\n';
         }
         
         // Add register analysis
-        if (analysis.analysis?.trigger?.context) {
-            const text = analysis.analysis.trigger.context;
+        if (trainingAnalysis?.originalText) {
+            const text = trainingAnalysis.originalText;
             if (text.includes('dont') || text.includes('autrefois') || 
                 text.includes('puis') || text.includes('y')) {
                 result += '- Historical/literary register (common context for expletive ne)\n';
@@ -147,8 +156,8 @@ export const formatTrainingResult = (analysis) => {
     }
     
     // Weighted Evidence with explanation
-    if (analysis.evidence?.weightedEvidence) {
-        const weights = analysis.evidence.weightedEvidence;
+    if (trainingAnalysis?.weightedVotes) {
+        const weights = trainingAnalysis.weightedVotes;
         const total = weights.expletive + weights.nonExpletive;
         if (total > 0) {
             result += '\nConfidence Breakdown:\n';
