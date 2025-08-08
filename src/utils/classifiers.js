@@ -388,14 +388,11 @@ export const classifyWithEnhancedBinaryClassifier = (text, trainingData) => {
 
   // Try enhanced analysis first
   try {
-    console.log('Using enhanced analysis for:', text.substring(0, 50) + '...');
+    console.log('🔍 Starting enhanced analysis for:', text.substring(0, 50) + '...');
     const enhancedResult = analyzeWithEnhancedFeatures(text, trainingData);
-    console.log('Enhanced result:', {
+    console.log('✅ Enhanced analysis completed:', {
       classification: enhancedResult.classification,
-      confidence: enhancedResult.confidence,
-      trigger: enhancedResult.linguisticAnalysis.trigger?.trigger,
-      subjunctive: enhancedResult.linguisticAnalysis.subjunctive?.verb,
-      negationType: enhancedResult.linguisticAnalysis.negationAnalysis?.negationType
+      confidence: enhancedResult.confidence
     });
     
     // Convert enhanced result to expected format
@@ -468,7 +465,7 @@ export const classifyWithEnhancedBinaryClassifier = (text, trainingData) => {
       message += `\nSurface form: ${vowelContextInfo.form} (${vowelContextInfo.reason})`;
     }
     
-    return {
+    const finalResult = {
       matches: enhancedResult.matches,
       confidence: enhancedResult.confidence,
       classification: enhancedResult.classification,
@@ -492,6 +489,14 @@ export const classifyWithEnhancedBinaryClassifier = (text, trainingData) => {
       enhancedAnalysis: enhancedResult.linguisticAnalysis,
       weightedVotes: enhancedResult.enhancedVotes
     };
+    
+    console.log('🎯 Final classifier result being returned:', {
+      classification: finalResult.classification,
+      confidence: finalResult.confidence,
+      message: finalResult.message.substring(0, 100) + '...'
+    });
+    
+    return finalResult;
     
   } catch (error) {
     console.error('Enhanced analysis failed, falling back to standard analysis:', error);
