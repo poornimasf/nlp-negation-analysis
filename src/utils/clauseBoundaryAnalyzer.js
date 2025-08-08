@@ -190,7 +190,14 @@ function detectSubjunctiveAfterAvantQue(clause) {
     return null;
   }
   
-  const afterAvantQue = clause.substring(avantQueMatch.index + avantQueMatch[0].length);
+  let afterAvantQue = clause.substring(avantQueMatch.index + avantQueMatch[0].length);
+  
+  // PREPROCESSING BUG FIX: Remove "e l'" artifact from "avant que l'" normalization
+  if (afterAvantQue.startsWith('e l\'')) {
+    console.log('🔧 Removing preprocessing artifact "e l\'" from text');
+    afterAvantQue = afterAvantQue.substring(2); // Remove "e "
+    console.log('🔧 Cleaned text:', `"${afterAvantQue.substring(0, 50)}"`);
+  }
   
   console.log('🔍 After avant que:', `"${afterAvantQue}"`);
   console.log('🔍 After avant que (first 50 chars):', afterAvantQue.substring(0, 50));
