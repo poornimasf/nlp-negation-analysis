@@ -195,8 +195,8 @@ function detectSubjunctiveAfterAvantQue(clause) {
   console.log('🔍 After avant que:', `"${afterAvantQue}"`);
   console.log('🔍 After avant que (first 50 chars):', afterAvantQue.substring(0, 50));
   
-  // FIXED: Specific pattern for "les autres aient" type constructions
-  const lesAutresMatch = afterAvantQue.match(/les?\s+\w+\s+(\w+)/i);
+  // FIXED: Specific pattern for "les autres aient" type constructions - ADD WORD BOUNDARIES
+  const lesAutresMatch = afterAvantQue.match(/\bles\s+autres\s+(\w+)/i);
   console.log('🔍 Les autres pattern match:', lesAutresMatch);
   if (lesAutresMatch) {
     const verb = lesAutresMatch[1];
