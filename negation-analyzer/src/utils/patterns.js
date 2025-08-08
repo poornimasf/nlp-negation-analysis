@@ -84,6 +84,10 @@ export const SUBJUNCTIVE_PATTERNS = {
         pattern: /\b(?:aille|ailles|aillions|ailliez|aillent)\b/i,
         priority: 1
     },
+    VENIR: {
+        pattern: /\b(?:vienne|viennes|venions|veniez|viennent)\b/i,
+        priority: 1  // High priority for venir
+    },
     VOULOIR: {
         pattern: /\b(?:veuille|veuilles|veuillions|veuilliez|veuillent)\b/i,
         priority: 1
