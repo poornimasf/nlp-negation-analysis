@@ -57,31 +57,58 @@ export function enhanceAvantQueAnalysisWithClause(clause, triggerInfo) {
  * Analyze complement clause within the isolated clause
  */
 function analyzeComplementClauseInClause(normalizedClause) {
+  console.log('🔍 Analyzing complement clause in:', normalizedClause.substring(0, 100));
+  
   // Look for subject pronouns that indicate a finite clause
   const subjectPronouns = /\b(?:je|j'|tu|il|elle|on|nous|vous|ils|elles|ce|c')\b/i;
   const hasSubjectPronoun = subjectPronouns.test(normalizedClause);
   
-  // Look for finite verb indicators
-  const finiteVerbs = /\b(?:est|sont|a|ont|va|vont|peut|peuvent|doit|doivent|fait|font)\b/i;
+  // Look for noun subjects (articles + nouns) - ADDED
+  const nounSubjects = /\b(?:les?|la|l'|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+\w+/i;
+  const hasNounSubject = nounSubjects.test(normalizedClause);
+  
+  // Look for finite verb indicators (including subjunctive forms)
+  const finiteVerbs = /\b(?:est|sont|a|ont|va|vont|peut|peuvent|doit|doivent|fait|font|ait|aient|soit|soient|vienne|viennent)\b/i;
   const hasFiniteVerb = finiteVerbs.test(normalizedClause);
   
-  // Check for "avant que" followed by subject + verb pattern
-  const avantQuePattern = /avant\s+qu[e']\s+(?:ils?|elles?|on|nous|vous|tu|je|j'|ce|c')\s+\w+/i;
-  const hasAvantQueSubjectVerb = avantQuePattern.test(normalizedClause);
+  // Check for "avant que" followed by subject + verb pattern (pronouns)
+  const avantQuePronouns = /avant\s+qu[e']\s+(?:ils?|elles?|on|nous|vous|tu|je|j'|ce|c')\s+\w+/i;
+  const hasAvantQuePronouns = avantQuePronouns.test(normalizedClause);
+  
+  // Check for "avant que" followed by noun subject + verb pattern - ADDED
+  const avantQueNouns = /avant\s+qu[e']\s+(?:les?|la|l'|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+\w+\s+\w+/i;
+  const hasAvantQueNouns = avantQueNouns.test(normalizedClause);
+  
+  const hasAvantQueSubjectVerb = hasAvantQuePronouns || hasAvantQueNouns;
+  
+  console.log('🔍 Complement clause evidence:', {
+    hasSubjectPronoun,
+    hasNounSubject,
+    hasFiniteVerb,
+    hasAvantQuePronouns,
+    hasAvantQueNouns,
+    hasAvantQueSubjectVerb
+  });
   
   // Calculate confidence based on evidence
   let confidence = 0;
-  if (hasSubjectPronoun) confidence += 0.4;
+  if (hasSubjectPronoun || hasNounSubject) confidence += 0.4; // Any subject
   if (hasFiniteVerb) confidence += 0.3;
   if (hasAvantQueSubjectVerb) confidence += 0.3;
   
   const isComplementClause = confidence >= 0.4;
+  
+  console.log('🔍 Complement clause result:', {
+    isComplementClause,
+    confidence: Math.min(confidence, 1.0)
+  });
   
   return {
     isComplementClause,
     confidence: Math.min(confidence, 1.0),
     evidence: {
       hasSubjectPronoun,
+      hasNounSubject, // ADDED
       hasFiniteVerb,
       hasAvantQueSubjectVerb
     }
