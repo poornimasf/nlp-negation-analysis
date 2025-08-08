@@ -175,8 +175,16 @@ const SimpleNegationAnalyzer = () => {
                 const mode = analysisMode === 'SVM_ANALYSIS' ? 'SVM' : 'BINARY';
                 const trainingAnalysis = classify(sentence, trainingData.examples, mode);
                 
+                console.log('🎯 UI received trainingAnalysis:', {
+                  classification: trainingAnalysis.classification,
+                  confidence: trainingAnalysis.confidence,
+                  type: typeof trainingAnalysis.classification
+                });
+                
                 // Map boolean classification to display format
                 const displayType = trainingAnalysis.classification === true ? 'Expletive' : 'No Expletive';
+                
+                console.log('🎯 UI displayType determined:', displayType, 'from classification:', trainingAnalysis.classification);
                 
                 // Create analysis object with display format and trigger info
                 const analysisObj = {
