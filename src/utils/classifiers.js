@@ -393,8 +393,9 @@ export const classifyWithEnhancedBinaryClassifier = (text, trainingData) => {
     // Convert enhanced result to expected format
     const quePosition = findQuePosition(text, enhancedResult.linguisticAnalysis.trigger);
     
-    // Calculate ne position if needed
+    // Calculate ne position if needed with vowel context analysis
     let nePosition = null;
+    let vowelContextInfo = null;
     if (enhancedResult.classification && quePosition) {
       const examplesWithNe = enhancedResult.matches.filter(ex => ex.has_expletive_ne && ex.ne_position !== null);
       if (examplesWithNe.length > 0) {
@@ -409,6 +410,19 @@ export const classifyWithEnhancedBinaryClassifier = (text, trainingData) => {
       } else {
         nePosition = quePosition + 1;
       }
+      
+      // Analyze vowel context for proper surface form
+      if (nePosition && enhancedResult.linguisticAnalysis.vowelContext) {
+        vowelContextInfo = enhancedResult.linguisticAnalysis.vowelContext;
+      } else if (nePosition) {
+        // Import and use vowel context analysis
+        try {
+          const { analyzeVowelContext } = require('./ambiguityNegationAnalyzer');
+          vowelContextInfo = analyzeVowelContext(text, nePosition);
+        } catch (error) {
+          console.warn('Vowel context analysis failed:', error);
+        }
+      }
     }
     
     // Generate enhanced message
@@ -416,6 +430,8 @@ export const classifyWithEnhancedBinaryClassifier = (text, trainingData) => {
     const subjunctiveInfo = enhancedResult.linguisticAnalysis.subjunctive;
     const registerInfo = enhancedResult.linguisticAnalysis.register;
     const avantQueInfo = enhancedResult.linguisticAnalysis.avantQueAnalysis;
+    const ambiguityInfo = enhancedResult.linguisticAnalysis.ambiguityAnalysis;
+    const negationInfo = enhancedResult.linguisticAnalysis.negationAnalysis;
     
     let message = `Enhanced analysis found ${enhancedResult.matches.length} similar examples. `;
     message += enhancedResult.classification ? 
@@ -434,6 +450,15 @@ export const classifyWithEnhancedBinaryClassifier = (text, trainingData) => {
     if (avantQueInfo && avantQueInfo.isAvantQue) {
       message += `\nAvant que analysis: ${avantQueInfo.classificationReason}`;
     }
+    if (ambiguityInfo && ambiguityInfo.hasAmbiguity) {
+      message += `\nAmbiguity: ${ambiguityInfo.clarificationNeeded ? 'High' : 'Moderate'} (${Math.round(ambiguityInfo.confidence * 100)}% confidence)`;
+    }
+    if (negationInfo && negationInfo.hasMultipleNegation) {
+      message += `\nNegation: ${negationInfo.negationType} (${Math.round(negationInfo.confidence * 100)}% confidence)`;
+    }
+    if (vowelContextInfo) {
+      message += `\nSurface form: ${vowelContextInfo.form} (${vowelContextInfo.reason})`;
+    }
     
     return {
       matches: enhancedResult.matches,
@@ -449,7 +474,12 @@ export const classifyWithEnhancedBinaryClassifier = (text, trainingData) => {
         hasSubjunctive: !!subjunctiveInfo,
         subjunctiveType: subjunctiveInfo?.type || null,
         register: registerInfo?.register || 'NEUTRAL',
-        registerScore: registerInfo?.score || 0
+        registerScore: registerInfo?.score || 0,
+        hasAmbiguity: ambiguityInfo?.hasAmbiguity || false,
+        ambiguityScore: ambiguityInfo?.ambiguityScore || 0,
+        hasMultipleNegation: negationInfo?.hasMultipleNegation || false,
+        negationType: negationInfo?.negationType || 'NONE',
+        vowelContext: vowelContextInfo?.form || 'ne'
       },
       enhancedAnalysis: enhancedResult.linguisticAnalysis,
       weightedVotes: enhancedResult.enhancedVotes

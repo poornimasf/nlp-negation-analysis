@@ -6,6 +6,7 @@
 import { normalizeText } from './textProcessing';
 import { enhanceAvantQueAnalysis } from './avantQueAnalyzer';
 import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS } from './patterns';
+import { analyzeAmbiguityAndNegation } from './ambiguityNegationAnalyzer';
 
 // Enhanced trigger patterns with additional constructions
 const ENHANCED_TRIGGER_PATTERNS = {
@@ -308,6 +309,9 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     avantQueAnalysis = enhanceAvantQueAnalysis(text, inputTrigger);
   }
   
+  // Ambiguity and negation analysis
+  const ambiguityNegationAnalysis = analyzeAmbiguityAndNegation(text);
+  
   // Find similar examples with enhanced similarity
   const enhancedExamples = trainingData
     .map(example => {
@@ -351,9 +355,27 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     return acc;
   }, { expletive: 0, nonExpletive: 0, totalWeight: 0 });
   
-  const shouldHaveNe = enhancedVotes.expletive > enhancedVotes.nonExpletive;
-  const confidence = enhancedVotes.totalWeight > 0 ? 
-    Math.max(enhancedVotes.expletive, enhancedVotes.nonExpletive) / enhancedVotes.totalWeight :
+  // Apply ambiguity and negation adjustments
+  let adjustedExpletive = enhancedVotes.expletive;
+  let adjustedNonExpletive = enhancedVotes.nonExpletive;
+  
+  // Ambiguity increases expletive likelihood
+  if (ambiguityNegationAnalysis.ambiguity.clarificationNeeded) {
+    adjustedExpletive += 0.3;
+  } else if (ambiguityNegationAnalysis.ambiguity.hasAmbiguity) {
+    adjustedExpletive += 0.1;
+  }
+  
+  // Negation type affects likelihood
+  if (ambiguityNegationAnalysis.negation.isLogicalNegation) {
+    adjustedNonExpletive += 0.5; // Strong evidence against expletive
+  } else if (ambiguityNegationAnalysis.negation.isExpletiveContext) {
+    adjustedExpletive += 0.4; // Strong evidence for expletive
+  }
+  
+  const shouldHaveNe = adjustedExpletive > adjustedNonExpletive;
+  const confidence = (adjustedExpletive + adjustedNonExpletive) > 0 ? 
+    Math.max(adjustedExpletive, adjustedNonExpletive) / (adjustedExpletive + adjustedNonExpletive) :
     0.5;
   
   return {
@@ -365,9 +387,18 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
       subjunctive: inputSubjunctive,
       register: inputRegister,
       discourse: inputDiscourse,
-      avantQueAnalysis
+      avantQueAnalysis,
+      ambiguityAnalysis: ambiguityNegationAnalysis.ambiguity,
+      negationAnalysis: ambiguityNegationAnalysis.negation,
+      vowelContext: ambiguityNegationAnalysis.vowelContext,
+      combinedAnalysis: ambiguityNegationAnalysis.combinedAnalysis
     },
-    enhancedVotes,
+    enhancedVotes: {
+      ...enhancedVotes,
+      adjustedExpletive,
+      adjustedNonExpletive,
+      ambiguityAdjustment: ambiguityNegationAnalysis.combinedAnalysis.expletiveLikelihood
+    },
     originalText: text
   };
 }

@@ -174,6 +174,56 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
             result += `- Reasoning: ${enhanced.avantQueAnalysis.classificationReason}\n`;
         }
         
+        // Ambiguity Analysis
+        if (enhanced.ambiguityAnalysis) {
+            result += '\nAmbiguity Analysis:\n';
+            result += `- Ambiguity Detected: ${enhanced.ambiguityAnalysis.hasAmbiguity ? 'Yes' : 'No'}\n`;
+            if (enhanced.ambiguityAnalysis.hasAmbiguity) {
+                result += `- Ambiguity Score: ${Math.round(enhanced.ambiguityAnalysis.ambiguityScore * 100)}%\n`;
+                result += `- Clarification Needed: ${enhanced.ambiguityAnalysis.clarificationNeeded ? 'Yes' : 'No'}\n`;
+                result += `- Recommendation: ${enhanced.ambiguityAnalysis.recommendation}\n`;
+                if (enhanced.ambiguityAnalysis.detectedAmbiguities.length > 0) {
+                    result += `- Ambiguity Types: ${enhanced.ambiguityAnalysis.detectedAmbiguities.map(a => a.type).join(', ')}\n`;
+                }
+            }
+        }
+        
+        // Multiple Negation Analysis
+        if (enhanced.negationAnalysis) {
+            result += '\nMultiple Negation Analysis:\n';
+            result += `- Multiple Negation: ${enhanced.negationAnalysis.hasMultipleNegation ? 'Yes' : 'No'}\n`;
+            if (enhanced.negationAnalysis.hasMultipleNegation) {
+                result += `- Negation Type: ${enhanced.negationAnalysis.negationType}\n`;
+                result += `- Confidence: ${Math.round(enhanced.negationAnalysis.confidence * 100)}%\n`;
+                result += `- Is Expletive Context: ${enhanced.negationAnalysis.isExpletiveContext ? 'Yes' : 'No'}\n`;
+                result += `- Is Logical Negation: ${enhanced.negationAnalysis.isLogicalNegation ? 'Yes' : 'No'}\n`;
+                result += `- Recommendation: ${enhanced.negationAnalysis.recommendation}\n`;
+            }
+        }
+        
+        // Vowel Context Analysis
+        if (enhanced.vowelContext) {
+            result += '\nVowel Context Analysis:\n';
+            result += `- Surface Form: ${enhanced.vowelContext.form}\n`;
+            result += `- Reason: ${enhanced.vowelContext.reason}\n`;
+            if (enhanced.vowelContext.nextWord) {
+                result += `- Following Word: "${enhanced.vowelContext.nextWord}"\n`;
+            }
+        }
+        
+        // Combined Analysis Summary
+        if (enhanced.combinedAnalysis) {
+            result += '\nCombined Analysis Summary:\n';
+            result += `- Overall Recommendation: ${enhanced.combinedAnalysis.recommendation}\n`;
+            result += `- Expletive Likelihood: ${Math.round(enhanced.combinedAnalysis.expletiveLikelihood * 100)}%\n`;
+            if (enhanced.combinedAnalysis.factors.length > 0) {
+                result += `- Contributing Factors:\n`;
+                enhanced.combinedAnalysis.factors.forEach(factor => {
+                    result += `  • ${factor}\n`;
+                });
+            }
+        }
+        
         result += '\n';
     } else {
         // Standard Trigger Analysis
@@ -271,8 +321,22 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
         const total = weights.expletive + weights.nonExpletive;
         if (total > 0) {
             result += '\nEnhanced Confidence Breakdown:\n';
-            result += `- Expletive: ${Math.round((weights.expletive / total) * 100)}% (based on enhanced similarity with linguistic features)\n`;
-            result += `- Non-expletive: ${Math.round((weights.nonExpletive / total) * 100)}% (based on enhanced similarity with linguistic features)\n`;
+            result += `- Base Expletive: ${Math.round((weights.expletive / total) * 100)}% (from similar examples)\n`;
+            result += `- Base Non-expletive: ${Math.round((weights.nonExpletive / total) * 100)}% (from similar examples)\n`;
+            
+            // Show adjustments if they exist
+            if (weights.adjustedExpletive !== undefined && weights.adjustedNonExpletive !== undefined) {
+                const adjustedTotal = weights.adjustedExpletive + weights.adjustedNonExpletive;
+                if (adjustedTotal > 0) {
+                    result += `- Adjusted Expletive: ${Math.round((weights.adjustedExpletive / adjustedTotal) * 100)}% (includes ambiguity/negation factors)\n`;
+                    result += `- Adjusted Non-expletive: ${Math.round((weights.adjustedNonExpletive / adjustedTotal) * 100)}% (includes ambiguity/negation factors)\n`;
+                    
+                    if (weights.ambiguityAdjustment !== undefined) {
+                        result += `- Ambiguity/Negation Adjustment: ${weights.ambiguityAdjustment > 0 ? '+' : ''}${Math.round(weights.ambiguityAdjustment * 100)}%\n`;
+                    }
+                }
+            }
+            
             result += `- Total Weight: ${weights.totalWeight.toFixed(2)} (includes linguistic feature bonuses)\n`;
         }
     } else if (trainingAnalysis?.weightedVotes) {
