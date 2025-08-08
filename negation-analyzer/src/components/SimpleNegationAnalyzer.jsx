@@ -174,8 +174,12 @@ const SimpleNegationAnalyzer = () => {
             case 'TRAINING_DATA':
             case 'SVM_ANALYSIS':
               if (useTrainingEnhancement && trainingData.examples.length > 0) {
-                const mode = analysisMode === 'SVM_ANALYSIS' ? 'SVM' : 'BINARY';
-                const trainingAnalysis = classify(sentence, trainingData.examples, mode);
+                // Use enhanced training analyzer that includes surface form generation
+                const { analyzeWithEnhancedFeatures } = await import('../utils/enhancedTrainingAnalyzer');
+                const trainingAnalysis = analyzeWithEnhancedFeatures(sentence, trainingData.examples);
+                
+                console.log('🎯 Full enhanced training analysis result:', trainingAnalysis);
+                console.log('🎯 Surface form in enhanced result:', trainingAnalysis.surfaceForm);
                 
                 // Create properly formatted analysis object
                 const analysisObj = {
