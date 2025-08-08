@@ -191,20 +191,36 @@ function detectSubjunctiveAfterAvantQue(clause) {
   
   const afterAvantQue = clause.substring(avantQueMatch.index + avantQueMatch[0].length);
   
-  // Skip subject pronouns and look for the verb
-  const verbMatch = afterAvantQue.match(/(?:ils?|elles?|on|nous|vous|tu|je|j'|ce|c')\s+(\w+)/i);
+  console.log('🔍 After avant que:', afterAvantQue);
+  
+  // Enhanced regex to handle both pronouns and noun subjects
+  // Look for: pronoun + verb OR article + noun + verb
+  const verbMatch = afterAvantQue.match(/(?:(?:ils?|elles?|on|nous|vous|tu|je|j'|ce|c')\s+(\w+)|(?:les?|la|l'|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+\w+(?:\s+\w+)*\s+(\w+))/i);
+  
   if (verbMatch) {
-    const verb = verbMatch[1];
+    // Get the captured verb (either from group 1 or group 2)
+    const verb = verbMatch[1] || verbMatch[2];
+    console.log('🔍 Extracted verb from subject pattern:', verb);
     return analyzeVerbForSubjunctive(verb, afterAvantQue);
   }
   
-  // Direct verb after "qu'"
+  // Fallback: look for any verb after skipping articles and nouns
+  const fallbackMatch = afterAvantQue.match(/(?:les?|la|l'|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+(\w+(?:\s+\w+)*)\s+(\w+)/i);
+  if (fallbackMatch) {
+    const verb = fallbackMatch[2];
+    console.log('🔍 Extracted verb from fallback pattern:', verb);
+    return analyzeVerbForSubjunctive(verb, afterAvantQue);
+  }
+  
+  // Direct verb after "qu'" (original fallback)
   const directVerbMatch = afterAvantQue.match(/^(\w+)/i);
   if (directVerbMatch) {
     const verb = directVerbMatch[1];
+    console.log('🔍 Extracted verb from direct pattern:', verb);
     return analyzeVerbForSubjunctive(verb, afterAvantQue);
   }
   
+  console.log('❌ No verb extraction pattern matched');
   return null;
 }
 
