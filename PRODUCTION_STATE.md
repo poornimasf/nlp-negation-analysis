@@ -1,13 +1,13 @@
 # Production State Documentation
 
 ## Current System Status
-- **Version**: 2.6.3
+- **Version**: 2.6.4
 - **Last Updated**: August 8, 2025
 - **Status**: ✅ Active and Stable
 - **URL**: https://main.d1gx30ivteuneq.amplifyapp.com/
 
 ## System Overview
-The French Negation Type Prediction System is a specialized linguistic analysis platform that predicts whether a French sentence can have expletive negation. The system uses rule-based pattern matching, enhanced linguistic analysis, and training data analysis to make predictions.
+The French Negation Type Prediction System is a specialized linguistic analysis platform that predicts whether a French sentence can have expletive negation. The system uses rule-based pattern matching, enhanced linguistic analysis, training data analysis, and comprehensive ambiguity/negation detection to make predictions.
 
 ## System Architecture
 
@@ -17,7 +17,11 @@ SimpleNegationAnalyzer.jsx (Main Production Component)
     ↓
 NegationAnalyzer.js (Core Analysis Engine)
     ↓
+enhancedTrainingAnalyzer.js (Enhanced Training Data Analysis)
+    ↓
 avantQueAnalyzer.js (Enhanced Avant Que Analysis)
+    ↓
+ambiguityNegationAnalyzer.js (Ambiguity & Multiple Negation Detection)
     ↓
 resultFormatters.js (Output Formatting)
     ↓
@@ -27,9 +31,11 @@ User Interface Display
 ### Key Components
 1. **SimpleNegationAnalyzer.jsx**: Main production component handling user interface and batch processing
 2. **NegationAnalyzer.js**: Core analysis engine with pattern detection and linguistic analysis
-3. **avantQueAnalyzer.js**: Enhanced linguistic analysis for "avant que" constructions
-4. **resultFormatters.js**: Formats analysis results for display
-5. **classifiers.js**: Training data analysis and similarity matching
+3. **enhancedTrainingAnalyzer.js**: Sophisticated training data analysis with linguistic features
+4. **avantQueAnalyzer.js**: Enhanced linguistic analysis for "avant que" constructions
+5. **ambiguityNegationAnalyzer.js**: Ambiguity avoidance and multiple negation detection
+6. **resultFormatters.js**: Formats analysis results for display
+7. **classifiers.js**: Training data analysis and similarity matching
 
 ## Current Features
 
@@ -37,19 +43,26 @@ User Interface Display
 1. **Rule-Based Analysis**
    - Binary classification (expletive/non-expletive)
    - Enhanced "avant que" analysis with complement clause and subjunctive detection
+   - Expanded trigger coverage including comparatives and conditional constructions
    - Three official triggers:
-     * "peur que"
+     * "peur que" (with variations: "de peur que", "dans la crainte que")
      * "avant que" (with enhanced linguistic analysis)
-     * "peu s'en faut"
+     * "peu s'en faut" (with temporal variations)
+   - Additional triggers: "à moins que", "pourvu que", comparative constructions
    - Subjunctive mood detection with priority-based matching
    - Confidence-based scoring
 
 2. **Training Data Analysis**
-   - Example-based learning with similarity matching
-   - Pattern matching with triggers
-   - User-provided examples with detailed analysis
+   - **Enhanced Linguistic Analysis**: Comprehensive feature detection and weighting
+   - **Ambiguity Avoidance**: Detects contexts where expletive "ne" clarifies meaning
+   - **Multiple Negation Detection**: Distinguishes expletive "ne" from logical negation
+   - **Register/Genre Analysis**: Automatic detection of literary, formal, colloquial registers
+   - **Vowel Context Analysis**: Proper "n'" vs "ne" surface form selection
+   - Example-based learning with sophisticated similarity matching
+   - Pattern matching with expanded trigger coverage
+   - User-provided examples with detailed linguistic analysis
    - Transparent decision making with best match display
-   - Weighted voting from multiple similar examples
+   - Weighted voting from multiple similar examples with linguistic feature bonuses
 
 3. **SVM Analysis**
    - Support Vector Machine classification
@@ -60,30 +73,80 @@ User Interface Display
    - CroissantLLM integration for context-aware analysis
    - Combined rule-based and AI-powered analysis
 
-### Enhanced Avant Que Analysis
-For "avant que" constructions, the system provides sophisticated linguistic analysis:
+### Enhanced Ambiguity and Negation Analysis
 
-#### Analysis Criteria
-1. **Complement Clause Detection**
-   - Identifies finite clauses with subject pronouns
-   - Distinguishes from infinitive constructions ("avant de")
-   - Detects nominal constructions
+#### Ambiguity Avoidance Detection
+The system identifies contexts where expletive "ne" serves to clarify meaning:
 
-2. **Subjunctive Mood Analysis**
-   - Priority-based verb matching (high/medium/low confidence)
-   - Comprehensive subjunctive pattern recognition
-   - Context-aware confidence scoring
+1. **Temporal Ambiguity**
+   - Multiple temporal markers creating sequence confusion
+   - Patterns: "quand...avant", "après...pendant", overlapping time references
+   - Impact: +20% expletive likelihood
 
-#### Classification Logic
-- **Both Conditions Met** (Complement + Subjunctive) → **Expletive** (90-95% confidence)
-- **Complement Only** (No Subjunctive) → **No Expletive** (60-80% confidence)
-- **Subjunctive Only** (No Complement) → **No Expletive** (60-80% confidence)
-- **Neither Condition** → **No Expletive** (80-90% confidence)
+2. **Modal Ambiguity**
+   - Uncertainty markers affecting negation interpretation
+   - Patterns: "peut-être", "probablement", "il se peut que"
+   - Impact: +15% expletive likelihood
+
+3. **Scope Ambiguity**
+   - Multiple embedded clauses creating scope confusion
+   - Patterns: Multiple "que" clauses, embedded speech/thought verbs
+   - Impact: +25% expletive likelihood
+
+4. **Negation Ambiguity**
+   - Negative contexts where "ne" clarifies positive vs negative intent
+   - Patterns: "sans...peur", "ni...craindre", double negative contexts
+   - Impact: +30% expletive likelihood
+
+#### Multiple Negation Analysis
+Sophisticated distinction between expletive and logical negation:
+
+1. **Double Negation Detection**
+   - Standard French "ne...pas" patterns (95% confidence)
+   - Discontinuous negation with "ne...que...pas"
+   - Impact: -50% expletive likelihood (strong evidence against)
+
+2. **Expletive Context Recognition**
+   - Standalone "ne" in trigger contexts without negative words
+   - Patterns: "peur que...ne" without "pas/jamais/rien"
+   - Impact: +40% expletive likelihood (strong evidence for)
+
+3. **Complex Negation Patterns**
+   - Multiple negative elements in single sentence
+   - Triple negation with "sans...ne...pas"
+   - Impact: Variable based on pattern complexity
+
+4. **Negative Polarity Items**
+   - "ne" with polarity-sensitive items ("que", "plus", "encore")
+   - Context-dependent analysis
+   - Impact: Moderate influence on classification
+
+#### Enhanced Vowel Context Analysis
+Proper surface form selection for "ne" vs "n'":
+
+1. **Elision Requirements**
+   - Vowel-initial words requiring "n'" form
+   - Silent "h" words (heure, homme, histoire)
+   - French vowel sounds including nasal vowels
+
+2. **No Elision Cases**
+   - Aspirated "h" words (héros, honte, haut)
+   - Consonant-initial words
+   - Detailed reasoning provided for each case
+
+3. **Surface Form Recommendations**
+   - Context-aware "ne" vs "n'" selection
+   - Following word analysis
+   - Confidence scoring for elision decisions
 
 ### Core Functionality
 - **Binary Classification**: Expletive vs Non-expletive
-- **Enhanced Linguistic Analysis**: Detailed grammatical structure analysis
-- **Confidence Scoring**: Multi-factor confidence calculation
+- **Enhanced Linguistic Analysis**: Comprehensive grammatical structure analysis
+- **Ambiguity Detection**: Identifies contexts requiring clarification
+- **Multiple Negation Analysis**: Distinguishes expletive from logical negation
+- **Vowel Context Handling**: Proper "ne" vs "n'" surface form selection
+- **Register/Genre Detection**: Literary, formal, colloquial register analysis
+- **Confidence Scoring**: Multi-factor confidence calculation with adjustments
 - **Training Data Management**: Upload, preview, and validate examples
 - **Batch Processing**: Analyze multiple sentences with progress tracking
 - **Export Options**: Excel, CSV, JSON, TXT formats
@@ -93,26 +156,38 @@ For "avant que" constructions, the system provides sophisticated linguistic anal
 - **Analysis Results**: Binary classification with detailed confidence breakdown
 - **Evidence Details**: Triggers, subjunctive detection, and linguistic factors
 - **Enhanced Avant Que Display**: Complement clause and subjunctive analysis
-- **Training Data Insights**: Best matches and similarity scores
-- **Clear Feedback**: Detailed reasoning for predictions with linguistic explanations
+- **Ambiguity Analysis**: Detailed ambiguity detection with clarification recommendations
+- **Multiple Negation Analysis**: Negation type classification with confidence scores
+- **Vowel Context Analysis**: Surface form recommendations with detailed reasoning
+- **Register/Genre Analysis**: Automatic register detection with feature identification
+- **Training Data Insights**: Best matches and similarity scores with linguistic feature bonuses
+- **Combined Analysis Summary**: Overall recommendations with contributing factors
+- **Enhanced Confidence Breakdown**: Base scores plus ambiguity/negation adjustments
+- **Clear Feedback**: Detailed reasoning for predictions with comprehensive linguistic explanations
 
 ### Classification Rules
 1. **Expletive Requirements**
-   - Must have one of the official triggers
+   - Must have one of the official triggers or expanded trigger patterns
    - For "avant que": Must have complement clause AND subjunctive mood
    - For other triggers: Must have subjunctive mood
+   - **Ambiguity factors**: High ambiguity contexts increase expletive likelihood (+10-30%)
+   - **Negation context**: Expletive negation patterns increase likelihood (+40%)
    - Optional 'ne' increases confidence
 
 2. **Non-Expletive Cases**
    - No official triggers found
    - Has trigger but missing required linguistic conditions
    - "Avant que" with infinitive or nominal constructions
+   - **Logical negation detected**: Strong evidence against expletive (-50%)
+   - **Double negation patterns**: "ne...pas" constructions indicate logical negation
    - Any other cases default to non-expletive
 
-3. **Confidence Scoring**
+3. **Enhanced Confidence Scoring**
    - Enhanced avant que (both conditions): 0.90-0.95
    - Standard expletive with 'ne': 0.95
    - Standard expletive without 'ne': 0.85
+   - **Ambiguity adjustments**: +0.10 to +0.30 based on ambiguity type
+   - **Negation adjustments**: -0.50 for logical negation, +0.40 for expletive context
    - Non-expletive (no trigger): 0.95
    - Non-expletive (trigger, missing conditions): 0.60-0.90
 
@@ -209,9 +284,9 @@ For "avant que" constructions, the system provides sophisticated linguistic anal
 - **App ID**: d1gx30ivteuneq
 - **Region**: us-east-2
 - **Branch**: main
-- **Build Status**: ✅ Successful (Build #841)
+- **Build Status**: ✅ Successful (Build #845)
 - **Last Deployment**: August 8, 2025
-- **Latest Features**: Enhanced avant que analysis with complement clause detection
+- **Latest Features**: Ambiguity avoidance and multiple negation detection with enhanced vowel context analysis
 
 ### Build Requirements
 - **Node.js**: Compatible with AWS Amplify default (Node 18+)
@@ -249,11 +324,15 @@ For "avant que" constructions, the system provides sophisticated linguistic anal
 4. **No Data Persistence**: Client-side only processing (by design for privacy)
 5. **CroissantLLM Dependency**: Hybrid mode requires external API availability
 
-### Recent Improvements (v2.6.3)
-1. **Enhanced Avant Que Analysis**: Added complement clause and subjunctive mood detection
-2. **Improved Confidence Scoring**: Multi-factor confidence calculation
-3. **Better Training Data Display**: Detailed analysis with best match examples
-4. **Comprehensive Documentation**: Updated guides and architecture documentation
+### Recent Improvements (v2.6.4)
+1. **Ambiguity Avoidance Detection**: Comprehensive analysis of contexts where expletive "ne" clarifies meaning
+2. **Multiple Negation Analysis**: Sophisticated distinction between expletive and logical negation
+3. **Enhanced Vowel Context**: Proper "n'" vs "ne" surface form selection with detailed reasoning
+4. **Expanded Trigger Coverage**: Added conditional and comparative constructions
+5. **Register/Genre Integration**: Weighted impact of literary, formal, and colloquial registers
+6. **Enhanced Confidence Scoring**: Multi-factor confidence calculation with ambiguity/negation adjustments
+7. **Comprehensive Analysis Display**: Detailed linguistic breakdown with all contributing factors
+8. **Improved Training Data Analysis**: Sophisticated similarity matching with linguistic feature bonuses
 
 ### Planned Improvements
 1. **Extended Enhanced Analysis**: Consider applying linguistic analysis to other trigger types

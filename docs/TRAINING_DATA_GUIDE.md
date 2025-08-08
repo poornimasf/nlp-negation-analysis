@@ -55,7 +55,49 @@ Training data now supports enhanced linguistic analysis with additional optional
 - **`ne_position`** (number|null): Position of "ne" in the sentence (1-based indexing)
 - **`register`** (string): Language register - "literary", "formal", "neutral", "colloquial"
 - **`discourse_context`** (string): Discourse context - "temporal", "fear", "negative", "contrastive"
-- **`ne_position`** (number|null): Position of "ne" in the sentence (1-based indexing)
+
+## Enhanced Analysis Features (v2.6.4)
+
+### 1. **Comprehensive Trigger Coverage**
+The system recognizes extensive trigger constructions:
+- **Fear expressions**: "peur que", "de peur que", "dans la crainte que", "par crainte que", "craindre que", "redouter que"
+- **Temporal expressions**: "avant que" (with enhanced analysis), all subcategories
+- **Conditional expressions**: "à moins que", "pourvu que", "pour peu que"  
+- **Comparative constructions**: "plus...que", "moins...que", "mieux...que", "autre...que"
+- **Impersonal expressions**: "peu s'en faut que", "il s'en faut de peu que"
+
+### 2. **Ambiguity Avoidance Detection**
+Automatic identification of contexts where expletive "ne" clarifies meaning:
+- **Temporal Ambiguity**: Multiple temporal markers (+20% expletive likelihood)
+- **Modal Ambiguity**: Uncertainty markers like "peut-être" (+15% expletive likelihood)
+- **Scope Ambiguity**: Multiple embedded clauses (+25% expletive likelihood)
+- **Negation Ambiguity**: Negative contexts requiring clarification (+30% expletive likelihood)
+
+### 3. **Multiple Negation Analysis**
+Sophisticated distinction between expletive and logical negation:
+- **Double Negation Detection**: "ne...pas" patterns (-50% expletive likelihood)
+- **Expletive Context Recognition**: Standalone "ne" in trigger contexts (+40% expletive likelihood)
+- **Complex Negation Patterns**: Multiple negative elements with variable impact
+- **Negative Polarity Items**: Context-dependent analysis
+
+### 4. **Enhanced Vowel Context Analysis**
+Proper surface form selection for "ne" vs "n'":
+- **Elision Requirements**: Vowel-initial and silent "h" words → "n'"
+- **No Elision Cases**: Aspirated "h" and consonant-initial words → "ne"
+- **Detailed Reasoning**: Explanation for each surface form recommendation
+
+### 5. **Register/Genre Detection**
+Automatic detection of language register with impact on expletive ne likelihood:
+- **Literary**: Complex relatives, literary subjunctive forms (+30% expletive likelihood)
+- **Formal**: Formal connectors, purpose clauses (+20% expletive likelihood)
+- **Colloquial**: Informal particles, vague terms (-20% expletive likelihood)
+
+### 6. **Enhanced Similarity Calculation**
+Linguistic feature matching with weighted bonuses:
+- **Trigger Category Match**: +0.3 similarity bonus
+- **Subjunctive Type Match**: +0.2 similarity bonus  
+- **Register Match**: +0.15 similarity bonus
+- **Ambiguity/Negation Adjustments**: Variable impact based on detected patterns
 
 ### Data Validation
 The system validates:

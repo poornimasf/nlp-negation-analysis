@@ -11,14 +11,16 @@ A specialized linguistic analysis platform for predicting whether removed "ne" m
 - [Analysis Modes](negation-analyzer/ANALYSIS_MODES.md) - Detailed description of analysis modes and features
 - [Training Data Guide](docs/TRAINING_DATA_GUIDE.md) - Complete guide for uploading and using training data
 
-## Latest Updates (v2.6.0 - July 26, 2025)
+## Latest Updates (v2.6.4 - August 8, 2025)
 
 ### Major Changes
-- 🎯 **Simplified Analysis Modes**: Removed hybrid option - now either Rule-Based OR Training Data analysis
+- 🎯 **Ambiguity Avoidance Detection**: Comprehensive analysis of contexts where expletive "ne" clarifies meaning
+- 🔍 **Multiple Negation Analysis**: Sophisticated distinction between expletive and logical negation
+- 📝 **Enhanced Vowel Context**: Proper "n'" vs "ne" surface form selection with detailed reasoning
 - 🤖 **Enhanced CroissantLLM Integration**: Context-aware French syntax analysis for removed "ne" prediction
-- 📊 **Improved Classification Logic**: More sensitive to "likely" indicators, reduced "Uncertain" classifications
-- 🔄 **Better Loading Experience**: Real-time progress tracking for batch analysis
-- 📥 **Streamlined Exports**: Removed trigger and analysis mode columns from downloads
+- 📊 **Advanced Classification Logic**: Multi-factor confidence scoring with ambiguity/negation adjustments
+- 🔄 **Comprehensive Training Data Analysis**: Sophisticated similarity matching with linguistic feature bonuses
+- 📥 **Expanded Trigger Coverage**: Added conditional and comparative constructions
 
 ### Analysis Task
 The system analyzes French sentences where "ne" markers have been removed and predicts whether the missing "ne" was:
@@ -37,18 +39,20 @@ The system analyzes French sentences where "ne" markers have been removed and pr
   - Context-aware confidence scoring
 
 #### 2. Training Data Analysis
-- ✅ **User-Uploaded Examples**:
-  - Upload JSON files with annotated French sentences
-  - Text similarity matching for removed "ne" prediction
-  - Confidence scoring based on similar examples
-  - Transparent example references with similarity scores
-  - Pure ML-based decisions from user data
+- ✅ **Enhanced Linguistic Analysis**:
+  - Comprehensive trigger coverage (fear, temporal, conditional, comparative)
+  - Register/genre detection (literary, formal, colloquial)
+  - Ambiguity avoidance detection (temporal, modal, scope, negation)
+  - Multiple negation analysis (expletive vs logical distinction)
+  - Enhanced vowel context handling ("ne" vs "n'" selection)
+  - Sophisticated similarity matching with linguistic feature bonuses
 - ✅ **Advanced Features**:
-  - Best match display with similarity percentages
-  - Weighted voting from multiple similar examples
-  - Detailed confidence breakdown
-  - Support for trigger-based categorization
-  - Real-time data preview and statistics
+  - Multi-factor confidence scoring with ambiguity/negation adjustments
+  - Best match display with linguistic feature explanations
+  - Weighted voting from multiple similar examples with feature bonuses
+  - Detailed confidence breakdown showing base + adjusted scores
+  - Support for expanded trigger categorization
+  - Real-time data preview and comprehensive statistics
 
 #### 3. Priority System
 - **Either/Or Logic**: Choose Rule-Based OR Training Data analysis
@@ -70,8 +74,11 @@ The system analyzes French sentences where "ne" markers have been removed and pr
 
 ### Technical Improvements
 - Context-aware CroissantLLM prompts for removed "ne" prediction
-- Enhanced pattern matching without "ne" dependency
-- Improved confidence calculations based on trigger + subjunctive
+- Enhanced pattern matching with expanded trigger coverage
+- Ambiguity detection algorithms for clarification contexts
+- Multiple negation analysis distinguishing expletive from logical patterns
+- Enhanced vowel context analysis for proper surface form selection
+- Improved confidence calculations based on multi-factor linguistic analysis
 - Real-time batch processing with progress indicators
 - Streamlined export formats (Excel, CSV, JSON, TXT)
 
