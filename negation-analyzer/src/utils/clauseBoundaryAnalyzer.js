@@ -319,7 +319,7 @@ function analyzeVerbForSubjunctive(verb, context) {
     availablePatterns: Object.keys(highPriorityPatterns).filter(k => k.startsWith(normalizedVerb.charAt(0)))
   });
   
-  // Check high-priority patterns first
+  // Check high-priority patterns first (UNCHANGED - preserves existing functionality)
   if (highPriorityPatterns[normalizedVerb]) {
     const pattern = highPriorityPatterns[normalizedVerb];
     const result = {
@@ -330,6 +330,52 @@ function analyzeVerbForSubjunctive(verb, context) {
       position: context.indexOf(verb)
     };
     console.log('✅ Subjunctive found:', result);
+    return result;
+  }
+  
+  // FALLBACK: Check regular verb patterns (NEW - only when hardcoded patterns fail)
+  console.log('🔍 Checking regular verb patterns for:', normalizedVerb);
+  
+  // Regular -IR verbs (like saisir → saisisse)
+  if (normalizedVerb.match(/\w+isse$/i)) {
+    const result = {
+      verb: normalizedVerb,
+      type: 'IR_REGULAR',
+      priority: 2,
+      confidence: 0.80, // Lower confidence than hardcoded
+      position: context.indexOf(verb)
+    };
+    console.log('✅ Regular -IR subjunctive found:', result);
+    return result;
+  }
+  
+  // Regular -ER verbs (like parler → parle)
+  if (normalizedVerb.match(/\w+e$/i) && normalizedVerb.length > 2) {
+    // Exclude common words that aren't verbs
+    const excludeWords = ['que', 'de', 'le', 'me', 'te', 'se', 'ne', 'ce'];
+    if (!excludeWords.includes(normalizedVerb)) {
+      const result = {
+        verb: normalizedVerb,
+        type: 'ER_REGULAR',
+        priority: 1,
+        confidence: 0.60, // Lower confidence due to ambiguity
+        position: context.indexOf(verb)
+      };
+      console.log('✅ Regular -ER subjunctive found:', result);
+      return result;
+    }
+  }
+  
+  // Regular -RE verbs (like prendre → prenne)
+  if (normalizedVerb.match(/\w+ne$/i) && normalizedVerb.length > 3) {
+    const result = {
+      verb: normalizedVerb,
+      type: 'RE_REGULAR',
+      priority: 2,
+      confidence: 0.70,
+      position: context.indexOf(verb)
+    };
+    console.log('✅ Regular -RE subjunctive found:', result);
     return result;
   }
   
