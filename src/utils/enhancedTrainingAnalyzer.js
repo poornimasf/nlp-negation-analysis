@@ -403,6 +403,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   let adjustedNonExpletive = enhancedVotes.nonExpletive;
   
   // CRITICAL: Apply avant que analysis boost FIRST (strongest evidence)
+  // Force deployment - ensure adaptive boost overrides training data bias
   if (avantQueAnalysis && avantQueAnalysis.bothConditionsMet) {
     // Use a multiplicative boost to ensure linguistic rules always win
     const currentTotal = adjustedExpletive + adjustedNonExpletive;
