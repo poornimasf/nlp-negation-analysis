@@ -433,6 +433,29 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
       winMargin: adjustedExpletive - adjustedNonExpletive
     });
     console.log('🏛️ Avant que boost: Strong boost applied (both conditions met) - expletive now favored');
+  } else if (avantQueAnalysis && avantQueAnalysis.isAvantQue && !avantQueAnalysis.bothConditionsMet) {
+    // REVERSE PENALTY: When avant que trigger is present but conditions clearly not met
+    // This prevents training data bias from overriding clear linguistic evidence
+    const beforePenalty = adjustedExpletive;
+    
+    // Strong penalty: Ensure non-expletive wins when linguistic evidence is clear
+    const guaranteedLoss = adjustedNonExpletive * 0.8; // Make expletive 20% lower than non-expletive
+    const minimumPenalty = Math.max(0, adjustedExpletive - 3.0); // Reduce by at least 3.0
+    
+    // Use the lower of the two to guarantee loss
+    adjustedExpletive = Math.min(guaranteedLoss, minimumPenalty);
+    
+    console.log('🚫 Avant que penalty calculation:', {
+      beforePenalty,
+      adjustedNonExpletive,
+      guaranteedLoss,
+      minimumPenalty,
+      finalAdjustedExpletive: adjustedExpletive,
+      shouldLose: adjustedExpletive < adjustedNonExpletive,
+      lossMargin: adjustedNonExpletive - adjustedExpletive,
+      reason: 'Trigger present but no subjunctive - clear linguistic evidence against expletive'
+    });
+    console.log('🚫 Avant que penalty: Strong penalty applied (conditions not met) - non-expletive now favored');
   } else {
     console.log('❌ Avant que boost NOT applied - conditions not met');
   }
@@ -498,7 +521,8 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
         factors: [
           ...ambiguityNegationAnalysis.combinedAnalysis.factors,
           `Enhanced voting: ${Math.round(actualExpletiveLikelihood * 100)}% expletive likelihood`,
-          avantQueAnalysis?.bothConditionsMet ? 'Avant que boost applied (+3.0)' : null
+          avantQueAnalysis?.bothConditionsMet ? 'Avant que boost applied (+3.0)' : 
+          (avantQueAnalysis?.isAvantQue && !avantQueAnalysis?.bothConditionsMet) ? 'Avant que penalty applied (-3.0)' : null
         ].filter(Boolean)
       },
       clauseInfo: clauseInfo // Add clause boundary information
