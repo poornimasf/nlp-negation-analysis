@@ -4,10 +4,10 @@
  */
 
 import { normalizeText } from './textProcessing';
-import { enhanceAvantQueAnalysis } from './avantQueAnalyzer';
 import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS } from './patterns';
 import { analyzeAmbiguityAndNegation } from './ambiguityNegationAnalyzer';
 import { extractTriggerClause, detectSubjunctiveInClause, analyzeMultipleNegationInClause } from './clauseBoundaryAnalyzer';
+import { enhanceAvantQueAnalysisWithClause } from './enhancedAvantQueAnalyzer';
 
 // Enhanced trigger patterns with additional constructions
 const ENHANCED_TRIGGER_PATTERNS = {
@@ -317,20 +317,27 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   const inputRegister = detectRegister(text);
   const inputDiscourse = detectDiscourseContext(text);
   
-  // Enhanced avant que analysis if applicable
+  // Enhanced avant que analysis if applicable (using clause-aware analysis)
   let avantQueAnalysis = null;
   if (inputTrigger && inputTrigger.trigger.includes('avant')) {
-    avantQueAnalysis = enhanceAvantQueAnalysis(triggerClause, inputTrigger);
+    avantQueAnalysis = enhanceAvantQueAnalysisWithClause(triggerClause, inputTrigger);
   }
   
-  // Analyze ambiguity and negation within the specific clause
+  // Analyze ambiguity and negation within the specific clause only
   let ambiguityNegationAnalysis;
   if (clauseInfo && clauseInfo.isIsolated) {
     // Use clause-specific analysis for better accuracy
     const clauseNegationAnalysis = analyzeMultipleNegationInClause(triggerClause);
+    const clauseAmbiguityAnalysis = analyzeAmbiguityAndNegation(triggerClause); // Use clause for ambiguity too
     ambiguityNegationAnalysis = {
-      ...analyzeAmbiguityAndNegation(text),
-      negation: clauseNegationAnalysis
+      ambiguity: clauseAmbiguityAnalysis.ambiguity,
+      negation: clauseNegationAnalysis,
+      vowelContext: clauseAmbiguityAnalysis.vowelContext,
+      combinedAnalysis: {
+        ...clauseAmbiguityAnalysis.combinedAnalysis,
+        // Override negation impact with clause-specific analysis
+        expletiveLikelihood: clauseAmbiguityAnalysis.combinedAnalysis.expletiveLikelihood
+      }
     };
   } else {
     ambiguityNegationAnalysis = analyzeAmbiguityAndNegation(text);
