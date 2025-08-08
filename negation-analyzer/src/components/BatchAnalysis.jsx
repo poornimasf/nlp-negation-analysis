@@ -127,6 +127,9 @@ export const BatchAnalysis = ({
                   <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
                     Prediction
                   </th>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
+                    Surface Form
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -172,6 +175,35 @@ export const BatchAnalysis = ({
                         }}>
                           {prediction}
                         </span>
+                      </td>
+                      <td style={{ padding: '12px', maxWidth: '250px' }}>
+                        {result.surfaceForm && result.surfaceForm !== result.text ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <span style={{
+                              fontWeight: '500',
+                              color: '#2563eb',
+                              fontStyle: 'italic',
+                              fontSize: '0.95em'
+                            }}>
+                              {result.surfaceForm}
+                            </span>
+                            <span style={{
+                              fontSize: '0.75rem',
+                              color: '#6b7280',
+                              fontStyle: 'normal'
+                            }}>
+                              Predicted with expletive "ne"
+                            </span>
+                          </div>
+                        ) : (
+                          <span style={{
+                            color: '#9ca3af',
+                            fontStyle: 'italic',
+                            fontSize: '0.9em'
+                          }}>
+                            No change suggested
+                          </span>
+                        )}
                       </td>
                     </tr>
                   );

@@ -252,7 +252,8 @@ const SimpleNegationAnalyzer = () => {
             highlightedText: highlight(sentence),
             label: formattedResult,
             classification: displayClassification,
-            proposedSentence
+            proposedSentence,
+            surfaceForm: trainingAnalysis?.surfaceForm || null // NEW: Add surface form from analysis
           });
 
           setBatchResults([...results]);
@@ -264,7 +265,8 @@ const SimpleNegationAnalyzer = () => {
             highlightedText: sentence,
             label: formatErrorMessage(error),
             classification: "Error",
-            proposedSentence: sentence
+            proposedSentence: sentence,
+            surfaceForm: null // No surface form for errors
           });
           setBatchResults([...results]);
         }

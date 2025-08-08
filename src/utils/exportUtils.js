@@ -23,7 +23,8 @@ export const exportToXLSX = (results, mode) => {
       'Input Text': result.text,
       'Classification': result.classification,
       'Confidence': confidence + '%',
-      'Trigger': trigger
+      'Trigger': trigger,
+      'Surface Form': result.surfaceForm || 'No change suggested' // NEW: Add surface form
     };
 
     // Add mode-specific columns
