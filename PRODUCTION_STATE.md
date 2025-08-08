@@ -132,10 +132,76 @@ For "avant que" constructions, the system provides sophisticated linguistic anal
 ```
 
 ## Technical Architecture
-- **Frontend**: React with responsive design
-- **Data Processing**: Client-side only
-- **Cloud Hosting**: AWS Amplify
-- **Performance**: Real-time analysis
+
+### Frontend Stack
+- **Framework**: React 18.2.0
+- **Build Tool**: React Scripts 5.0.1
+- **Language**: JavaScript (ES6+)
+- **Styling**: CSS3 with responsive design
+- **Testing**: Jest with React Testing Library
+
+### Core Dependencies
+```json
+{
+  "react": "^18.2.0",
+  "react-dom": "^18.2.0",
+  "react-scripts": "5.0.1",
+  "xlsx": "^0.18.5",
+  "web-vitals": "^2.1.4"
+}
+```
+
+### Development Dependencies
+```json
+{
+  "@testing-library/jest-dom": "^5.17.0",
+  "@testing-library/react": "^13.4.0",
+  "@testing-library/user-event": "^13.5.0"
+}
+```
+
+### External API Dependencies
+1. **Hugging Face Inference API**
+   - **Service**: CroissantLLM for hybrid analysis mode
+   - **Endpoint**: `https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud`
+   - **Authentication**: Requires `REACT_APP_HF_TOKEN` environment variable
+   - **Usage**: Context-aware French linguistic analysis
+   - **Fallback**: System gracefully degrades to rule-based analysis if unavailable
+
+### Environment Variables
+- **REACT_APP_HF_TOKEN**: Hugging Face API token for CroissantLLM access
+  - Required for: Hybrid analysis mode
+  - Optional: System works without it (rule-based and training data modes available)
+  - Format: Standard Hugging Face token
+
+### Browser Compatibility
+- **Production**: >0.2%, not dead, not op_mini all
+- **Development**: Latest Chrome, Firefox, Safari
+- **Features Used**: ES6+, Fetch API, FileReader API, Web Workers (for large batch processing)
+
+### Build Configuration
+- **Build System**: AWS Amplify with automatic deployment
+- **Build Commands**: 
+  ```yaml
+  preBuild: npm ci
+  build: npm run build
+  ```
+- **Output**: Static files in `build/` directory
+- **Caching**: Node modules cached between builds
+
+### Data Processing
+- **Client-Side Only**: All analysis performed in browser
+- **No Server Dependencies**: Completely serverless architecture
+- **File Processing**: JSON and Excel file parsing with `xlsx` library
+- **Memory Management**: Optimized for large batch processing
+
+### Performance Considerations
+- **Bundle Size**: Optimized with React Scripts build optimization
+- **Code Splitting**: Automatic with React lazy loading
+- **Caching**: Browser caching for static assets
+- **Memory**: Efficient processing for large training datasets
+
+## Deployment Information
 
 ## Deployment Information
 
@@ -146,6 +212,24 @@ For "avant que" constructions, the system provides sophisticated linguistic anal
 - **Build Status**: ✅ Successful (Build #841)
 - **Last Deployment**: August 8, 2025
 - **Latest Features**: Enhanced avant que analysis with complement clause detection
+
+### Build Requirements
+- **Node.js**: Compatible with AWS Amplify default (Node 18+)
+- **NPM**: Package management and dependency installation
+- **Build Time**: ~2-3 minutes for full build
+- **Build Size**: ~2MB compressed static assets
+
+### Deployment Dependencies
+- **Git Repository**: GitHub integration for automatic deployment
+- **Build Environment**: AWS Amplify managed build environment
+- **SSL Certificate**: Automatic HTTPS with AWS Certificate Manager
+- **CDN**: AWS CloudFront for global content delivery
+
+### Runtime Dependencies
+- **Required**: None (fully client-side application)
+- **Optional**: Hugging Face API access for enhanced analysis
+- **Browser Requirements**: Modern browsers with ES6+ support
+- **Network**: HTTPS required for security features
 
 ### Environment Variables
 - **Build Settings**: Automatic deployment on git push
@@ -181,9 +265,29 @@ For "avant que" constructions, the system provides sophisticated linguistic anal
 
 ### Data Handling
 - **No Persistence**: All data processed client-side only
-- **Privacy First**: No user data stored
-- **Secure Transmission**: HTTPS only
-- **Content Security**: No storage of user content
+- **Privacy First**: No user data stored or transmitted to servers
+- **Secure Transmission**: HTTPS only for all communications
+- **Content Security**: No storage of user content beyond session
+
+### External API Security
+- **Hugging Face API**: 
+  - Token-based authentication
+  - HTTPS-only communication
+  - Rate limiting and error handling
+  - Graceful degradation if unavailable
+- **No Data Logging**: User inputs not logged by external services
+
+### Dependency Security
+- **Regular Updates**: Dependencies updated monthly for security patches
+- **Vulnerability Scanning**: Automated security scanning via GitHub
+- **Minimal Dependencies**: Only essential packages included
+- **Trusted Sources**: All dependencies from NPM registry
+
+### Browser Security
+- **Content Security Policy**: Implemented via AWS Amplify
+- **CORS Configuration**: Properly configured for API access
+- **XSS Protection**: React's built-in XSS protection
+- **No Eval**: No dynamic code execution
 
 ### Access Control
 - **Public Access**: No authentication required
