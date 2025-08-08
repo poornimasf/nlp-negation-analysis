@@ -8,7 +8,7 @@ import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS } from './patterns';
 import { analyzeAmbiguityAndNegation } from './ambiguityNegationAnalyzer';
 import { extractTriggerClause, detectSubjunctiveInClause, analyzeMultipleNegationInClause } from './clauseBoundaryAnalyzer';
 import { enhanceAvantQueAnalysisWithClause } from './enhancedAvantQueAnalyzer';
-import { createSurfaceForm } from './surfaceFormGenerator.js';
+import { createSurfaceForm } from './surfaceFormGenerator';
 
 // Enhanced trigger patterns with additional constructions
 const ENHANCED_TRIGGER_PATTERNS = {
@@ -501,7 +501,14 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     }
   };
   
-  const surfaceForm = createSurfaceForm(text, analysisResult);
+  let surfaceForm = null;
+  try {
+    surfaceForm = createSurfaceForm(text, analysisResult);
+    console.log('🎨 Surface form generated:', surfaceForm);
+  } catch (error) {
+    console.error('❌ Surface form generation failed:', error);
+    surfaceForm = null;
+  }
   
   console.log('🎯 FINAL RESULT:', {
     classification: shouldHaveNe,
