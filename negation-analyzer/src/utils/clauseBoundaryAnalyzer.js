@@ -195,33 +195,30 @@ function detectSubjunctiveAfterAvantQue(clause) {
   console.log('🔍 After avant que:', `"${afterAvantQue}"`);
   console.log('🔍 After avant que (first 50 chars):', afterAvantQue.substring(0, 50));
   
-  // Enhanced regex to handle both pronouns and noun subjects
-  // Look for: pronoun + verb OR article + noun + verb
-  const verbMatch = afterAvantQue.match(/(?:(?:ils?|elles?|on|nous|vous|tu|je|j'|ce|c')\s+(\w+)|(?:les?|la|l'|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+\w+(?:\s+\w+)*\s+(\w+))/i);
-  
-  console.log('🔍 Primary regex match result:', verbMatch);
-  if (verbMatch) {
-    // Get the captured verb (either from group 1 or group 2)
-    const verb = verbMatch[1] || verbMatch[2];
-    console.log('🔍 Extracted verb from primary pattern:', verb);
+  // FIXED: Specific pattern for "les autres aient" type constructions
+  const lesAutresMatch = afterAvantQue.match(/les?\s+\w+\s+(\w+)/i);
+  console.log('🔍 Les autres pattern match:', lesAutresMatch);
+  if (lesAutresMatch) {
+    const verb = lesAutresMatch[1];
+    console.log('🔍 Extracted verb from les autres pattern:', verb);
     return analyzeVerbForSubjunctive(verb, afterAvantQue);
   }
   
-  // Fallback: look for any verb after skipping articles and nouns
-  const fallbackMatch = afterAvantQue.match(/(?:les?|la|l'|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+(\w+(?:\s+\w+)*)\s+(\w+)/i);
-  console.log('🔍 Fallback regex match result:', fallbackMatch);
-  if (fallbackMatch) {
-    const verb = fallbackMatch[2];
-    console.log('🔍 Extracted verb from fallback pattern:', verb);
+  // Pronoun + verb pattern
+  const pronounMatch = afterAvantQue.match(/(?:ils?|elles?|on|nous|vous|tu|je|j'|ce|c')\s+(\w+)/i);
+  console.log('🔍 Pronoun pattern match:', pronounMatch);
+  if (pronounMatch) {
+    const verb = pronounMatch[1];
+    console.log('🔍 Extracted verb from pronoun pattern:', verb);
     return analyzeVerbForSubjunctive(verb, afterAvantQue);
   }
   
-  // Simple pattern: article + word + verb
-  const simpleMatch = afterAvantQue.match(/(?:les?|la|l'|des?|un|une)\s+\w+\s+(\w+)/i);
-  console.log('🔍 Simple regex match result:', simpleMatch);
-  if (simpleMatch) {
-    const verb = simpleMatch[1];
-    console.log('🔍 Extracted verb from simple pattern:', verb);
+  // General article + noun + verb pattern (more careful)
+  const articleMatch = afterAvantQue.match(/(?:la|l'|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+\w+\s+(\w+)/i);
+  console.log('🔍 Article pattern match:', articleMatch);
+  if (articleMatch) {
+    const verb = articleMatch[1];
+    console.log('🔍 Extracted verb from article pattern:', verb);
     return analyzeVerbForSubjunctive(verb, afterAvantQue);
   }
   
