@@ -402,6 +402,12 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   let adjustedExpletive = enhancedVotes.expletive;
   let adjustedNonExpletive = enhancedVotes.nonExpletive;
   
+  // CRITICAL: Apply avant que analysis boost FIRST (strongest evidence)
+  if (avantQueAnalysis && avantQueAnalysis.bothConditionsMet) {
+    adjustedExpletive += 3.0; // Strong boost for avant que with both conditions
+    console.log('🏛️ Avant que boost: +3.0 to expletive (both conditions met)');
+  }
+  
   // Ambiguity increases expletive likelihood
   if (ambiguityNegationAnalysis.ambiguity.clarificationNeeded) {
     adjustedExpletive += 0.3;
