@@ -244,6 +244,18 @@ function detectSubjunctiveAfterAvantQue(clause) {
     }
   }
   
+  // NEW: Handle text normalization artifact "e l'..." from "avant qu'..."
+  const normalizationMatch = afterAvantQue.match(/^e\s+(l'|la|les?|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+(\w+)\s+(\w+)/i);
+  console.log('🔍 Normalization artifact pattern match:', normalizationMatch);
+  if (normalizationMatch) {
+    const article = normalizationMatch[1];
+    const noun = normalizationMatch[2];
+    const verb = normalizationMatch[3];
+    console.log('🔍 Normalization pattern details:', { article, noun, verb });
+    console.log('🔍 Extracted verb from normalization pattern:', verb);
+    return analyzeVerbForSubjunctive(verb, afterAvantQue);
+  }
+  
   // General article + noun + verb pattern (more careful)
   const articleMatch = afterAvantQue.match(/(?:la|l'|des?|un|une|ces?|cette|mon|ton|son|ma|ta|sa|mes|tes|ses|nos|vos|leurs)\s+\w+\s+(\w+)/i);
   console.log('🔍 Article pattern match:', articleMatch);
