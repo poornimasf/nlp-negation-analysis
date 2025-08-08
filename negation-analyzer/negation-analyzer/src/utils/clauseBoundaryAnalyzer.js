@@ -229,6 +229,69 @@ function detectSubjunctiveAfterAvantQue(clause) {
     return analyzeVerbForSubjunctive(verb, afterAvantQue);
   }
   
+  // NEW PHASE 1: Article + noun + verb pattern (high-impact)
+  // Handles: "avant que le soleil vienne", "avant que la demoiselle soit"
+  const articleNounMatch = afterAvantQue.match(/\b(?:le|la|les)\s+(\w+)\s+(\w+)/i);
+  console.log('🔍 Article + noun pattern match:', articleNounMatch);
+  if (articleNounMatch) {
+    const noun = articleNounMatch[1];
+    const verb = articleNounMatch[2];
+    console.log('🔍 Article + noun pattern details:', {
+      noun: noun,
+      verb: verb,
+      fullMatch: articleNounMatch[0]
+    });
+    
+    // Check if the "verb" is actually a noun using POS analysis
+    const posAnalysis = enhancedPOSAnalysis(verb, afterAvantQue);
+    if (posAnalysis.shouldSkipVerbAnalysis) {
+      console.log('🔍 Article + noun pattern: second word identified as noun, skipping');
+    } else {
+      console.log('🔍 Extracted verb from article + noun pattern:', verb);
+      return analyzeVerbForSubjunctive(verb, afterAvantQue);
+    }
+  }
+  
+  // NEW PHASE 1: Demonstrative + verb pattern  
+  // Handles: "avant que ce dernier vienne", "avant que cette dernière soit"
+  const demonstrativeMatch = afterAvantQue.match(/\b(?:ce dernier|cette dernière|ces derniers|ces dernières)\s+(\w+)/i);
+  console.log('🔍 Demonstrative pattern match:', demonstrativeMatch);
+  if (demonstrativeMatch) {
+    const verb = demonstrativeMatch[1];
+    console.log('🔍 Demonstrative pattern details:', {
+      demonstrative: demonstrativeMatch[0].replace(verb, '').trim(),
+      verb: verb,
+      fullMatch: demonstrativeMatch[0]
+    });
+    console.log('🔍 Extracted verb from demonstrative pattern:', verb);
+    return analyzeVerbForSubjunctive(verb, afterAvantQue);
+  }
+  
+  // NEW PHASE 1: Complex subject pattern (article + noun + adjective + verb)
+  // Handles: "avant que les symptômes évidents surviennent", "avant que les fruits soient utilisables"
+  const complexSubjectMatch = afterAvantQue.match(/\b(?:le|la|les)\s+(\w+)\s+(\w+)\s+(\w+)/i);
+  console.log('🔍 Complex subject pattern match:', complexSubjectMatch);
+  if (complexSubjectMatch) {
+    const noun = complexSubjectMatch[1];
+    const adjective = complexSubjectMatch[2];
+    const verb = complexSubjectMatch[3];
+    console.log('🔍 Complex subject pattern details:', {
+      noun: noun,
+      adjective: adjective,
+      verb: verb,
+      fullMatch: complexSubjectMatch[0]
+    });
+    
+    // Check if the "verb" is actually a noun/adjective using POS analysis
+    const posAnalysis = enhancedPOSAnalysis(verb, afterAvantQue);
+    if (posAnalysis.shouldSkipVerbAnalysis) {
+      console.log('🔍 Complex subject pattern: third word identified as noun, skipping');
+    } else {
+      console.log('🔍 Extracted verb from complex subject pattern:', verb);
+      return analyzeVerbForSubjunctive(verb, afterAvantQue);
+    }
+  }
+  
   // NEW: Proper noun + object pronouns + verb pattern (handle both cases)
   const properNounMatch = afterAvantQue.match(/^([A-Za-z]\w+)\s+(?:(me|te|se|le|la|les|lui|leur|en|y)\s+)*(\w+)/i);
   console.log('🔍 Proper noun pattern match:', properNounMatch);

@@ -56,7 +56,34 @@ const SAFE_FRENCH_NOUNS = new Set([
   'père',      // father
   'mère',      // mother
   'ami',       // friend
-  'famille'    // family
+  'famille',   // family
+  
+  // NEW: Medical/technical terms from false negatives
+  'symptômes', // symptoms
+  'patients',  // patients
+  'mesures',   // measures
+  'résultats', // results
+  'chiffres',  // numbers/figures
+  'fruits',    // fruits
+  'avis',      // opinions/reviews
+  'demoiselle',// young lady
+  'situation', // situation
+  'zones',     // zones
+  'cas',       // cases
+  'informations', // information
+  'questions', // questions
+  'études',    // studies
+  'changements', // changes
+  
+  // NEW: Common adjectives that might be misidentified
+  'évidents',  // obvious (plural adjective, never verb)
+  'utilisables', // usable (plural adjective, never verb)
+  'importantes', // important (plural adjective, never verb)
+  'nombreuses', // numerous (plural adjective, never verb)
+  'tardive',   // late (adjective, never verb)
+  'blessée',   // injured (past participle used as adjective)
+  'submergée', // submerged (past participle used as adjective)
+  'révisés'    // revised (past participle used as adjective)
 ]);
 
 /**
