@@ -204,8 +204,9 @@ function detectSubjunctiveAfterAvantQue(clause) {
     return analyzeVerbForSubjunctive(verb, afterAvantQue);
   }
   
-  // Pronoun + verb pattern (including demonstratives)
-  const pronounMatch = afterAvantQue.match(/(?:ils?|elles?|on|nous|vous|tu|je|j'|ce|c'|celui-ci|celle-ci|ceux-ci|celles-ci)\s+(\w+)/i);
+  // FIXED: Pronoun + verb pattern (skip object pronouns)
+  // Pattern: subject pronoun + optional object pronouns + verb
+  const pronounMatch = afterAvantQue.match(/(?:ils?|elles?|on|nous|vous|tu|je|j'|ce|c'|celui-ci|celle-ci|ceux-ci|celles-ci)\s+(?:(?:me|te|se|le|la|les|lui|leur|en|y)\s+)*(\w+)/i);
   console.log('🔍 Pronoun pattern match:', pronounMatch);
   if (pronounMatch) {
     const verb = pronounMatch[1];
