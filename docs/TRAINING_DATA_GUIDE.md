@@ -19,24 +19,28 @@ The French Negation Type Prediction System supports user-uploaded training data 
 
 ## Data Format Requirements
 
-### JSON Structure
-Training data must be uploaded as a JSON file containing an array of examples:
+### Enhanced JSON Structure (v2.6.4)
+Training data now supports enhanced linguistic analysis with additional optional fields:
 
 ```json
 [
   {
-    "text": "J'ai peur qu'il vienne",
+    "text": "Il faut partir avant qu'elle arrive",
     "has_expletive_ne": false,
     "classification": true,
-    "trigger": "peur que",
-    "ne_position": null
+    "trigger": "avant que",
+    "ne_position": null,
+    "register": "formal",
+    "discourse_context": "temporal"
   },
   {
-    "text": "Avant qu'elle ne parte",
+    "text": "J'ai peur qu'il ne vienne trop tard",
     "has_expletive_ne": true,
     "classification": true,
-    "trigger": "avant que",
-    "ne_position": 2
+    "trigger": "peur que",
+    "ne_position": 4,
+    "register": "neutral",
+    "discourse_context": "fear"
   }
 ]
 ```
@@ -46,8 +50,11 @@ Training data must be uploaded as a JSON file containing an array of examples:
 - **`has_expletive_ne`** (boolean): Whether the sentence contains expletive "ne"
 - **`classification`** (boolean): Whether the sentence can take expletive negation
 
-### Optional Fields
-- **`trigger`** (string): The trigger phrase (e.g., "peur que", "avant que")
+### Optional Fields (Enhanced Features)
+- **`trigger`** (string): The trigger phrase (e.g., "peur que", "avant que", "de peur que")
+- **`ne_position`** (number|null): Position of "ne" in the sentence (1-based indexing)
+- **`register`** (string): Language register - "literary", "formal", "neutral", "colloquial"
+- **`discourse_context`** (string): Discourse context - "temporal", "fear", "negative", "contrastive"
 - **`ne_position`** (number|null): Position of "ne" in the sentence (1-based indexing)
 
 ### Data Validation

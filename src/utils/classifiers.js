@@ -374,7 +374,96 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
 };
 
 /**
- * Main classification function
+ * Enhanced binary classifier with linguistic features
+ */
+export const classifyWithEnhancedBinaryClassifier = (text, trainingData) => {
+  if (!text) {
+    throw new Error('No text provided');
+  }
+
+  if (!trainingData || !Array.isArray(trainingData) || trainingData.length === 0) {
+    throw new Error('No training data available');
+  }
+
+  // Try enhanced analysis first
+  try {
+    const { analyzeWithEnhancedFeatures } = require('./enhancedTrainingAnalyzer');
+    const enhancedResult = analyzeWithEnhancedFeatures(text, trainingData);
+    
+    // Convert enhanced result to expected format
+    const quePosition = findQuePosition(text, enhancedResult.linguisticAnalysis.trigger);
+    
+    // Calculate ne position if needed
+    let nePosition = null;
+    if (enhancedResult.classification && quePosition) {
+      const examplesWithNe = enhancedResult.matches.filter(ex => ex.has_expletive_ne && ex.ne_position !== null);
+      if (examplesWithNe.length > 0) {
+        const bestExample = examplesWithNe[0];
+        const exampleQue = findQuePosition(bestExample.text, bestExample.trigger1);
+        if (exampleQue && bestExample.ne_position) {
+          const relativePos = bestExample.ne_position - exampleQue;
+          nePosition = quePosition + relativePos;
+        } else {
+          nePosition = quePosition + 1;
+        }
+      } else {
+        nePosition = quePosition + 1;
+      }
+    }
+    
+    // Generate enhanced message
+    const triggerInfo = enhancedResult.linguisticAnalysis.trigger;
+    const subjunctiveInfo = enhancedResult.linguisticAnalysis.subjunctive;
+    const registerInfo = enhancedResult.linguisticAnalysis.register;
+    const avantQueInfo = enhancedResult.linguisticAnalysis.avantQueAnalysis;
+    
+    let message = `Enhanced analysis found ${enhancedResult.matches.length} similar examples. `;
+    message += enhancedResult.classification ? 
+      'Evidence suggests expletive ne was likely' : 
+      'Evidence suggests expletive ne was unlikely';
+    
+    if (triggerInfo) {
+      message += `\nTrigger: "${triggerInfo.trigger}" (${triggerInfo.category})`;
+    }
+    if (subjunctiveInfo) {
+      message += `\nSubjunctive: ${subjunctiveInfo.verb} (${subjunctiveInfo.type}, ${Math.round(subjunctiveInfo.confidence * 100)}% confidence)`;
+    }
+    if (registerInfo && registerInfo.register !== 'NEUTRAL') {
+      message += `\nRegister: ${registerInfo.register} (${Math.round(registerInfo.confidence * 100)}% confidence)`;
+    }
+    if (avantQueInfo && avantQueInfo.isAvantQue) {
+      message += `\nAvant que analysis: ${avantQueInfo.classificationReason}`;
+    }
+    
+    return {
+      matches: enhancedResult.matches,
+      confidence: enhancedResult.confidence,
+      classification: enhancedResult.classification,
+      message,
+      nePosition,
+      originalText: text,
+      context: {
+        triggerType: triggerInfo?.category || null,
+        trigger: triggerInfo?.trigger || null,
+        quePosition,
+        hasSubjunctive: !!subjunctiveInfo,
+        subjunctiveType: subjunctiveInfo?.type || null,
+        register: registerInfo?.register || 'NEUTRAL',
+        registerScore: registerInfo?.score || 0
+      },
+      enhancedAnalysis: enhancedResult.linguisticAnalysis,
+      weightedVotes: enhancedResult.enhancedVotes
+    };
+    
+  } catch (error) {
+    console.warn('Enhanced analysis failed, falling back to standard analysis:', error);
+    // Fall back to original implementation
+    return classifyWithBinaryClassifier(text, trainingData);
+  }
+};
+
+/**
+ * Main classification function with enhanced features
  */
 export const classify = (text, trainingData, mode = 'BINARY') => {
   if (!text) {
@@ -392,6 +481,12 @@ export const classify = (text, trainingData, mode = 'BINARY') => {
       return classifyWithSVM(text, svmModel, trainingData);
     case 'BINARY':
     default:
-      return classifyWithBinaryClassifier(text, trainingData);
+      // Use enhanced classifier for better linguistic analysis
+      try {
+        return classifyWithEnhancedBinaryClassifier(text, trainingData);
+      } catch (error) {
+        console.warn('Enhanced classifier failed, using standard classifier:', error);
+        return classifyWithBinaryClassifier(text, trainingData);
+      }
   }
 };
