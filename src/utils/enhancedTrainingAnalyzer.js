@@ -433,12 +433,17 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     Math.max(adjustedExpletive, adjustedNonExpletive) / (adjustedExpletive + adjustedNonExpletive) :
     0.5;
   
+  // Calculate actual expletive likelihood from enhanced voting results
+  const actualExpletiveLikelihood = (adjustedExpletive + adjustedNonExpletive) > 0 ?
+    adjustedExpletive / (adjustedExpletive + adjustedNonExpletive) : 0.5;
+  
   console.log('🎯 FINAL RESULT:', {
     classification: shouldHaveNe,
     confidence: confidence,
     adjustedExpletive,
     adjustedNonExpletive,
-    negationType: ambiguityNegationAnalysis.negation.negationType
+    negationType: ambiguityNegationAnalysis.negation.negationType,
+    actualExpletiveLikelihood: actualExpletiveLikelihood
   });
   
   return {
@@ -454,7 +459,19 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
       ambiguityAnalysis: ambiguityNegationAnalysis.ambiguity,
       negationAnalysis: ambiguityNegationAnalysis.negation,
       vowelContext: ambiguityNegationAnalysis.vowelContext,
-      combinedAnalysis: ambiguityNegationAnalysis.combinedAnalysis,
+      combinedAnalysis: {
+        // Use the actual enhanced voting results instead of independent calculation
+        ...ambiguityNegationAnalysis.combinedAnalysis,
+        expletiveLikelihood: actualExpletiveLikelihood,
+        recommendation: shouldHaveNe ? 
+          'Expletive ne likely based on enhanced linguistic analysis' :
+          'Expletive ne unlikely based on enhanced linguistic analysis',
+        factors: [
+          ...ambiguityNegationAnalysis.combinedAnalysis.factors,
+          `Enhanced voting: ${Math.round(actualExpletiveLikelihood * 100)}% expletive likelihood`,
+          avantQueAnalysis?.bothConditionsMet ? 'Avant que boost applied (+3.0)' : null
+        ].filter(Boolean)
+      },
       clauseInfo: clauseInfo // Add clause boundary information
     },
     enhancedVotes: {
