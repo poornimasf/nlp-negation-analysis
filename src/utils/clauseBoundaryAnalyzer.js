@@ -192,9 +192,10 @@ function detectSubjunctiveAfterAvantQue(clause) {
   
   let afterAvantQue = clause.substring(avantQueMatch.index + avantQueMatch[0].length);
   
-  // PREPROCESSING BUG FIX: Remove "e l'" artifact from "avant que l'" normalization
-  if (afterAvantQue.startsWith('e l\'')) {
-    console.log('🔧 Removing preprocessing artifact "e l\'" from text');
+  // PREPROCESSING BUG FIX: Remove "e " artifact from various normalization issues
+  // Handles: "ça avant que" → "ça avant qu'e", "la avant que" → "la avant qu'e", etc.
+  if (afterAvantQue.startsWith('e ')) {
+    console.log('🔧 Removing preprocessing artifact "e " from text');
     afterAvantQue = afterAvantQue.substring(2); // Remove "e "
     console.log('🔧 Cleaned text:', `"${afterAvantQue.substring(0, 50)}"`);
   }
