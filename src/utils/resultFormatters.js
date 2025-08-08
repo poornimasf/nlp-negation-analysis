@@ -383,17 +383,3 @@ export const formatHybridResult = (analysis, llmAnalysis) => {
 
     return result;
 };
-
-// Helper function for subcategory reasons
-function getSubcategoryReason(subcategory) {
-    switch (subcategory) {
-        case 'SEQUENCE':
-            return 'Describes pure temporal sequence (common for expletive ne)';
-        case 'PREVENTIVE':
-            return 'Indicates preventive action (strong case for expletive ne)';
-        case 'ANTICIPATORY':
-            return 'Shows preparation for future event (often uses expletive ne)';
-        default:
-            return 'Shows temporal relationship';
-    }
-}
