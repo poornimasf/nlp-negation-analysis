@@ -148,6 +148,35 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
         
         result += '\n';
         
+        // NEW: Semantic Context Analysis
+        if (enhanced.semanticContext || trainingAnalysis.semanticOverride) {
+            result += 'Semantic Context Analysis:\n';
+            
+            if (trainingAnalysis.semanticOverride) {
+                result += `- Semantic Override: Applied\n`;
+                result += `- Override Type: ${trainingAnalysis.semanticContext?.type || 'Context detected'}\n`;
+                result += `- Override Confidence: ${Math.round((trainingAnalysis.semanticContext?.confidence || trainingAnalysis.confidence) * 100)}%\n`;
+                result += `- Override Reasoning: ${trainingAnalysis.semanticContext?.reasoning || trainingAnalysis.reasoning}\n`;
+                
+                // Show original linguistic analysis that was overridden
+                if (trainingAnalysis.originalLinguisticAnalysis) {
+                    const original = trainingAnalysis.originalLinguisticAnalysis;
+                    result += `- Original Classification: ${original.originalClassification ? 'Expletive' : 'No Expletive'} (overridden)\n`;
+                    result += `- Original Confidence: ${Math.round(original.originalConfidence * 100)}%\n`;
+                }
+            } else if (enhanced.semanticContext) {
+                result += `- Context Type: ${enhanced.semanticContext.type}\n`;
+                result += `- Context Confidence: ${Math.round(enhanced.semanticContext.confidence * 100)}%\n`;
+                result += `- Context Reasoning: ${enhanced.semanticContext.reasoning}\n`;
+                result += `- Override Applied: No (confidence below threshold)\n`;
+            } else {
+                result += `- Semantic Context: No logical negation context detected\n`;
+                result += `- Analysis Type: Standard linguistic analysis applied\n`;
+            }
+            
+            result += '\n';
+        }
+        
         // Enhanced Avant Que Analysis
         if (enhanced.avantQueAnalysis && enhanced.avantQueAnalysis.isAvantQue) {
             result += 'Enhanced Avant Que Analysis:\n';

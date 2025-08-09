@@ -494,8 +494,11 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   // NEW PHASE 1: Semantic context analysis for prevention verbs
   // Check if this is a logical negation context that should override linguistic analysis
   const detectedVerb = avantQueAnalysis?.subjunctiveMood?.verb;
+  let semanticContextInfo = null;
+  
   if (detectedVerb) {
     const semanticContext = analyzeSemanticContext(text, detectedVerb);
+    semanticContextInfo = semanticContext; // Store for analysis display
     
     if (shouldOverrideToLogicalNegation(semanticContext)) {
       console.log('🎯 SEMANTIC OVERRIDE: Logical negation context detected');
@@ -507,6 +510,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
         confidence: semanticContext.confidence,
         reasoning: semanticContext.reasoning,
         semanticOverride: true,
+        semanticContext: semanticContext, // Include semantic context info
         originalLinguisticAnalysis: {
           trigger: inputTrigger,
           subjunctive: detectedVerb,
@@ -561,6 +565,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
       register: inputRegister,
       discourse: inputDiscourse,
       avantQueAnalysis,
+      semanticContext: semanticContextInfo, // NEW: Add semantic context information
       ambiguityAnalysis: ambiguityNegationAnalysis.ambiguity,
       negationAnalysis: ambiguityNegationAnalysis.negation,
       vowelContext: ambiguityNegationAnalysis.vowelContext,

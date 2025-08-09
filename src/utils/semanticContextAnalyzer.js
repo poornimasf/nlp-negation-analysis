@@ -85,7 +85,10 @@ const CAPABILITY_ADJECTIVES = new Set([
 const COMPLETION_VERBS = new Set([
   'finir', 'terminer', 'achever', 'compléter', 'accomplir',
   'réaliser', 'effectuer', 'exécuter', 'conclure',
-  'aboutir', 'parvenir', 'atteindre', 'arriver'
+  'aboutir', 'parvenir', 'atteindre', 'arriver',
+  'empirer', 'empire', 'empires', 'empirent', // worsen/get worse
+  'dégrader', 'dégrade', 'dégrades', 'dégradent', // degrade
+  'détériorer', 'détériore', 'détériores', 'détériorent' // deteriorate
 ]);
 
 // Adversarial context indicators
