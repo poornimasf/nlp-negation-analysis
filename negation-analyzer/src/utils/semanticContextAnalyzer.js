@@ -53,6 +53,28 @@ const PREVENTION_VERBS = new Set([
   'mener',      // mener (lead)
   'accompagner', // accompagner (accompany)
   
+  // Process/Action verbs (often neutral context)
+  'partir',     // partir (leave, depart)
+  'arriver',    // arriver (arrive)
+  'venir',      // venir (come)
+  'aller',      // aller (go)
+  'revenir',    // revenir (come back)
+  'repartir',   // repartir (leave again)
+  
+  // Communication/Expression verbs
+  'dire',       // dire (say)
+  'parler',     // parler (speak)
+  'répondre',   // répondre (respond)
+  'expliquer',  // expliquer (explain)
+  'raconter',   // raconter (tell)
+  
+  // Reflexive action verbs (often neutral)
+  'réunir',     // se réunir (meet, gather)
+  'décider',    // se décider (decide)
+  'réveiller',  // se réveiller (wake up)
+  'lever',      // se lever (get up)
+  'lancer',     // se lancer (launch oneself)
+  
   // Destruction/Elimination verbs
   'détruire',   // détruire (destroy)
   'supprimer',  // supprimer (delete, remove)
@@ -368,7 +390,20 @@ const NEUTRAL_TEMPORAL_INDICATORS = new Set([
   
   // Administrative timing
   'jour ouvrable', 'délai', 'échéance', 'terme',
-  'à terme', 'en temps voulu', 'le moment venu'
+  'à terme', 'en temps voulu', 'le moment venu',
+  
+  // Narrative/storytelling contexts (neutral)
+  'une dernière fois', 'à ce moment là', 'tout à l\'heure',
+  'quelques pages', 'quelques heures', 'quelques instants',
+  'une heure ou deux', 'des heures entières',
+  
+  // Natural processes/timing
+  'juste avant', 'peu de temps avant', 'bien avant',
+  'longtemps avant', 'des années avant', 'des mois avant',
+  
+  // Communication/media contexts
+  'radio nova', 'l\'auteur', 'l\'éditeur', 'la collection',
+  'le film', 'les personnages', 'l\'histoire'
 ]);
 
 // Neutral process contexts (not prevention)

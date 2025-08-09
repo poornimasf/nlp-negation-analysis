@@ -505,13 +505,40 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     }
   }
   
+  // ENHANCEMENT: Handle reflexive constructions "se + verb"
+  if (!detectedVerb) {
+    const reflexiveMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\bse\s+(\w+)/);
+    if (reflexiveMatch) {
+      detectedVerb = reflexiveMatch[1];
+      console.log('🔍 Reflexive verb detected:', detectedVerb);
+    }
+  }
+  
+  // ENHANCEMENT: Handle auxiliary verb constructions "aient/ont + complement"
+  if (!detectedVerb) {
+    const auxiliaryMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\b(aient|ont|soient)\s+(\w+)/);
+    if (auxiliaryMatch) {
+      detectedVerb = auxiliaryMatch[1]; // Use the auxiliary as the main verb
+      console.log('🔍 Auxiliary verb detected:', detectedVerb);
+    }
+  }
+  
+  // ENHANCEMENT: Handle complex verb phrases with adverbs/complements
+  if (!detectedVerb) {
+    const complexMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\b(\w+(?:e|ent|es|ez|ons|ais|ait|ions|iez|aient))\b/);
+    if (complexMatch) {
+      detectedVerb = complexMatch[1];
+      console.log('🔍 Complex verb phrase detected:', detectedVerb);
+    }
+  }
+  
   // Also check for other common passive constructions
   if (!detectedVerb) {
-    // Look for other verbs in the "avant que" clause
+    // Look for other verbs in the "avant que" clause (fallback pattern)
     const avantQueMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?(\w+(?:e|é|ée|és|ées|i|ie|is|it|u|ue|us|ues))\b/);
     if (avantQueMatch) {
       detectedVerb = avantQueMatch[1];
-      console.log('🔍 Potential verb/participle detected in avant que clause:', detectedVerb);
+      console.log('🔍 General verb/participle detected in avant que clause:', detectedVerb);
     }
   }
   
