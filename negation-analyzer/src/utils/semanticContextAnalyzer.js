@@ -253,6 +253,13 @@ function analyzeVerbInContext(sentence, verb) {
   
   return null;
 }
+
+/**
+ * Detect if a verb indicates prevention/logical negation context
+ * @param {string} verb - The verb to analyze
+ * @returns {object|null} - Prevention context analysis or null
+ */
+function detectPreventionVerb(verb) {
   const normalizedVerb = verb.toLowerCase().trim();
   
   if (PREVENTION_VERBS.has(normalizedVerb)) {
