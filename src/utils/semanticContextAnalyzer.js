@@ -543,6 +543,7 @@ function analyzeSemanticContext(sentence, verb) {
   });
   
   let semanticContext = null;
+  let lastValidatedContext = null; // Track the last validated context
   
   // PHASE 1: Check for prevention verb
   semanticContext = detectPreventionVerb(verb);
@@ -550,10 +551,13 @@ function analyzeSemanticContext(sentence, verb) {
     console.log('🎯 Phase 1 - Prevention verb detected:', semanticContext);
     // Apply validation
     semanticContext = validateSemanticContext(sentence, verb, semanticContext);
-    if (semanticContext && semanticContext.confidence >= 0.75) {
-      return semanticContext;
-    } else if (semanticContext) {
-      console.log('🔍 Prevention verb confidence reduced below threshold after validation');
+    if (semanticContext) {
+      lastValidatedContext = semanticContext; // Store validated context
+      if (semanticContext.confidence >= 0.75) {
+        return semanticContext;
+      } else {
+        console.log('🔍 Prevention verb confidence reduced below threshold after validation');
+      }
     }
   }
   
@@ -563,10 +567,13 @@ function analyzeSemanticContext(sentence, verb) {
     console.log('🎯 Phase 2 - Prevention past participle detected:', semanticContext);
     // Apply validation
     semanticContext = validateSemanticContext(sentence, verb, semanticContext);
-    if (semanticContext && semanticContext.confidence >= 0.75) {
-      return semanticContext;
-    } else if (semanticContext) {
-      console.log('🔍 Past participle confidence reduced below threshold after validation');
+    if (semanticContext) {
+      lastValidatedContext = semanticContext; // Store validated context
+      if (semanticContext.confidence >= 0.75) {
+        return semanticContext;
+      } else {
+        console.log('🔍 Past participle confidence reduced below threshold after validation');
+      }
     }
   }
   
@@ -576,10 +583,13 @@ function analyzeSemanticContext(sentence, verb) {
     console.log('🎯 Phase 2 - Capability adjective detected:', semanticContext);
     // Apply validation
     semanticContext = validateSemanticContext(sentence, verb, semanticContext);
-    if (semanticContext && semanticContext.confidence >= 0.75) {
-      return semanticContext;
-    } else if (semanticContext) {
-      console.log('🔍 Capability adjective confidence reduced below threshold after validation');
+    if (semanticContext) {
+      lastValidatedContext = semanticContext; // Store validated context
+      if (semanticContext.confidence >= 0.75) {
+        return semanticContext;
+      } else {
+        console.log('🔍 Capability adjective confidence reduced below threshold after validation');
+      }
     }
   }
   
@@ -589,10 +599,13 @@ function analyzeSemanticContext(sentence, verb) {
     console.log('🎯 Phase 2 - Completion verb detected:', semanticContext);
     // Apply validation
     semanticContext = validateSemanticContext(sentence, verb, semanticContext);
-    if (semanticContext && semanticContext.confidence >= 0.75) {
-      return semanticContext;
-    } else if (semanticContext) {
-      console.log('🔍 Completion verb confidence reduced below threshold after validation');
+    if (semanticContext) {
+      lastValidatedContext = semanticContext; // Store validated context
+      if (semanticContext.confidence >= 0.75) {
+        return semanticContext;
+      } else {
+        console.log('🔍 Completion verb confidence reduced below threshold after validation');
+      }
     }
   }
   
@@ -602,10 +615,13 @@ function analyzeSemanticContext(sentence, verb) {
     console.log('🎯 Phase 2 - Reflexive action verb detected:', semanticContext);
     // Apply validation
     semanticContext = validateSemanticContext(sentence, verb, semanticContext);
-    if (semanticContext && semanticContext.confidence >= 0.75) {
-      return semanticContext;
-    } else if (semanticContext) {
-      console.log('🔍 Reflexive action verb confidence reduced below threshold after validation');
+    if (semanticContext) {
+      lastValidatedContext = semanticContext; // Store validated context
+      if (semanticContext.confidence >= 0.75) {
+        return semanticContext;
+      } else {
+        console.log('🔍 Reflexive action verb confidence reduced below threshold after validation');
+      }
     }
   }
   
@@ -615,10 +631,13 @@ function analyzeSemanticContext(sentence, verb) {
     console.log('🎯 Phase 2 - Contextual analysis detected:', semanticContext);
     // Apply validation
     semanticContext = validateSemanticContext(sentence, verb, semanticContext);
-    if (semanticContext && semanticContext.confidence >= 0.75) {
-      return semanticContext;
-    } else if (semanticContext) {
-      console.log('🔍 Contextual analysis confidence reduced below threshold after validation');
+    if (semanticContext) {
+      lastValidatedContext = semanticContext; // Store validated context
+      if (semanticContext.confidence >= 0.75) {
+        return semanticContext;
+      } else {
+        console.log('🔍 Contextual analysis confidence reduced below threshold after validation');
+      }
     }
   }
   
@@ -628,10 +647,13 @@ function analyzeSemanticContext(sentence, verb) {
     console.log('🎯 Phase 2 - Logical negation phrase detected:', semanticContext);
     // Apply validation
     semanticContext = validateSemanticContext(sentence, verb, semanticContext);
-    if (semanticContext && semanticContext.confidence >= 0.75) {
-      return semanticContext;
-    } else if (semanticContext) {
-      console.log('🔍 Phrase pattern confidence reduced below threshold after validation');
+    if (semanticContext) {
+      lastValidatedContext = semanticContext; // Store validated context
+      if (semanticContext.confidence >= 0.75) {
+        return semanticContext;
+      } else {
+        console.log('🔍 Phrase pattern confidence reduced below threshold after validation');
+      }
     }
   }
   
@@ -641,14 +663,29 @@ function analyzeSemanticContext(sentence, verb) {
     console.log('🎯 Phase 1 - Adversarial context detected:', semanticContext);
     // Apply validation
     semanticContext = validateSemanticContext(sentence, verb, semanticContext);
-    if (semanticContext && semanticContext.confidence >= 0.75) {
-      return semanticContext;
-    } else if (semanticContext) {
-      console.log('🔍 Adversarial context confidence reduced below threshold after validation');
+    if (semanticContext) {
+      lastValidatedContext = semanticContext; // Store validated context
+      if (semanticContext.confidence >= 0.75) {
+        return semanticContext;
+      } else {
+        console.log('🔍 Adversarial context confidence reduced below threshold after validation');
+      }
     }
   }
   
   console.log('🔍 No semantic context override detected (after validation)');
+  
+  // CRITICAL FIX: Return the last validated context instead of null
+  // This allows the training analyzer to detect that validation was applied
+  if (lastValidatedContext) {
+    console.log('🔍 Returning validated context for potential semantic boost:', {
+      type: lastValidatedContext.type,
+      confidence: lastValidatedContext.confidence,
+      validationApplied: lastValidatedContext.validationApplied
+    });
+    return lastValidatedContext;
+  }
+  
   return null;
 }
 
