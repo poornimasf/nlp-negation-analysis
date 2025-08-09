@@ -299,68 +299,237 @@ function detectAdversarialContext(sentence) {
   return null;
 }
 
+// NEW: Neutral temporal context indicators that suggest expletive "ne" rather than logical
+const NEUTRAL_TEMPORAL_INDICATORS = new Set([
+  // Administrative/official processes (neutral)
+  'officiellement', 'dans un premier temps', 'ne sera donc effectif',
+  'le processus', 'la procédure', 'l\'épisode', 'la saison',
+  
+  // Neutral sequencing indicators
+  'pour aller', 'pour jouer', 'pour espionner', 'et ce',
+  'mais', 'probablement', 'en fait', 'donc',
+  
+  // Natural/inevitable processes
+  'naturellement', 'inévitablement', 'automatiquement',
+  
+  // Neutral temporal expressions
+  'dans le temps', 'au moment où', 'à ce moment-là',
+  'pendant que', 'tandis que', 'alors que'
+]);
+
+// Neutral process contexts (not prevention)
+const NEUTRAL_PROCESS_CONTEXTS = new Set([
+  'lancement', 'désignation', 'nomination', 'approbation',
+  'processus', 'procédure', 'examen', 'évaluation',
+  'submersion', 'inondation', 'érosion', 'évolution',
+  'conduite', 'accompagnement', 'guidance', 'direction',
+  'reporté pour', 'prévu pour', 'annoncé pour'
+]);
+
 /**
- * Comprehensive semantic context analysis (Phase 1 + Phase 2)
+ * NEW: Validate semantic context to prevent over-aggressive detection
+ * Reduces confidence for neutral temporal contexts that should use expletive "ne"
+ * @param {string} sentence - The full sentence
+ * @param {string} verb - The detected verb
+ * @param {object} semanticContext - The detected semantic context
+ * @returns {object} - Validated semantic context with adjusted confidence
+ */
+function validateSemanticContext(sentence, verb, semanticContext) {
+  if (!semanticContext) return null;
+  
+  const lowerSentence = sentence.toLowerCase();
+  let confidenceReduction = 1.0;
+  let validationReasons = [];
+  
+  console.log('🔍 Validating semantic context:', {
+    originalType: semanticContext.type,
+    originalConfidence: semanticContext.confidence,
+    verb: verb
+  });
+  
+  // Check for neutral temporal indicators
+  for (const indicator of NEUTRAL_TEMPORAL_INDICATORS) {
+    if (lowerSentence.includes(indicator)) {
+      confidenceReduction *= 0.6; // Reduce confidence by 40%
+      validationReasons.push(`neutral temporal indicator: "${indicator}"`);
+      console.log('🔍 Neutral temporal indicator found:', indicator);
+    }
+  }
+  
+  // Check for neutral process contexts
+  for (const context of NEUTRAL_PROCESS_CONTEXTS) {
+    if (lowerSentence.includes(context)) {
+      confidenceReduction *= 0.5; // Reduce confidence by 50%
+      validationReasons.push(`neutral process context: "${context}"`);
+      console.log('🔍 Neutral process context found:', context);
+    }
+  }
+  
+  // Special validation for past participles in neutral contexts
+  if (semanticContext.type === 'PREVENTION_PAST_PARTICIPLE') {
+    // Check if this is actually a neutral administrative/natural process
+    const NEUTRAL_PAST_PARTICIPLE_CONTEXTS = [
+      'reporté pour', 'prévu pour', 'annoncé pour', 'programmé pour',
+      'submergée', 'inondée', 'érodée', 'évoluée',
+      'désigné officiellement', 'nommé officiellement', 'approuvé officiellement'
+    ];
+    
+    for (const neutralContext of NEUTRAL_PAST_PARTICIPLE_CONTEXTS) {
+      if (lowerSentence.includes(neutralContext)) {
+        confidenceReduction *= 0.4; // Strong reduction for neutral past participles
+        validationReasons.push(`neutral past participle context: "${neutralContext}"`);
+        console.log('🔍 Neutral past participle context found:', neutralContext);
+      }
+    }
+  }
+  
+  // Special validation for reflexive verbs in neutral contexts
+  if (semanticContext.type === 'REFLEXIVE_ACTION') {
+    // Check if this is neutral physical action rather than prevention
+    const NEUTRAL_REFLEXIVE_CONTEXTS = [
+      's\'accroche', 's\'attache', 's\'installe', 's\'assoit',
+      'se place', 'se positionne', 'se dirige', 'se rend'
+    ];
+    
+    if (NEUTRAL_REFLEXIVE_CONTEXTS.some(context => lowerSentence.includes(context))) {
+      confidenceReduction *= 0.5; // Reduce for neutral reflexive actions
+      validationReasons.push('neutral reflexive action context');
+      console.log('🔍 Neutral reflexive action context found');
+    }
+  }
+  
+  // Calculate adjusted confidence
+  const adjustedConfidence = semanticContext.confidence * confidenceReduction;
+  
+  // Create validated context
+  const validatedContext = {
+    ...semanticContext,
+    confidence: adjustedConfidence,
+    reasoning: validationReasons.length > 0 
+      ? `${semanticContext.reasoning} (confidence reduced due to: ${validationReasons.join(', ')})`
+      : semanticContext.reasoning,
+    validationApplied: validationReasons.length > 0,
+    originalConfidence: semanticContext.confidence,
+    confidenceReduction: confidenceReduction
+  };
+  
+  console.log('🔍 Context validation result:', {
+    originalConfidence: semanticContext.confidence,
+    adjustedConfidence: adjustedConfidence,
+    confidenceReduction: confidenceReduction,
+    validationReasons: validationReasons,
+    willOverride: adjustedConfidence >= 0.75
+  });
+  
+  return validatedContext;
+}
+
+/**
+ * Comprehensive semantic context analysis (Phase 1 + Phase 2 + Validation)
  * @param {string} sentence - The full sentence
  * @param {string} verb - The detected verb
  * @returns {object|null} - Semantic context analysis or null
  */
 function analyzeSemanticContext(sentence, verb) {
-  console.log('🔍 Semantic context analysis (Phase 1 + 2):', {
+  console.log('🔍 Semantic context analysis (Phase 1 + 2 + Validation):', {
     sentence: sentence.substring(0, 50) + '...',
     verb: verb
   });
   
+  let semanticContext = null;
+  
   // PHASE 1: Check for prevention verb
-  const preventionAnalysis = detectPreventionVerb(verb);
-  if (preventionAnalysis) {
-    console.log('🎯 Phase 1 - Prevention verb detected:', preventionAnalysis);
-    return preventionAnalysis;
+  semanticContext = detectPreventionVerb(verb);
+  if (semanticContext) {
+    console.log('🎯 Phase 1 - Prevention verb detected:', semanticContext);
+    // Apply validation
+    semanticContext = validateSemanticContext(sentence, verb, semanticContext);
+    if (semanticContext && semanticContext.confidence >= 0.75) {
+      return semanticContext;
+    } else if (semanticContext) {
+      console.log('🔍 Prevention verb confidence reduced below threshold after validation');
+    }
   }
   
   // PHASE 2: Check for past participle forms
-  const pastParticipleAnalysis = detectPreventionPastParticiple(verb);
-  if (pastParticipleAnalysis) {
-    console.log('🎯 Phase 2 - Prevention past participle detected:', pastParticipleAnalysis);
-    return pastParticipleAnalysis;
+  semanticContext = detectPreventionPastParticiple(verb);
+  if (semanticContext) {
+    console.log('🎯 Phase 2 - Prevention past participle detected:', semanticContext);
+    // Apply validation
+    semanticContext = validateSemanticContext(sentence, verb, semanticContext);
+    if (semanticContext && semanticContext.confidence >= 0.75) {
+      return semanticContext;
+    } else if (semanticContext) {
+      console.log('🔍 Past participle confidence reduced below threshold after validation');
+    }
   }
   
   // PHASE 2: Check for capability adjectives
-  const capabilityAnalysis = detectCapabilityAdjective(verb);
-  if (capabilityAnalysis) {
-    console.log('🎯 Phase 2 - Capability adjective detected:', capabilityAnalysis);
-    return capabilityAnalysis;
+  semanticContext = detectCapabilityAdjective(verb);
+  if (semanticContext) {
+    console.log('🎯 Phase 2 - Capability adjective detected:', semanticContext);
+    // Apply validation
+    semanticContext = validateSemanticContext(sentence, verb, semanticContext);
+    if (semanticContext && semanticContext.confidence >= 0.75) {
+      return semanticContext;
+    } else if (semanticContext) {
+      console.log('🔍 Capability adjective confidence reduced below threshold after validation');
+    }
   }
   
   // PHASE 2: Check for completion verbs
-  const completionAnalysis = detectCompletionVerb(verb);
-  if (completionAnalysis) {
-    console.log('🎯 Phase 2 - Completion verb detected:', completionAnalysis);
-    return completionAnalysis;
+  semanticContext = detectCompletionVerb(verb);
+  if (semanticContext) {
+    console.log('🎯 Phase 2 - Completion verb detected:', semanticContext);
+    // Apply validation
+    semanticContext = validateSemanticContext(sentence, verb, semanticContext);
+    if (semanticContext && semanticContext.confidence >= 0.75) {
+      return semanticContext;
+    } else if (semanticContext) {
+      console.log('🔍 Completion verb confidence reduced below threshold after validation');
+    }
   }
   
   // PHASE 2: Check for contextual verb analysis
-  const contextAnalysis = analyzeVerbInContext(sentence, verb);
-  if (contextAnalysis) {
-    console.log('🎯 Phase 2 - Contextual analysis detected:', contextAnalysis);
-    return contextAnalysis;
+  semanticContext = analyzeVerbInContext(sentence, verb);
+  if (semanticContext) {
+    console.log('🎯 Phase 2 - Contextual analysis detected:', semanticContext);
+    // Apply validation
+    semanticContext = validateSemanticContext(sentence, verb, semanticContext);
+    if (semanticContext && semanticContext.confidence >= 0.75) {
+      return semanticContext;
+    } else if (semanticContext) {
+      console.log('🔍 Contextual analysis confidence reduced below threshold after validation');
+    }
   }
   
   // PHASE 2: Check for logical negation phrase patterns
-  const phraseAnalysis = detectLogicalNegationPhrases(sentence);
-  if (phraseAnalysis) {
-    console.log('🎯 Phase 2 - Logical negation phrase detected:', phraseAnalysis);
-    return phraseAnalysis;
+  semanticContext = detectLogicalNegationPhrases(sentence);
+  if (semanticContext) {
+    console.log('🎯 Phase 2 - Logical negation phrase detected:', semanticContext);
+    // Apply validation
+    semanticContext = validateSemanticContext(sentence, verb, semanticContext);
+    if (semanticContext && semanticContext.confidence >= 0.75) {
+      return semanticContext;
+    } else if (semanticContext) {
+      console.log('🔍 Phrase pattern confidence reduced below threshold after validation');
+    }
   }
   
   // PHASE 1: Check for adversarial context
-  const adversarialAnalysis = detectAdversarialContext(sentence);
-  if (adversarialAnalysis) {
-    console.log('🎯 Phase 1 - Adversarial context detected:', adversarialAnalysis);
-    return adversarialAnalysis;
+  semanticContext = detectAdversarialContext(sentence);
+  if (semanticContext) {
+    console.log('🎯 Phase 1 - Adversarial context detected:', semanticContext);
+    // Apply validation
+    semanticContext = validateSemanticContext(sentence, verb, semanticContext);
+    if (semanticContext && semanticContext.confidence >= 0.75) {
+      return semanticContext;
+    } else if (semanticContext) {
+      console.log('🔍 Adversarial context confidence reduced below threshold after validation');
+    }
   }
   
-  console.log('🔍 No semantic context override detected');
+  console.log('🔍 No semantic context override detected (after validation)');
   return null;
 }
 
