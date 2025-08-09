@@ -9,6 +9,7 @@ import { analyzeAmbiguityAndNegation } from './ambiguityNegationAnalyzer';
 import { extractTriggerClause, detectSubjunctiveInClause, analyzeMultipleNegationInClause } from './clauseBoundaryAnalyzer';
 import { enhanceAvantQueAnalysisWithClause } from './enhancedAvantQueAnalyzer';
 import { createSurfaceForm } from './surfaceFormGenerator';
+import { analyzeSemanticContext, shouldOverrideToLogicalNegation } from './semanticContextAnalyzer';
 
 // Enhanced trigger patterns with additional constructions
 const ENHANCED_TRIGGER_PATTERNS = {
@@ -489,6 +490,35 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   // Calculate actual expletive likelihood from enhanced voting results
   const actualExpletiveLikelihood = (adjustedExpletive + adjustedNonExpletive) > 0 ?
     adjustedExpletive / (adjustedExpletive + adjustedNonExpletive) : 0.5;
+  
+  // NEW PHASE 1: Semantic context analysis for prevention verbs
+  // Check if this is a logical negation context that should override linguistic analysis
+  const detectedVerb = avantQueAnalysis?.subjunctiveMood?.verb;
+  if (detectedVerb) {
+    const semanticContext = analyzeSemanticContext(text, detectedVerb);
+    
+    if (shouldOverrideToLogicalNegation(semanticContext)) {
+      console.log('🎯 SEMANTIC OVERRIDE: Logical negation context detected');
+      console.log('🎯 Override details:', semanticContext);
+      
+      // Override to "No Expletive" due to logical negation context
+      const overrideResult = {
+        classification: false, // No Expletive
+        confidence: semanticContext.confidence,
+        reasoning: semanticContext.reasoning,
+        semanticOverride: true,
+        originalLinguisticAnalysis: {
+          trigger: inputTrigger,
+          subjunctive: detectedVerb,
+          originalClassification: shouldHaveNe,
+          originalConfidence: confidence
+        }
+      };
+      
+      console.log('🎯 SEMANTIC OVERRIDE RESULT:', overrideResult);
+      return overrideResult;
+    }
+  }
   
   // Generate surface form for expletive classifications
   const analysisResult = {
