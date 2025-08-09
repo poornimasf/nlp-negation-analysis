@@ -555,8 +555,8 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   if (!detectedVerb) {
     // Look specifically for subjunctive verb forms in "avant que" clauses
     const subjectivePatterns = [
-      // Common subjunctive endings
-      /\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:isse|isses|ît|issions|issiez|issent))\b/, // -ir verbs (finisse, conduise)
+      // Common subjunctive endings - FIXED: single 's' for conduise, finisse, etc.
+      /\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:ise|ises|isse|isses|ît|issions|issiez|issent))\b/, // -ir verbs (conduise, finisse)
       /\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:e|es|ions|iez|ent))\b/, // -er verbs and others
       /\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:aille|ailles|aillent))\b/, // special forms
     ];
