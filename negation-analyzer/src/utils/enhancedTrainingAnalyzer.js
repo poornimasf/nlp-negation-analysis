@@ -533,12 +533,13 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     }
   }
   
-  // ENHANCEMENT: Handle reflexive constructions "se + verb"
+  // ENHANCEMENT: Handle reflexive constructions "se + verb" and "s' + verb"
   if (!detectedVerb) {
-    const reflexiveMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\bse\s+([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+)/);
+    // Handle both "se verb" and "s'verb" (contracted form)
+    const reflexiveMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\b(?:se\s+|s')([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+)/);
     if (reflexiveMatch) {
       detectedVerb = reflexiveMatch[1];
-      console.log('🔍 Reflexive verb detected:', detectedVerb);
+      console.log('🔍 Reflexive verb detected (with contraction support):', detectedVerb);
     }
   }
   
