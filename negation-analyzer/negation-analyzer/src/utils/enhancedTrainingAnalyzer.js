@@ -493,7 +493,28 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   
   // NEW PHASE 1: Semantic context analysis for prevention verbs
   // Check if this is a logical negation context that should override linguistic analysis
-  const detectedVerb = avantQueAnalysis?.subjunctiveMood?.verb;
+  let detectedVerb = avantQueAnalysis?.subjunctiveMood?.verb;
+  
+  // CRITICAL FIX: Also check for past participles in passive constructions
+  if (!detectedVerb && text.toLowerCase().includes('soit')) {
+    // Extract past participle from "soit + past participle" constructions
+    const soitMatch = text.toLowerCase().match(/soit\s+(\w+)/);
+    if (soitMatch) {
+      detectedVerb = soitMatch[1];
+      console.log('🔍 Past participle detected in passive construction:', detectedVerb);
+    }
+  }
+  
+  // Also check for other common passive constructions
+  if (!detectedVerb) {
+    // Look for other verbs in the "avant que" clause
+    const avantQueMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?(\w+(?:e|é|ée|és|ées|i|ie|is|it|u|ue|us|ues))\b/);
+    if (avantQueMatch) {
+      detectedVerb = avantQueMatch[1];
+      console.log('🔍 Potential verb/participle detected in avant que clause:', detectedVerb);
+    }
+  }
+  
   let semanticContextInfo = null;
   
   if (detectedVerb) {
