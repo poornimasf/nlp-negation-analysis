@@ -674,6 +674,23 @@ function analyzeSemanticContext(sentence, verb) {
     }
   }
   
+  // NEW PHASE 3: Pattern-based detection for unknown verbs
+  console.log('🔍 No specific verb patterns matched, trying pattern-based detection...');
+  semanticContext = classifyUnknownVerb(verb, sentence);
+  if (semanticContext) {
+    console.log('🎯 Phase 3 - Pattern-based classification:', semanticContext);
+    // Apply validation to pattern-based results
+    semanticContext = validateSemanticContext(sentence, verb, semanticContext);
+    if (semanticContext) {
+      lastValidatedContext = semanticContext; // Store validated context
+      if (semanticContext.confidence >= 0.75) {
+        return semanticContext;
+      } else {
+        console.log('🔍 Pattern-based classification confidence reduced below threshold after validation');
+      }
+    }
+  }
+  
   console.log('🔍 No semantic context override detected (after validation)');
   
   // CRITICAL FIX: Return the last validated context instead of null
@@ -722,6 +739,132 @@ function shouldOverrideToLogicalNegation(semanticContext) {
   return false;
 }
 
+/**
+ * NEW: Pattern-based verb classification for unknown verbs
+ * Uses morphological patterns and semantic defaults
+ * @param {string} verb - The verb to analyze
+ * @param {string} sentence - The full sentence for context
+ * @returns {object} - Pattern-based classification (never null)
+ */
+function classifyUnknownVerb(verb, sentence) {
+  const normalizedVerb = verb.toLowerCase().trim();
+  const lowerSentence = sentence.toLowerCase();
+  
+  console.log('🔍 Pattern-based classification for unknown verb:', normalizedVerb);
+  
+  // PATTERN 1: Morphological patterns (verb endings)
+  const morphologicalPatterns = {
+    // Past participles (likely prevention/change verbs)
+    PAST_PARTICIPLE: {
+      patterns: [
+        /é$/, /ée$/, /és$/, /ées$/, // -er verbs: transformé, modifié, changé
+        /i$/, /ie$/, /is$/, /ies$/, // -ir verbs: fini, choisi, établi
+        /u$/, /ue$/, /us$/, /ues$/, // irregular: reçu, vu, lu
+        /t$/, /te$/, /ts$/, /tes$/   // irregular: fait, dit, écrit
+      ],
+      confidence: 0.75,
+      type: 'PATTERN_PAST_PARTICIPLE',
+      reasoning: 'Past participle form suggests potential prevention/change context'
+    },
+    
+    // Subjunctive forms (likely in avant que contexts)
+    SUBJUNCTIVE: {
+      patterns: [
+        /isse$/, /isses$/, /issent$/, // -ir verbs: finisse, choisisse
+        /ise$/, /ises$/, /isent$/,    // -ir verbs: conduise, construise
+        /e$/, /es$/, /ent$/           // -er verbs: parle, mange, arrive
+      ],
+      confidence: 0.70,
+      type: 'PATTERN_SUBJUNCTIVE',
+      reasoning: 'Subjunctive form in avant que context suggests expletive negation'
+    },
+    
+    // Infinitive forms (neutral)
+    INFINITIVE: {
+      patterns: [
+        /er$/, /ir$/, /re$/, /oir$/   // infinitive endings
+      ],
+      confidence: 0.60,
+      type: 'PATTERN_INFINITIVE',
+      reasoning: 'Infinitive form suggests neutral context'
+    }
+  };
+  
+  // Check morphological patterns
+  for (const [category, config] of Object.entries(morphologicalPatterns)) {
+    for (const pattern of config.patterns) {
+      if (pattern.test(normalizedVerb)) {
+        console.log(`🎯 Morphological pattern detected: ${category} (${normalizedVerb})`);
+        return {
+          type: config.type,
+          verb: normalizedVerb,
+          confidence: config.confidence,
+          reasoning: config.reasoning,
+          patternBased: true,
+          category: category
+        };
+      }
+    }
+  }
+  
+  // PATTERN 2: Semantic context patterns (sentence-level)
+  const contextPatterns = {
+    // Administrative/official contexts (neutral)
+    ADMINISTRATIVE: {
+      indicators: ['officiellement', 'administrativement', 'légalement', 'formellement', 'publiquement'],
+      confidence: 0.65,
+      type: 'PATTERN_ADMINISTRATIVE',
+      reasoning: 'Administrative context suggests neutral/expletive negation'
+    },
+    
+    // Temporal/scheduling contexts (neutral)
+    TEMPORAL: {
+      indicators: ['bientôt', 'prochainement', 'ultérieurement', 'plus tard', 'demain', 'hier'],
+      confidence: 0.65,
+      type: 'PATTERN_TEMPORAL',
+      reasoning: 'Temporal context suggests neutral/expletive negation'
+    },
+    
+    // Physical/mechanical processes (neutral)
+    PHYSICAL: {
+      indicators: ['mécaniquement', 'automatiquement', 'naturellement', 'physiquement'],
+      confidence: 0.65,
+      type: 'PATTERN_PHYSICAL',
+      reasoning: 'Physical process context suggests neutral/expletive negation'
+    }
+  };
+  
+  // Check semantic context patterns
+  for (const [category, config] of Object.entries(contextPatterns)) {
+    for (const indicator of config.indicators) {
+      if (lowerSentence.includes(indicator)) {
+        console.log(`🎯 Semantic context pattern detected: ${category} (${indicator})`);
+        return {
+          type: config.type,
+          verb: normalizedVerb,
+          confidence: config.confidence,
+          reasoning: config.reasoning,
+          patternBased: true,
+          category: category,
+          contextIndicator: indicator
+        };
+      }
+    }
+  }
+  
+  // SMART DEFAULT: Unknown verb with neutral assumption
+  console.log('🔍 Applying smart default for unknown verb:', normalizedVerb);
+  return {
+    type: 'UNKNOWN_VERB_DEFAULT',
+    verb: normalizedVerb,
+    confidence: 0.50, // Neutral confidence
+    reasoning: `Unknown verb "${normalizedVerb}" - applying neutral context default`,
+    patternBased: true,
+    category: 'DEFAULT',
+    isDefault: true
+  };
+}
+
 export {
   analyzeSemanticContext,
   shouldOverrideToLogicalNegation,
@@ -734,6 +877,7 @@ export {
   detectReflexiveActionVerb,
   detectLogicalNegationPhrases,
   analyzeVerbInContext,
+  classifyUnknownVerb, // NEW: Pattern-based detection
   PREVENTION_VERBS,
   ADVERSARIAL_CONTEXTS,
   // NEW PHASE 2 CONSTANTS
