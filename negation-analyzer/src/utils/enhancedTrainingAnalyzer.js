@@ -597,6 +597,30 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
       
       console.log('🎯 SEMANTIC OVERRIDE RESULT:', overrideResult);
       return overrideResult;
+    } else if (semanticContext && semanticContext.validationApplied) {
+      // NEW: Semantic context was detected but validation prevented override
+      // This means it's a neutral temporal context that should favor expletive
+      console.log('🎯 SEMANTIC BOOST: Neutral context detected, boosting expletive likelihood');
+      console.log('🎯 Boost details:', {
+        contextType: semanticContext.type,
+        originalConfidence: semanticContext.originalConfidence,
+        adjustedConfidence: semanticContext.confidence,
+        validationReasons: semanticContext.validationReasons
+      });
+      
+      // Calculate boost needed to overcome training data bias
+      const biasGap = adjustedNonExpletive - adjustedExpletive;
+      const semanticBoost = Math.max(biasGap + 1.0, 3.0); // Ensure expletive wins by at least 1.0
+      adjustedExpletive += semanticBoost;
+      
+      console.log('🎯 SEMANTIC BOOST APPLIED:', {
+        originalExpletive: adjustedExpletive - semanticBoost,
+        biasGap: biasGap,
+        boostAmount: semanticBoost,
+        newExpletive: adjustedExpletive,
+        nonExpletive: adjustedNonExpletive,
+        newWinner: adjustedExpletive > adjustedNonExpletive ? 'Expletive' : 'No Expletive'
+      });
     }
   }
   
