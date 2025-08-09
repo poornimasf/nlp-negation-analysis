@@ -576,6 +576,11 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     const semanticContext = analyzeSemanticContext(text, detectedVerb);
     semanticContextInfo = semanticContext; // Store for analysis display
     
+    console.log('🔍 DIAGNOSTIC: Semantic context result:', semanticContext);
+    console.log('🔍 DIAGNOSTIC: semanticContext exists?', !!semanticContext);
+    console.log('🔍 DIAGNOSTIC: semanticContext.validationApplied?', semanticContext?.validationApplied);
+    console.log('🔍 DIAGNOSTIC: shouldOverrideToLogicalNegation result:', shouldOverrideToLogicalNegation(semanticContext));
+    
     if (shouldOverrideToLogicalNegation(semanticContext)) {
       console.log('🎯 SEMANTIC OVERRIDE: Logical negation context detected');
       console.log('🎯 Override details:', semanticContext);
@@ -621,6 +626,13 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
         nonExpletive: adjustedNonExpletive,
         newWinner: adjustedExpletive > adjustedNonExpletive ? 'Expletive' : 'No Expletive'
       });
+    } else {
+      console.log('🔍 DIAGNOSTIC: Semantic boost conditions not met');
+      console.log('🔍 DIAGNOSTIC: semanticContext:', !!semanticContext);
+      console.log('🔍 DIAGNOSTIC: validationApplied:', semanticContext?.validationApplied);
+      if (semanticContext) {
+        console.log('🔍 DIAGNOSTIC: Full semantic context object:', semanticContext);
+      }
     }
   }
   
