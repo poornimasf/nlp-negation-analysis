@@ -48,6 +48,7 @@ const PREVENTION_VERBS = new Set([
   
   // Guidance/Direction verbs (often neutral context)
   'conduire',   // conduire (lead, conduct) - MISSING!
+  'conduise',   // conduise (subjunctive of conduire) - MISSING!
   'guider',     // guider (guide)
   'diriger',    // diriger (direct)
   'mener',      // mener (lead)

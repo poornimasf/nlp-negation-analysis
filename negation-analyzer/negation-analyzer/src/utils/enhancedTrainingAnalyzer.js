@@ -553,10 +553,27 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   
   // ENHANCEMENT: Handle complex verb phrases with adverbs/complements
   if (!detectedVerb) {
-    const complexMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:e|ent|es|ez|ons|ais|ait|ions|iez|aient))\b/);
+    // First try to find actual verbs, skipping common pronouns and articles
+    const skipWords = ['ce', 'le', 'la', 'les', 'de', 'du', 'des', 'que', 'qui', 'où', 'ne', 'se', 'me', 'te', 'nous', 'vous'];
+    const complexMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:e|ent|es|ez|ons|ais|ait|ions|iez|aient))\b/g);
+    
     if (complexMatch) {
-      detectedVerb = complexMatch[1];
-      console.log('🔍 Complex verb phrase detected:', detectedVerb);
+      // Find the first match that's not a pronoun/article
+      for (const match of complexMatch) {
+        const verb = match.match(/\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:e|ent|es|ez|ons|ais|ait|ions|iez|aient))\b/)[1];
+        if (!skipWords.includes(verb.toLowerCase())) {
+          detectedVerb = verb;
+          console.log('🔍 Complex verb phrase detected (skipping pronouns):', detectedVerb);
+          break;
+        }
+      }
+      
+      if (!detectedVerb && complexMatch.length > 0) {
+        // Fallback: use the last match if no non-pronoun found
+        const lastMatch = complexMatch[complexMatch.length - 1];
+        detectedVerb = lastMatch.match(/\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:e|ent|es|ez|ons|ais|ait|ions|iez|aient))\b/)[1];
+        console.log('🔍 Complex verb phrase detected (fallback):', detectedVerb);
+      }
     }
   }
   
