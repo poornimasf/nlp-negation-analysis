@@ -553,26 +553,47 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   
   // ENHANCEMENT: Handle complex verb phrases with adverbs/complements
   if (!detectedVerb) {
-    // First try to find actual verbs, skipping common pronouns and articles
-    const skipWords = ['ce', 'le', 'la', 'les', 'de', 'du', 'des', 'que', 'qui', 'où', 'ne', 'se', 'me', 'te', 'nous', 'vous'];
-    const complexMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:e|ent|es|ez|ons|ais|ait|ions|iez|aient))\b/g);
+    // Look specifically for subjunctive verb forms in "avant que" clauses
+    const subjectivePatterns = [
+      // Common subjunctive endings
+      /\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:isse|isses|ît|issions|issiez|issent))\b/, // -ir verbs (finisse, conduise)
+      /\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:e|es|ions|iez|ent))\b/, // -er verbs and others
+      /\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:aille|ailles|aillent))\b/, // special forms
+    ];
     
-    if (complexMatch) {
-      // Find the first match that's not a pronoun/article
-      for (const match of complexMatch) {
-        const verb = match.match(/\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:e|ent|es|ez|ons|ais|ait|ions|iez|aient))\b/)[1];
-        if (!skipWords.includes(verb.toLowerCase())) {
-          detectedVerb = verb;
-          console.log('🔍 Complex verb phrase detected (skipping pronouns):', detectedVerb);
-          break;
+    const skipWords = ['ce', 'le', 'la', 'les', 'de', 'du', 'des', 'que', 'qui', 'où', 'ne', 'se', 'me', 'te', 'nous', 'vous', 'aux', 'pour'];
+    
+    // Extract the "avant que" clause specifically
+    const avantQueMatch = text.toLowerCase().match(/avant\s+que?\s+([^.!?;,]+)/);
+    if (avantQueMatch) {
+      const avantQueClause = avantQueMatch[1];
+      console.log('🔍 Analyzing avant que clause for verbs:', avantQueClause);
+      
+      // Try each subjunctive pattern
+      for (const pattern of subjectivePatterns) {
+        const matches = avantQueClause.match(pattern);
+        if (matches) {
+          const potentialVerb = matches[1].toLowerCase();
+          if (!skipWords.includes(potentialVerb) && potentialVerb.length > 2) {
+            detectedVerb = potentialVerb;
+            console.log('🔍 Subjunctive verb detected in avant que clause:', detectedVerb);
+            break;
+          }
         }
       }
       
-      if (!detectedVerb && complexMatch.length > 0) {
-        // Fallback: use the last match if no non-pronoun found
-        const lastMatch = complexMatch[complexMatch.length - 1];
-        detectedVerb = lastMatch.match(/\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:e|ent|es|ez|ons|ais|ait|ions|iez|aient))\b/)[1];
-        console.log('🔍 Complex verb phrase detected (fallback):', detectedVerb);
+      // If no subjunctive found, look for any verb-like words
+      if (!detectedVerb) {
+        const allWords = avantQueClause.match(/\b[a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+\b/g);
+        if (allWords) {
+          for (const word of allWords) {
+            if (!skipWords.includes(word.toLowerCase()) && word.length > 2) {
+              detectedVerb = word.toLowerCase();
+              console.log('🔍 Potential verb detected in avant que clause:', detectedVerb);
+              break;
+            }
+          }
+        }
       }
     }
   }
