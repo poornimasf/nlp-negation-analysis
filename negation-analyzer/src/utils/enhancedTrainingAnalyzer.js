@@ -502,12 +502,13 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   if (!detectedVerb && text.toLowerCase().includes('soit')) {
     console.log('🔍 DIAGNOSTIC: Text contains "soit", checking for past participle...');
     // Extract past participle from "soit + past participle" constructions
-    const soitMatch = text.toLowerCase().match(/soit\s+(\w+)/);
+    // FIXED: Use [a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+ to capture French accented characters
+    const soitMatch = text.toLowerCase().match(/soit\s+([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+)/);
     if (soitMatch) {
       detectedVerb = soitMatch[1];
       console.log('🔍 DIAGNOSTIC: Past participle detected in passive construction:', detectedVerb);
     } else {
-      console.log('🔍 DIAGNOSTIC: Text contains "soit" but no match found with pattern /soit\\s+(\\w+)/');
+      console.log('🔍 DIAGNOSTIC: Text contains "soit" but no match found with pattern /soit\\s+([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+)/');
     }
   } else if (!detectedVerb) {
     console.log('🔍 DIAGNOSTIC: Text does not contain "soit"');
@@ -515,7 +516,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   
   // ENHANCEMENT: Handle reflexive constructions "se + verb"
   if (!detectedVerb) {
-    const reflexiveMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\bse\s+(\w+)/);
+    const reflexiveMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\bse\s+([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+)/);
     if (reflexiveMatch) {
       detectedVerb = reflexiveMatch[1];
       console.log('🔍 Reflexive verb detected:', detectedVerb);
@@ -524,7 +525,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   
   // ENHANCEMENT: Handle auxiliary verb constructions "aient/ont + complement"
   if (!detectedVerb) {
-    const auxiliaryMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\b(aient|ont|soient)\s+(\w+)/);
+    const auxiliaryMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\b(aient|ont|soient)\s+([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+)/);
     if (auxiliaryMatch) {
       detectedVerb = auxiliaryMatch[1]; // Use the auxiliary as the main verb
       console.log('🔍 Auxiliary verb detected:', detectedVerb);
@@ -533,7 +534,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   
   // ENHANCEMENT: Handle complex verb phrases with adverbs/complements
   if (!detectedVerb) {
-    const complexMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\b(\w+(?:e|ent|es|ez|ons|ais|ait|ions|iez|aient))\b/);
+    const complexMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?\b([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:e|ent|es|ez|ons|ais|ait|ions|iez|aient))\b/);
     if (complexMatch) {
       detectedVerb = complexMatch[1];
       console.log('🔍 Complex verb phrase detected:', detectedVerb);
@@ -543,7 +544,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   // Also check for other common passive constructions
   if (!detectedVerb) {
     // Look for other verbs in the "avant que" clause (fallback pattern)
-    const avantQueMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?(\w+(?:e|é|ée|és|ées|i|ie|is|it|u|ue|us|ues))\b/);
+    const avantQueMatch = text.toLowerCase().match(/avant\s+que?\s+[^.]*?([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+(?:e|é|ée|és|ées|i|ie|is|it|u|ue|us|ues))\b/);
     if (avantQueMatch) {
       detectedVerb = avantQueMatch[1];
       console.log('🔍 General verb/participle detected in avant que clause:', detectedVerb);
