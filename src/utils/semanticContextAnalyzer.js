@@ -740,8 +740,8 @@ function shouldOverrideToLogicalNegation(semanticContext) {
 }
 
 /**
- * NEW: Pattern-based verb classification for unknown verbs
- * Uses morphological patterns and semantic defaults
+ * NEW: Enhanced pattern-based verb classification for unknown verbs
+ * Addresses morphological gaps and irregular forms
  * @param {string} verb - The verb to analyze
  * @param {string} sentence - The full sentence for context
  * @returns {object} - Pattern-based classification (never null)
@@ -750,11 +750,56 @@ function classifyUnknownVerb(verb, sentence) {
   const normalizedVerb = verb.toLowerCase().trim();
   const lowerSentence = sentence.toLowerCase();
   
-  console.log('🔍 Pattern-based classification for unknown verb:', normalizedVerb);
+  console.log('🔍 Enhanced pattern-based classification for unknown verb:', normalizedVerb);
   
-  // PATTERN 1: Morphological patterns (verb endings)
+  // ENHANCEMENT 1: Irregular past participles (high-frequency forms)
+  const IRREGULAR_PAST_PARTICIPLES = new Set([
+    'fait', 'faite', 'faits', 'faites', // faire
+    'pris', 'prise', 'prises', // prendre
+    'mis', 'mise', 'mises', // mettre
+    'dit', 'dite', 'dits', 'dites', // dire
+    'écrit', 'écrite', 'écrits', 'écrites', // écrire
+    'ouvert', 'ouverte', 'ouverts', 'ouvertes', // ouvrir
+    'mort', 'morte', 'morts', 'mortes', // mourir
+    'né', 'née', 'nés', 'nées', // naître
+    'offert', 'offerte', 'offerts', 'offertes', // offrir
+    'couvert', 'couverte', 'couverts', 'couvertes', // couvrir
+    'souffert', // souffrir
+    'acquis', 'acquise', 'acquises', // acquérir
+    'conduit', 'conduite', 'conduits', 'conduites', // conduire
+    'construit', 'construite', 'construits', 'construites', // construire
+    'détruit', 'détruite', 'détruits', 'détruites', // détruire
+    'produit', 'produite', 'produits', 'produites', // produire
+    'traduit', 'traduite', 'traduits', 'traduites', // traduire
+    'cru', 'crue', 'crus', 'crues', // croire
+    'su', 'sue', 'sus', 'sues', // savoir
+    'pu', // pouvoir
+    'voulu', 'voulue', 'voulus', 'voulues', // vouloir
+    'dû', 'due', 'dus', 'dues', // devoir
+    'eu', 'eue', 'eus', 'eues', // avoir
+    'été', // être
+    'venu', 'venue', 'venus', 'venues', // venir
+    'tenu', 'tenue', 'tenus', 'tenues', // tenir
+    'devenu', 'devenue', 'devenus', 'devenues', // devenir
+    'revenu', 'revenue', 'revenus', 'revenues' // revenir
+  ]);
+  
+  // Check irregular past participles first
+  if (IRREGULAR_PAST_PARTICIPLES.has(normalizedVerb)) {
+    console.log(`🎯 Irregular past participle detected: ${normalizedVerb}`);
+    return {
+      type: 'PATTERN_IRREGULAR_PAST_PARTICIPLE',
+      verb: normalizedVerb,
+      confidence: 0.80, // Higher confidence for known irregulars
+      reasoning: `Irregular past participle "${normalizedVerb}" suggests prevention/change context`,
+      patternBased: true,
+      category: 'IRREGULAR_PAST_PARTICIPLE'
+    };
+  }
+  
+  // ENHANCEMENT 2: Context-aware morphological patterns
   const morphologicalPatterns = {
-    // Past participles (likely prevention/change verbs)
+    // Past participles (with context validation)
     PAST_PARTICIPLE: {
       patterns: [
         /é$/, /ée$/, /és$/, /ées$/, // -er verbs: transformé, modifié, changé
@@ -764,10 +809,21 @@ function classifyUnknownVerb(verb, sentence) {
       ],
       confidence: 0.75,
       type: 'PATTERN_PAST_PARTICIPLE',
-      reasoning: 'Past participle form suggests potential prevention/change context'
+      reasoning: 'Past participle form suggests potential prevention/change context',
+      // Context validation to avoid nouns/adjectives
+      contextValidation: (verb, sentence) => {
+        const lowerSent = sentence.toLowerCase();
+        // Look for auxiliary verbs or passive constructions
+        const hasAuxiliary = /\b(être|avoir|est|sont|était|étaient|sera|seront|a|ont|avait|avaient|aura|auront)\s+\w*\s*/.test(lowerSent);
+        const hasPassive = /\b(soit|soient|fut|furent)\s+/.test(lowerSent);
+        const isAfterPreposition = new RegExp(`\\b(de|du|des|le|la|les|un|une)\\s+${verb}\\b`).test(lowerSent);
+        
+        // Likely verb if has auxiliary or passive, unlikely if after article/preposition
+        return hasAuxiliary || hasPassive ? 0.2 : (isAfterPreposition ? -0.3 : 0);
+      }
     },
     
-    // Subjunctive forms (likely in avant que contexts)
+    // Subjunctive forms (enhanced for avant que contexts)
     SUBJUNCTIVE: {
       patterns: [
         /isse$/, /isses$/, /issent$/, // -ir verbs: finisse, choisisse
@@ -776,42 +832,137 @@ function classifyUnknownVerb(verb, sentence) {
       ],
       confidence: 0.70,
       type: 'PATTERN_SUBJUNCTIVE',
-      reasoning: 'Subjunctive form in avant que context suggests expletive negation'
+      reasoning: 'Subjunctive form in avant que context suggests expletive negation',
+      contextValidation: (verb, sentence) => {
+        const lowerSent = sentence.toLowerCase();
+        // Higher confidence if in subjunctive contexts
+        const hasSubjunctiveTrigger = /\b(avant que|pour que|afin que|bien que|quoique|jusqu'à ce que)\s+/.test(lowerSent);
+        return hasSubjunctiveTrigger ? 0.2 : 0;
+      }
     },
     
-    // Infinitive forms (neutral)
+    // ENHANCEMENT 3: Additional tense forms
+    IMPERFECT: {
+      patterns: [
+        /ais$/, /ait$/, /ions$/, /iez$/, /aient$/ // imperfect endings
+      ],
+      confidence: 0.60,
+      type: 'PATTERN_IMPERFECT',
+      reasoning: 'Imperfect form suggests ongoing/habitual context',
+      contextValidation: (verb, sentence) => {
+        // Imperfect often indicates neutral/descriptive context
+        return 0.1;
+      }
+    },
+    
+    // Future/Conditional forms
+    FUTURE_CONDITIONAL: {
+      patterns: [
+        /rai$/, /ras$/, /ra$/, /rons$/, /rez$/, /ront$/, // future
+        /rais$/, /rait$/, /rions$/, /riez$/, /raient$/ // conditional
+      ],
+      confidence: 0.65,
+      type: 'PATTERN_FUTURE_CONDITIONAL',
+      reasoning: 'Future/conditional form suggests hypothetical/planned context',
+      contextValidation: (verb, sentence) => {
+        // Future/conditional often neutral in avant que contexts
+        return 0.1;
+      }
+    },
+    
+    // Infinitive forms (enhanced)
     INFINITIVE: {
       patterns: [
-        /er$/, /ir$/, /re$/, /oir$/   // infinitive endings
+        /er$/, /ir$/, /re$/, /oir$/ // infinitive endings
       ],
       confidence: 0.60,
       type: 'PATTERN_INFINITIVE',
-      reasoning: 'Infinitive form suggests neutral context'
+      reasoning: 'Infinitive form suggests neutral context',
+      contextValidation: (verb, sentence) => {
+        const lowerSent = sentence.toLowerCase();
+        // Lower confidence if likely to be noun (le/la/les + infinitive used as noun)
+        const isNounUsage = new RegExp(`\\b(le|la|les)\\s+${verb}\\b`).test(lowerSent);
+        return isNounUsage ? -0.2 : 0.1;
+      }
     }
   };
   
-  // Check morphological patterns
+  // ENHANCEMENT 4: Compound verb handling (strip pronominal prefixes)
+  let baseVerb = normalizedVerb;
+  let isPronominal = false;
+  
+  // Handle pronominal verbs: s'habiller, se rendre
+  if (lowerSentence.includes(`s'${normalizedVerb}`) || lowerSentence.includes(`se ${normalizedVerb}`)) {
+    isPronominal = true;
+    console.log(`🔍 Pronominal verb detected: s'${normalizedVerb} or se ${normalizedVerb}`);
+  }
+  
+  // ENHANCEMENT 5: Compound endings for -ayer, -oyer, -uyer verbs
+  const COMPOUND_STEMS = {
+    // -ayer verbs: balayer → balaie, essayer → essaie
+    'aie': ['ayer'], 'aies': ['ayer'], 'aient': ['ayer'],
+    // -oyer verbs: nettoyer → nettoie, employer → emploie  
+    'oie': ['oyer'], 'oies': ['oyer'], 'oient': ['oyer'],
+    // -uyer verbs: essuyer → essuie, appuyer → appuie
+    'uie': ['uyer'], 'uies': ['uyer'], 'uient': ['uyer']
+  };
+  
+  // Check compound stems
+  for (const [ending, stems] of Object.entries(COMPOUND_STEMS)) {
+    if (normalizedVerb.endsWith(ending)) {
+      console.log(`🎯 Compound stem pattern detected: ${normalizedVerb} (${ending} → ${stems.join('/')})`);
+      return {
+        type: 'PATTERN_COMPOUND_STEM',
+        verb: normalizedVerb,
+        confidence: 0.75,
+        reasoning: `Compound stem form "${normalizedVerb}" from ${stems.join('/')} verb family`,
+        patternBased: true,
+        category: 'COMPOUND_STEM',
+        stemFamily: stems
+      };
+    }
+  }
+  
+  // Check morphological patterns with context validation
   for (const [category, config] of Object.entries(morphologicalPatterns)) {
     for (const pattern of config.patterns) {
       if (pattern.test(normalizedVerb)) {
-        console.log(`🎯 Morphological pattern detected: ${category} (${normalizedVerb})`);
+        let confidence = config.confidence;
+        
+        // Apply context validation if available
+        if (config.contextValidation) {
+          const contextAdjustment = config.contextValidation(normalizedVerb, lowerSentence);
+          confidence += contextAdjustment;
+          confidence = Math.max(0.1, Math.min(0.95, confidence)); // Clamp between 0.1 and 0.95
+        }
+        
+        // Boost confidence for pronominal verbs
+        if (isPronominal && category === 'SUBJUNCTIVE') {
+          confidence += 0.1;
+        }
+        
+        console.log(`🎯 Enhanced morphological pattern detected: ${category} (${normalizedVerb}) - confidence: ${confidence.toFixed(2)}`);
         return {
           type: config.type,
           verb: normalizedVerb,
-          confidence: config.confidence,
-          reasoning: config.reasoning,
+          confidence: confidence,
+          reasoning: config.reasoning + (isPronominal ? ' (pronominal form)' : ''),
           patternBased: true,
-          category: category
+          category: category,
+          isPronominal: isPronominal
         };
       }
     }
   }
   
-  // PATTERN 2: Semantic context patterns (sentence-level)
+  // PATTERN 2: Enhanced semantic context patterns (sentence-level)
   const contextPatterns = {
     // Administrative/official contexts (neutral)
     ADMINISTRATIVE: {
-      indicators: ['officiellement', 'administrativement', 'légalement', 'formellement', 'publiquement'],
+      indicators: [
+        'officiellement', 'administrativement', 'légalement', 'formellement', 'publiquement',
+        'bureaucratiquement', 'institutionnellement', 'réglementairement'
+      ],
       confidence: 0.65,
       type: 'PATTERN_ADMINISTRATIVE',
       reasoning: 'Administrative context suggests neutral/expletive negation'
@@ -819,7 +970,11 @@ function classifyUnknownVerb(verb, sentence) {
     
     // Temporal/scheduling contexts (neutral)
     TEMPORAL: {
-      indicators: ['bientôt', 'prochainement', 'ultérieurement', 'plus tard', 'demain', 'hier'],
+      indicators: [
+        'bientôt', 'prochainement', 'ultérieurement', 'plus tard', 'demain', 'hier',
+        'récemment', 'actuellement', 'maintenant', 'désormais', 'dorénavant',
+        'simultanément', 'progressivement', 'graduellement'
+      ],
       confidence: 0.65,
       type: 'PATTERN_TEMPORAL',
       reasoning: 'Temporal context suggests neutral/expletive negation'
@@ -827,10 +982,34 @@ function classifyUnknownVerb(verb, sentence) {
     
     // Physical/mechanical processes (neutral)
     PHYSICAL: {
-      indicators: ['mécaniquement', 'automatiquement', 'naturellement', 'physiquement'],
+      indicators: [
+        'mécaniquement', 'automatiquement', 'naturellement', 'physiquement',
+        'techniquement', 'manuellement', 'artificiellement', 'spontanément'
+      ],
       confidence: 0.65,
       type: 'PATTERN_PHYSICAL',
       reasoning: 'Physical process context suggests neutral/expletive negation'
+    },
+    
+    // ENHANCEMENT 6: Additional semantic contexts
+    EMOTIONAL: {
+      indicators: [
+        'émotionnellement', 'sentimentalement', 'affectivement', 'psychologiquement',
+        'intuitivement', 'instinctivement'
+      ],
+      confidence: 0.60,
+      type: 'PATTERN_EMOTIONAL',
+      reasoning: 'Emotional context often neutral in avant que constructions'
+    },
+    
+    PROFESSIONAL: {
+      indicators: [
+        'professionnellement', 'commercialement', 'industriellement', 'académiquement',
+        'scientifiquement', 'médicalement', 'juridiquement'
+      ],
+      confidence: 0.65,
+      type: 'PATTERN_PROFESSIONAL',
+      reasoning: 'Professional context suggests neutral/expletive negation'
     }
   };
   
@@ -838,7 +1017,7 @@ function classifyUnknownVerb(verb, sentence) {
   for (const [category, config] of Object.entries(contextPatterns)) {
     for (const indicator of config.indicators) {
       if (lowerSentence.includes(indicator)) {
-        console.log(`🎯 Semantic context pattern detected: ${category} (${indicator})`);
+        console.log(`🎯 Enhanced semantic context pattern detected: ${category} (${indicator})`);
         return {
           type: config.type,
           verb: normalizedVerb,
@@ -846,22 +1025,75 @@ function classifyUnknownVerb(verb, sentence) {
           reasoning: config.reasoning,
           patternBased: true,
           category: category,
-          contextIndicator: indicator
+          contextIndicator: indicator,
+          isPronominal: isPronominal
         };
       }
     }
   }
   
-  // SMART DEFAULT: Unknown verb with neutral assumption
-  console.log('🔍 Applying smart default for unknown verb:', normalizedVerb);
+  // ENHANCEMENT 7: Length-based confidence adjustment
+  let defaultConfidence = 0.50;
+  
+  // Very short words (1-2 chars) likely not verbs
+  if (normalizedVerb.length <= 2) {
+    defaultConfidence = 0.30;
+    console.log(`🔍 Very short word detected: ${normalizedVerb} - reducing confidence`);
+  }
+  // Very long words (>12 chars) might be compound or technical terms
+  else if (normalizedVerb.length > 12) {
+    defaultConfidence = 0.40;
+    console.log(`🔍 Very long word detected: ${normalizedVerb} - slightly reducing confidence`);
+  }
+  // Medium length words (4-8 chars) most likely to be verbs
+  else if (normalizedVerb.length >= 4 && normalizedVerb.length <= 8) {
+    defaultConfidence = 0.55;
+    console.log(`🔍 Medium length word detected: ${normalizedVerb} - slightly increasing confidence`);
+  }
+  
+  // ENHANCEMENT 8: Frequency-based patterns (common French word patterns)
+  const COMMON_FRENCH_PATTERNS = {
+    // Common prefixes that suggest verbs
+    VERB_PREFIXES: {
+      patterns: [/^re/, /^dé/, /^pré/, /^sur/, /^sous/, /^entre/, /^contre/],
+      adjustment: 0.1,
+      reasoning: 'Common French verb prefix detected'
+    },
+    
+    // Common suffixes that suggest non-verbs
+    NON_VERB_SUFFIXES: {
+      patterns: [/tion$/, /sion$/, /ment$/, /ité$/, /isme$/, /age$/, /eur$/, /euse$/],
+      adjustment: -0.2,
+      reasoning: 'Common French noun suffix detected'
+    }
+  };
+  
+  // Apply frequency-based adjustments
+  for (const [category, config] of Object.entries(COMMON_FRENCH_PATTERNS)) {
+    for (const pattern of config.patterns) {
+      if (pattern.test(normalizedVerb)) {
+        defaultConfidence += config.adjustment;
+        console.log(`🔍 French pattern detected: ${category} (${normalizedVerb}) - confidence adjustment: ${config.adjustment}`);
+        break; // Only apply one adjustment per category
+      }
+    }
+  }
+  
+  // Clamp confidence between reasonable bounds
+  defaultConfidence = Math.max(0.20, Math.min(0.80, defaultConfidence));
+  
+  // SMART DEFAULT: Enhanced unknown verb with contextual confidence
+  console.log(`🔍 Applying enhanced smart default for unknown verb: ${normalizedVerb} (confidence: ${defaultConfidence.toFixed(2)})`);
   return {
     type: 'UNKNOWN_VERB_DEFAULT',
     verb: normalizedVerb,
-    confidence: 0.50, // Neutral confidence
-    reasoning: `Unknown verb "${normalizedVerb}" - applying neutral context default`,
+    confidence: defaultConfidence,
+    reasoning: `Unknown verb "${normalizedVerb}" - applying enhanced contextual default (length: ${normalizedVerb.length}, pronominal: ${isPronominal})`,
     patternBased: true,
     category: 'DEFAULT',
-    isDefault: true
+    isDefault: true,
+    isPronominal: isPronominal,
+    wordLength: normalizedVerb.length
   };
 }
 
