@@ -360,7 +360,15 @@ const NEUTRAL_TEMPORAL_INDICATORS = new Set([
   
   // Neutral temporal expressions
   'dans le temps', 'au moment où', 'à ce moment-là',
-  'pendant que', 'tandis que', 'alors que'
+  'pendant que', 'tandis que', 'alors que',
+  
+  // Natural growth/development
+  'au monde', 'de naissance', 'par nature',
+  'avec le temps', 'petit à petit', 'progressivement',
+  
+  // Administrative timing
+  'jour ouvrable', 'délai', 'échéance', 'terme',
+  'à terme', 'en temps voulu', 'le moment venu'
 ]);
 
 // Neutral process contexts (not prevention)
@@ -369,7 +377,14 @@ const NEUTRAL_PROCESS_CONTEXTS = new Set([
   'processus', 'procédure', 'examen', 'évaluation',
   'submersion', 'inondation', 'érosion', 'évolution',
   'conduite', 'accompagnement', 'guidance', 'direction',
-  'reporté pour', 'prévu pour', 'annoncé pour'
+  'reporté pour', 'prévu pour', 'annoncé pour',
+  // Natural biological/growth processes
+  'vienne au monde', 'naisse', 'naissance',
+  'assez grand', 'assez grande', 'assez mûr', 'assez mûre',
+  'se déclenchent', 'se déclenche', 'déclenchement',
+  // Administrative/technical processes
+  'soit ajusté', 'soit remplacé', 'soit modifié',
+  'soit opérationnel', 'soit utilisable', 'soit prêt'
 ]);
 
 /**
