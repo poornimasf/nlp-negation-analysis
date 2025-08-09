@@ -144,7 +144,38 @@ const SimpleNegationAnalyzer = () => {
             case 'RULE_BASED':
               formattedResult = formatRuleBasedResult(analysis);
               // Set classification directly from the analysis result
-              classification = analysis.type === 'Expletive' ? 'Expletive' : 'No Expletive';
+              let ruleBasedClassification = analysis.type === 'Expletive' ? 'Expletive' : 'No Expletive';
+              
+              // NEW: Apply semantic context analysis to rule-based analysis
+              if (ruleBasedClassification === 'Expletive') {
+                try {
+                  // Import semantic context analyzer
+                  const { analyzeSemanticContext, shouldOverrideToLogicalNegation } = await import('../utils/semanticContextAnalyzer');
+                  
+                  // Extract verb from analysis
+                  let detectedVerb = null;
+                  if (analysis.enhancedAvantQue?.subjunctiveMood?.verb) {
+                    detectedVerb = analysis.enhancedAvantQue.subjunctiveMood.verb;
+                  } else if (analysis.evidence?.subjunctive) {
+                    detectedVerb = analysis.evidence.subjunctive;
+                  }
+                  
+                  if (detectedVerb) {
+                    console.log('🔍 RULE_BASED: Checking semantic context for verb:', detectedVerb);
+                    const semanticContext = analyzeSemanticContext(sentence, detectedVerb);
+                    
+                    if (shouldOverrideToLogicalNegation(semanticContext)) {
+                      console.log('🎯 RULE_BASED: SEMANTIC OVERRIDE applied:', semanticContext);
+                      ruleBasedClassification = 'No Expletive';
+                    }
+                  }
+                } catch (error) {
+                  console.error('RULE_BASED: Error in semantic context analysis:', error);
+                }
+              }
+              
+              classification = ruleBasedClassification;
+              
               // Generate proposed sentence if expletive
               if (classification === 'Expletive' && analysis.evidence?.trigger) {
                 const triggerInfo = {
@@ -234,16 +265,84 @@ const SimpleNegationAnalyzer = () => {
                     proposedSentence = formatWithNe(sentence, nePosition);
                 }
               } else {
-                console.log('🔍 NOT using enhanced training analysis - falling back to rule-based');
+                console.log('🔍 NOT using enhanced training analysis - falling back to rule-based with semantic context');
                 console.log('🔍 Fallback reason - useTrainingEnhancement:', useTrainingEnhancement, 'examples length:', trainingData.examples.length);
+                
+                // NEW: Apply semantic context analysis even in rule-based fallback
+                let finalClassification = analysis.type === 'Expletive' ? 'Expletive' : 'No Expletive';
+                let semanticOverrideApplied = false;
+                
+                // Check for semantic context override
+                if (analysis.type === 'Expletive') {
+                  try {
+                    // Import semantic context analyzer
+                    const { analyzeSemanticContext, shouldOverrideToLogicalNegation } = await import('../utils/semanticContextAnalyzer');
+                    
+                    // Extract verb from analysis (try different sources)
+                    let detectedVerb = null;
+                    if (analysis.enhancedAvantQue?.subjunctiveMood?.verb) {
+                      detectedVerb = analysis.enhancedAvantQue.subjunctiveMood.verb;
+                    } else if (analysis.evidence?.subjunctive) {
+                      detectedVerb = analysis.evidence.subjunctive;
+                    }
+                    
+                    if (detectedVerb) {
+                      console.log('🔍 Checking semantic context for verb:', detectedVerb);
+                      const semanticContext = analyzeSemanticContext(sentence, detectedVerb);
+                      
+                      if (shouldOverrideToLogicalNegation(semanticContext)) {
+                        console.log('🎯 SEMANTIC OVERRIDE in rule-based fallback:', semanticContext);
+                        finalClassification = 'No Expletive';
+                        semanticOverrideApplied = true;
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error in semantic context analysis:', error);
+                  }
+                }
+                
                 formattedResult = formatRuleBasedResult(analysis);
-                classification = analysis.type === 'Expletive' ? 'Expletive' : 'No Expletive';
+                classification = finalClassification;
+                
+                if (semanticOverrideApplied) {
+                  console.log('🎯 Final classification after semantic override:', classification);
+                }
               }
               break;
 
             default:
               formattedResult = formatRuleBasedResult(analysis);
-              classification = await determineClassification(sentence, formattedResult);
+              let defaultClassification = await determineClassification(sentence, formattedResult);
+              
+              // NEW: Apply semantic context analysis to default case
+              if (defaultClassification === 'Expletive') {
+                try {
+                  // Import semantic context analyzer
+                  const { analyzeSemanticContext, shouldOverrideToLogicalNegation } = await import('../utils/semanticContextAnalyzer');
+                  
+                  // Extract verb from analysis
+                  let detectedVerb = null;
+                  if (analysis.enhancedAvantQue?.subjunctiveMood?.verb) {
+                    detectedVerb = analysis.enhancedAvantQue.subjunctiveMood.verb;
+                  } else if (analysis.evidence?.subjunctive) {
+                    detectedVerb = analysis.evidence.subjunctive;
+                  }
+                  
+                  if (detectedVerb) {
+                    console.log('🔍 DEFAULT: Checking semantic context for verb:', detectedVerb);
+                    const semanticContext = analyzeSemanticContext(sentence, detectedVerb);
+                    
+                    if (shouldOverrideToLogicalNegation(semanticContext)) {
+                      console.log('🎯 DEFAULT: SEMANTIC OVERRIDE applied:', semanticContext);
+                      defaultClassification = 'No Expletive';
+                    }
+                  }
+                } catch (error) {
+                  console.error('DEFAULT: Error in semantic context analysis:', error);
+                }
+              }
+              
+              classification = defaultClassification;
           }
 
           // Add debug logging
