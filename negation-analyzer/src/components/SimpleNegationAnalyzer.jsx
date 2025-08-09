@@ -138,6 +138,7 @@ const SimpleNegationAnalyzer = () => {
           let formattedResult;
           let classification;
           let proposedSentence = null;
+          let trainingAnalysis = null; // Initialize trainingAnalysis in broader scope
 
           switch (analysisMode) {
             case 'RULE_BASED':
@@ -181,7 +182,7 @@ const SimpleNegationAnalyzer = () => {
                 console.log('🔍 Using enhanced training analysis');
                 // Use enhanced training analyzer that includes surface form generation
                 const { analyzeWithEnhancedFeatures } = await import('../utils/enhancedTrainingAnalyzer');
-                const trainingAnalysis = analyzeWithEnhancedFeatures(sentence, trainingData.examples);
+                trainingAnalysis = analyzeWithEnhancedFeatures(sentence, trainingData.examples);
                 
                 console.log('🎯 Full enhanced training analysis result:', trainingAnalysis);
                 console.log('🎯 Surface form in enhanced result:', trainingAnalysis.surfaceForm);
@@ -229,7 +230,7 @@ const SimpleNegationAnalyzer = () => {
                         category: trainingAnalysis.context.category,
                         subcategory: trainingAnalysis.context.subcategory
                     };
-                    const nePosition = calculateNePosition(sentence, triggerInfo, mode);
+                    const nePosition = calculateNePosition(sentence, triggerInfo, analysisMode);
                     proposedSentence = formatWithNe(sentence, nePosition);
                 }
               } else {
