@@ -42,6 +42,16 @@ const PREVENTION_VERBS = new Set([
   'régler',     // régler (adjust, settle)
   'renommer',   // renommer (rename)
   'rebaptiser', // rebaptiser (rename)
+  'désigner',   // désigner (designate) - MISSING!
+  'nommer',     // nommer (name/appoint)
+  'approuver',  // approuver (approve)
+  
+  // Guidance/Direction verbs (often neutral context)
+  'conduire',   // conduire (lead, conduct) - MISSING!
+  'guider',     // guider (guide)
+  'diriger',    // diriger (direct)
+  'mener',      // mener (lead)
+  'accompagner', // accompagner (accompany)
   
   // Destruction/Elimination verbs
   'détruire',   // détruire (destroy)
@@ -88,7 +98,11 @@ const COMPLETION_VERBS = new Set([
   'aboutir', 'parvenir', 'atteindre', 'arriver',
   'empirer', 'empire', 'empires', 'empirent', // worsen/get worse
   'dégrader', 'dégrade', 'dégrades', 'dégradent', // degrade
-  'détériorer', 'détériore', 'détériores', 'détériorent' // deteriorate
+  'détériorer', 'détériore', 'détériores', 'détériorent', // deteriorate
+  'commencer', 'commence', 'commences', 'commencez', 'commenciez', // begin - MISSING!
+  'débuter', 'débute', 'débutes', 'débutez', // start
+  'entamer', 'entame', 'entames', 'entamez', // begin/start
+  'initier', 'initie', 'inities', 'initiez' // initiate
 ]);
 
 // Adversarial context indicators
@@ -165,6 +179,38 @@ function detectCapabilityAdjective(word) {
       adjective: normalizedWord,
       confidence: 0.80,
       reasoning: `Capability adjective: "${word}" in readiness context often takes logical "ne"`
+    };
+  }
+  
+  return null;
+}
+
+// NEW PHASE 2: Reflexive action verbs (often neutral physical actions)
+const REFLEXIVE_ACTION_VERBS = new Set([
+  'accroche', 'accrocher', // s'accrocher (grab hold)
+  'attache', 'attacher', // s'attacher (attach)
+  'installe', 'installer', // s'installer (install/settle)
+  'assoit', 'asseoir', // s'asseoir (sit down)
+  'place', 'placer', // se placer (place oneself)
+  'positionne', 'positionner', // se positionner (position oneself)
+  'dirige', 'diriger', // se diriger (head towards)
+  'rend', 'rendre' // se rendre (go to)
+]);
+
+/**
+ * NEW PHASE 2: Detect reflexive action verbs
+ * @param {string} verb - The verb to analyze
+ * @returns {object|null} - Reflexive action analysis or null
+ */
+function detectReflexiveActionVerb(verb) {
+  const normalizedVerb = verb.toLowerCase().trim();
+  
+  if (REFLEXIVE_ACTION_VERBS.has(normalizedVerb)) {
+    return {
+      type: 'REFLEXIVE_ACTION',
+      verb: normalizedVerb,
+      confidence: 0.70,
+      reasoning: `Reflexive action verb: "${verb}" in physical action context often takes logical "ne"`
     };
   }
   
@@ -490,6 +536,19 @@ function analyzeSemanticContext(sentence, verb) {
     }
   }
   
+  // PHASE 2: Check for reflexive action verbs
+  semanticContext = detectReflexiveActionVerb(verb);
+  if (semanticContext) {
+    console.log('🎯 Phase 2 - Reflexive action verb detected:', semanticContext);
+    // Apply validation
+    semanticContext = validateSemanticContext(sentence, verb, semanticContext);
+    if (semanticContext && semanticContext.confidence >= 0.75) {
+      return semanticContext;
+    } else if (semanticContext) {
+      console.log('🔍 Reflexive action verb confidence reduced below threshold after validation');
+    }
+  }
+  
   // PHASE 2: Check for contextual verb analysis
   semanticContext = analyzeVerbInContext(sentence, verb);
   if (semanticContext) {
@@ -574,6 +633,7 @@ export {
   detectPreventionPastParticiple,
   detectCapabilityAdjective,
   detectCompletionVerb,
+  detectReflexiveActionVerb,
   detectLogicalNegationPhrases,
   analyzeVerbInContext,
   PREVENTION_VERBS,
@@ -582,5 +642,6 @@ export {
   PREVENTION_PAST_PARTICIPLES,
   CAPABILITY_ADJECTIVES,
   COMPLETION_VERBS,
+  REFLEXIVE_ACTION_VERBS,
   LOGICAL_NEGATION_PHRASES
 };
