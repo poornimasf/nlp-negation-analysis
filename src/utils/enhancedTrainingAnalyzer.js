@@ -311,8 +311,11 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   let clauseInfo = null;
   if (inputTrigger) {
     clauseInfo = extractTriggerClause(text, inputTrigger);
-    triggerClause = clauseInfo.clause;
-    console.log('📝 Extracted clause:', triggerClause);
+    // TEMPORARY FIX: Use full text instead of extracted clause to avoid corruption
+    // triggerClause = clauseInfo.clause;
+    triggerClause = text; // Use full text to avoid "reporté" being removed
+    console.log('📝 Extracted clause:', clauseInfo.clause);
+    console.log('📝 Using full text instead:', triggerClause.substring(0, 100) + '...');
     console.log('🔧 Clause info:', clauseInfo);
   }
   
