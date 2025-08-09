@@ -663,9 +663,8 @@ function analyzeVerbForSubjunctive(verb, context) {
   }
   
   console.log('❌ No subjunctive pattern matched for verb:', normalizedVerb);
-  return null;
   
-  // Check regular subjunctive patterns
+  // Check regular subjunctive patterns as fallback
   if (normalizedVerb.match(/^.+(?:e|es|ions|iez|ent)$/)) {
     return {
       verb: normalizedVerb,
