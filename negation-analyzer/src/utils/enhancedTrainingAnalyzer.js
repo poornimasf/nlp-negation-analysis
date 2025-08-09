@@ -639,6 +639,20 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     }
   }
   
+  // CRITICAL FIX: Recalculate shouldHaveNe AFTER semantic boost is applied
+  const finalShouldHaveNe = adjustedExpletive > adjustedNonExpletive;
+  const finalConfidence = (adjustedExpletive + adjustedNonExpletive) > 0 ? 
+    Math.max(adjustedExpletive, adjustedNonExpletive) / (adjustedExpletive + adjustedNonExpletive) :
+    0.5;
+  const finalActualExpletiveLikelihood = (adjustedExpletive + adjustedNonExpletive) > 0 ?
+    adjustedExpletive / (adjustedExpletive + adjustedNonExpletive) : 0.5;
+  
+  console.log('🔍 DIAGNOSTIC: Classification decision:', {
+    beforeBoost: { shouldHaveNe, expletive: adjustedExpletive - (semanticContextInfo?.validationApplied ? 3.0 : 0), nonExpletive: adjustedNonExpletive },
+    afterBoost: { finalShouldHaveNe, adjustedExpletive, adjustedNonExpletive },
+    finalDecision: finalShouldHaveNe ? 'Expletive' : 'No Expletive'
+  });
+  
   // Generate surface form for expletive classifications
   const analysisResult = {
     classification: shouldHaveNe,
@@ -670,8 +684,8 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   });
   
   return {
-    classification: shouldHaveNe,
-    confidence,
+    classification: finalShouldHaveNe, // Use recalculated value after semantic boost
+    confidence: finalConfidence, // Use recalculated confidence
     matches: enhancedExamples,
     surfaceForm: surfaceForm, // NEW: Add surface form prediction
     linguisticAnalysis: {
@@ -687,15 +701,16 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
       combinedAnalysis: {
         // Use the actual enhanced voting results instead of independent calculation
         ...ambiguityNegationAnalysis.combinedAnalysis,
-        expletiveLikelihood: actualExpletiveLikelihood,
-        recommendation: shouldHaveNe ? 
+        expletiveLikelihood: finalActualExpletiveLikelihood, // Use recalculated value
+        recommendation: finalShouldHaveNe ? // Use recalculated value
           'Expletive ne likely based on enhanced linguistic analysis' :
           'Expletive ne unlikely based on enhanced linguistic analysis',
         factors: [
           ...ambiguityNegationAnalysis.combinedAnalysis.factors,
-          `Enhanced voting: ${Math.round(actualExpletiveLikelihood * 100)}% expletive likelihood`,
+          `Enhanced voting: ${Math.round(finalActualExpletiveLikelihood * 100)}% expletive likelihood`, // Use recalculated value
           avantQueAnalysis?.bothConditionsMet ? 'Avant que boost applied (+3.0)' : 
-          (avantQueAnalysis?.isAvantQue && !avantQueAnalysis?.bothConditionsMet) ? 'Avant que penalty applied (-3.0)' : null
+          (avantQueAnalysis?.isAvantQue && !avantQueAnalysis?.bothConditionsMet) ? 'Avant que penalty applied (-3.0)' : null,
+          semanticContextInfo?.validationApplied ? `Semantic boost applied (+${semanticContextInfo.validationApplied ? '3.0' : '0'})` : null
         ].filter(Boolean)
       },
       clauseInfo: clauseInfo // Add clause boundary information
