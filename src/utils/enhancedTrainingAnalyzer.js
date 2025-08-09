@@ -494,15 +494,23 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   // NEW PHASE 1: Semantic context analysis for prevention verbs
   // Check if this is a logical negation context that should override linguistic analysis
   let detectedVerb = avantQueAnalysis?.subjunctiveMood?.verb;
+  console.log('🔍 DIAGNOSTIC: Initial verb detection from subjunctive mood:', detectedVerb);
+  console.log('🔍 DIAGNOSTIC: avantQueAnalysis:', avantQueAnalysis);
+  console.log('🔍 DIAGNOSTIC: Text being analyzed:', text.substring(0, 100) + '...');
   
   // CRITICAL FIX: Also check for past participles in passive constructions
   if (!detectedVerb && text.toLowerCase().includes('soit')) {
+    console.log('🔍 DIAGNOSTIC: Text contains "soit", checking for past participle...');
     // Extract past participle from "soit + past participle" constructions
     const soitMatch = text.toLowerCase().match(/soit\s+(\w+)/);
     if (soitMatch) {
       detectedVerb = soitMatch[1];
-      console.log('🔍 Past participle detected in passive construction:', detectedVerb);
+      console.log('🔍 DIAGNOSTIC: Past participle detected in passive construction:', detectedVerb);
+    } else {
+      console.log('🔍 DIAGNOSTIC: Text contains "soit" but no match found with pattern /soit\\s+(\\w+)/');
     }
+  } else if (!detectedVerb) {
+    console.log('🔍 DIAGNOSTIC: Text does not contain "soit"');
   }
   
   // ENHANCEMENT: Handle reflexive constructions "se + verb"
@@ -541,6 +549,9 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
       console.log('🔍 General verb/participle detected in avant que clause:', detectedVerb);
     }
   }
+  
+  console.log('🔍 DIAGNOSTIC: Final detected verb after all patterns:', detectedVerb);
+  console.log('🔍 DIAGNOSTIC: Will semantic context analysis run?', !!detectedVerb);
   
   let semanticContextInfo = null;
   
