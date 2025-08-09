@@ -96,7 +96,17 @@ const PREVENTION_PAST_PARTICIPLES = new Set([
   'détruit', 'détruite', 'détruits', 'détruites',
   'supprimé', 'supprimée', 'supprimés', 'supprimées',
   'éliminé', 'éliminée', 'éliminés', 'éliminées',
-  'effacé', 'effacée', 'effacés', 'effacées'
+  'effacé', 'effacée', 'effacés', 'effacées',
+  // MISSING PAST PARTICIPLES - CRITICAL ADDITIONS:
+  'reporté', 'reportée', 'reportés', 'reportées', // postponed/delayed - MISSING!
+  'désigné', 'désignée', 'désignés', 'désignées', // designated - MISSING!
+  'submergé', 'submergée', 'submergés', 'submergées', // submerged - MISSING!
+  'conduit', 'conduite', 'conduits', 'conduites', // led/conducted - MISSING!
+  'commencé', 'commencée', 'commencés', 'commencées', // begun - MISSING!
+  'attaché', 'attachée', 'attachés', 'attachées', // attached - MISSING!
+  'installé', 'installée', 'installés', 'installées', // installed - MISSING!
+  'placé', 'placée', 'placés', 'placées', // placed - MISSING!
+  'positionné', 'positionnée', 'positionnés', 'positionnées' // positioned - MISSING!
 ]);
 
 // NEW PHASE 2: Capability/readiness adjectives (often logical negation context)
