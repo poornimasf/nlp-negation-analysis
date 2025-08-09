@@ -497,21 +497,37 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   console.log('🔍 DIAGNOSTIC: Initial verb detection from subjunctive mood:', detectedVerb);
   console.log('🔍 DIAGNOSTIC: avantQueAnalysis:', avantQueAnalysis);
   console.log('🔍 DIAGNOSTIC: Text being analyzed:', text.substring(0, 100) + '...');
+  console.log('🔍 DIAGNOSTIC: detectedVerb is null?', detectedVerb === null);
+  console.log('🔍 DIAGNOSTIC: detectedVerb is undefined?', detectedVerb === undefined);
+  console.log('🔍 DIAGNOSTIC: !detectedVerb evaluates to:', !detectedVerb);
+  console.log('🔍 DIAGNOSTIC: text.toLowerCase().includes("soit"):', text.toLowerCase().includes('soit'));
   
   // CRITICAL FIX: Also check for past participles in passive constructions
   if (!detectedVerb && text.toLowerCase().includes('soit')) {
+    console.log('🔍 DIAGNOSTIC: ✅ ENTERING soit pattern matching...');
     console.log('🔍 DIAGNOSTIC: Text contains "soit", checking for past participle...');
     // Extract past participle from "soit + past participle" constructions
     // FIXED: Use [a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+ to capture French accented characters
     const soitMatch = text.toLowerCase().match(/soit\s+([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+)/);
+    console.log('🔍 DIAGNOSTIC: soitMatch result:', soitMatch);
     if (soitMatch) {
       detectedVerb = soitMatch[1];
-      console.log('🔍 DIAGNOSTIC: Past participle detected in passive construction:', detectedVerb);
+      console.log('🔍 DIAGNOSTIC: ✅ Past participle detected in passive construction:', detectedVerb);
     } else {
-      console.log('🔍 DIAGNOSTIC: Text contains "soit" but no match found with pattern /soit\\s+([a-zA-ZàâäéèêëïîôöùûüÿçÀÂÄÉÈÊËÏÎÔÖÙÛÜŸÇ]+)/');
+      console.log('🔍 DIAGNOSTIC: ❌ Text contains "soit" but no match found with pattern');
+      // Try simpler pattern for debugging
+      const simpleMatch = text.toLowerCase().match(/soit\s+(\w+)/);
+      console.log('🔍 DIAGNOSTIC: Simple \\w+ pattern result:', simpleMatch);
     }
-  } else if (!detectedVerb) {
-    console.log('🔍 DIAGNOSTIC: Text does not contain "soit"');
+  } else {
+    console.log('🔍 DIAGNOSTIC: ❌ NOT entering soit pattern matching');
+    if (detectedVerb) {
+      console.log('🔍 DIAGNOSTIC: Reason: detectedVerb is not null/undefined:', detectedVerb);
+    }
+    if (!text.toLowerCase().includes('soit')) {
+      console.log('🔍 DIAGNOSTIC: Reason: text does not contain "soit"');
+      console.log('🔍 DIAGNOSTIC: Text lowercase:', text.toLowerCase());
+    }
   }
   
   // ENHANCEMENT: Handle reflexive constructions "se + verb"
