@@ -163,7 +163,7 @@ class NegationAnalyzer {
       // CRITICAL: Check for logical negation context before classifying as expletive
       const logicalNegationAnalysis = analyzeLogicalNegationContext(text, { trigger: foundTrigger.trigger });
       
-      if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.6) {
+      if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.4) {
         // This is logical negation, not expletive
         evidence.details.push(`Logical negation detected: ${logicalNegationAnalysis.reasoning}`);
         evidence.details.push(`Evidence: ${logicalNegationAnalysis.evidence.join(', ')}`);

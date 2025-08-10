@@ -85,7 +85,7 @@ export function analyzeLogicalNegationContext(text, triggerInfo) {
   for (const pattern of LOGICAL_NEGATION_PATTERNS.LOGICAL_CONTEXTS) {
     const matches = normalizedText.match(pattern);
     if (matches && matches.length > 0) {
-      logicalScore += 2.0;
+      logicalScore += 3.0; // Increased from 2.0
       evidence.push(`Logical context pattern: ${matches.join(', ')}`);
     }
   }
@@ -94,7 +94,7 @@ export function analyzeLogicalNegationContext(text, triggerInfo) {
   for (const pattern of LOGICAL_NEGATION_PATTERNS.LOGICAL_NEGATION_VERBS) {
     const matches = normalizedText.match(pattern);
     if (matches && matches.length > 0) {
-      logicalScore += 1.5;
+      logicalScore += 2.0; // Increased from 1.5
       evidence.push(`Logical negation verb: ${matches.join(', ')}`);
     }
   }
@@ -103,7 +103,7 @@ export function analyzeLogicalNegationContext(text, triggerInfo) {
   for (const pattern of EXPLETIVE_CONTEXTS) {
     const matches = normalizedText.match(pattern);
     if (matches && matches.length > 0) {
-      expletiveScore += 2.0;
+      expletiveScore += 3.0; // Increased from 2.0
       evidence.push(`Expletive context pattern: ${matches.join(', ')}`);
     }
   }
@@ -116,8 +116,8 @@ export function analyzeLogicalNegationContext(text, triggerInfo) {
       // Check for completion verbs
       if (/\b(soit|soient|ait|aient|puisse|puissent|finisse|finissent|arrive|arrivent)\b/gi.test(afterTrigger)) {
         // Check the broader context for logical vs expletive indicators
-        if (/\b(opérationnel|prêt|terminé|fini|résolu|réglé|corrigé|modifié|changé)\b/gi.test(normalizedText)) {
-          logicalScore += 2.0;
+        if (/\b(opérationnel|prêt|terminé|fini|résolu|réglé|corrigé|modifié|changé|ouvert|ouverte|ouvertes)\b/gi.test(normalizedText)) {
+          logicalScore += 3.0; // Increased from 2.0
           evidence.push('Completion/achievement context detected after "avant que"');
         }
       }
@@ -125,8 +125,8 @@ export function analyzeLogicalNegationContext(text, triggerInfo) {
   }
 
   const totalScore = logicalScore - expletiveScore;
-  const isLogicalNegation = totalScore > 1.0; // Threshold for logical negation
-  const confidence = Math.min(Math.abs(totalScore) / 5.0, 1.0); // Normalize to 0-1
+  const isLogicalNegation = totalScore > 0.5; // Lowered threshold from 1.0
+  const confidence = Math.min(Math.abs(totalScore) / 4.0, 1.0); // Adjusted normalization
 
   return {
     isLogicalNegation,
