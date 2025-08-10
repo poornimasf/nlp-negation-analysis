@@ -1,0 +1,154 @@
+{
+  "timestamp": "2025-08-10T22:30:55.014Z",
+  "testType": "avant_que_examples",
+  "summary": {
+    "total": 10,
+    "successful": 10,
+    "expletivePredictions": 10,
+    "logicalPredictions": 0,
+    "unknownPredictions": 0,
+    "accuracy": 1,
+    "withExpletivesAccuracy": 1,
+    "withoutExpletivesAccuracy": 1
+  },
+  "results": [
+    {
+      "sentence": "Bien que cela semble être une excellente caractéristique, il est difficile de prévoir l'ampleur du d",
+      "section": "WITH_expletives",
+      "prediction": "Expletive",
+      "confidence": 0.9,
+      "evidence": {
+        "trigger": "avant que",
+        "category": "TEMPORAL",
+        "hasSubjunctive": true,
+        "detectedVerb": "devienne",
+        "boostApplied": true
+      },
+      "success": true
+    },
+    {
+      "sentence": "Avant que tout cela arrive, désinstaller iToolBox Toolbar du système, puis restaurez les paramètres ",
+      "section": "WITH_expletives",
+      "prediction": "Expletive",
+      "confidence": 0.9,
+      "evidence": {
+        "trigger": "avant que",
+        "category": "TEMPORAL",
+        "hasSubjunctive": true,
+        "detectedVerb": "arrive",
+        "boostApplied": true
+      },
+      "success": true
+    },
+    {
+      "sentence": "Arrêteront-ils l'ennemi avant qu'il grimpe avec des échelles d'assaut ?",
+      "section": "WITH_expletives",
+      "prediction": "Expletive",
+      "confidence": 0.9,
+      "evidence": {
+        "trigger": "avant que",
+        "category": "TEMPORAL",
+        "hasSubjunctive": true,
+        "detectedVerb": "grimpe",
+        "boostApplied": true
+      },
+      "success": true
+    },
+    {
+      "sentence": "Il faut les tuer rapidement avant que le froid les congèle.",
+      "section": "WITH_expletives",
+      "prediction": "Expletive",
+      "confidence": 0.9,
+      "evidence": {
+        "trigger": "avant que",
+        "category": "TEMPORAL",
+        "hasSubjunctive": true,
+        "detectedVerb": "congèle",
+        "boostApplied": true
+      },
+      "success": true
+    },
+    {
+      "sentence": "Il faut récupérer tout ce qu'il y a sur terre avant que ça finisse dans les océans.",
+      "section": "WITH_expletives",
+      "prediction": "Expletive",
+      "confidence": 0.9,
+      "evidence": {
+        "trigger": "avant que",
+        "category": "TEMPORAL",
+        "hasSubjunctive": true,
+        "detectedVerb": "finisse",
+        "boostApplied": true
+      },
+      "success": true
+    },
+    {
+      "sentence": "Le disque dur doit subir trois étapes de traitement : format de bas niveau, partition et format de h",
+      "section": "WITHOUT_expletives",
+      "prediction": "Expletive",
+      "confidence": 0.9,
+      "evidence": {
+        "trigger": "avant que",
+        "category": "TEMPORAL",
+        "hasSubjunctive": true,
+        "detectedVerb": "puisse",
+        "boostApplied": true
+      },
+      "success": true
+    },
+    {
+      "sentence": "Il se passe bien cinq jours avant qu'on les enterre.",
+      "section": "WITHOUT_expletives",
+      "prediction": "Expletive",
+      "confidence": 0.7,
+      "evidence": {
+        "trigger": "avant que",
+        "category": "TEMPORAL",
+        "hasSubjunctive": false,
+        "boostApplied": false
+      },
+      "success": true
+    },
+    {
+      "sentence": "Il lui faudra traverser plus de sept années de douloureuse inexistence avant qu'une seconde chance l",
+      "section": "WITHOUT_expletives",
+      "prediction": "Expletive",
+      "confidence": 0.9,
+      "evidence": {
+        "trigger": "avant que",
+        "category": "TEMPORAL",
+        "hasSubjunctive": true,
+        "detectedVerb": "soit",
+        "boostApplied": true
+      },
+      "success": true
+    },
+    {
+      "sentence": "Il faut vingt minutes avant qu'une morue ayant franchi les portes du grand entrepôt ne ressorte en f",
+      "section": "WITHOUT_expletives",
+      "prediction": "Expletive",
+      "confidence": 0.7,
+      "evidence": {
+        "trigger": "avant que",
+        "category": "TEMPORAL",
+        "hasSubjunctive": false,
+        "boostApplied": false
+      },
+      "success": true
+    },
+    {
+      "sentence": "Avant qu'un règlement puisse entrer en vigueur, le ministre des Affaires indiennes et du Nord canadi",
+      "section": "WITHOUT_expletives",
+      "prediction": "Expletive",
+      "confidence": 0.9,
+      "evidence": {
+        "trigger": "avant que",
+        "category": "TEMPORAL",
+        "hasSubjunctive": true,
+        "detectedVerb": "puisse",
+        "boostApplied": true
+      },
+      "success": true
+    }
+  ]
+}
