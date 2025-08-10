@@ -6,7 +6,9 @@
 import { normalizeText } from './textProcessing';
 import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS } from './patterns';
 import { analyzeAmbiguityAndNegation } from './ambiguityNegationAnalyzer';
-import { extractTriggerClause, detectSubjunctiveInClause, analyzeMultipleNegationInClause } from './clauseBoundaryAnalyzer';
+import { analyzeLogicalNegationContext } from './logicalNegationDetector';
+import { detectSubjunctive } from './unifiedSubjunctiveDetector';
+import { extractTriggerClause, analyzeMultipleNegationInClause } from './clauseBoundaryAnalyzer';
 import { enhanceAvantQueAnalysisWithClause } from './enhancedAvantQueAnalyzer';
 import { createSurfaceForm } from './surfaceFormGenerator';
 import { analyzeSemanticContext, shouldOverrideToLogicalNegation } from './semanticContextAnalyzer';
@@ -231,8 +233,8 @@ export function calculateEnhancedSimilarity(text1, text2) {
   // Enhanced linguistic features
   const trigger1 = extractEnhancedTrigger(norm1);
   const trigger2 = extractEnhancedTrigger(norm2);
-  const subjunctive1 = detectSubjunctiveMood(norm1);
-  const subjunctive2 = detectSubjunctiveMood(norm2);
+  const subjunctive1 = detectSubjunctive(norm1);
+  const subjunctive2 = detectSubjunctive(norm2);
   const register1 = detectRegister(norm1);
   const register2 = detectRegister(norm2);
   
@@ -320,9 +322,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   }
   
   // Analyze subjunctive within the specific clause
-  const inputSubjunctive = inputTrigger ? 
-    detectSubjunctiveInClause(triggerClause, inputTrigger) : 
-    detectSubjunctiveMood(text);
+  const inputSubjunctive = detectSubjunctive(triggerClause || text);
   console.log('📚 Subjunctive detected:', inputSubjunctive);
   
   const inputRegister = detectRegister(text);
@@ -417,9 +417,26 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     subjunctiveMood: avantQueAnalysis?.subjunctiveMood?.hasSubjunctive
   });
   
+  // CRITICAL: Check for logical negation context BEFORE applying avant que boost
+  const logicalNegationAnalysis = analyzeLogicalNegationContext(text, inputTrigger);
+  console.log('🔍 Logical negation analysis:', logicalNegationAnalysis);
+  
   if (avantQueAnalysis && avantQueAnalysis.bothConditionsMet) {
-    // DECISIVE BOOST: Ensure linguistic rules always win when both conditions are met
-    const beforeBoost = adjustedExpletive;
+    // Check if this is actually a logical negation context
+    if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.6) {
+      // REVERSE: This is logical negation, not expletive
+      const beforePenalty = adjustedExpletive;
+      adjustedNonExpletive += 4.0; // Strong boost to logical negation
+      
+      console.log('🚫 LOGICAL NEGATION OVERRIDE: Avant que context detected as logical negation:', {
+        beforePenalty,
+        afterPenalty: adjustedNonExpletive,
+        evidence: logicalNegationAnalysis.evidence,
+        confidence: logicalNegationAnalysis.confidence
+      });
+    } else {
+      // DECISIVE BOOST: Ensure linguistic rules always win when both conditions are met
+      const beforeBoost = adjustedExpletive;
     
     // Strategy: Make expletive votes at least 20% higher than non-expletive
     const guaranteedWin = adjustedNonExpletive * 1.2;
@@ -438,6 +455,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
       winMargin: adjustedExpletive - adjustedNonExpletive
     });
     console.log('🏛️ Avant que boost: Strong boost applied (both conditions met) - expletive now favored');
+    }
   } else if (avantQueAnalysis && avantQueAnalysis.isAvantQue && !avantQueAnalysis.bothConditionsMet) {
     // REVERSE PENALTY: When avant que trigger is present but conditions clearly not met
     // This prevents training data bias from overriding clear linguistic evidence

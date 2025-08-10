@@ -7,7 +7,8 @@ import { normalizeText } from './textProcessing';
 import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS } from './patterns';
 import { analyzeAmbiguityAndNegation } from './ambiguityNegationAnalyzer';
 import { analyzeLogicalNegationContext } from './logicalNegationDetector';
-import { extractTriggerClause, detectSubjunctiveInClause, analyzeMultipleNegationInClause } from './clauseBoundaryAnalyzer';
+import { detectSubjunctive } from './unifiedSubjunctiveDetector';
+import { extractTriggerClause, analyzeMultipleNegationInClause } from './clauseBoundaryAnalyzer';
 import { enhanceAvantQueAnalysisWithClause } from './enhancedAvantQueAnalyzer';
 import { createSurfaceForm } from './surfaceFormGenerator';
 import { analyzeSemanticContext, shouldOverrideToLogicalNegation } from './semanticContextAnalyzer';
@@ -232,8 +233,8 @@ export function calculateEnhancedSimilarity(text1, text2) {
   // Enhanced linguistic features
   const trigger1 = extractEnhancedTrigger(norm1);
   const trigger2 = extractEnhancedTrigger(norm2);
-  const subjunctive1 = detectSubjunctiveMood(norm1);
-  const subjunctive2 = detectSubjunctiveMood(norm2);
+  const subjunctive1 = detectSubjunctive(norm1);
+  const subjunctive2 = detectSubjunctive(norm2);
   const register1 = detectRegister(norm1);
   const register2 = detectRegister(norm2);
   
@@ -321,9 +322,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   }
   
   // Analyze subjunctive within the specific clause
-  const inputSubjunctive = inputTrigger ? 
-    detectSubjunctiveInClause(triggerClause, inputTrigger) : 
-    detectSubjunctiveMood(text);
+  const inputSubjunctive = detectSubjunctive(triggerClause || text);
   console.log('📚 Subjunctive detected:', inputSubjunctive);
   
   const inputRegister = detectRegister(text);
