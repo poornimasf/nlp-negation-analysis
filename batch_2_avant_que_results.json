@@ -1,0 +1,378 @@
+{
+  "timestamp": "2025-08-10T22:51:19.999Z",
+  "testType": "batch_2_avant_que_dataset",
+  "summary": {
+    "totalExamples": 20,
+    "totalCorrect": 20,
+    "accuracy": 1,
+    "expletiveSectionAccuracy": 1,
+    "noExpletiveSectionAccuracy": 1,
+    "subjunctiveDetectionRate": 1,
+    "expletiveSubjunctiveRate": 1,
+    "noExpletiveSubjunctiveRate": 1
+  },
+  "expletiveResults": [
+    {
+      "sentence": "Vous pouvez marquer des personnes dans vos publications avant qu'elles ne vous contactent. C'est bie...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant qu'",
+        "subjunctiveFound": true,
+        "detectedVerb": "es",
+        "verbPattern": "regular-er",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"es\" (regular-er) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "En règle générale, il est conseillé de stériliser son chat avant que celui-ci ne prenne certaines ma...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant que",
+        "subjunctiveFound": true,
+        "detectedVerb": "prenne",
+        "verbPattern": "irregular",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"prenne\" (irregular) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "C'est aux Justiciers - Batgirl, Nightwing, Red Hood et Robin - de percer les secrets ancestraux de G...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant qu'",
+        "subjunctiveFound": true,
+        "detectedVerb": "soit",
+        "verbPattern": "priority",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"soit\" (priority) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "On a échangé quelques mots avant que je ne parte. Il avait l'air d'aller à peu près.",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant que",
+        "subjunctiveFound": true,
+        "detectedVerb": "parte",
+        "verbPattern": "irregular",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"parte\" (irregular) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Pour ce faire, notre équipe est composée de quatre scientifiques, avec notamment des PhD en biotechn...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant que",
+        "subjunctiveFound": true,
+        "detectedVerb": "e",
+        "verbPattern": "regular-er",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"e\" (regular-er) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Pendant cinq ans, ils vont subir les nuisances de la voisine, qui ne quittera les lieux qu'en juille...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant qu'",
+        "subjunctiveFound": true,
+        "detectedVerb": "soit",
+        "verbPattern": "priority",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"soit\" (priority) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Il couru pour ouvrir la trappe, mais un garde l'électrocuta avant qu'il ne puisse y parvenir.",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant qu'",
+        "subjunctiveFound": true,
+        "detectedVerb": "puisse",
+        "verbPattern": "priority",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"puisse\" (priority) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Un grésillement, avant qu'elle ne se retourne et avance sous le fruit.",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant qu'",
+        "subjunctiveFound": true,
+        "detectedVerb": "ent",
+        "verbPattern": "regular-er",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"ent\" (regular-er) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Le Maire est dans son rôle en posant cette proposition sur la place publique dans ces termes avant q...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant que",
+        "subjunctiveFound": true,
+        "detectedVerb": "e",
+        "verbPattern": "regular-er",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"e\" (regular-er) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Avant qu'il ne soit trop tard.",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "Avant qu'",
+        "subjunctiveFound": true,
+        "detectedVerb": "soit",
+        "verbPattern": "priority",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"soit\" (priority) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "EXPLETIVE",
+      "expectedClassification": "Expletive"
+    }
+  ],
+  "noExpletiveResults": [
+    {
+      "sentence": "La société dut aussi procéder à l'épuisement des galeries de la mine de Valenciana et y employer hui...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant que",
+        "subjunctiveFound": true,
+        "detectedVerb": "ent",
+        "verbPattern": "regular-er",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"ent\" (regular-er) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "NO_EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Il va falloir beaucoup de temps avant qu'elle aussi révèle son histoire.",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant qu'",
+        "subjunctiveFound": true,
+        "detectedVerb": "e",
+        "verbPattern": "regular-er",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"e\" (regular-er) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "NO_EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Continuant à m'apitoyer sur mon sort en me laissant aller avant que Morphée me kidnappe pour le pays...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant que",
+        "subjunctiveFound": true,
+        "detectedVerb": "e",
+        "verbPattern": "regular-er",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"e\" (regular-er) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "NO_EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Parfois, il y a pas mal de pub avant que le film soit tourné et du coup, les crédits pour les acteur...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant que",
+        "subjunctiveFound": true,
+        "detectedVerb": "soit",
+        "verbPattern": "priority",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"soit\" (priority) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "NO_EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Avant que le système tel qu'il existe soit définitivement enterré, je voudrais revenir sur quelques ...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "Avant que",
+        "subjunctiveFound": true,
+        "detectedVerb": "soit",
+        "verbPattern": "priority",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"soit\" (priority) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "NO_EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Arrête Quaarin avant que tu me fasses pleurer, t'as jamais lu le codex csm ?",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant que",
+        "subjunctiveFound": true,
+        "detectedVerb": "e",
+        "verbPattern": "regular-er",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"e\" (regular-er) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "NO_EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Là, on l'a fait attendre de 14 heures à 22 heures avant que quelqu'un vienne l'examiner, et la docum...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant que",
+        "subjunctiveFound": true,
+        "detectedVerb": "vienne",
+        "verbPattern": "priority",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"vienne\" (priority) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "NO_EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Si vous produisez votre déclaration avant que les guides révisés soient publiés, vous devrez peut-êt...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant que",
+        "subjunctiveFound": true,
+        "detectedVerb": "soient",
+        "verbPattern": "priority",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"soient\" (priority) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "NO_EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Le désir même d'une complète unité dans la foi – qui manque encore entre nous et qui doit être réali...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant que",
+        "subjunctiveFound": true,
+        "detectedVerb": "issions",
+        "verbPattern": "regular-ir",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"issions\" (regular-ir) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "NO_EXPLETIVE",
+      "expectedClassification": "Expletive"
+    },
+    {
+      "sentence": "Plus loin, quelques troubadours racontaient des ballades épiques à des guerriers solitaires avant qu...",
+      "analysis": {
+        "triggerFound": true,
+        "trigger": "avant qu'",
+        "subjunctiveFound": true,
+        "detectedVerb": "es",
+        "verbPattern": "regular-er",
+        "prediction": "Expletive",
+        "confidence": 0.9,
+        "boostApplied": true,
+        "reasoning": "Found \"avant que\" temporal trigger with subjunctive \"es\" (regular-er) - classic expletive pattern",
+        "category": "TEMPORAL",
+        "subcategory": "PREVENTIVE/ANTICIPATORY"
+      },
+      "section": "NO_EXPLETIVE",
+      "expectedClassification": "Expletive"
+    }
+  ]
+}
