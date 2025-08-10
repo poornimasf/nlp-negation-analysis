@@ -166,8 +166,10 @@ export function detectSubjunctiveInClause(clause, triggerInfo) {
   };
 }
 
-export default {
+const unifiedSubjunctiveDetector = {
   detectSubjunctive,
   detectSubjunctiveWithContext,
   detectSubjunctiveInClause
 };
+
+export default unifiedSubjunctiveDetector;

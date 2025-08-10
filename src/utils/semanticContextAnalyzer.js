@@ -888,7 +888,6 @@ function classifyUnknownVerb(verb, sentence) {
   };
   
   // ENHANCEMENT 4: Compound verb handling (strip pronominal prefixes)
-  let baseVerb = normalizedVerb;
   let isPronominal = false;
   
   // Handle pronominal verbs: s'habiller, se rendre

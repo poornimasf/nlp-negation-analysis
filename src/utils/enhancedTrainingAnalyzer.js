@@ -4,7 +4,7 @@
  */
 
 import { normalizeText } from './textProcessing';
-import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS } from './patterns';
+import { TRIGGER_PATTERNS } from './patterns';
 import { analyzeAmbiguityAndNegation } from './ambiguityNegationAnalyzer';
 import { analyzeLogicalNegationContext } from './logicalNegationDetector';
 import { detectSubjunctive } from './unifiedSubjunctiveDetector';
@@ -125,31 +125,6 @@ function extractEnhancedTrigger(text) {
   }
   
   return null;
-}
-
-/**
- * Detect subjunctive mood in text
- */
-function detectSubjunctiveMood(text) {
-  const normalizedText = normalizeText(text.toLowerCase());
-  let bestMatch = null;
-  let highestPriority = 0;
-  
-  for (const [type, pattern] of Object.entries(SUBJUNCTIVE_PATTERNS)) {
-    const match = normalizedText.match(pattern.pattern);
-    if (match && pattern.priority >= highestPriority) {
-      bestMatch = {
-        type,
-        verb: match[0],
-        priority: pattern.priority,
-        position: match.index,
-        confidence: pattern.priority === 3 ? 0.95 : pattern.priority === 2 ? 0.85 : 0.70
-      };
-      highestPriority = pattern.priority;
-    }
-  }
-  
-  return bestMatch;
 }
 
 /**

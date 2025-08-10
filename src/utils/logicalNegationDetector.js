@@ -478,19 +478,6 @@ export function analyzeLogicalNegationContext(text, triggerInfo) {
   };
 }
 
-/**
- * Extract text after a trigger phrase
- * @param {string} text - Full text
- * @param {Object} triggerInfo - Trigger information
- * @returns {string} Text after the trigger
- */
-function extractTextAfterTrigger(text, triggerInfo) {
-  const triggerIndex = text.toLowerCase().indexOf(triggerInfo.trigger.toLowerCase());
-  if (triggerIndex === -1) return text;
-  
-  return text.slice(triggerIndex + triggerInfo.trigger.length).trim();
-}
-
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
   detectLogicalNegation,
