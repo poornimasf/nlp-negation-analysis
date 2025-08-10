@@ -1,6 +1,7 @@
 /**
  * Enhanced training data analyzer with sophisticated linguistic features
  * Integrates avant que analysis, subjunctive detection, and register analysis
+ * Phase 1: Evidence-based scoring system added (not yet integrated)
  */
 
 import { normalizeText } from './textProcessing';
@@ -12,6 +13,134 @@ import { extractTriggerClause, analyzeMultipleNegationInClause } from './clauseB
 import { enhanceAvantQueAnalysisWithClause } from './enhancedAvantQueAnalyzer';
 import { createSurfaceForm } from './surfaceFormGenerator';
 import { analyzeSemanticContext, shouldOverrideToLogicalNegation } from './semanticContextAnalyzer';
+
+/**
+ * Evidence-based scoring system to manage boost complexity
+ * Phase 1: Class definition only - not yet integrated into main logic
+ * This will eventually replace the complex boost system with predictable evidence accumulation
+ */
+class EvidenceAccumulator {
+  constructor() {
+    this.evidence = {
+      forExpletive: [],
+      forNoExpletive: [],
+      neutral: []
+    };
+  }
+  
+  /**
+   * Add evidence for or against expletive classification
+   * @param {string} type - 'forExpletive', 'forNoExpletive', or 'neutral'
+   * @param {string} source - Source of evidence (e.g., 'precision_patterns', 'linguistic_rules')
+   * @param {number} confidence - Confidence level [0,1]
+   * @param {string} reasoning - Human-readable explanation
+   * @param {number} weight - Importance weight (default 1.0)
+   * @param {object} details - Additional details for debugging
+   */
+  addEvidence(type, source, confidence, reasoning, weight = 1.0, details = {}) {
+    if (!['forExpletive', 'forNoExpletive', 'neutral'].includes(type)) {
+      console.warn(`Invalid evidence type: ${type}`);
+      return;
+    }
+    
+    const evidence = {
+      source,
+      confidence: Math.max(0, Math.min(1, confidence)), // Clamp to [0,1]
+      reasoning,
+      weight: Math.max(0, weight), // Ensure positive weight
+      details,
+      timestamp: Date.now()
+    };
+    
+    this.evidence[type].push(evidence);
+    console.log(`📝 Evidence added: ${type} from ${source} (confidence: ${confidence.toFixed(2)}, weight: ${weight.toFixed(1)})`);
+  }
+  
+  /**
+   * Calculate weighted sum for an evidence array
+   * Uses sophisticated weighting that considers both confidence and source reliability
+   */
+  calculateWeightedSum(evidenceArray) {
+    if (evidenceArray.length === 0) return 0;
+    
+    let totalScore = 0;
+    let totalWeight = 0;
+    
+    for (const evidence of evidenceArray) {
+      // Effective weight combines source weight with evidence confidence
+      const effectiveWeight = evidence.weight * evidence.confidence;
+      totalScore += effectiveWeight;
+      totalWeight += evidence.weight;
+    }
+    
+    // Normalize by total weight to prevent accumulation bias
+    return totalWeight > 0 ? totalScore : 0;
+  }
+  
+  /**
+   * Calculate final scores using evidence-based approach
+   * Returns scores that can be compared to current boost system results
+   */
+  calculateFinalScores() {
+    const expletiveScore = this.calculateWeightedSum(this.evidence.forExpletive);
+    const noExpletiveScore = this.calculateWeightedSum(this.evidence.forNoExpletive);
+    
+    console.log('🧮 Evidence-based scoring calculation:', {
+      expletiveEvidence: this.evidence.forExpletive.length,
+      noExpletiveEvidence: this.evidence.forNoExpletive.length,
+      expletiveScore: expletiveScore.toFixed(2),
+      noExpletiveScore: noExpletiveScore.toFixed(2)
+    });
+    
+    return {
+      adjustedExpletive: expletiveScore,
+      adjustedNonExpletive: noExpletiveScore,
+      evidenceBreakdown: this.evidence
+    };
+  }
+  
+  /**
+   * Get summary of evidence for debugging and transparency
+   */
+  getEvidenceSummary() {
+    return {
+      totalEvidence: this.evidence.forExpletive.length + this.evidence.forNoExpletive.length + this.evidence.neutral.length,
+      forExpletive: this.evidence.forExpletive.length,
+      forNoExpletive: this.evidence.forNoExpletive.length,
+      sources: [...new Set([
+        ...this.evidence.forExpletive.map(e => e.source),
+        ...this.evidence.forNoExpletive.map(e => e.source),
+        ...this.evidence.neutral.map(e => e.source)
+      ])]
+    };
+  }
+  
+  /**
+   * Compare evidence-based results with boost system results
+   * Useful for gradual migration and validation
+   */
+  compareWithBoostSystem(boostSystemResults) {
+    const evidenceResults = this.calculateFinalScores();
+    
+    const comparison = {
+      evidenceBased: {
+        expletive: evidenceResults.adjustedExpletive,
+        noExpletive: evidenceResults.adjustedNonExpletive,
+        winner: evidenceResults.adjustedExpletive > evidenceResults.adjustedNonExpletive ? 'Expletive' : 'No Expletive'
+      },
+      boostSystem: {
+        expletive: boostSystemResults.adjustedExpletive,
+        noExpletive: boostSystemResults.adjustedNonExpletive,
+        winner: boostSystemResults.adjustedExpletive > boostSystemResults.adjustedNonExpletive ? 'Expletive' : 'No Expletive'
+      },
+      agreement: (evidenceResults.adjustedExpletive > evidenceResults.adjustedNonExpletive) === 
+                 (boostSystemResults.adjustedExpletive > boostSystemResults.adjustedNonExpletive)
+    };
+    
+    console.log('🔄 Evidence vs Boost System Comparison:', comparison);
+    return comparison;
+  }
+}
 
 // Enhanced trigger patterns with additional constructions
 const ENHANCED_TRIGGER_PATTERNS = {
