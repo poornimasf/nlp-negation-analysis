@@ -627,6 +627,187 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     console.log('⚪ No negation adjustment (negationType: ' + ambiguityNegationAnalysis.negation.negationType + ')');
   }
   
+  // PHASE 2: Evidence collection alongside boost system (for comparison and debugging)
+  console.log('🔍 PHASE 2: Collecting evidence alongside boost system...');
+  
+  // Create evidence accumulator to run in parallel with boost system
+  const evidenceAccumulator = new EvidenceAccumulator();
+  
+  // ENHANCED SUBJUNCTIVE DEBUGGING: Show what was detected
+  console.log('🎯 SUBJUNCTIVE DETECTION ANALYSIS:', {
+    text: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
+    avantQueAnalysis: {
+      isAvantQue: avantQueAnalysis?.isAvantQue,
+      bothConditionsMet: avantQueAnalysis?.bothConditionsMet,
+      subjunctiveMood: {
+        hasSubjunctive: avantQueAnalysis?.subjunctiveMood?.hasSubjunctive,
+        detectedVerb: avantQueAnalysis?.subjunctiveMood?.verb,
+        verbType: avantQueAnalysis?.subjunctiveMood?.type,
+        confidence: avantQueAnalysis?.subjunctiveMood?.confidence
+      },
+      complementClause: {
+        isComplementClause: avantQueAnalysis?.complementClause?.isComplementClause,
+        hasSubjectAfterQue: avantQueAnalysis?.complementClause?.hasSubjectAfterQue,
+        text: avantQueAnalysis?.complementClause?.text
+      }
+    },
+    unifiedSubjunctive: inputSubjunctive ? {
+      hasSubjunctive: inputSubjunctive.hasSubjunctive,
+      detectedForms: inputSubjunctive.detectedForms,
+      confidence: inputSubjunctive.confidence
+    } : null
+  });
+  
+  // Evidence 1: Record training data similarity (baseline)
+  if (enhancedVotes.expletive > 0) {
+    evidenceAccumulator.addEvidence(
+      'forExpletive',
+      'training_similarity',
+      Math.min(enhancedVotes.expletive / 10, 1.0),
+      `Training data similarity suggests expletive (${enhancedVotes.expletive.toFixed(1)} votes)`,
+      1.0,
+      { votes: enhancedVotes.expletive, examples: enhancedExamples.length }
+    );
+  }
+  
+  if (enhancedVotes.nonExpletive > 0) {
+    evidenceAccumulator.addEvidence(
+      'forNoExpletive',
+      'training_similarity',
+      Math.min(enhancedVotes.nonExpletive / 10, 1.0),
+      `Training data similarity suggests no expletive (${enhancedVotes.nonExpletive.toFixed(1)} votes)`,
+      1.0,
+      { votes: enhancedVotes.nonExpletive, examples: enhancedExamples.length }
+    );
+  }
+  
+  // Evidence 2: Record logical negation analysis (precision enhancement)
+  if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.5) {
+    const evidenceType = logicalNegationAnalysis.isLogicalNegation ? 'forNoExpletive' : 'forExpletive';
+    const weight = logicalNegationAnalysis.confidence > 0.7 ? 2.0 : 1.5;
+    
+    evidenceAccumulator.addEvidence(
+      evidenceType,
+      'precision_patterns',
+      logicalNegationAnalysis.confidence,
+      logicalNegationAnalysis.reasoning,
+      weight,
+      { 
+        evidence: logicalNegationAnalysis.evidence,
+        scores: logicalNegationAnalysis.scores,
+        boostApplied: logicalNegationAnalysis.confidence > 0.7 ? 
+          3.0 * logicalNegationAnalysis.confidence : 
+          (logicalNegationAnalysis.confidence > 0.5 ? 1.5 * logicalNegationAnalysis.confidence : 0)
+      }
+    );
+  }
+  
+  // Evidence 3: Record avant que analysis (traditional linguistic rules)
+  if (avantQueAnalysis && avantQueAnalysis.bothConditionsMet) {
+    evidenceAccumulator.addEvidence(
+      'forExpletive',
+      'linguistic_rules',
+      0.85,
+      'Traditional avant que + subjunctive pattern detected',
+      1.8,
+      {
+        trigger: avantQueAnalysis.isAvantQue,
+        subjunctive: avantQueAnalysis.subjunctiveMood?.hasSubjunctive,
+        detectedVerb: avantQueAnalysis.subjunctiveMood?.verb,
+        complementClause: avantQueAnalysis.complementClause?.isComplementClause,
+        boostApplied: 'Decisive boost calculation applied'
+      }
+    );
+  } else if (avantQueAnalysis && avantQueAnalysis.isAvantQue && !avantQueAnalysis.bothConditionsMet) {
+    evidenceAccumulator.addEvidence(
+      'forNoExpletive',
+      'linguistic_rules',
+      0.80,
+      'Avant que trigger present but subjunctive conditions not met',
+      1.5,
+      {
+        trigger: avantQueAnalysis.isAvantQue,
+        subjunctive: avantQueAnalysis.subjunctiveMood?.hasSubjunctive,
+        detectedVerb: avantQueAnalysis.subjunctiveMood?.verb,
+        reason: 'Missing required subjunctive for expletive',
+        penaltyApplied: 'Strong penalty calculation applied'
+      }
+    );
+  }
+  
+  // Evidence 4: Record ambiguity analysis
+  if (ambiguityNegationAnalysis.ambiguity.clarificationNeeded) {
+    evidenceAccumulator.addEvidence(
+      'forExpletive',
+      'ambiguity_analysis',
+      0.60,
+      'Ambiguity detected - clarification needed suggests expletive context',
+      0.8,
+      { clarificationNeeded: true, boostApplied: 0.3 }
+    );
+  } else if (ambiguityNegationAnalysis.ambiguity.hasAmbiguity) {
+    evidenceAccumulator.addEvidence(
+      'forExpletive',
+      'ambiguity_analysis',
+      0.55,
+      'Some ambiguity detected',
+      0.5,
+      { hasAmbiguity: true, boostApplied: 0.1 }
+    );
+  }
+  
+  // Evidence 5: Record negation type analysis
+  if (ambiguityNegationAnalysis.negation.negationType === 'LOGICAL_NEGATION') {
+    evidenceAccumulator.addEvidence(
+      'forNoExpletive',
+      'negation_analysis',
+      0.75,
+      'Logical negation context detected',
+      1.2,
+      { negationType: 'LOGICAL_NEGATION', boostApplied: 0.5 }
+    );
+  } else if (ambiguityNegationAnalysis.negation.negationType === 'EXPLETIVE_NEGATION') {
+    evidenceAccumulator.addEvidence(
+      'forExpletive',
+      'negation_analysis',
+      0.70,
+      'Expletive negation context detected',
+      1.1,
+      { negationType: 'EXPLETIVE_NEGATION', boostApplied: 0.4 }
+    );
+  }
+  
+  // Calculate evidence-based scores (for comparison only - not used in final result)
+  const evidenceResults = evidenceAccumulator.calculateFinalScores();
+  
+  // Compare boost system vs evidence system results
+  const comparison = evidenceAccumulator.compareWithBoostSystem({
+    adjustedExpletive,
+    adjustedNonExpletive
+  });
+  
+  console.log('📊 PHASE 2 BOOST vs EVIDENCE COMPARISON:', {
+    input: text.substring(0, 50) + '...',
+    boostSystem: {
+      expletive: adjustedExpletive.toFixed(2),
+      noExpletive: adjustedNonExpletive.toFixed(2),
+      winner: adjustedExpletive > adjustedNonExpletive ? 'Expletive' : 'No Expletive',
+      confidence: ((adjustedExpletive + adjustedNonExpletive) > 0 ? 
+        Math.max(adjustedExpletive, adjustedNonExpletive) / (adjustedExpletive + adjustedNonExpletive) : 0.5).toFixed(2)
+    },
+    evidenceSystem: {
+      expletive: evidenceResults.adjustedExpletive.toFixed(2),
+      noExpletive: evidenceResults.adjustedNonExpletive.toFixed(2),
+      winner: evidenceResults.adjustedExpletive > evidenceResults.adjustedNonExpletive ? 'Expletive' : 'No Expletive',
+      confidence: ((evidenceResults.adjustedExpletive + evidenceResults.adjustedNonExpletive) > 0 ? 
+        Math.max(evidenceResults.adjustedExpletive, evidenceResults.adjustedNonExpletive) / 
+        (evidenceResults.adjustedExpletive + evidenceResults.adjustedNonExpletive) : 0.5).toFixed(2)
+    },
+    agreement: comparison.agreement,
+    evidenceSources: evidenceAccumulator.getEvidenceSummary().sources
+  });
+  
+  // CRITICAL: Continue with existing boost system logic (no changes to final results)
   const shouldHaveNe = adjustedExpletive > adjustedNonExpletive;
   const confidence = (adjustedExpletive + adjustedNonExpletive) > 0 ? 
     Math.max(adjustedExpletive, adjustedNonExpletive) / (adjustedExpletive + adjustedNonExpletive) :
