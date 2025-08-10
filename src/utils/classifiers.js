@@ -2,6 +2,7 @@ import { normalizeText } from './textProcessing';
 import { classifyWithSVM, trainSVMModel } from './svmClassifier';
 import { TRIGGER_PATTERNS, CONFIDENCE_LEVELS } from './patterns';
 import { analyzeWithEnhancedFeatures } from './enhancedTrainingAnalyzer';
+import { detectLogicalNegation, isHighConfidenceLogicalNegation, isHighConfidenceExpletive } from './logicalNegationDetector';
 
 // Export all main functions
 export { trainSVMModel } from './svmClassifier';
@@ -249,6 +250,38 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
 
   if (!trainingData || !Array.isArray(trainingData) || trainingData.length === 0) {
     throw new Error('No training data available');
+  }
+
+  // PRIORITY 1: High-confidence logical negation detection for "avant que" constructions
+  if (text.includes('avant que')) {
+    const logicalNegationAnalysis = detectLogicalNegation(text);
+    
+    // High Priority: Administrative/procedural + comparative contexts
+    if (isHighConfidenceLogicalNegation(text)) {
+      console.log('High-confidence logical negation detected, bypassing training data analysis');
+      return {
+        matches: [],
+        confidence: Math.min(logicalNegationAnalysis.confidence, 0.95),
+        classification: false, // No expletive negation
+        message: `Logical negation context detected: ${logicalNegationAnalysis.reasoning}`,
+        nePosition: null,
+        originalText: text,
+        context: {
+          triggerType: 'TEMPORAL',
+          trigger: 'avant que',
+          logicalNegationBypass: true,
+          evidence: logicalNegationAnalysis.evidence,
+          scores: logicalNegationAnalysis.scores
+        },
+        logicalNegationAnalysis // Include full analysis for transparency
+      };
+    }
+    
+    // Medium-High Priority: High-confidence expletive contexts
+    if (isHighConfidenceExpletive(text)) {
+      console.log('High-confidence expletive context detected, proceeding with training data analysis');
+      // Let these go through normal training data analysis with boost
+    }
   }
 
   // Extract trigger and find que position
