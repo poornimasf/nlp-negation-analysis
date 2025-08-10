@@ -521,8 +521,10 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   let adjustedNonExpletive = enhancedVotes.nonExpletive;
   
   // NEW: Enhanced logical negation detection as boost system
+  // PHASE 3 READY: Evidence-based scoring can replace this boost system
   const logicalNegationAnalysis = analyzeLogicalNegationContext(text, inputTrigger);
   console.log('🔍 Logical negation analysis:', logicalNegationAnalysis);
+  console.log('🎯 PHASE 3 READY: Evidence-based scoring available to replace boost conflicts');
   
   // Apply logical negation enhancement FIRST (before other boosts)
   if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.7) {
@@ -532,7 +534,8 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
       confidence: logicalNegationAnalysis.confidence,
       evidence: logicalNegationAnalysis.evidence,
       boostAmount: logicalBoost,
-      newNonExpletive: adjustedNonExpletive
+      newNonExpletive: adjustedNonExpletive,
+      phase3Note: 'This boost can be replaced with evidence-based scoring'
     });
   } else if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.5) {
     const logicalBoost = 1.5 * logicalNegationAnalysis.confidence; // Moderate boost
@@ -541,7 +544,8 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
       confidence: logicalNegationAnalysis.confidence,
       evidence: logicalNegationAnalysis.evidence,
       boostAmount: logicalBoost,
-      newNonExpletive: adjustedNonExpletive
+      newNonExpletive: adjustedNonExpletive,
+      phase3Note: 'This boost can be replaced with evidence-based scoring'
     });
   }
   
