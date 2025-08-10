@@ -274,63 +274,7 @@ export function calculateEnhancedSimilarity(text1, text2) {
  * Enhanced training data analysis with linguistic features
  */
 export function analyzeWithEnhancedFeatures(text, trainingData) {
-  console.log('🚨 NUCLEAR BYPASS: Starting analysis for:', text.substring(0, 100));
-  
-  // NUCLEAR OPTION: Check for "avant que" at the very beginning
-  if (text.toLowerCase().includes('avant que')) {
-    console.log('🚨 NUCLEAR BYPASS: avant que detected, checking for logical negation patterns');
-    
-    const normalizedText = text.toLowerCase();
-    const logicalPatterns = [
-      // Action verbs
-      'arrive', 'parte', 'vienne', 'finisse', 'commence', 'disparaisse', 'réunisse', 
-      'intensifie', 'résonne', 'renomme', 'réalise', 'atteigne', 'devienne', 'provoque', 
-      'entraîne', 'empare', 'emparent', 'distingue', 'remette', 'tire', 'tirent',
-      
-      // States
-      'opérationnel', 'ouvert', 'ouverte', 'ouvertes', 'terminé', 'fini', 'résolu', 
-      'réglé', 'corrigé', 'modifié', 'changé', 'prêt', 'convaincu', 'défleuri', 
-      'tracé', 'tracée', 'transféré', 'envoyé', 'informé', 'chargé', 'ajusté', 
-      'remplacé', 'perceptible', 'perceptibles', 'grand', 'grande', 'fait', 'faite', 
-      'pris', 'prise', 'usage', 'possession',
-      
-      // Process words
-      'cessation', 'disparition', 'guerre', 'combat', 'bataille', 'conflit',
-      'service', 'organisation', 'groupe', 'gouvernement', 'administration',
-      'temps', 'moment', 'instant', 'période', 'durée', 'délai', 'heure', 'jour',
-      'histoire', 'récit', 'conte', 'roman', 'livre', 'film', 'personnage',
-      'machine', 'système', 'processus', 'formulaire', 'dossier', 'tribunal',
-      
-      // Common logical indicators
-      'si ', 'au cas où', 'dans le cas où', 'supposons que', 'à condition que',
-      'pourvu que', 'en admettant que', 'à supposer que'
-    ];
-    
-    let foundPattern = null;
-    for (const pattern of logicalPatterns) {
-      if (normalizedText.includes(pattern)) {
-        foundPattern = pattern;
-        break;
-      }
-    }
-    
-    if (foundPattern) {
-      console.log('🚨 NUCLEAR BYPASS: Logical pattern found:', foundPattern);
-      console.log('🚨 NUCLEAR BYPASS: Forcing No Expletive classification');
-      
-      return {
-        classification: 'No Expletive',
-        confidence: 0.85,
-        reasoning: `Nuclear bypass: avant que + logical pattern (${foundPattern})`,
-        evidence: [`Nuclear bypass detected pattern: ${foundPattern}`],
-        nuclearBypassApplied: true,
-        bypassPattern: foundPattern,
-        originalText: text.substring(0, 100)
-      };
-    }
-  }
-
-  console.log('🔍 NUCLEAR BYPASS: No bypass triggered, continuing with normal analysis');
+  console.log('🔍 ENHANCED ANALYSIS: Starting comprehensive analysis for:', text.substring(0, 100));
   
   console.log('🔍 ENHANCED ANALYSIS STARTING for:', text.substring(0, 50) + '...');
   
@@ -352,207 +296,6 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     console.log('📝 Extracted clause:', clauseInfo.clause);
     console.log('📝 Using full text instead:', triggerClause.substring(0, 100) + '...');
     console.log('🔧 Clause info:', clauseInfo);
-  }
-  
-  // CRITICAL: Massively expanded bypass for logical negation patterns
-  if (inputTrigger && inputTrigger.trigger.includes('avant')) {
-    const normalizedText = text.toLowerCase();
-    
-    // Check for completion/achievement contexts that should be logical negation
-    const logicalNegationIndicators = [
-      // Completion states
-      'opérationnel', 'opérationnelle', 'opérationnels', 'opérationnelles',
-      'ouvert', 'ouverte', 'ouvertes', 'ouverts',
-      'terminé', 'terminée', 'terminés', 'terminées',
-      'fini', 'finie', 'finis', 'finies',
-      'résolu', 'résolue', 'résolus', 'résolues',
-      'réglé', 'réglée', 'réglés', 'réglées',
-      'corrigé', 'corrigée', 'corrigés', 'corrigées',
-      'modifié', 'modifiée', 'modifiés', 'modifiées',
-      'changé', 'changée', 'changés', 'changées',
-      'prêt', 'prête', 'prêts', 'prêtes',
-      'convaincu', 'convaincue', 'convaincus', 'convaincues',
-      'défleuri', 'défleurie', 'défleuris', 'défleuries',
-      'tracée', 'tracé', 'tracés', 'tracées',
-      'transféré', 'transférée', 'transférés', 'transférées',
-      'envoyé', 'envoyée', 'envoyés', 'envoyées',
-      'informé', 'informée', 'informés', 'informées',
-      'chargé', 'chargée', 'chargés', 'chargées',
-      'ajusté', 'ajustée', 'ajustés', 'ajustées',
-      'remplacé', 'remplacée', 'remplacés', 'remplacées',
-      
-      // Action completion verbs
-      'arrive', 'arrivent', 'arrivé', 'arrivée', 'arrivés', 'arrivées',
-      'parte', 'partent', 'parti', 'partie', 'partis', 'parties',
-      'vienne', 'viennent', 'venu', 'venue', 'venus', 'venues',
-      'finisse', 'finissent', 'fini', 'finie', 'finis', 'finies',
-      'commence', 'commencent', 'commencé', 'commencée', 'commencés', 'commencées',
-      'disparaisse', 'disparaissent', 'disparu', 'disparue', 'disparus', 'disparues',
-      'réunisse', 'réunissent', 'réuni', 'réunie', 'réunis', 'réunies',
-      'intensifie', 'intensifient', 'intensifié', 'intensifiée', 'intensifiés', 'intensifiées',
-      'résonne', 'résonnent', 'résonné', 'résonnée', 'résonnés', 'résonnées',
-      'renomme', 'renomment', 'renommé', 'renommée', 'renommés', 'renommées',
-      'réalise', 'réalisent', 'réalisé', 'réalisée', 'réalisés', 'réalisées',
-      'atteigne', 'atteignent', 'atteint', 'atteinte', 'atteints', 'atteintes',
-      'devienne', 'deviennent', 'devenu', 'devenue', 'devenus', 'devenues',
-      'provoque', 'provoquent', 'provoqué', 'provoquée', 'provoqués', 'provoquées',
-      'entraîne', 'entraînent', 'entraîné', 'entraînée', 'entraînés', 'entraînées',
-      'cessation', 'cessations',
-      
-      // States and conditions
-      'perceptible', 'perceptibles',
-      'grand', 'grande', 'grands', 'grandes',
-      'assez grand', 'assez grande',
-      'chargé', 'chargée', 'chargés', 'chargées',
-      'fait', 'faite', 'faits', 'faites',
-      'pris', 'prise', 'prises',
-      'usage', 'usages',
-      'possession',
-      
-      // Temporal/process indicators
-      'cessation', 'cessations',
-      'disparition', 'disparitions',
-      'guerre', 'guerres',
-      'combat', 'combats',
-      'bataille', 'batailles',
-      'conflit', 'conflits'
-    ];
-    
-    // Check for conditional contexts
-    const conditionalIndicators = [
-      'si ', 'au cas où', 'dans le cas où', 'supposons que', 'à condition que',
-      'pourvu que', 'en admettant que', 'à supposer que'
-    ];
-    
-    // Check for administrative/process contexts
-    const processIndicators = [
-      'formulaire', 'dossier', 'tribunal', 'validation', 'restriction',
-      'frontière', 'frontières', 'machine', 'système', 'processus',
-      'service', 'organisation', 'groupe', 'équipe', 'gouvernement',
-      'administration', 'autorité', 'autorités', 'commission', 'comité',
-      'programme', 'projet', 'plan', 'construction', 'développement',
-      'recherche', 'étude', 'analyse', 'examen', 'évaluation',
-      'traitement', 'gestion', 'contrôle', 'surveillance', 'supervision'
-    ];
-    
-    // Check for temporal/sequential contexts (often logical negation)
-    const temporalIndicators = [
-      'temps', 'moment', 'instant', 'période', 'durée', 'délai',
-      'heure', 'jour', 'semaine', 'mois', 'année', 'décennie',
-      'longtemps', 'bientôt', 'rapidement', 'lentement',
-      'finalement', 'enfin', 'ensuite', 'puis', 'alors',
-      'maintenant', 'actuellement', 'désormais', 'dorénavant'
-    ];
-    
-    // Check for narrative/story contexts (often logical negation in sequences)
-    const narrativeIndicators = [
-      'histoire', 'récit', 'conte', 'roman', 'livre', 'film',
-      'personnage', 'héros', 'protagoniste', 'acteur', 'auteur',
-      'chapitre', 'page', 'scène', 'épisode', 'partie',
-      'aventure', 'voyage', 'mission', 'quête', 'objectif'
-    ];
-    
-    let hasLogicalContext = false;
-    let evidence = [];
-    let contextStrength = 0;
-    
-    // Check for completion indicators
-    for (const indicator of logicalNegationIndicators) {
-      if (normalizedText.includes(indicator)) {
-        hasLogicalContext = true;
-        evidence.push(`Completion context: ${indicator}`);
-        contextStrength += 2;
-        break;
-      }
-    }
-    
-    // Check for conditional indicators
-    for (const indicator of conditionalIndicators) {
-      if (normalizedText.includes(indicator)) {
-        hasLogicalContext = true;
-        evidence.push(`Conditional context: ${indicator}`);
-        contextStrength += 3;
-        break;
-      }
-    }
-    
-    // Check for process indicators
-    for (const indicator of processIndicators) {
-      if (normalizedText.includes(indicator)) {
-        hasLogicalContext = true;
-        evidence.push(`Process context: ${indicator}`);
-        contextStrength += 1;
-        break;
-      }
-    }
-    
-    // Check for temporal indicators
-    for (const indicator of temporalIndicators) {
-      if (normalizedText.includes(indicator)) {
-        hasLogicalContext = true;
-        evidence.push(`Temporal context: ${indicator}`);
-        contextStrength += 1;
-        break;
-      }
-    }
-    
-    // Check for narrative indicators
-    for (const indicator of narrativeIndicators) {
-      if (normalizedText.includes(indicator)) {
-        hasLogicalContext = true;
-        evidence.push(`Narrative context: ${indicator}`);
-        contextStrength += 1;
-        break;
-      }
-    }
-    
-    // Special case: if no specific indicators but has common logical negation verbs
-    if (!hasLogicalContext) {
-      const commonLogicalVerbs = [
-        's\'emparent', 'emparent', 'empare',
-        'se réunisse', 'réunisse',
-        'se distingue', 'distingue',
-        'se remette', 'remette',
-        'tire', 'tirent',
-        'aient', 'soit', 'soient', 'puisse', 'puissent'
-      ];
-      
-      for (const verb of commonLogicalVerbs) {
-        if (normalizedText.includes(verb)) {
-          hasLogicalContext = true;
-          evidence.push(`Logical negation verb: ${verb}`);
-          contextStrength += 1;
-          break;
-        }
-      }
-    }
-    
-    // Apply bypass if we have any logical context
-    if (hasLogicalContext) {
-      console.log('🚨 MASSIVELY EXPANDED BYPASS: avant que + logical context detected');
-      console.log('🚨 Evidence:', evidence);
-      console.log('🚨 Context strength:', contextStrength);
-      
-      const logicalNegationAnalysis = analyzeLogicalNegationContext(text, inputTrigger);
-      console.log('🔍 Logical negation analysis (massive bypass):', logicalNegationAnalysis);
-      
-      // Very permissive threshold since we have contextual evidence
-      if (logicalNegationAnalysis.isLogicalNegation || evidence.length > 0) {
-        console.log('🚫 LOGICAL NEGATION OVERRIDE (massive bypass): Logical context detected');
-        
-        const confidence = Math.min(0.95, 0.70 + (contextStrength * 0.05) + (evidence.length * 0.03));
-        
-        return {
-          classification: 'No Expletive',
-          confidence: confidence,
-          reasoning: 'Logical negation context detected (massive expanded bypass)',
-          evidence: [...evidence, ...logicalNegationAnalysis.evidence],
-          logicalNegationOverride: true,
-          massiveBypassApplied: true,
-          contextStrength: contextStrength
-        };
-      }
-    }
   }
 
   // Analyze subjunctive within the specific clause
@@ -601,19 +344,26 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
       };
     })
     .filter(example => {
-      // More sophisticated filtering
+      // FIXED: More permissive filtering to prevent "0 similar examples"
       const hasMatchingTrigger = example.trigger1?.category === inputTrigger?.category;
-      const hasReasonableSimilarity = example.similarity > 0.25;
+      const hasReasonableSimilarity = example.similarity > 0.15; // Lowered threshold
       const hasLinguisticMatch = example.features.triggerMatch || 
                                 example.features.subjunctiveMatch || 
                                 example.features.registerMatch;
       
-      return hasMatchingTrigger && (hasReasonableSimilarity || hasLinguisticMatch);
+      // Allow examples with matching trigger OR reasonable similarity OR linguistic match
+      return hasMatchingTrigger || hasReasonableSimilarity || hasLinguisticMatch;
     })
     .sort((a, b) => b.similarity - a.similarity)
-    .slice(0, 8); // Increased to 8 for better analysis
+    .slice(0, 10); // Increased to 10 for better analysis
   
   console.log('📊 Enhanced examples found:', enhancedExamples.length);
+  console.log('📊 Example similarities:', enhancedExamples.map(e => ({ 
+    text: e.text.substring(0, 50), 
+    similarity: e.similarity.toFixed(3),
+    triggerMatch: e.features?.triggerMatch,
+    subjunctiveMatch: e.features?.subjunctiveMatch
+  })));
   
   // Enhanced weighted voting
   const enhancedVotes = enhancedExamples.reduce((acc, example) => {
@@ -641,8 +391,32 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   let adjustedExpletive = enhancedVotes.expletive;
   let adjustedNonExpletive = enhancedVotes.nonExpletive;
   
-  // CRITICAL: Apply avant que analysis boost FIRST (strongest evidence)
-  // Force deployment - ensure adaptive boost overrides training data bias
+  // NEW: Enhanced logical negation detection as boost system
+  const logicalNegationAnalysis = analyzeLogicalNegationContext(text, inputTrigger);
+  console.log('🔍 Logical negation analysis:', logicalNegationAnalysis);
+  
+  // Apply logical negation enhancement FIRST (before other boosts)
+  if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.7) {
+    const logicalBoost = 3.0 * logicalNegationAnalysis.confidence; // Scale boost by confidence
+    adjustedNonExpletive += logicalBoost;
+    console.log('🚫 LOGICAL NEGATION ENHANCEMENT: Strong logical context detected:', {
+      confidence: logicalNegationAnalysis.confidence,
+      evidence: logicalNegationAnalysis.evidence,
+      boostAmount: logicalBoost,
+      newNonExpletive: adjustedNonExpletive
+    });
+  } else if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.5) {
+    const logicalBoost = 1.5 * logicalNegationAnalysis.confidence; // Moderate boost
+    adjustedNonExpletive += logicalBoost;
+    console.log('🔍 LOGICAL NEGATION ENHANCEMENT: Moderate logical context detected:', {
+      confidence: logicalNegationAnalysis.confidence,
+      evidence: logicalNegationAnalysis.evidence,
+      boostAmount: logicalBoost,
+      newNonExpletive: adjustedNonExpletive
+    });
+  }
+  
+  // CRITICAL: Apply avant que analysis boost AFTER logical negation check
   console.log('🔍 Checking avant que boost conditions:', {
     hasAvantQueAnalysis: !!avantQueAnalysis,
     isAvantQue: avantQueAnalysis?.isAvantQue,
@@ -651,23 +425,10 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     subjunctiveMood: avantQueAnalysis?.subjunctiveMood?.hasSubjunctive
   });
   
-  // CRITICAL: Check for logical negation context BEFORE applying avant que boost
-  const logicalNegationAnalysis = analyzeLogicalNegationContext(text, inputTrigger);
-  console.log('🔍 Logical negation analysis:', logicalNegationAnalysis);
-  
   if (avantQueAnalysis && avantQueAnalysis.bothConditionsMet) {
-    // Check if this is actually a logical negation context
-    if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.6) {
-      // REVERSE: This is logical negation, not expletive
-      const beforePenalty = adjustedExpletive;
-      adjustedNonExpletive += 4.0; // Strong boost to logical negation
-      
-      console.log('🚫 LOGICAL NEGATION OVERRIDE: Avant que context detected as logical negation:', {
-        beforePenalty,
-        afterPenalty: adjustedNonExpletive,
-        evidence: logicalNegationAnalysis.evidence,
-        confidence: logicalNegationAnalysis.confidence
-      });
+    // Check if logical negation already applied a strong boost
+    if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.7) {
+      console.log('🔍 AVANT QUE BOOST SKIPPED: Logical negation already applied strong boost');
     } else {
       // DECISIVE BOOST: Ensure linguistic rules always win when both conditions are met
       const beforeBoost = adjustedExpletive;

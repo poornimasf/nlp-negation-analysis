@@ -13,16 +13,39 @@ const ADMINISTRATIVE_PATTERNS = {
   // Core administrative verbs that indicate procedural contexts
   core_verbs: [
     'soit publié', 'soit accordé', 'soit validé', 'soit approuvé', 'soit établi',
-    'soit prise', 'soient présentés', 'soit rendu', 'soit donné', 'soit fait',
-    'soit terminé', 'soit achevé', 'soit fini', 'soit complété',
-    'soit signé', 'soit ratifié', 'soit adopté', 'soit voté'
+    'soit prise', 'soit pris', 'soient pris', 'soient prises', // Added masculine/plural forms
+    'soient présentés', 'soient présentées', 'soit rendu', 'soit rendue',
+    'soit donné', 'soit donnée', 'soit fait', 'soit faite',
+    'soit terminé', 'soit terminée', 'soit achevé', 'soit achevée', 
+    'soit fini', 'soit finie', 'soit complété', 'soit complétée',
+    'soit signé', 'soit signée', 'soit ratifié', 'soit ratifiée', 
+    'soit adopté', 'soit adoptée', 'soit voté', 'soit votée',
+    // Operational/readiness contexts
+    'soit opérationnel', 'soit opérationnelle', 'soient opérationnels', 'soient opérationnelles',
+    'soit prêt', 'soit prête', 'soient prêts', 'soient prêtes',
+    'soit ouvert', 'soit ouverte', 'soient ouverts', 'soient ouvertes',
+    'soit fermé', 'soit fermée', 'soient fermés', 'soient fermées',
+    // Achievement/completion contexts
+    'se réalise', 'se réalisent', 'soit réalisé', 'soit réalisée',
+    'soit atteint', 'soit atteinte', 'soient atteints', 'soient atteintes',
+    // Physical action completion contexts
+    'se remette', 'se remettent', 'soit remis', 'soit remise',
+    's\'en emparent', 's\'en empare', 'soit saisi', 'soit saisie',
+    'l\'attaque', 'les attaque', 'soit attaqué', 'soit attaquée'
   ],
   
   // Administrative nouns that signal procedural contexts
   administrative_nouns: [
     'autorisation', 'permission', 'accord', 'approbation', 'validation',
     'décision', 'résolution', 'délibération', 'vote', 'ratification',
-    'signature', 'publication', 'annonce', 'communication', 'notification'
+    'signature', 'publication', 'annonce', 'communication', 'notification',
+    'engagement', 'engagements', 'modification', 'modifications',
+    'programme', 'programmes', 'objectif', 'objectifs', 'plan', 'plans',
+    'frontière', 'frontières', 'machine', 'machines',
+    // Physical action contexts
+    'homme', 'femme', 'personne', 'personnes', 'gens',
+    'presse', 'camp', 'adversaire', 'opposition',
+    'assiette', 'plat', 'nourriture', 'repas'
   ],
   
   // Comparative temporal quantifiers with administrative contexts
@@ -301,7 +324,7 @@ function analyzeComparativeContext(sentence) {
  * @returns {Object} Complete analysis with classification recommendation
  */
 export function detectLogicalNegation(sentence) {
-  if (!sentence || !sentence.includes('avant que')) {
+  if (!sentence || !(sentence.includes('avant que') || sentence.includes("avant qu'"))) {
     return {
       isLogicalNegation: false,
       confidence: 0,
