@@ -1,6 +1,7 @@
 import { normalizeText } from './textProcessing';
 import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS, CONFIDENCE_LEVELS } from './patterns';
 import { enhanceAvantQueAnalysis } from './avantQueAnalyzer';
+import { analyzeLogicalNegationContext } from './logicalNegationDetector';
 
 class NegationAnalyzer {
   constructor() {
@@ -159,7 +160,24 @@ class NegationAnalyzer {
 
     // Determine classification and confidence using original logic
     if (foundTrigger && subjunctiveInfo.found) {
-      // Expletive case: Has trigger and subjunctive
+      // CRITICAL: Check for logical negation context before classifying as expletive
+      const logicalNegationAnalysis = analyzeLogicalNegationContext(text, { trigger: foundTrigger.trigger });
+      
+      if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.4) {
+        // This is logical negation, not expletive
+        evidence.details.push(`Logical negation detected: ${logicalNegationAnalysis.reasoning}`);
+        evidence.details.push(`Evidence: ${logicalNegationAnalysis.evidence.join(', ')}`);
+        
+        return {
+          type: 'No Expletive',
+          classification: 'No Expletive',
+          confidence: Math.min(0.9, 0.7 + logicalNegationAnalysis.confidence * 0.2),
+          evidence,
+          logicalNegationOverride: true
+        };
+      }
+      
+      // Expletive case: Has trigger and subjunctive (no logical negation detected)
       return {
         type: 'Expletive',
         classification: 'Expletive',  // Add explicit classification

@@ -188,7 +188,7 @@ export const analyzeText = (text) => {
     }
 
     // Even with subjunctive and trigger, expletive ne is optional
-    return {
+    const result = {
         type: 'Expletive',
         confidence: 0.85, // Lower confidence since it's optional
         evidence: {
@@ -200,4 +200,30 @@ export const analyzeText = (text) => {
             note: 'Expletive ne is allowed but optional with this trigger'
         }
     };
+    
+    // PHASE 2: Enhanced subjunctive debugging for rule-based mode
+    console.log('🎯 RULE-BASED SUBJUNCTIVE DETECTION:', {
+        input: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
+        trigger: {
+            found: foundTrigger.name,
+            requiresSubjunctive: foundTrigger.requiresSubjunctive
+        },
+        subjunctiveAnalysis: {
+            hasSubjunctive: complementClause.hasSubjunctive,
+            detectedVerb: complementClause.verbInfo?.verb,
+            verbType: complementClause.verbInfo?.type,
+            isSpecificMatch: complementClause.verbInfo?.isSpecificMatch,
+            position: complementClause.verbInfo?.position
+        },
+        complementClause: {
+            properQueUsage: complementClause.properQueUsage,
+            hasSubjectAfterQue: complementClause.hasSubjectAfterQue,
+            hasCompleteVerbalStructure: complementClause.hasCompleteVerbalStructure,
+            text: complementClause.text
+        },
+        finalClassification: result.type,
+        confidence: result.confidence
+    });
+    
+    return result;
 };

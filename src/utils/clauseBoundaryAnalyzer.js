@@ -204,6 +204,33 @@ function detectSubjunctiveAfterAvantQue(clause) {
   console.log('🔍 After avant que:', `"${afterAvantQue}"`);
   console.log('🔍 After avant que (first 50 chars):', afterAvantQue.substring(0, 50));
   
+  // PHASE 2.5 ENHANCEMENT: Priority check for "soit" patterns (most common issue)
+  // This handles cases like "avant que la machine soit opérationnel" correctly
+  const soitMatch = afterAvantQue.match(/\b(?:[\w\s]+\s+)?soit\b/i);
+  if (soitMatch) {
+    console.log('🎯 PHASE 2.5: Found "soit" pattern - prioritizing as subjunctive verb');
+    console.log('🎯 PHASE 2.5: soit match details:', soitMatch[0]);
+    const result = analyzeVerbForSubjunctive('soit', afterAvantQue);
+    if (result) {
+      console.log('✅ PHASE 2.5: Successfully detected "soit" as subjunctive');
+      return result;
+    }
+  }
+  
+  // PHASE 2.5 ENHANCEMENT: Priority check for other common subjunctive forms
+  const commonSubjunctives = ['aient', 'soient', 'viennent', 'fassent', 'puissent', 'doivent'];
+  for (const subjForm of commonSubjunctives) {
+    const pattern = new RegExp(`\\b${subjForm}\\b`, 'i');
+    if (pattern.test(afterAvantQue)) {
+      console.log(`🎯 PHASE 2.5: Found common subjunctive "${subjForm}" - prioritizing`);
+      const result = analyzeVerbForSubjunctive(subjForm, afterAvantQue);
+      if (result) {
+        console.log(`✅ PHASE 2.5: Successfully detected "${subjForm}" as subjunctive`);
+        return result;
+      }
+    }
+  }
+  
   // FIXED: Specific pattern for "les autres aient" type constructions - ADD WORD BOUNDARIES
   const lesAutresMatch = afterAvantQue.match(/\bles\s+autres\s+(\w+)/i);
   console.log('🔍 Les autres pattern match:', lesAutresMatch);

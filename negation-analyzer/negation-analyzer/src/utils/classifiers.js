@@ -1,6 +1,7 @@
 import { normalizeText } from './textProcessing';
 import { classifyWithSVM, trainSVMModel } from './svmClassifier';
 import { TRIGGER_PATTERNS, CONFIDENCE_LEVELS } from './patterns';
+import { analyzeWithEnhancedFeatures } from './enhancedTrainingAnalyzer';
 
 // Export all main functions
 export { trainSVMModel } from './svmClassifier';
@@ -374,7 +375,201 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
 };
 
 /**
- * Main classification function
+ * Enhanced binary classifier with linguistic features
+ */
+export const classifyWithEnhancedBinaryClassifier = (text, trainingData) => {
+  if (!text) {
+    throw new Error('No text provided');
+  }
+
+  if (!trainingData || !Array.isArray(trainingData) || trainingData.length === 0) {
+    throw new Error('No training data available');
+  }
+
+  // Try enhanced analysis first
+  try {
+    console.log('🔍 Starting enhanced analysis for:', text.substring(0, 50) + '...');
+    
+    // CONSERVATIVE LOGICAL NEGATION CHECK - Only for clear cases
+    if (text.toLowerCase().includes('avant que')) {
+      console.log('🔍 Conservative check: avant que detected, checking for clear logical negation patterns');
+      
+      const normalizedText = text.toLowerCase();
+      
+      // Only very specific logical negation indicators
+      const clearLogicalPatterns = [
+        // Administrative/completion states (high confidence)
+        'opérationnel', 'opérationnelle', 'opérationnels', 'opérationnelles',
+        'terminé', 'terminée', 'terminés', 'terminées',
+        'fini', 'finie', 'finis', 'finies',
+        'résolu', 'résolue', 'résolus', 'résolues',
+        'ajusté', 'ajustée', 'ajustés', 'ajustées',
+        'transféré', 'transférée', 'transférés', 'transférées',
+        
+        // Clear conditional contexts
+        'si ma crp expire avant que',
+        'si le système avant que',
+        'si la machine avant que'
+      ];
+      
+      let foundClearPattern = null;
+      for (const pattern of clearLogicalPatterns) {
+        if (normalizedText.includes(pattern)) {
+          foundClearPattern = pattern;
+          break;
+        }
+      }
+      
+      if (foundClearPattern) {
+        console.log('🎯 CONSERVATIVE BYPASS: Clear logical pattern found:', foundClearPattern);
+        console.log('🎯 CONSERVATIVE BYPASS: Applying No Expletive classification');
+        
+        return {
+          type: 'No Expletive',
+          classification: 'No Expletive',
+          confidence: 0.85,
+          evidence: {
+            trigger: 'avant que',
+            category: 'TEMPORAL',
+            subcategory: 'LOGICAL_OVERRIDE',
+            hasSubjunctive: true,
+            conservativeBypass: true,
+            bypassPattern: foundClearPattern,
+            reasoning: `Conservative bypass: clear logical negation pattern (${foundClearPattern})`
+          },
+          nePosition: null,
+          quePosition: text.toLowerCase().indexOf('que'),
+          analysis: `Conservative bypass detected clear logical negation pattern: ${foundClearPattern}`,
+          reasoning: `This sentence contains "avant que" with a clear logical negation context (${foundClearPattern}), indicating this should be classified as No Expletive.`,
+          bestMatch: {
+            text: `Conservative bypass match for pattern: ${foundClearPattern}`,
+            similarity: 85,
+            classification: 'No Expletive'
+          }
+        };
+      } else {
+        console.log('🔍 Conservative check: No clear logical negation patterns found, proceeding with normal analysis');
+      }
+    }
+    
+    const enhancedResult = analyzeWithEnhancedFeatures(text, trainingData);
+    console.log('✅ Enhanced analysis completed:', {
+      classification: enhancedResult.classification,
+      confidence: enhancedResult.confidence
+    });
+    
+    // Convert enhanced result to expected format
+    const quePosition = findQuePosition(text, enhancedResult.linguisticAnalysis.trigger);
+    
+    // Calculate ne position if needed with vowel context analysis
+    let nePosition = null;
+    let vowelContextInfo = null;
+    if (enhancedResult.classification && quePosition) {
+      const examplesWithNe = enhancedResult.matches.filter(ex => ex.has_expletive_ne && ex.ne_position !== null);
+      if (examplesWithNe.length > 0) {
+        const bestExample = examplesWithNe[0];
+        const exampleQue = findQuePosition(bestExample.text, bestExample.trigger1);
+        if (exampleQue && bestExample.ne_position) {
+          const relativePos = bestExample.ne_position - exampleQue;
+          nePosition = quePosition + relativePos;
+        } else {
+          nePosition = quePosition + 1;
+        }
+      } else {
+        nePosition = quePosition + 1;
+      }
+      
+      // Analyze vowel context for proper surface form
+      if (nePosition && enhancedResult.linguisticAnalysis.vowelContext) {
+        vowelContextInfo = enhancedResult.linguisticAnalysis.vowelContext;
+      } else if (nePosition) {
+        // Import and use vowel context analysis
+        try {
+          const { analyzeVowelContext } = require('./ambiguityNegationAnalyzer');
+          vowelContextInfo = analyzeVowelContext(text, nePosition);
+        } catch (error) {
+          console.warn('Vowel context analysis failed:', error);
+        }
+      }
+    }
+    
+    // Generate enhanced message
+    const triggerInfo = enhancedResult.linguisticAnalysis.trigger;
+    const subjunctiveInfo = enhancedResult.linguisticAnalysis.subjunctive;
+    const registerInfo = enhancedResult.linguisticAnalysis.register;
+    const avantQueInfo = enhancedResult.linguisticAnalysis.avantQueAnalysis;
+    const ambiguityInfo = enhancedResult.linguisticAnalysis.ambiguityAnalysis;
+    const negationInfo = enhancedResult.linguisticAnalysis.negationAnalysis;
+    
+    let message = `Enhanced analysis found ${enhancedResult.matches.length} similar examples. `;
+    message += enhancedResult.classification ? 
+      'Evidence suggests expletive ne was likely' : 
+      'Evidence suggests expletive ne was unlikely';
+    
+    if (triggerInfo) {
+      message += `\nTrigger: "${triggerInfo.trigger}" (${triggerInfo.category})`;
+    }
+    if (subjunctiveInfo) {
+      message += `\nSubjunctive: ${subjunctiveInfo.verb} (${subjunctiveInfo.type}, ${Math.round(subjunctiveInfo.confidence * 100)}% confidence)`;
+    }
+    if (registerInfo && registerInfo.register !== 'NEUTRAL') {
+      message += `\nRegister: ${registerInfo.register} (${Math.round(registerInfo.confidence * 100)}% confidence)`;
+    }
+    if (avantQueInfo && avantQueInfo.isAvantQue) {
+      message += `\nAvant que analysis: ${avantQueInfo.classificationReason}`;
+    }
+    if (ambiguityInfo && ambiguityInfo.hasAmbiguity) {
+      message += `\nAmbiguity: ${ambiguityInfo.clarificationNeeded ? 'High' : 'Moderate'} (${Math.round(ambiguityInfo.confidence * 100)}% confidence)`;
+    }
+    if (negationInfo && negationInfo.hasMultipleNegation) {
+      message += `\nNegation: ${negationInfo.negationType} (${Math.round(negationInfo.confidence * 100)}% confidence)`;
+    }
+    if (vowelContextInfo) {
+      message += `\nSurface form: ${vowelContextInfo.form} (${vowelContextInfo.reason})`;
+    }
+    
+    const finalResult = {
+      matches: enhancedResult.matches,
+      confidence: enhancedResult.confidence,
+      classification: enhancedResult.classification,
+      message,
+      nePosition,
+      originalText: text,
+      context: {
+        triggerType: triggerInfo?.category || null,
+        trigger: triggerInfo?.trigger || null,
+        quePosition,
+        hasSubjunctive: !!subjunctiveInfo,
+        subjunctiveType: subjunctiveInfo?.type || null,
+        register: registerInfo?.register || 'NEUTRAL',
+        registerScore: registerInfo?.score || 0,
+        hasAmbiguity: ambiguityInfo?.hasAmbiguity || false,
+        ambiguityScore: ambiguityInfo?.ambiguityScore || 0,
+        hasMultipleNegation: negationInfo?.hasMultipleNegation || false,
+        negationType: negationInfo?.negationType || 'NONE',
+        vowelContext: vowelContextInfo?.form || 'ne'
+      },
+      enhancedAnalysis: enhancedResult.linguisticAnalysis,
+      weightedVotes: enhancedResult.enhancedVotes
+    };
+    
+    console.log('🎯 Final classifier result being returned:', {
+      classification: finalResult.classification,
+      confidence: finalResult.confidence,
+      message: finalResult.message.substring(0, 100) + '...'
+    });
+    
+    return finalResult;
+    
+  } catch (error) {
+    console.error('Enhanced analysis failed, falling back to standard analysis:', error);
+    // Fall back to original implementation
+    return classifyWithBinaryClassifier(text, trainingData);
+  }
+};
+
+/**
+ * Main classification function with enhanced features
  */
 export const classify = (text, trainingData, mode = 'BINARY') => {
   if (!text) {
@@ -392,6 +587,12 @@ export const classify = (text, trainingData, mode = 'BINARY') => {
       return classifyWithSVM(text, svmModel, trainingData);
     case 'BINARY':
     default:
-      return classifyWithBinaryClassifier(text, trainingData);
+      // Use enhanced classifier for better linguistic analysis
+      try {
+        return classifyWithEnhancedBinaryClassifier(text, trainingData);
+      } catch (error) {
+        console.warn('Enhanced classifier failed, using standard classifier:', error);
+        return classifyWithBinaryClassifier(text, trainingData);
+      }
   }
 };

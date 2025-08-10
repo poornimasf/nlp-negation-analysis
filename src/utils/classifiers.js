@@ -2,6 +2,7 @@ import { normalizeText } from './textProcessing';
 import { classifyWithSVM, trainSVMModel } from './svmClassifier';
 import { TRIGGER_PATTERNS, CONFIDENCE_LEVELS } from './patterns';
 import { analyzeWithEnhancedFeatures } from './enhancedTrainingAnalyzer';
+import { detectLogicalNegation, isHighConfidenceLogicalNegation, isHighConfidenceExpletive } from './logicalNegationDetector';
 
 // Export all main functions
 export { trainSVMModel } from './svmClassifier';
@@ -251,9 +252,88 @@ export const classifyWithBinaryClassifier = (text, trainingData) => {
     throw new Error('No training data available');
   }
 
-  // Extract trigger and find que position
+  // INTEGRATION: Always run enhanced analysis first to get linguistic features
+  console.log('🔍 Running enhanced analysis with linguistic features...');
+  
+  try {
+    const enhancedResult = analyzeWithEnhancedFeatures(text, trainingData);
+    console.log('✅ Enhanced analysis completed:', {
+      classification: enhancedResult.classification,
+      confidence: enhancedResult.confidence,
+      linguisticFeatures: enhancedResult.linguisticAnalysis
+    });
+    
+    // PRIORITY OVERRIDE: Apply logical negation analysis to enhance/override enhanced results
+    if (text.includes('avant que')) {
+      const logicalNegationAnalysis = detectLogicalNegation(text);
+      
+      // High Priority: Administrative/procedural contexts - override if very confident
+      if (isHighConfidenceLogicalNegation(text)) {
+        console.log('🎯 High-confidence logical negation detected - overriding enhanced result');
+        
+        // Preserve linguistic analysis but override classification
+        return {
+          ...enhancedResult,
+          classification: false, // Override to No Expletive
+          confidence: Math.max(enhancedResult.confidence, logicalNegationAnalysis.confidence),
+          message: `${enhancedResult.message} (Overridden by logical negation analysis: ${logicalNegationAnalysis.reasoning})`,
+          context: {
+            ...enhancedResult.context,
+            logicalNegationOverride: true,
+            logicalNegationEvidence: logicalNegationAnalysis.evidence,
+            logicalNegationScores: logicalNegationAnalysis.scores
+          },
+          logicalNegationAnalysis // Include full analysis for transparency
+        };
+      }
+      
+      // Medium-High Priority: High-confidence expletive contexts - boost enhanced result
+      if (isHighConfidenceExpletive(text) && enhancedResult.classification) {
+        console.log('🚀 High-confidence expletive context detected - boosting enhanced result');
+        
+        return {
+          ...enhancedResult,
+          confidence: Math.min(enhancedResult.confidence + 0.1, 0.95),
+          message: `${enhancedResult.message} (Boosted by expletive context analysis)`,
+          context: {
+            ...enhancedResult.context,
+            expletiveContextBoost: true,
+            expletiveEvidence: logicalNegationAnalysis.evidence
+          }
+        };
+      }
+      
+      // Medium Priority: Provide additional context for ambiguous cases
+      if (logicalNegationAnalysis.confidence > 0.3) {
+        console.log('📊 Moderate logical negation evidence - adding context to enhanced result');
+        
+        return {
+          ...enhancedResult,
+          message: `${enhancedResult.message} (Additional context: ${logicalNegationAnalysis.reasoning})`,
+          context: {
+            ...enhancedResult.context,
+            logicalNegationContext: logicalNegationAnalysis.evidence,
+            logicalNegationScores: logicalNegationAnalysis.scores
+          }
+        };
+      }
+    }
+    
+    // Return enhanced result as-is for non-avant-que cases or low-confidence logical analysis
+    return enhancedResult;
+    
+  } catch (error) {
+    console.error('Enhanced analysis failed, falling back to standard analysis:', error);
+    // Fall back to original implementation
+    return classifyWithStandardAnalysis(text, trainingData);
+  }
+};
+
+// Fallback function for when enhanced analysis fails
+function classifyWithStandardAnalysis(text, trainingData) {
+  // Extract trigger and find que position (needed for fallback)
   const inputTrigger = extractTrigger(text);
-  console.log('Input Trigger:', inputTrigger);  // Add debug logging
+  console.log('Fallback - Input Trigger:', inputTrigger);
   const quePosition = findQuePosition(text, inputTrigger);
 
   // Find similar examples
@@ -389,114 +469,98 @@ export const classifyWithEnhancedBinaryClassifier = (text, trainingData) => {
   // Try enhanced analysis first
   try {
     console.log('🔍 Starting enhanced analysis for:', text.substring(0, 50) + '...');
+    
+    // ENHANCED LOGICAL NEGATION CHECK - Using our priority-ordered detection
+    if (text.toLowerCase().includes('avant que')) {
+      console.log('🔍 Enhanced check: avant que detected, running priority-ordered logical negation analysis');
+      
+      const logicalNegationAnalysis = detectLogicalNegation(text);
+      console.log('🔍 Logical negation analysis result:', {
+        isLogicalNegation: logicalNegationAnalysis.isLogicalNegation,
+        confidence: logicalNegationAnalysis.confidence,
+        evidence: logicalNegationAnalysis.evidence
+      });
+      
+      // High Priority: Administrative/procedural contexts - override with enhanced format
+      if (isHighConfidenceLogicalNegation(text)) {
+        console.log('🎯 HIGH PRIORITY OVERRIDE: Administrative/procedural context detected');
+        
+        return {
+          type: 'No Expletive',
+          classification: 'No Expletive',
+          confidence: Math.min(logicalNegationAnalysis.confidence, 0.95),
+          evidence: {
+            trigger: 'avant que',
+            category: 'TEMPORAL',
+            subcategory: 'LOGICAL_OVERRIDE',
+            hasSubjunctive: true, // Will be verified by enhanced analysis
+            logicalNegationOverride: true,
+            overrideReason: logicalNegationAnalysis.reasoning,
+            overrideEvidence: logicalNegationAnalysis.evidence,
+            overrideScores: logicalNegationAnalysis.scores
+          },
+          nePosition: null,
+          quePosition: text.toLowerCase().indexOf('que'),
+          analysis: `High-priority logical negation override: ${logicalNegationAnalysis.reasoning}`,
+          reasoning: `This sentence contains "avant que" with high-confidence logical negation context (${logicalNegationAnalysis.evidence.join(', ')}), indicating this should be classified as No Expletive.`,
+          bestMatch: {
+            text: `Logical negation override: ${logicalNegationAnalysis.reasoning}`,
+            similarity: 90,
+            classification: 'No Expletive'
+          },
+          logicalNegationAnalysis // Include full analysis for transparency
+        };
+      }
+    }
+    
+    // Run full enhanced analysis with linguistic features
     const enhancedResult = analyzeWithEnhancedFeatures(text, trainingData);
     console.log('✅ Enhanced analysis completed:', {
       classification: enhancedResult.classification,
-      confidence: enhancedResult.confidence
+      confidence: enhancedResult.confidence,
+      linguisticFeatures: enhancedResult.linguisticAnalysis
     });
     
-    // Convert enhanced result to expected format
-    const quePosition = findQuePosition(text, enhancedResult.linguisticAnalysis.trigger);
-    
-    // Calculate ne position if needed with vowel context analysis
-    let nePosition = null;
-    let vowelContextInfo = null;
-    if (enhancedResult.classification && quePosition) {
-      const examplesWithNe = enhancedResult.matches.filter(ex => ex.has_expletive_ne && ex.ne_position !== null);
-      if (examplesWithNe.length > 0) {
-        const bestExample = examplesWithNe[0];
-        const exampleQue = findQuePosition(bestExample.text, bestExample.trigger1);
-        if (exampleQue && bestExample.ne_position) {
-          const relativePos = bestExample.ne_position - exampleQue;
-          nePosition = quePosition + relativePos;
-        } else {
-          nePosition = quePosition + 1;
-        }
-      } else {
-        nePosition = quePosition + 1;
+    // PRIORITY ENHANCEMENT: Apply logical negation analysis to enhance results
+    if (text.includes('avant que')) {
+      const logicalNegationAnalysis = detectLogicalNegation(text);
+      
+      // Medium-High Priority: High-confidence expletive contexts - boost enhanced result
+      if (isHighConfidenceExpletive(text) && enhancedResult.classification) {
+        console.log('🚀 EXPLETIVE BOOST: High-confidence expletive context detected');
+        
+        return {
+          ...enhancedResult,
+          confidence: Math.min(enhancedResult.confidence + 0.1, 0.95),
+          analysis: `${enhancedResult.analysis} (Boosted by expletive context analysis)`,
+          reasoning: `${enhancedResult.reasoning} Additionally, high-confidence expletive context detected: ${logicalNegationAnalysis.evidence.join(', ')}.`,
+          evidence: {
+            ...enhancedResult.evidence,
+            expletiveContextBoost: true,
+            expletiveEvidence: logicalNegationAnalysis.evidence
+          }
+        };
       }
       
-      // Analyze vowel context for proper surface form
-      if (nePosition && enhancedResult.linguisticAnalysis.vowelContext) {
-        vowelContextInfo = enhancedResult.linguisticAnalysis.vowelContext;
-      } else if (nePosition) {
-        // Import and use vowel context analysis
-        try {
-          const { analyzeVowelContext } = require('./ambiguityNegationAnalyzer');
-          vowelContextInfo = analyzeVowelContext(text, nePosition);
-        } catch (error) {
-          console.warn('Vowel context analysis failed:', error);
-        }
+      // Medium Priority: Provide additional context for ambiguous cases
+      if (logicalNegationAnalysis.confidence > 0.3) {
+        console.log('📊 CONTEXT ENHANCEMENT: Moderate logical negation evidence detected');
+        
+        return {
+          ...enhancedResult,
+          analysis: `${enhancedResult.analysis} (Enhanced with logical context)`,
+          reasoning: `${enhancedResult.reasoning} Additional context: ${logicalNegationAnalysis.reasoning}.`,
+          evidence: {
+            ...enhancedResult.evidence,
+            logicalNegationContext: logicalNegationAnalysis.evidence,
+            logicalNegationScores: logicalNegationAnalysis.scores
+          }
+        };
       }
     }
     
-    // Generate enhanced message
-    const triggerInfo = enhancedResult.linguisticAnalysis.trigger;
-    const subjunctiveInfo = enhancedResult.linguisticAnalysis.subjunctive;
-    const registerInfo = enhancedResult.linguisticAnalysis.register;
-    const avantQueInfo = enhancedResult.linguisticAnalysis.avantQueAnalysis;
-    const ambiguityInfo = enhancedResult.linguisticAnalysis.ambiguityAnalysis;
-    const negationInfo = enhancedResult.linguisticAnalysis.negationAnalysis;
-    
-    let message = `Enhanced analysis found ${enhancedResult.matches.length} similar examples. `;
-    message += enhancedResult.classification ? 
-      'Evidence suggests expletive ne was likely' : 
-      'Evidence suggests expletive ne was unlikely';
-    
-    if (triggerInfo) {
-      message += `\nTrigger: "${triggerInfo.trigger}" (${triggerInfo.category})`;
-    }
-    if (subjunctiveInfo) {
-      message += `\nSubjunctive: ${subjunctiveInfo.verb} (${subjunctiveInfo.type}, ${Math.round(subjunctiveInfo.confidence * 100)}% confidence)`;
-    }
-    if (registerInfo && registerInfo.register !== 'NEUTRAL') {
-      message += `\nRegister: ${registerInfo.register} (${Math.round(registerInfo.confidence * 100)}% confidence)`;
-    }
-    if (avantQueInfo && avantQueInfo.isAvantQue) {
-      message += `\nAvant que analysis: ${avantQueInfo.classificationReason}`;
-    }
-    if (ambiguityInfo && ambiguityInfo.hasAmbiguity) {
-      message += `\nAmbiguity: ${ambiguityInfo.clarificationNeeded ? 'High' : 'Moderate'} (${Math.round(ambiguityInfo.confidence * 100)}% confidence)`;
-    }
-    if (negationInfo && negationInfo.hasMultipleNegation) {
-      message += `\nNegation: ${negationInfo.negationType} (${Math.round(negationInfo.confidence * 100)}% confidence)`;
-    }
-    if (vowelContextInfo) {
-      message += `\nSurface form: ${vowelContextInfo.form} (${vowelContextInfo.reason})`;
-    }
-    
-    const finalResult = {
-      matches: enhancedResult.matches,
-      confidence: enhancedResult.confidence,
-      classification: enhancedResult.classification,
-      message,
-      nePosition,
-      originalText: text,
-      context: {
-        triggerType: triggerInfo?.category || null,
-        trigger: triggerInfo?.trigger || null,
-        quePosition,
-        hasSubjunctive: !!subjunctiveInfo,
-        subjunctiveType: subjunctiveInfo?.type || null,
-        register: registerInfo?.register || 'NEUTRAL',
-        registerScore: registerInfo?.score || 0,
-        hasAmbiguity: ambiguityInfo?.hasAmbiguity || false,
-        ambiguityScore: ambiguityInfo?.ambiguityScore || 0,
-        hasMultipleNegation: negationInfo?.hasMultipleNegation || false,
-        negationType: negationInfo?.negationType || 'NONE',
-        vowelContext: vowelContextInfo?.form || 'ne'
-      },
-      enhancedAnalysis: enhancedResult.linguisticAnalysis,
-      weightedVotes: enhancedResult.enhancedVotes
-    };
-    
-    console.log('🎯 Final classifier result being returned:', {
-      classification: finalResult.classification,
-      confidence: finalResult.confidence,
-      message: finalResult.message.substring(0, 100) + '...'
-    });
-    
-    return finalResult;
+    // Return enhanced result as-is for non-avant-que cases or low-confidence logical analysis
+    return enhancedResult;
     
   } catch (error) {
     console.error('Enhanced analysis failed, falling back to standard analysis:', error);
