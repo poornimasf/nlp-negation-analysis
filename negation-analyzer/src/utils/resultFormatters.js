@@ -93,9 +93,20 @@ function getPragmaticDescription(factors) {
         'directAddress': 'Speaking directly to someone',
         'imperative': 'Command or instruction',
         'exclamation': 'Exclamation',
-        'complexSyntax': 'Complex sentence structure'
+        'complexSyntax': 'Complex sentence structure',
+        'longSentence': 'Long sentence'
     };
-    return factors.map(factor => descriptions[factor] || factor).join(', ');
+    
+    // Handle both string arrays and object arrays
+    return factors.map(factor => {
+        if (typeof factor === 'string') {
+            return descriptions[factor] || factor;
+        } else if (typeof factor === 'object' && factor.type) {
+            return descriptions[factor.type] || factor.type;
+        } else {
+            return 'Unknown factor';
+        }
+    }).join(', ');
 }
 
 function translateDiscourseInfluence(summary) {
@@ -281,14 +292,15 @@ function getConfidenceDescription(confidence) {
 }
 
 export const formatRuleBasedResult = (analysis) => {
-    const { type, confidence, evidence, enhancedAvantQue, enhanced, semanticAnalysis, reasoning, correctionApplied } = analysis;
+    const { type, confidence, evidence, enhancedAvantQue, enhanced, semanticAnalysis, reasoning, correctionApplied, prediction } = analysis;
     const confidencePercent = Math.round(confidence * 100);
     
     let result = 'Rule-Based Analysis\n';
     result += '-----------------\n\n';
     
-    // Classification and confidence
-    result += `Classification: ${type}\n`;
+    // Classification and confidence - use prediction if available (enhanced analysis), otherwise type
+    const finalClassification = prediction || type;
+    result += `Classification: ${finalClassification}\n`;
     result += `Confidence: ${confidencePercent}%\n\n`;
     
     // Enhanced corpus-driven analysis (NEW)
@@ -335,7 +347,10 @@ export const formatRuleBasedResult = (analysis) => {
             result += 'Logical Negation Check:\n';
             result += `- Strength: ${getLogicalStrengthDescription(semanticAnalysis.logicalAnalysis.level)}\n`;
             if (semanticAnalysis.logicalAnalysis.indicators.length > 0) {
-                result += `- Found Words: "${semanticAnalysis.logicalAnalysis.indicators.join('", "')}"\n`;
+                const indicatorStrings = semanticAnalysis.logicalAnalysis.indicators.map(indicator => 
+                    typeof indicator === 'string' ? indicator : (indicator.word || indicator.type || 'unknown')
+                );
+                result += `- Found Words: "${indicatorStrings.join('", "')}"\n`;
             }
             result += `- Overrides Expletive: ${semanticAnalysis.logicalAnalysis.overridesExpletive ? 'Yes - strong logical negation detected' : 'No'}\n\n`;
         }
@@ -355,7 +370,10 @@ export const formatRuleBasedResult = (analysis) => {
             result += 'Grammar Structure Check:\n';
             result += `- Has Grammar Pattern: ${semanticAnalysis.syntacticAnalysis.hasLicensing ? 'Yes' : 'No'}\n`;
             if (semanticAnalysis.syntacticAnalysis.triggers.length > 0) {
-                result += `- Grammar Patterns: "${semanticAnalysis.syntacticAnalysis.triggers.join('", "')}"\n`;
+                const triggerStrings = semanticAnalysis.syntacticAnalysis.triggers.map(trigger => 
+                    typeof trigger === 'string' ? trigger : (trigger.name || trigger.type || 'unknown')
+                );
+                result += `- Grammar Patterns: "${triggerStrings.join('", "')}"\n`;
             }
             result += `- Important Note: ${translateSyntacticNote(semanticAnalysis.syntacticAnalysis.note)}\n\n`;
         }
