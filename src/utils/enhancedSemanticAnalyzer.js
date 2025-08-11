@@ -883,6 +883,58 @@ class EnhancedSemanticAnalyzer {
         return Math.max(1, Math.min(7, Math.round(score)));
     }
     
+    /**
+     * Generate reasoning explanation for the analysis
+     * Original implementation from commit cbf7c82
+     */
+    generateReasoning(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, conflictAnalysis, semanticBias, discourseAnalysis) {
+        const reasons = [];
+        
+        // Logical analysis
+        if (logicalAnalysis.level !== 'none') {
+            reasons.push(`Logical strength: ${logicalAnalysis.level} (score: ${logicalAnalysis.score.toFixed(1)})`);
+            if (logicalAnalysis.indicators.length > 0) {
+                const indicators = logicalAnalysis.indicators.map(i => i.indicator).join(', ');
+                reasons.push(`Logical indicators: ${indicators}`);
+            }
+        }
+        
+        // Expletive analysis
+        if (expletiveAnalysis.strength !== 'none') {
+            reasons.push(`Expletive context: ${expletiveAnalysis.strength} (score: ${expletiveAnalysis.score.toFixed(1)})`);
+            if (expletiveAnalysis.contexts.length > 0) {
+                const contexts = expletiveAnalysis.contexts.map(c => c.context).join(', ');
+                reasons.push(`Expletive contexts: ${contexts}`);
+            }
+        }
+        
+        // Syntactic analysis
+        if (syntacticAnalysis.hasLicensing) {
+            const triggers = syntacticAnalysis.triggers.map(t => t.trigger).join(', ');
+            reasons.push(`Syntactic licensing: ${triggers} (enables but doesn't require expletive)`);
+        }
+        
+        // DISCOURSE ANALYSIS - NEW!
+        if (discourseAnalysis && discourseAnalysis.summary !== 'Neutral discourse context') {
+            reasons.push(`Discourse: ${discourseAnalysis.summary}`);
+            
+            if (discourseAnalysis.discourseInfluence.strength !== 'weak') {
+                const influence = discourseAnalysis.discourseInfluence;
+                reasons.push(`Discourse influence: ${influence.strength} ${influence.direction} (${influence.totalBias > 0 ? '+' : ''}${influence.totalBias.toFixed(2)})`);
+            }
+        }
+        
+        // Conflict resolution
+        if (conflictAnalysis.hasConflict) {
+            reasons.push(`Conflict resolution: ${conflictAnalysis.resolution.reasoning}`);
+        }
+        
+        // Final bias
+        reasons.push(`Final semantic bias: ${semanticBias.toFixed(2)} (${semanticBias < 0 ? 'favors logical' : 'favors expletive'})`);
+        
+        return reasons.join(' | ');
+    }
+    
 }
 
 export { EnhancedSemanticAnalyzer };
