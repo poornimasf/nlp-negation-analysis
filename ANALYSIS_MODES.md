@@ -1,9 +1,11 @@
 # Analysis Modes
 
 ## Rule-Based Mode
+
 The default mode that uses pattern matching and grammatical rules.
 
 ### Output Format
+
 ```
 Rule-Based Analysis
 -----------------
@@ -21,9 +23,11 @@ Details:
 ```
 
 ## Training Data Mode
+
 Uses example-based learning with similarity matching.
 
 ### Output Format
+
 ```
 Training Data Analysis
 -----------------
@@ -65,6 +69,7 @@ Confidence Breakdown:
 ```
 
 ### Subcategory Explanations
+
 For temporal triggers (avant que):
 
 - SEQUENCE: "Describes pure temporal sequence (common for expletive ne)"
@@ -73,16 +78,20 @@ For temporal triggers (avant que):
 - DEFAULT: "Shows temporal relationship"
 
 ### Register Analysis
+
 Considers various registers that influence ne usage:
+
 - Historical/literary
 - Formal/academic
 - Technical/scientific
 - Colloquial/informal
 
 ## SVM Analysis Mode
+
 Uses Support Vector Machine learning for classification.
 
 ### Output Format
+
 ```
 SVM Analysis
 -----------
@@ -97,9 +106,11 @@ Model Decision:
 ```
 
 ## Hybrid Mode
+
 Combines rule-based analysis with LLM-based classification.
 
 ### Output Format
+
 ```
 Hybrid Analysis
 --------------

@@ -1,12 +1,14 @@
 # Production State Documentation
 
 ## Current System Status (v2.8.1 - August 10, 2025)
+
 - **Version**: 2.8.1
 - **Last Updated**: August 10, 2025
 - **Status**: ✅ Active and Validated
 - **URL**: https://main.d1gx30ivteuneq.amplifyapp.com/
 
 ### 🎯 **VALIDATED PERFORMANCE METRICS**
+
 - **Accuracy**: 100% on "avant que" temporal constructions (10/10 test cases)
 - **Confidence Distribution**: 80% high-confidence (90%), 20% medium-confidence (70%)
 - **Pattern Recognition**: 100% trigger detection rate across diverse sentence structures
@@ -16,17 +18,21 @@
 ### 📊 **REAL-WORLD VALIDATION RESULTS**
 
 #### Test Dataset Performance (August 10, 2025)
+
 **Dataset**: Authentic "avant que" constructions from French text corpus
 **Results**:
+
 - ✅ **10/10 examples correctly classified as Expletive**
 - ✅ **100% accuracy across both WITH and WITHOUT expletive sections**
 - ✅ **Consistent performance regardless of original "ne" presence**
 - ✅ **Robust handling of complex sentence structures**
 
 #### Subjunctive Detection Validation
+
 Successfully detected subjunctive forms:
+
 - ✅ **devienne** (DEVENIR) - "avant que cela devienne utile"
-- ✅ **arrive** (ARRIVER) - "avant que tout cela arrive"  
+- ✅ **arrive** (ARRIVER) - "avant que tout cela arrive"
 - ✅ **grimpe** (GRIMPER) - "avant qu'il grimpe"
 - ✅ **congèle** (CONGELER) - "avant que le froid les congèle"
 - ✅ **finisse** (FINIR) - "avant que ça finisse"
@@ -34,17 +40,20 @@ Successfully detected subjunctive forms:
 - ✅ **soit** (ÊTRE) - "avant qu'une seconde chance lui soit offerte"
 
 #### Evidence-Based Analysis Validation
+
 - ✅ **Trigger Detection**: 100% "avant que" pattern recognition
 - ✅ **Category Classification**: All correctly identified as TEMPORAL
 - ✅ **Boost Logic**: Applied in 8/10 cases with subjunctive evidence
 - ✅ **Transparency**: Clear reasoning chains for all predictions
 
 ## System Overview
+
 The French Negation Type Prediction System is a specialized linguistic analysis platform that predicts whether a French sentence can have expletive negation. The system uses rule-based pattern matching, enhanced linguistic analysis, training data analysis, and comprehensive ambiguity/negation detection to make predictions.
 
 ## System Architecture
 
 ### Component Flow
+
 ```
 SimpleNegationAnalyzer.jsx (Main Production Component)
     ↓
@@ -62,6 +71,7 @@ User Interface Display
 ```
 
 ### Key Components
+
 1. **SimpleNegationAnalyzer.jsx**: Main production component handling user interface and batch processing
 2. **NegationAnalyzer.js**: Core analysis engine with pattern detection and linguistic analysis
 3. **enhancedTrainingAnalyzer.js**: Sophisticated training data analysis with linguistic features
@@ -73,14 +83,15 @@ User Interface Display
 ## Current Features
 
 ### Analysis Modes
+
 1. **Rule-Based Analysis**
    - Binary classification (expletive/non-expletive)
    - Enhanced "avant que" analysis with complement clause and subjunctive detection
    - Expanded trigger coverage including comparatives and conditional constructions
    - Three official triggers:
-     * "peur que" (with variations: "de peur que", "dans la crainte que")
-     * "avant que" (with enhanced linguistic analysis)
-     * "peu s'en faut" (with temporal variations)
+     - "peur que" (with variations: "de peur que", "dans la crainte que")
+     - "avant que" (with enhanced linguistic analysis)
+     - "peu s'en faut" (with temporal variations)
    - Additional triggers: "à moins que", "pourvu que", comparative constructions
    - Subjunctive mood detection with priority-based matching
    - Confidence-based scoring
@@ -109,6 +120,7 @@ User Interface Display
 ### Enhanced Ambiguity and Negation Analysis
 
 #### Ambiguity Avoidance Detection
+
 The system identifies contexts where expletive "ne" serves to clarify meaning:
 
 1. **Temporal Ambiguity**
@@ -132,6 +144,7 @@ The system identifies contexts where expletive "ne" serves to clarify meaning:
    - Impact: +30% expletive likelihood
 
 #### Multiple Negation Analysis
+
 Sophisticated distinction between expletive and logical negation:
 
 1. **Double Negation Detection**
@@ -155,6 +168,7 @@ Sophisticated distinction between expletive and logical negation:
    - Impact: Moderate influence on classification
 
 #### Enhanced Vowel Context Analysis
+
 Proper surface form selection for "ne" vs "n'":
 
 1. **Elision Requirements**
@@ -173,6 +187,7 @@ Proper surface form selection for "ne" vs "n'":
    - Confidence scoring for elision decisions
 
 ### Core Functionality
+
 - **Binary Classification**: Expletive vs Non-expletive
 - **Enhanced Linguistic Analysis**: Comprehensive grammatical structure analysis
 - **Ambiguity Detection**: Identifies contexts requiring clarification
@@ -186,6 +201,7 @@ Proper surface form selection for "ne" vs "n'":
 - **Error Handling**: Graceful degradation with clear messages
 
 ### Results Display
+
 - **Analysis Results**: Binary classification with detailed confidence breakdown
 - **Evidence Details**: Triggers, subjunctive detection, and linguistic factors
 - **Enhanced Avant Que Display**: Complement clause and subjunctive analysis
@@ -199,6 +215,7 @@ Proper surface form selection for "ne" vs "n'":
 - **Clear Feedback**: Detailed reasoning for predictions with comprehensive linguistic explanations
 
 ### Classification Rules
+
 1. **Expletive Requirements**
    - Must have one of the official triggers or expanded trigger patterns
    - For "avant que": Must have complement clause AND subjunctive mood
@@ -225,6 +242,7 @@ Proper surface form selection for "ne" vs "n'":
    - Non-expletive (trigger, missing conditions): 0.60-0.90
 
 ### Training Data Format
+
 ```json
 {
   "examples": [
@@ -242,6 +260,7 @@ Proper surface form selection for "ne" vs "n'":
 ## Technical Architecture
 
 ### Frontend Stack
+
 - **Framework**: React 18.2.0
 - **Build Tool**: React Scripts 5.0.1
 - **Language**: JavaScript (ES6+)
@@ -249,6 +268,7 @@ Proper surface form selection for "ne" vs "n'":
 - **Testing**: Jest with React Testing Library
 
 ### Core Dependencies
+
 ```json
 {
   "react": "^18.2.0",
@@ -260,6 +280,7 @@ Proper surface form selection for "ne" vs "n'":
 ```
 
 ### Development Dependencies
+
 ```json
 {
   "@testing-library/jest-dom": "^5.17.0",
@@ -269,6 +290,7 @@ Proper surface form selection for "ne" vs "n'":
 ```
 
 ### External API Dependencies
+
 1. **Hugging Face Inference API**
    - **Service**: CroissantLLM for hybrid analysis mode
    - **Endpoint**: `https://frwk8k50dyslyiwo.us-east-1.aws.endpoints.huggingface.cloud`
@@ -277,19 +299,22 @@ Proper surface form selection for "ne" vs "n'":
    - **Fallback**: System gracefully degrades to rule-based analysis if unavailable
 
 ### Environment Variables
+
 - **REACT_APP_HF_TOKEN**: Hugging Face API token for CroissantLLM access
   - Required for: Hybrid analysis mode
   - Optional: System works without it (rule-based and training data modes available)
   - Format: Standard Hugging Face token
 
 ### Browser Compatibility
+
 - **Production**: >0.2%, not dead, not op_mini all
 - **Development**: Latest Chrome, Firefox, Safari
 - **Features Used**: ES6+, Fetch API, FileReader API, Web Workers (for large batch processing)
 
 ### Build Configuration
+
 - **Build System**: AWS Amplify with automatic deployment
-- **Build Commands**: 
+- **Build Commands**:
   ```yaml
   preBuild: npm ci
   build: npm run build
@@ -298,12 +323,14 @@ Proper surface form selection for "ne" vs "n'":
 - **Caching**: Node modules cached between builds
 
 ### Data Processing
+
 - **Client-Side Only**: All analysis performed in browser
 - **No Server Dependencies**: Completely serverless architecture
 - **File Processing**: JSON and Excel file parsing with `xlsx` library
 - **Memory Management**: Optimized for large batch processing
 
 ### Performance Considerations
+
 - **Bundle Size**: Optimized with React Scripts build optimization
 - **Code Splitting**: Automatic with React lazy loading
 - **Caching**: Browser caching for static assets
@@ -314,6 +341,7 @@ Proper surface form selection for "ne" vs "n'":
 ## Deployment Information
 
 ### AWS Amplify Configuration
+
 - **App ID**: d1gx30ivteuneq
 - **Region**: us-east-2
 - **Branch**: main
@@ -322,28 +350,33 @@ Proper surface form selection for "ne" vs "n'":
 - **Latest Features**: Ambiguity avoidance and multiple negation detection with enhanced vowel context analysis
 
 ### Build Requirements
+
 - **Node.js**: Compatible with AWS Amplify default (Node 18+)
 - **NPM**: Package management and dependency installation
 - **Build Time**: ~2-3 minutes for full build
 - **Build Size**: ~2MB compressed static assets
 
 ### Deployment Dependencies
+
 - **Git Repository**: GitHub integration for automatic deployment
 - **Build Environment**: AWS Amplify managed build environment
 - **SSL Certificate**: Automatic HTTPS with AWS Certificate Manager
 - **CDN**: AWS CloudFront for global content delivery
 
 ### Runtime Dependencies
+
 - **Required**: None (fully client-side application)
 - **Optional**: Hugging Face API access for enhanced analysis
 - **Browser Requirements**: Modern browsers with ES6+ support
 - **Network**: HTTPS required for security features
 
 ### Environment Variables
+
 - **Build Settings**: Automatic deployment on git push
 - **Domain**: Custom domain with SSL certificate
 
 ### Monitoring
+
 - **CloudWatch**: Performance and error monitoring
 - **Amplify Console**: Deployment status and logs
 - **Error Tracking**: Client-side error reporting
@@ -351,6 +384,7 @@ Proper surface form selection for "ne" vs "n'":
 ## Known Issues and Limitations
 
 ### Current Limitations
+
 1. **Binary Classification**: Only expletive vs non-expletive (by design)
 2. **Enhanced Analysis Scope**: Advanced linguistic analysis currently limited to "avant que" constructions
 3. **Training Data Dependency**: Some analysis modes require user-uploaded training data
@@ -358,6 +392,7 @@ Proper surface form selection for "ne" vs "n'":
 5. **CroissantLLM Dependency**: Hybrid mode requires external API availability
 
 ### Recent Improvements (v2.6.4)
+
 1. **Ambiguity Avoidance Detection**: Comprehensive analysis of contexts where expletive "ne" clarifies meaning
 2. **Multiple Negation Analysis**: Sophisticated distinction between expletive and logical negation
 3. **Enhanced Vowel Context**: Proper "n'" vs "ne" surface form selection with detailed reasoning
@@ -368,6 +403,7 @@ Proper surface form selection for "ne" vs "n'":
 8. **Improved Training Data Analysis**: Sophisticated similarity matching with linguistic feature bonuses
 
 ### Planned Improvements
+
 1. **Extended Enhanced Analysis**: Consider applying linguistic analysis to other trigger types
 2. **Performance Optimization**: Optimize pattern matching for large batch processing
 3. **Additional Export Formats**: Consider PDF or other specialized formats
@@ -376,13 +412,15 @@ Proper surface form selection for "ne" vs "n'":
 ## Security and Privacy
 
 ### Data Handling
+
 - **No Persistence**: All data processed client-side only
 - **Privacy First**: No user data stored or transmitted to servers
 - **Secure Transmission**: HTTPS only for all communications
 - **Content Security**: No storage of user content beyond session
 
 ### External API Security
-- **Hugging Face API**: 
+
+- **Hugging Face API**:
   - Token-based authentication
   - HTTPS-only communication
   - Rate limiting and error handling
@@ -390,18 +428,21 @@ Proper surface form selection for "ne" vs "n'":
 - **No Data Logging**: User inputs not logged by external services
 
 ### Dependency Security
+
 - **Regular Updates**: Dependencies updated monthly for security patches
 - **Vulnerability Scanning**: Automated security scanning via GitHub
 - **Minimal Dependencies**: Only essential packages included
 - **Trusted Sources**: All dependencies from NPM registry
 
 ### Browser Security
+
 - **Content Security Policy**: Implemented via AWS Amplify
 - **CORS Configuration**: Properly configured for API access
 - **XSS Protection**: React's built-in XSS protection
 - **No Eval**: No dynamic code execution
 
 ### Access Control
+
 - **Public Access**: No authentication required
 - **CORS**: Properly configured
 - **Content Security**: No user data storage
@@ -409,12 +450,14 @@ Proper surface form selection for "ne" vs "n'":
 ## Support and Maintenance
 
 ### Regular Maintenance
+
 1. **Dependencies**: Monthly security updates
 2. **Performance**: Weekly monitoring
 3. **Error Logs**: Daily review
 4. **User Feedback**: Continuous improvement
 
 ### Support Channels
+
 - **Documentation**: Repository guides
 - **Issue Tracking**: GitHub issues
 - **Development**: Active maintenance
@@ -422,11 +465,13 @@ Proper surface form selection for "ne" vs "n'":
 ## Development Process
 
 ### Version Control
+
 - **Repository**: GitHub
 - **Branch Strategy**: Main branch only
 - **Deployment**: Automatic via AWS Amplify
 
 ### Code Quality
+
 - **Testing**: Unit tests for core logic
 - **Documentation**: Inline and README docs
 - **Standards**: ESLint and Prettier

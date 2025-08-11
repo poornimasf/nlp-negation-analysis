@@ -7,12 +7,14 @@ The Enhanced Negation Analyzer has been successfully enhanced with comprehensive
 ## 🎯 Research Requirements Met
 
 ### ✅ Training Data Support
+
 - **150 expletive sentences**: System can process sentences with original expletive "ne"
 - **150 non-expletive sentences**: Control group handling implemented
 - **Modified sentence analysis**: Inference from sentences with "ne" removed or never present
 - **Ground truth comparison**: Evaluation against known expletive presence
 
 ### ✅ Expected Data Format
+
 ```csv
 original_text,modified_text,had_expletive_ne,classification,expletive_type
 "J'ai peur qu'il ne vienne pas","J'ai peur qu'il vienne",true,expletive,peur_que
@@ -21,7 +23,9 @@ original_text,modified_text,had_expletive_ne,classification,expletive_type
 ```
 
 ### ✅ Inference Capabilities
+
 The system can now:
+
 1. **Analyze modified sentences** where "ne" has been removed
 2. **Infer original expletive presence** based on linguistic patterns
 3. **Assess sentences that never had "ne"** for expletive context
@@ -30,6 +34,7 @@ The system can now:
 ## 🔬 Core Algorithm Features
 
 ### Multi-Step Analysis Process
+
 1. **Expletive Trigger Detection** (Weight: 4)
    - Comprehensive French verb conjugations: craindre, redouter, douter, éviter, empêcher
    - All "peur que" variations: avoir peur que, par peur que, de peur que
@@ -57,12 +62,14 @@ The system can now:
 ## 🖥️ User Interface Features
 
 ### New "Expletive Inference (Research)" Tab
+
 - **Single Sentence Mode**: Individual analysis with detailed results
 - **Batch Evaluation Mode**: Process multiple sentences with metrics
 - **Research Dataset Upload**: CSV/JSON/Excel file support
 - **Comprehensive Results Display**: Evidence, reasoning, interpretation
 
 ### Research-Specific Outputs
+
 - **Inference Classification**: likely_had_expletive, possibly_had_expletive, unlikely_had_expletive
 - **Likelihood Percentage**: 0-100% confidence score
 - **Supporting Evidence**: Detailed breakdown of linguistic indicators
@@ -73,16 +80,17 @@ The system can now:
 
 Based on testing with the example dataset:
 
-| Test Scenario | Accuracy | Confidence |
-|---------------|----------|------------|
-| "J'ai peur qu'il vienne" (removed 'ne') | 95%+ | High |
-| "Je crains qu'elle soit malade" (removed 'ne') | 95%+ | High |
-| "Il mange du pain" (never had 'ne') | 95%+ | High |
-| Mixed expletive/logical constructions | 80-85% | Medium |
+| Test Scenario                                  | Accuracy | Confidence |
+| ---------------------------------------------- | -------- | ---------- |
+| "J'ai peur qu'il vienne" (removed 'ne')        | 95%+     | High       |
+| "Je crains qu'elle soit malade" (removed 'ne') | 95%+     | High       |
+| "Il mange du pain" (never had 'ne')            | 95%+     | High       |
+| Mixed expletive/logical constructions          | 80-85%   | Medium     |
 
 ## 🧪 Testing Validation
 
 ### Algorithm Testing
+
 - ✅ Core inference logic tested with 4 test cases
 - ✅ All test cases passed with expected results
 - ✅ Pattern recognition working for all expletive triggers
@@ -90,6 +98,7 @@ Based on testing with the example dataset:
 - ✅ Research dataset integration operational
 
 ### Build Validation
+
 - ✅ React application builds successfully
 - ✅ CSS styles implemented for all new components
 - ✅ No critical errors or warnings
@@ -98,11 +107,13 @@ Based on testing with the example dataset:
 ## 📁 Files Modified/Created
 
 ### Core Implementation
+
 - `src/components/EnhancedNegationAnalyzer.jsx` - Added inference algorithm and UI
 - `src/components/NegationAnalyzer.css` - Added comprehensive styling
 - `README.md` - Updated with research methodology documentation
 
 ### Testing & Examples
+
 - `test_inference.js` - Standalone algorithm testing
 - `research_dataset_example.csv` - 50-sentence example dataset
 - `INFERENCE_IMPLEMENTATION_SUMMARY.md` - This summary document
@@ -110,6 +121,7 @@ Based on testing with the example dataset:
 ## 🚀 Ready for Research Use
 
 ### Immediate Capabilities
+
 1. **Upload your 300-sentence dataset** in the specified CSV format
 2. **Test individual sentences** for expletive inference
 3. **Run batch evaluations** with ground truth comparison
@@ -117,6 +129,7 @@ Based on testing with the example dataset:
 5. **Analyze confidence distributions** across your dataset
 
 ### Research Workflow
+
 1. Access the "Expletive Inference (Research)" tab
 2. Upload your research dataset with original/modified pairs
 3. Test the algorithm on individual sentences
@@ -126,6 +139,7 @@ Based on testing with the example dataset:
 ## 🎓 Academic Applications
 
 ### Supported Research Types
+
 - **Expletive Negation Pattern Analysis**: Systematic study of French constructions
 - **Corpus Linguistics**: Large-scale text processing and annotation
 - **Computational Linguistics**: Algorithm evaluation and feature engineering
@@ -133,6 +147,7 @@ Based on testing with the example dataset:
 - **Cross-linguistic Comparison**: Romance language negation patterns
 
 ### Research Output
+
 - **Detailed Inference Reports**: Individual sentence analysis with evidence
 - **Batch Evaluation Metrics**: Accuracy, precision, recall statistics
 - **Confidence Analysis**: Distribution of certainty levels
@@ -142,12 +157,14 @@ Based on testing with the example dataset:
 ## 🔧 Technical Architecture
 
 ### Integration with Existing System
+
 - **Seamless UI Integration**: New tab alongside existing functionality
 - **Shared Training Data**: Leverages existing pattern recognition
 - **AWS Knowledge Base**: Cloud infrastructure for pattern storage
 - **Real-time Processing**: Immediate results with detailed analysis
 
 ### Performance Characteristics
+
 - **Processing Speed**: <500ms per sentence
 - **Memory Efficient**: Optimized pattern matching algorithms
 - **Scalable**: Handles datasets from 10s to 1000s of sentences

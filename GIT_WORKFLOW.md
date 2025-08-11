@@ -5,11 +5,13 @@
 To avoid detached HEAD states and ensure proper git workflow:
 
 1. **Always work on the main branch:**
+
    ```bash
    git checkout main
    ```
 
 2. **Before making changes:**
+
    ```bash
    # Run the workflow script
    ./scripts/git-workflow.sh
@@ -43,16 +45,19 @@ The repository includes several safeguards:
 If you see "detached HEAD" message:
 
 1. **Save your changes:**
+
    ```bash
    git branch temp-branch
    ```
 
 2. **Switch to main:**
+
    ```bash
    git checkout main
    ```
 
 3. **Merge your changes:**
+
    ```bash
    git merge temp-branch
    ```
@@ -81,16 +86,19 @@ If you see "detached HEAD" message:
 If you encounter issues:
 
 1. **Check your HEAD state:**
+
    ```bash
    git status
    ```
 
 2. **View current branch:**
+
    ```bash
    git branch
    ```
 
 3. **Run the workflow script:**
+
    ```bash
    ./scripts/git-workflow.sh
    ```

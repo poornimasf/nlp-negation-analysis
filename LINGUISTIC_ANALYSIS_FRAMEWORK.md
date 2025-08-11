@@ -11,8 +11,9 @@ This document presents a comprehensive computational linguistic framework for di
 French expletive "ne" (also termed "ne explétif" or "ne pléonastique") represents a fascinating case study in the intersection of syntax, semantics, and pragmatics. Unlike logical negation, expletive "ne" carries no semantic negation but serves discourse-pragmatic functions related to speaker stance, register, and emotional context.
 
 **Examples:**
-- Expletive: *J'ai peur qu'il ne vienne* ("I'm afraid he'll come" - ne is expletive)
-- Logical: *J'ai peur qu'il ne vienne pas* ("I'm afraid he won't come" - ne + pas is logical)
+
+- Expletive: _J'ai peur qu'il ne vienne_ ("I'm afraid he'll come" - ne is expletive)
+- Logical: _J'ai peur qu'il ne vienne pas_ ("I'm afraid he won't come" - ne + pas is logical)
 
 ### 1.2 Computational Challenges
 
@@ -31,18 +32,21 @@ Traditional rule-based systems suffer from the "syntactic licensing fallacy" - t
 Classical French grammar identifies several syntactic contexts that "license" expletive "ne":
 
 **Temporal Constructions:**
-- *avant que* + subjunctive
-- *jusqu'à ce que* + subjunctive
-- *en attendant que* + subjunctive
+
+- _avant que_ + subjunctive
+- _jusqu'à ce que_ + subjunctive
+- _en attendant que_ + subjunctive
 
 **Emotional/Evaluative Predicates:**
-- *craindre que*, *avoir peur que*
-- *empêcher que*, *éviter que*
-- *douter que*, *nier que*
+
+- _craindre que_, _avoir peur que_
+- _empêcher que_, _éviter que_
+- _douter que_, _nier que_
 
 **Comparative Constructions:**
-- *plus/moins... que* + subjunctive
-- *autre... que* + subjunctive
+
+- _plus/moins... que_ + subjunctive
+- _autre... que_ + subjunctive
 
 ### 2.2 Limitations of Pure Syntactic Approaches
 
@@ -59,7 +63,7 @@ We propose a four-tier hierarchical decision model:
 ```
 1. LOGICAL ANALYSIS (Priority 1)
    ↓ (if no strong logical indicators)
-2. EXPLETIVE CONTEXT ANALYSIS (Priority 2)  
+2. EXPLETIVE CONTEXT ANALYSIS (Priority 2)
    ↓ (if no strong expletive context)
 3. SYNTACTIC LICENSING (Priority 3)
    ↓ (modulated by)
@@ -71,12 +75,14 @@ We propose a four-tier hierarchical decision model:
 ### 3.1 Data Collection
 
 **Corpus Composition:**
+
 - 1000+ authentic French sentences from literary, journalistic, and conversational sources
 - Balanced representation of registers (formal, informal, literary, technical)
 - Expert annotation by native French linguists
 - Validation through inter-annotator agreement (κ = 0.87)
 
 **Source Distribution:**
+
 - Literary texts: 35% (novels, poetry, essays)
 - Journalistic: 25% (newspapers, magazines)
 - Academic: 20% (scholarly articles, textbooks)
@@ -85,6 +91,7 @@ We propose a four-tier hierarchical decision model:
 ### 3.2 Annotation Schema
 
 Each sentence was annotated for:
+
 - **Target Classification**: Expletive vs. Logical
 - **Syntactic Context**: Licensing constructions present
 - **Semantic Field**: Emotional, temporal, comparative, etc.
@@ -95,17 +102,20 @@ Each sentence was annotated for:
 ### 3.3 Key Corpus Findings
 
 **Finding 1: Syntactic Overcorrection**
+
 - "Avant que + subjunctive" contexts: Only 60% actually use expletive "ne"
 - Traditional systems assuming 100% expletive usage achieve 30% accuracy
 - Context and register are decisive factors
 
 **Finding 2: Discourse Factor Significance**
+
 - Formal register increases expletive probability by +0.20
 - Polite stance increases expletive probability by +0.15
 - Literary register shows highest expletive usage (75%)
 - Conversational register shows lowest expletive usage (25%)
 
 **Finding 3: Semantic Hierarchy**
+
 - Strong logical indicators (pas, jamais, plus) override syntactic licensing
 - Emotional contexts (fear, anxiety) favor expletive usage
 - Temporal uncertainty contexts show mixed patterns
@@ -115,6 +125,7 @@ Each sentence was annotated for:
 ### 4.1 Logical Analysis Module
 
 **Strong Logical Indicators:**
+
 ```python
 LOGICAL_INDICATORS = {
     'standard_negation': ['pas', 'point', 'jamais', 'plus', 'guère'],
@@ -125,12 +136,14 @@ LOGICAL_INDICATORS = {
 ```
 
 **Decision Logic:**
+
 - If strong logical indicators present → Classification: "No Expletive" (Confidence: 90%+)
 - Overrides all other factors (syntactic, discourse)
 
 ### 4.2 Expletive Context Analysis Module
 
 **Expletive-Favoring Contexts:**
+
 ```python
 EXPLETIVE_CONTEXTS = {
     'strong_emotional': {
@@ -155,6 +168,7 @@ EXPLETIVE_CONTEXTS = {
 ### 4.3 Discourse Analysis Module
 
 **Register Classification:**
+
 ```python
 REGISTER_MARKERS = {
     'formal': {
@@ -173,6 +187,7 @@ REGISTER_MARKERS = {
 ```
 
 **Stance Analysis:**
+
 ```python
 STANCE_MARKERS = {
     'polite': {
@@ -197,22 +212,22 @@ def classify_expletive(sentence, semantic_analysis):
     # Priority 1: Logical Override
     if semantic_analysis.logical_score > 0.8:
         return "No Expletive", confidence=0.90
-    
+
     # Priority 2: Strong Expletive Context
     if semantic_analysis.expletive_score > 0.6:
         return "Expletive", confidence=0.85
-    
+
     # Priority 3: Formal Politeness Exception
-    if (semantic_analysis.bias > 0.15 and 
+    if (semantic_analysis.bias > 0.15 and
         is_formal_politeness_context(semantic_analysis)):
         return "Expletive", confidence=0.75
-    
+
     # Priority 4: General Semantic Bias
     if semantic_analysis.bias > 0.30:
         return "Expletive", confidence=semantic_analysis.bias
     elif semantic_analysis.bias < -0.30:
         return "No Expletive", confidence=abs(semantic_analysis.bias)
-    
+
     # Default: Conservative Classification
     return traditional_analysis(sentence), confidence=0.70
 ```
@@ -235,16 +250,19 @@ Where:
 ### 5.2 Confidence Scoring
 
 **High Confidence (85%+):**
+
 - Strong logical indicators present
 - Clear expletive emotional context
 - Unanimous corpus evidence
 
 **Medium Confidence (70-84%):**
+
 - Moderate semantic bias with discourse support
 - Formal politeness contexts
 - Consistent but not unanimous corpus patterns
 
 **Low Confidence (50-69%):**
+
 - Weak or conflicting signals
 - Ambiguous contexts
 - Limited corpus evidence
@@ -254,17 +272,20 @@ Where:
 Based on corpus analysis, discourse factors are weighted as follows:
 
 **Register Weights:**
+
 - Literary: +0.25 (strongest expletive preference)
 - Formal: +0.20 (strong expletive preference)
 - Technical: +0.10 (moderate expletive preference)
 - Informal: -0.10 (slight expletive avoidance)
 
 **Stance Weights:**
+
 - Polite: +0.15 (expletive enhances politeness)
 - Tentative: +0.10 (expletive softens assertion)
 - Assertive: -0.05 (expletive may weaken assertion)
 
 **Pragmatic Weights:**
+
 - Questions: +0.10 (expletive in polite questions)
 - Complex syntax: +0.10 (expletive in sophisticated constructions)
 - Imperatives: -0.10 (expletive rare in commands)
@@ -273,9 +294,10 @@ Based on corpus analysis, discourse factors are weighted as follows:
 
 ### 6.1 Formal Politeness Context
 
-**Sentence:** *"Auriez-vous l'amabilité qu'il vienne avant la réunion?"*
+**Sentence:** _"Auriez-vous l'amabilité qu'il vienne avant la réunion?"_
 
 **Analysis:**
+
 - **Syntactic**: No classic expletive trigger detected
 - **Semantic Bias**: +0.15 (weak expletive tendency)
 - **Discourse Factors**:
@@ -286,6 +308,7 @@ Based on corpus analysis, discourse factors are weighted as follows:
 - **Final Bias**: +0.15 + 0.30 = +0.45
 
 **Decision Logic:**
+
 1. No logical override (no "pas", "jamais", etc.)
 2. Weak expletive context (no fear/anxiety)
 3. **Formal politeness exception triggered** (bias > 0.15 + formal context)
@@ -296,14 +319,16 @@ The formal politeness construction "Auriez-vous l'amabilité" creates a high-reg
 
 ### 6.2 Overcorrection Prevention
 
-**Sentence:** *"Il faut partir avant qu'elle arrive."*
+**Sentence:** _"Il faut partir avant qu'elle arrive."_
 
 **Traditional System (Incorrect):**
+
 - Detects "avant que + subjunctive"
 - Assumes expletive required
 - **Classification**: Expletive (Confidence: 85%)
 
 **Our System (Correct):**
+
 - **Syntactic**: "avant que" licensing detected
 - **Semantic**: No emotional/fear context
 - **Discourse**: Neutral register, assertive stance
@@ -319,16 +344,19 @@ In our corpus, "avant que" constructions without emotional context use expletive
 ### 7.1 Performance Metrics
 
 **Overall Accuracy:**
+
 - Our System: 87% (n=1000)
 - Traditional Rule-Based: 65% (n=1000)
 - Pure Syntactic Licensing: 52% (n=1000)
 
 **By Context Type:**
+
 - Logical Negation Cases: 92% (vs. 30% traditional)
 - Clear Expletive Cases: 89% (vs. 85% traditional)
 - Ambiguous Cases: 78% (vs. 45% traditional)
 
 **By Register:**
+
 - Formal: 91% accuracy
 - Literary: 89% accuracy
 - Conversational: 85% accuracy
@@ -337,6 +365,7 @@ In our corpus, "avant que" constructions without emotional context use expletive
 ### 7.2 Error Analysis
 
 **Remaining Challenges:**
+
 1. **Idiomatic Expressions**: Fixed phrases with non-compositional meaning
 2. **Regional Variations**: Quebec French vs. Metropolitan French differences
 3. **Historical Texts**: Archaic constructions not in modern corpus
@@ -345,12 +374,14 @@ In our corpus, "avant que" constructions without emotional context use expletive
 ### 7.3 Comparative Analysis
 
 **Advantages over Traditional Systems:**
+
 - Eliminates syntactic overcorrection
 - Incorporates discourse pragmatics
 - Handles register variation
 - Provides transparent reasoning
 
 **Limitations:**
+
 - Requires extensive corpus annotation
 - Computationally more complex
 - May over-rely on discourse factors in edge cases
@@ -362,7 +393,7 @@ In our corpus, "avant que" constructions without emotional context use expletive
 Our findings challenge the traditional view of syntactic licensing as deterministic. Instead, we propose:
 
 **Licensing as Enablement, Not Requirement:**
-Syntactic contexts like "avant que + subjunctive" create *potential* for expletive usage but do not mandate it. The actual realization depends on semantic and discourse factors.
+Syntactic contexts like "avant que + subjunctive" create _potential_ for expletive usage but do not mandate it. The actual realization depends on semantic and discourse factors.
 
 ### 8.2 Discourse-Syntax Interface
 
@@ -391,6 +422,7 @@ Our confidence scoring system, based on corpus frequency and inter-annotator agr
 ### 10.1 Cross-Linguistic Extension
 
 The framework could be adapted for similar phenomena in other Romance languages:
+
 - Spanish subjunctive contexts
 - Italian conditional constructions
 - Portuguese infinitive variation
@@ -402,6 +434,7 @@ Historical corpus analysis could reveal how expletive "ne" usage has evolved, in
 ### 10.3 Machine Learning Integration
 
 The rule-based framework could be enhanced with:
+
 - Neural attention mechanisms for discourse factor weighting
 - Transfer learning from related linguistic phenomena
 - Active learning for corpus expansion
@@ -410,21 +443,21 @@ The rule-based framework could be enhanced with:
 
 This corpus-driven computational framework demonstrates that sophisticated linguistic phenomena require multi-factorial analysis integrating syntax, semantics, and pragmatics. The hierarchical decision model successfully addresses the overcorrection problem in traditional rule-based systems while maintaining interpretability and linguistic grounding.
 
-The key insight is that syntactic licensing creates *potential* for expletive usage, but discourse factors determine *actualization*. This finding has implications beyond French negation, suggesting that computational linguistic systems must incorporate pragmatic reasoning to achieve human-level performance on context-sensitive grammatical phenomena.
+The key insight is that syntactic licensing creates _potential_ for expletive usage, but discourse factors determine _actualization_. This finding has implications beyond French negation, suggesting that computational linguistic systems must incorporate pragmatic reasoning to achieve human-level performance on context-sensitive grammatical phenomena.
 
 Our system's success in handling formal politeness contexts like "Auriez-vous l'amabilité qu'il vienne..." demonstrates the importance of register-sensitive grammatical modeling, opening new avenues for sociolinguistically-informed NLP.
 
 ## References
 
-1. Corblin, F. (1996). *Multiple negation processing in natural language*. Linguistics and Philosophy, 20(4), 417-456.
+1. Corblin, F. (1996). _Multiple negation processing in natural language_. Linguistics and Philosophy, 20(4), 417-456.
 
-2. Muller, C. (1991). *La négation en français: syntaxe, sémantique et éléments de comparaison avec les autres langues romanes*. Droz.
+2. Muller, C. (1991). _La négation en français: syntaxe, sémantique et éléments de comparaison avec les autres langues romanes_. Droz.
 
-3. Godard, D. (2004). French negative dependency. In F. Corblin & H. de Swart (Eds.), *Handbook of French Semantics* (pp. 351-389). CSLI Publications.
+3. Godard, D. (2004). French negative dependency. In F. Corblin & H. de Swart (Eds.), _Handbook of French Semantics_ (pp. 351-389). CSLI Publications.
 
-4. Larrivée, P. (2011). The role of pragmatics in grammatical change: The jespersen cycle in French. *Lingua*, 121(6), 1069-1084.
+4. Larrivée, P. (2011). The role of pragmatics in grammatical change: The jespersen cycle in French. _Lingua_, 121(6), 1069-1084.
 
-5. Déprez, V. (2000). Parallel (a)symmetries and the internal structure of negative expressions. *Natural Language & Linguistic Theory*, 18(2), 253-342.
+5. Déprez, V. (2000). Parallel (a)symmetries and the internal structure of negative expressions. _Natural Language & Linguistic Theory_, 18(2), 253-342.
 
 ---
 
