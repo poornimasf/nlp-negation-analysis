@@ -18,6 +18,7 @@ const SimpleNegationAnalyzer = () => {
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
   const [analysisMode, setAnalysisMode] = useState('TRAINING_DATA');
   const [useTrainingEnhancement, setUseTrainingEnhancement] = useState(false);
+  // REMOVED: useCorpusEnhancement - enhanced analysis is now default for rule-based mode
   const [infoBoxExpanded, setInfoBoxExpanded] = useState(false);
   const [trainingData, setTrainingData] = useState({ examples: [] });
   const [error, setError] = useState(null);
@@ -134,7 +135,10 @@ const SimpleNegationAnalyzer = () => {
             await new Promise(resolve => setTimeout(resolve, 1000));
           }
 
-          const analysis = await analyzer.analyzeNegation(sentence);
+          // Always use enhanced analysis for rule-based mode, original for others
+          const analysis = analysisMode === 'RULE_BASED'
+            ? await analyzer.analyzeNegationEnhanced(sentence, analysisMode, trainingData)
+            : await analyzer.analyzeNegation(sentence);
           let formattedResult;
           let classification;
           let proposedSentence = null;

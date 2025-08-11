@@ -2,6 +2,8 @@ import { normalizeText } from './textProcessing';
 import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS, CONFIDENCE_LEVELS } from './patterns';
 import { enhanceAvantQueAnalysis } from './avantQueAnalyzer';
 import { analyzeLogicalNegationContext } from './logicalNegationDetector';
+import { analyzeTextEnhanced } from './ruleBasedAnalyzer';
+import { analyzeWithCorpusInsights } from './enhancedTrainingAnalyzer';
 
 class NegationAnalyzer {
   constructor() {
@@ -88,6 +90,170 @@ class NegationAnalyzer {
     return null;
   }
 
+  /**
+   * Corpus-enhanced negation analysis - addresses overcorrection problem
+   * Uses semantic hierarchy: Logical > Expletive > Syntactic
+   */
+  async analyzeNegationEnhanced(text, analysisMode = 'RULE_BASED', trainingData = null) {
+    console.log('🧠 CORPUS-ENHANCED ANALYSIS:', { text: text.substring(0, 50), mode: analysisMode });
+    
+    try {
+      let result;
+      
+      if (analysisMode === 'RULE_BASED') {
+        console.log('🔧 Using enhanced rule-based analysis...');
+        // Use enhanced rule-based analysis with corpus insights
+        result = analyzeTextEnhanced(text);
+        console.log('📊 Enhanced analysis result:', result);
+        
+        // Add standard fields for compatibility
+        result.mode = 'RULE_BASED_ENHANCED';
+        result.evidence = this.buildEnhancedEvidence(result, text);
+        
+      } else if (analysisMode === 'TRAINING_DATA' && trainingData) {
+        console.log('🔧 Using enhanced training data analysis...');
+        // Use corpus-enhanced training data analysis
+        result = analyzeWithCorpusInsights(text, trainingData);
+        
+        // Add standard fields for compatibility
+        result.mode = 'TRAINING_DATA_ENHANCED';
+        result.evidence = this.buildTrainingEnhancedEvidence(result, text);
+        
+      } else {
+        // Fallback to original analysis
+        console.log('⚠️  Falling back to original analysis - mode:', analysisMode, 'trainingData:', !!trainingData);
+        return await this.analyzeNegation(text);
+      }
+      
+      // Add corpus-specific metadata
+      result.corpusEnhanced = true;
+      result.analysisVersion = '2.0.0';
+      result.overcorrectionAddressed = true;
+      
+      console.log('✅ CORPUS-ENHANCED ANALYSIS COMPLETE:', {
+        prediction: result.prediction,
+        confidence: result.confidence,
+        correctionApplied: result.correctionApplied || 'none'
+      });
+      
+      return result;
+      
+    } catch (error) {
+      console.error('❌ Corpus-enhanced analysis failed:', error);
+      console.log('🔄 Falling back to original analysis due to error');
+      // Fallback to original analysis
+      return await this.analyzeNegation(text);
+    }
+  }
+  
+  /**
+   * Build enhanced evidence for rule-based analysis
+   */
+  buildEnhancedEvidence(result, text) {
+    const evidence = {
+      trigger: null,
+      category: null,
+      hasSubjunctive: false,
+      details: []
+    };
+    
+    // Extract trigger information from semantic analysis
+    if (result.semanticAnalysis?.syntacticAnalysis?.triggers?.length > 0) {
+      const trigger = result.semanticAnalysis.syntacticAnalysis.triggers[0];
+      evidence.trigger = trigger.trigger;
+      evidence.category = trigger.type.toUpperCase();
+      evidence.details.push(`Found trigger "${trigger.trigger}" (${trigger.type})`);
+    }
+    
+    // Add logical analysis details
+    if (result.semanticAnalysis?.logicalAnalysis?.level !== 'none') {
+      const logical = result.semanticAnalysis.logicalAnalysis;
+      evidence.details.push(`Logical strength: ${logical.level} (score: ${logical.score.toFixed(1)})`);
+      if (logical.indicators.length > 0) {
+        evidence.details.push(`Logical indicators: ${logical.indicators.map(i => i.indicator).join(', ')}`);
+      }
+    }
+    
+    // Add expletive context details
+    if (result.semanticAnalysis?.expletiveAnalysis?.strength !== 'none') {
+      const expletive = result.semanticAnalysis.expletiveAnalysis;
+      evidence.details.push(`Expletive context: ${expletive.strength} (score: ${expletive.score.toFixed(1)})`);
+      if (expletive.contexts.length > 0) {
+        evidence.details.push(`Expletive contexts: ${expletive.contexts.map(c => c.context).join(', ')}`);
+      }
+    }
+    
+    // Add correction information
+    if (result.correctionApplied) {
+      evidence.details.push(`Corpus correction: ${result.correctionApplied}`);
+    }
+    
+    // Add corpus insights
+    if (result.corpusInsights?.length > 0) {
+      result.corpusInsights.forEach(insight => {
+        evidence.details.push(`${insight.type}: ${insight.message}`);
+      });
+    }
+    
+    return evidence;
+  }
+  
+  /**
+   * Build enhanced evidence for training data analysis
+   */
+  buildTrainingEnhancedEvidence(result, text) {
+    const evidence = {
+      trigger: null,
+      category: null,
+      hasSubjunctive: false,
+      details: []
+    };
+    
+    // Add training data analysis details
+    if (result.originalReasoning) {
+      evidence.details.push(`Training analysis: ${result.originalReasoning}`);
+    }
+    
+    // Add semantic analysis details
+    if (result.semanticAnalysis) {
+      const semantic = result.semanticAnalysis;
+      
+      if (semantic.logicalAnalysis?.level !== 'none') {
+        evidence.details.push(`Logical strength: ${semantic.logicalAnalysis.level}`);
+      }
+      
+      if (semantic.expletiveAnalysis?.strength !== 'none') {
+        evidence.details.push(`Expletive context: ${semantic.expletiveAnalysis.strength}`);
+      }
+      
+      if (semantic.conflictAnalysis?.hasConflict) {
+        evidence.details.push(`Conflict resolution: ${semantic.conflictAnalysis.resolution.reasoning}`);
+      }
+    }
+    
+    // Add corpus correction information
+    if (result.correctionApplied) {
+      evidence.details.push(`Corpus correction: ${result.correctionApplied}`);
+    }
+    
+    // Add boost information
+    if (result.boostApplied !== undefined) {
+      evidence.details.push(`Training boost: ${result.boostApplied ? 'applied' : 'not applied'}`);
+    }
+    
+    // Add corpus insights
+    if (result.corpusInsights?.length > 0) {
+      result.corpusInsights.forEach(insight => {
+        evidence.details.push(`${insight.type}: ${insight.message}`);
+      });
+    }
+    
+    return evidence;
+  }
+
+  /**
+   * Original analysis method - PRESERVED for backward compatibility
+   */
   async analyzeNegation(text) {
     const normalizedText = normalizeText(text);
     

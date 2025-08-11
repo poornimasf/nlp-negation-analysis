@@ -8,6 +8,7 @@ import { normalizeText } from './textProcessing';
 import { TRIGGER_PATTERNS } from './patterns';
 import { analyzeAmbiguityAndNegation } from './ambiguityNegationAnalyzer';
 import { analyzeLogicalNegationContext } from './logicalNegationDetector';
+import { EnhancedSemanticAnalyzer } from './enhancedSemanticAnalyzer.js';
 import { detectSubjunctive } from './unifiedSubjunctiveDetector';
 import { extractTriggerClause, analyzeMultipleNegationInClause } from './clauseBoundaryAnalyzer';
 import { enhanceAvantQueAnalysisWithClause } from './enhancedAvantQueAnalyzer';
@@ -400,6 +401,217 @@ export function calculateEnhancedSimilarity(text1, text2) {
 }
 
 /**
+ * Corpus-driven enhanced training data analysis
+ * Addresses overcorrection problem using semantic hierarchy: Logical > Expletive > Syntactic
+ */
+export function analyzeWithCorpusInsights(text, trainingData) {
+  console.log('🧠 CORPUS-DRIVEN ANALYSIS: Starting enhanced analysis for:', text.substring(0, 100));
+  
+  const semanticAnalyzer = new EnhancedSemanticAnalyzer();
+  
+  // Step 1: Traditional enhanced analysis
+  const traditionalAnalysis = analyzeWithEnhancedFeatures(text, trainingData);
+  
+  // Step 2: Corpus-driven semantic analysis
+  const semanticAnalysis = semanticAnalyzer.analyzeSemantics(text);
+  
+  // Step 3: Apply corpus insights to training data analysis
+  const corpusEnhancedAnalysis = applyCorpusInsights(traditionalAnalysis, semanticAnalysis, text, trainingData);
+  
+  console.log('🎯 CORPUS ANALYSIS COMPLETE:', {
+    originalPrediction: traditionalAnalysis.prediction,
+    corpusPrediction: corpusEnhancedAnalysis.prediction,
+    correctionApplied: corpusEnhancedAnalysis.correctionApplied || 'none'
+  });
+  
+  return corpusEnhancedAnalysis;
+}
+
+/**
+ * Apply corpus insights to training data analysis
+ */
+function applyCorpusInsights(traditional, semantic, text, trainingData) {
+  const result = {
+    ...traditional,  // Preserve all existing analysis
+    corpusEnhanced: true,
+    semanticAnalysis: semantic,
+    originalPrediction: traditional.prediction,
+    originalConfidence: traditional.confidence,
+    originalReasoning: traditional.reasoning
+  };
+  
+  // CRITICAL: Apply corpus-driven hierarchy
+  
+  // PRIORITY 1: Strong logical indicators override everything (addresses 3/10 problem)
+  if (semantic.logicalAnalysis.overridesExpletive) {
+    result.prediction = 'No Expletive';
+    result.confidence = Math.max(0.90, semantic.classification.confidence);
+    result.reasoning = `CORPUS OVERRIDE - LOGICAL: ${semantic.reasoning}`;
+    result.correctionApplied = 'corpus_logical_override';
+    result.boostApplied = false; // No boost needed - logical evidence is decisive
+    
+    console.log('⚡ LOGICAL OVERRIDE APPLIED:', {
+      logicalStrength: semantic.logicalAnalysis.level,
+      indicators: semantic.logicalAnalysis.indicators.map(i => i.indicator)
+    });
+    
+    return result;
+  }
+  
+  // PRIORITY 2: Handle semantic conflicts using corpus hierarchy
+  if (semantic.conflictAnalysis.hasConflict) {
+    const resolution = semantic.conflictAnalysis.resolution;
+    
+    if (resolution.winner === 'logical') {
+      result.prediction = 'No Expletive';
+      result.confidence = Math.max(0.85, resolution.confidence);
+      result.reasoning = `CORPUS CONFLICT RESOLUTION: ${resolution.reasoning}`;
+      result.correctionApplied = 'corpus_conflict_logical';
+      result.boostApplied = false;
+      
+    } else if (resolution.winner === 'expletive') {
+      result.prediction = 'Expletive';
+      result.confidence = Math.max(0.80, resolution.confidence);
+      result.reasoning = `CORPUS CONFLICT RESOLUTION: ${resolution.reasoning}`;
+      result.correctionApplied = 'corpus_conflict_expletive';
+      // Keep boost if it was applied in traditional analysis
+      
+    } else {
+      // Ambiguous - use traditional but reduce confidence
+      result.confidence = Math.min(result.confidence, 0.65);
+      result.reasoning = `CORPUS AMBIGUOUS: ${semantic.reasoning} | TRAINING: ${traditional.reasoning}`;
+      result.correctionApplied = 'corpus_ambiguous';
+    }
+    
+    console.log('🔄 CONFLICT RESOLUTION APPLIED:', {
+      conflictTypes: semantic.conflictAnalysis.conflictTypes,
+      winner: resolution.winner,
+      confidence: resolution.confidence
+    });
+    
+    return result;
+  }
+  
+  // PRIORITY 3: Strong semantic bias overrides training data bias
+  if (Math.abs(semantic.semanticBias) > 0.4) {
+    if (semantic.semanticBias < -0.4) {
+      // Strong logical bias
+      result.prediction = 'No Expletive';
+      result.confidence = Math.abs(semantic.semanticBias);
+      result.reasoning = `CORPUS SEMANTIC BIAS - LOGICAL: ${semantic.reasoning}`;
+      result.correctionApplied = 'corpus_semantic_logical';
+      result.boostApplied = false;
+      
+    } else {
+      // Strong expletive bias
+      result.prediction = 'Expletive';
+      result.confidence = semantic.semanticBias;
+      result.reasoning = `CORPUS SEMANTIC BIAS - EXPLETIVE: ${semantic.reasoning}`;
+      result.correctionApplied = 'corpus_semantic_expletive';
+      // Enhance boost if it was applied
+      if (result.boostApplied) {
+        result.confidence = Math.min(0.95, result.confidence + 0.1);
+      }
+    }
+    
+    console.log('📊 SEMANTIC BIAS APPLIED:', {
+      bias: semantic.semanticBias,
+      direction: semantic.semanticBias < 0 ? 'logical' : 'expletive'
+    });
+    
+    return result;
+  }
+  
+  // PRIORITY 4: Overcorrection detection and adjustment
+  if (semantic.syntacticAnalysis.hasLicensing && !semantic.expletiveAnalysis.favorsExpletive) {
+    // Potential overcorrection case - reduce confidence in expletive prediction
+    if (result.prediction === 'Expletive') {
+      result.confidence = Math.min(result.confidence, 0.70);
+      result.reasoning = `OVERCORRECTION WARNING: ${semantic.reasoning} | TRAINING: ${traditional.reasoning}`;
+      result.correctionApplied = 'corpus_overcorrection_adjustment';
+      
+      console.log('⚠️  OVERCORRECTION ADJUSTMENT:', {
+        syntacticLicensing: true,
+        expletiveContext: false,
+        adjustedConfidence: result.confidence
+      });
+    }
+  }
+  
+  // PRIORITY 5: Enhance traditional analysis with semantic context
+  if (!result.correctionApplied) {
+    result.reasoning = `CORPUS ENHANCED: ${semantic.reasoning} | TRAINING: ${traditional.reasoning}`;
+    result.correctionApplied = 'corpus_enhancement';
+    
+    // Adjust confidence based on semantic certainty
+    if (semantic.classification.certainty === 'low') {
+      result.confidence = Math.min(result.confidence, 0.75);
+    } else if (semantic.classification.certainty === 'high') {
+      result.confidence = Math.min(0.95, result.confidence + 0.05);
+    }
+  }
+  
+  // Add corpus insights
+  result.corpusInsights = generateTrainingCorpusInsights(traditional, semantic, text, trainingData);
+  
+  return result;
+}
+
+/**
+ * Generate corpus insights specific to training data analysis
+ */
+function generateTrainingCorpusInsights(traditional, semantic, text, trainingData) {
+  const insights = [];
+  
+  // Training data vs corpus conflict
+  if (traditional.prediction !== semantic.classification.prediction) {
+    insights.push({
+      type: 'training_corpus_conflict',
+      message: `Training data suggests ${traditional.prediction}, corpus analysis suggests ${semantic.classification.prediction}`,
+      severity: 'high',
+      resolution: semantic.conflictAnalysis.resolution?.reasoning || 'Corpus analysis takes precedence'
+    });
+  }
+  
+  // Boost vs semantic analysis conflict
+  if (traditional.boostApplied && semantic.logicalAnalysis.overridesExpletive) {
+    insights.push({
+      type: 'boost_logical_conflict',
+      message: 'Training data boost applied but strong logical indicators detected',
+      severity: 'critical',
+      recommendation: 'Logical indicators should override training data bias'
+    });
+  }
+  
+  // Overcorrection in training data
+  if (semantic.syntacticAnalysis.hasLicensing && traditional.prediction === 'Expletive' && !semantic.expletiveAnalysis.favorsExpletive) {
+    insights.push({
+      type: 'training_overcorrection',
+      message: 'Training data may exhibit overcorrection - syntactic licensing without expletive context',
+      severity: 'medium',
+      recommendation: 'Consider semantic context over pure syntactic patterns'
+    });
+  }
+  
+  // Semantic strength vs training confidence mismatch
+  if (semantic.classification.certainty === 'high' && traditional.confidence < 0.7) {
+    insights.push({
+      type: 'semantic_training_mismatch',
+      message: 'High semantic certainty but low training confidence - possible training data gap',
+      severity: 'medium',
+      recommendation: 'Semantic analysis provides stronger evidence'
+    });
+  }
+  
+  return insights;
+}
+
+/**
+ * Import the enhanced semantic analyzer
+ */
+
+/**
+ * Original enhanced training data analysis - PRESERVED for backward compatibility
  * Enhanced training data analysis with linguistic features
  */
 export function analyzeWithEnhancedFeatures(text, trainingData) {
