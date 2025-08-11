@@ -176,6 +176,102 @@ function getResolutionDescription(resolution) {
     return `${winner} chosen based on stronger evidence`;
 }
 
+function explainFinalDecision(analysis, semanticAnalysis) {
+    let explanation = '';
+    const { prediction, confidence, correctionApplied } = analysis;
+    const semanticBias = semanticAnalysis?.semanticBias || 0;
+    const semanticConfidence = semanticAnalysis?.classification?.confidence || 0;
+    const hasLicensing = semanticAnalysis?.syntacticAnalysis?.hasLicensing || false;
+    const logicalOverride = semanticAnalysis?.logicalAnalysis?.overridesExpletive || false;
+    
+    // Explain the decision process step by step
+    explanation += `How we reached "${prediction}":\n\n`;
+    
+    // Step 1: Check for logical override
+    if (logicalOverride) {
+        explanation += `1. ✅ LOGICAL OVERRIDE: Strong logical negation words detected\n`;
+        explanation += `   → Automatic classification: "No Expletive"\n`;
+        explanation += `   → Confidence: High (logical negation takes priority)\n`;
+    } else {
+        explanation += `1. ❌ No strong logical negation detected\n`;
+        explanation += `   → Continue to context analysis...\n`;
+    }
+    
+    // Step 2: Check semantic confidence threshold
+    explanation += `\n2. CONFIDENCE THRESHOLD CHECK:\n`;
+    explanation += `   → Semantic confidence: ${Math.round(semanticConfidence * 100)}%\n`;
+    explanation += `   → Required for expletive: 60%+ confidence\n`;
+    
+    if (semanticConfidence < 0.6) {
+        explanation += `   → ❌ Below threshold - not confident enough for expletive\n`;
+    } else {
+        explanation += `   → ✅ Above threshold - confident enough for expletive\n`;
+    }
+    
+    // Step 3: Check semantic bias strength
+    explanation += `\n3. CONTEXT STRENGTH CHECK:\n`;
+    explanation += `   → Semantic bias: ${semanticBias > 0 ? '+' : ''}${semanticBias.toFixed(2)}\n`;
+    explanation += `   → Required for expletive: +0.30 or higher\n`;
+    
+    if (semanticBias >= 0.3) {
+        explanation += `   → ✅ Strong expletive context detected\n`;
+    } else if (semanticBias > 0) {
+        explanation += `   → ⚠️ Weak expletive context (not strong enough)\n`;
+    } else {
+        explanation += `   → ❌ No expletive context detected\n`;
+    }
+    
+    // Step 4: Check syntactic licensing
+    explanation += `\n4. GRAMMAR PATTERN CHECK:\n`;
+    explanation += `   → Grammar pattern that requires expletive: ${hasLicensing ? 'Yes' : 'No'}\n`;
+    
+    if (!hasLicensing) {
+        explanation += `   → ❌ No strong grammar requirement for expletive\n`;
+    } else {
+        explanation += `   → ✅ Grammar pattern supports expletive usage\n`;
+    }
+    
+    // Step 5: Final decision explanation
+    explanation += `\n5. 🎯 FINAL DECISION:\n`;
+    
+    if (logicalOverride) {
+        explanation += `   → Result: "No Expletive" (logical override)\n`;
+        explanation += `   → Reason: Strong logical negation always takes priority\n`;
+    } else if (semanticConfidence >= 0.6 && semanticBias >= 0.3) {
+        explanation += `   → Result: "Expletive" (confident + strong context)\n`;
+        explanation += `   → Reason: High confidence AND strong expletive context\n`;
+    } else if (semanticBias < -0.3) {
+        explanation += `   → Result: "No Expletive" (strong logical bias)\n`;
+        explanation += `   → Reason: Context strongly suggests logical negation\n`;
+    } else {
+        explanation += `   → Result: "No Expletive" (conservative default)\n`;
+        explanation += `   → Reason: `;
+        
+        const reasons = [];
+        if (semanticConfidence < 0.6) reasons.push('low confidence');
+        if (semanticBias < 0.3) reasons.push('weak expletive context');
+        if (!hasLicensing) reasons.push('no grammar requirement');
+        
+        explanation += reasons.join(' + ');
+        explanation += `\n   → Conservative approach: only classify as expletive when confident\n`;
+    }
+    
+    // Step 6: Confidence explanation
+    explanation += `\n6. 📊 CONFIDENCE CALCULATION:\n`;
+    explanation += `   → Base confidence: ${Math.round(analysis.originalConfidence * 100)}% (traditional grammar)\n`;
+    
+    if (correctionApplied === 'semantic_enhancement') {
+        explanation += `   → Semantic adjustment: Applied context analysis\n`;
+        explanation += `   → Final confidence: ${Math.round(confidence * 100)}%\n`;
+        explanation += `   → Note: Confidence lowered due to uncertainty in context\n`;
+    } else {
+        explanation += `   → Enhancement: ${getEnhancementDescription(correctionApplied)}\n`;
+        explanation += `   → Final confidence: ${Math.round(confidence * 100)}%\n`;
+    }
+    
+    return explanation;
+}
+
 function getConfidenceDescription(confidence) {
     if (confidence > 0.8) return 'very confident';
     if (confidence > 0.6) return 'confident';
@@ -210,13 +306,13 @@ export const formatRuleBasedResult = (analysis) => {
         if (semanticAnalysis.discourseAnalysis) {
             const discourse = semanticAnalysis.discourseAnalysis;
             result += 'French Language Context:\n';
-            if (discourse.register && discourse.register.type !== 'neutral') {
+            if (discourse.register && discourse.register.type && discourse.register.type !== 'neutral') {
                 result += `- Language Style: ${getRegisterDescription(discourse.register.type)} (${getConfidenceDescription(discourse.register.confidence)})\n`;
             }
-            if (discourse.stance && discourse.stance.type !== 'neutral') {
+            if (discourse.stance && discourse.stance.type && discourse.stance.type !== 'neutral') {
                 result += `- Speaker Attitude: ${getStanceDescription(discourse.stance.type)} (${getConfidenceDescription(discourse.stance.confidence)})\n`;
             }
-            if (discourse.pragmatic && discourse.pragmatic.factors.length > 0) {
+            if (discourse.pragmatic && discourse.pragmatic.factors && discourse.pragmatic.factors.length > 0) {
                 result += `- Sentence Type: ${getPragmaticDescription(discourse.pragmatic.factors)}\n`;
             }
             if (discourse.discourseInfluence && discourse.discourseInfluence.summary) {
@@ -262,6 +358,11 @@ export const formatRuleBasedResult = (analysis) => {
             }
             result += `- Important Note: ${translateSyntacticNote(semanticAnalysis.syntacticAnalysis.note)}\n\n`;
         }
+        
+        // Final Decision Logic (NEW - explains the calculation)
+        result += '🎯 Final Decision Logic:\n';
+        result += explainFinalDecision(analysis, semanticAnalysis);
+        result += '\n';
         
         // Conflict Analysis in plain language
         if (semanticAnalysis.conflictAnalysis && semanticAnalysis.conflictAnalysis.hasConflict) {
