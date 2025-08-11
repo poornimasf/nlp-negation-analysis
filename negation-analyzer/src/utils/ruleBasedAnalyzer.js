@@ -233,8 +233,17 @@ function integrateAnalyses(traditional, semantic, text) {
             result.correctionApplied = 'ambiguous_case';
         }
         
+    } else if (semantic.semanticBias > 0.15 && hasFormalPolitenessContext(semantic)) {
+        // Special case: Formal politeness contexts with moderate expletive bias
+        console.log('🎯 DECISION DEBUG: Formal politeness context triggered', semantic.semanticBias);
+        result.prediction = 'Expletive';
+        result.confidence = Math.min(0.75, semantic.semanticBias + 0.2); // Boost confidence for formal contexts
+        result.reasoning = `FORMAL POLITENESS: ${semantic.reasoning} | Formal register + polite stance favors expletive usage`;
+        result.correctionApplied = 'formal_politeness_context';
+        
     } else if (semantic.semanticBias < -0.3) {
         // Strong semantic bias toward logical
+        console.log('🎯 DECISION DEBUG: Strong logical bias (<-0.3)', semantic.semanticBias);
         result.prediction = 'No Expletive';
         result.confidence = Math.abs(semantic.semanticBias);
         result.reasoning = `SEMANTIC BIAS: ${semantic.reasoning}`;
@@ -242,20 +251,19 @@ function integrateAnalyses(traditional, semantic, text) {
         
     } else if (semantic.semanticBias > 0.3) {
         // Strong semantic bias toward expletive
+        console.log('🎯 DECISION DEBUG: Strong semantic bias (>0.3)', semantic.semanticBias);
         result.prediction = 'Expletive';
         result.confidence = semantic.semanticBias;
         result.reasoning = `SEMANTIC BIAS: ${semantic.reasoning}`;
         result.correctionApplied = 'semantic_bias_expletive';
         
-    } else if (semantic.semanticBias > 0.15 && hasFormalPolitenessContext(semantic)) {
-        // Special case: Formal politeness contexts with moderate expletive bias
-        result.prediction = 'Expletive';
-        result.confidence = Math.min(0.75, semantic.semanticBias + 0.2); // Boost confidence for formal contexts
-        result.reasoning = `FORMAL POLITENESS: ${semantic.reasoning} | Formal register + polite stance favors expletive usage`;
-        result.correctionApplied = 'formal_politeness_context';
-        
     } else {
         // No strong semantic bias - use traditional analysis but add semantic context
+        console.log('🎯 DECISION DEBUG: No strong bias - using traditional', {
+            semanticBias: semantic.semanticBias,
+            biasCheck: semantic.semanticBias > 0.15,
+            traditionalPrediction: traditional.type
+        });
         result.reasoning = `TRADITIONAL + SEMANTIC: ${traditional.reasoning || 'Rule-based'} | ${semantic.reasoning}`;
         result.correctionApplied = 'semantic_enhancement';
         
