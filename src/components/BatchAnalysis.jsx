@@ -131,15 +131,15 @@ export const BatchAnalysis = ({
               </thead>
               <tbody>
                 {batchResults.map((result, index) => {
-                  // Extract classification from analysis based on mode
-                  let prediction;
-                  if (analysisMode === 'HYBRID') { // CroissantLLM
-                    const llmMatch = result.label.match(/LLM Classification: (.*?)(?:\n|$)/);
-                    prediction = llmMatch ? llmMatch[1].trim() : 'Uncertain';
-                  } else {
-                    const predictionMatch = result.label.match(/^(Expletive|No Expletive)/);
-                    prediction = predictionMatch ? predictionMatch[1] : 'Uncertain';
-                  }
+                  // Use the classification field directly instead of parsing text
+                  let prediction = result.classification || 'Uncertain';
+                  
+                  console.log('🔍 BATCH DISPLAY DEBUG:', {
+                    id: result.id,
+                    classification: result.classification,
+                    prediction,
+                    text: result.text?.substring(0, 30) + '...'
+                  });
                   
                   return (
                     <tr key={result.id} style={{

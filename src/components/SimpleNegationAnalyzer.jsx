@@ -148,6 +148,12 @@ const SimpleNegationAnalyzer = () => {
               formattedResult = formatRuleBasedResult(analysis);
               // Use the analysis result directly instead of parsing formatted text
               classification = analysis.prediction || analysis.type || 'Unknown';
+              console.log('🔍 BATCH DEBUG - Classification values:', {
+                prediction: analysis.prediction,
+                type: analysis.type,
+                finalClassification: classification,
+                sentence: sentence.substring(0, 50) + '...'
+              });
               // Generate proposed sentence if expletive
               if (classification === 'Expletive' && analysis.evidence?.trigger) {
                 const triggerInfo = {
@@ -239,6 +245,12 @@ const SimpleNegationAnalyzer = () => {
             label: formattedResult,
             classification,
             proposedSentence
+          });
+          
+          console.log('🔍 BATCH DEBUG - Results entry:', {
+            id: index + 1,
+            classification,
+            sentence: sentence.substring(0, 30) + '...'
           });
 
           setBatchResults([...results]);
