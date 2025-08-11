@@ -158,8 +158,9 @@ function integrateAnalyses(traditional, semantic, text) {
         ...traditional,  // Preserve all existing fields
         enhanced: true,
         semanticAnalysis: semantic,
-        originalPrediction: traditional.prediction,
-        originalConfidence: traditional.confidence
+        originalPrediction: traditional.type,  // Fix: use 'type' from traditional analysis
+        originalConfidence: traditional.confidence,
+        prediction: traditional.type  // Fix: initialize prediction from traditional.type
     };
     
     // Apply corpus-driven corrections
