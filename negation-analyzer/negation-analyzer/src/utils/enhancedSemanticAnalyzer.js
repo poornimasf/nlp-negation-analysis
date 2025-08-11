@@ -841,50 +841,46 @@ class EnhancedSemanticAnalyzer {
     
     /**
      * Calculate expletive likelihood on 1-7 Likert scale
-     * 1 = Highly Inappropriate, 7 = Highly Appropriate
+     * Original implementation from commit cbf7c82
      */
     calculateExpletiveLikelihood(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, discourseAnalysis, semanticBias) {
-        let baseScore = 4; // Neutral starting point
+        let score = 4; // Start at neutral (both forms acceptable)
         
-        // Strong logical negation makes expletive highly inappropriate
-        if (logicalAnalysis.overridesExpletive && logicalAnalysis.level === 'strong') {
-            return 1; // Highly inappropriate - logical negation present
+        // Strong logical indicators override everything (1-2 range)
+        if (logicalAnalysis.overridesExpletive) {
+            return logicalAnalysis.level === 'high' ? 1 : 2;
         }
         
-        // Medium logical negation makes expletive somewhat inappropriate  
-        if (logicalAnalysis.level === 'medium') {
-            baseScore = 2; // Somewhat inappropriate
-        } else if (logicalAnalysis.level === 'weak') {
-            baseScore = 3; // Slightly inappropriate
+        // Semantic bias adjustment (-3 to +3)
+        if (semanticBias > 0.4) {
+            score += 2; // Strong expletive context
+        } else if (semanticBias > 0.2) {
+            score += 1; // Moderate expletive context
+        } else if (semanticBias < -0.2) {
+            score -= 1; // Moderate logical tendency
+        } else if (semanticBias < -0.4) {
+            score -= 2; // Strong logical tendency
         }
         
-        // Strong expletive context makes it highly appropriate
-        if (expletiveAnalysis.strength === 'strong') {
-            baseScore = Math.max(baseScore, 6); // Likely appropriate
-        } else if (expletiveAnalysis.strength === 'medium') {
-            baseScore = Math.max(baseScore, 5); // Somewhat likely
+        // Discourse factor adjustments
+        if (discourseAnalysis.discourseInfluence) {
+            const influence = discourseAnalysis.discourseInfluence;
+            if (influence.strength === 'strong') {
+                score += influence.direction === 'expletive' ? 1 : -1;
+            } else if (influence.strength === 'medium') {
+                score += influence.direction === 'expletive' ? 0.5 : -0.5;
+            }
         }
         
-        // Syntactic licensing enables but doesn't require
+        // Syntactic licensing provides baseline opportunity
         if (syntacticAnalysis.hasLicensing) {
-            baseScore = Math.max(baseScore, 4); // At least neutral
-        }
-        
-        // Discourse factors adjustment
-        if (discourseAnalysis && discourseAnalysis.discourseInfluence) {
-            const discourseBonus = discourseAnalysis.discourseInfluence.totalBias * 2; // Scale to 1-7
-            baseScore += discourseBonus;
-        }
-        
-        // Semantic bias adjustment
-        if (semanticBias > 0.3) {
-            baseScore += 1; // Strong expletive bias
-        } else if (semanticBias < -0.3) {
-            baseScore -= 1; // Strong logical bias
+            // Already accounted for in baseline score of 4
+        } else {
+            score -= 1; // No syntactic licensing makes expletive less likely
         }
         
         // Ensure score stays within 1-7 range
-        return Math.max(1, Math.min(7, Math.round(baseScore)));
+        return Math.max(1, Math.min(7, Math.round(score)));
     }
     
 }
