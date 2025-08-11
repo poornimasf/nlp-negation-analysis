@@ -16,136 +16,47 @@ export const exportToXLSX = (results, mode) => {
     }
   };
 
-  // Format data for export
+  // Format data to exactly match UI table columns ONLY
   const data = results.map(result => {
-    // Extract evidence from the label
-    const triggerMatch = result.label.match(/Trigger: "(.*?)"/i) || 
-                        result.label.match(/Found: "(.*?)"/i);
-    const trigger = triggerMatch?.[1] || '';
-    
-    const confidenceMatch = result.label.match(/Confidence: (\d+)%/i);
-    const confidence = confidenceMatch?.[1] || '';
-    
-    const nePositionMatch = result.label.match(/NE Position: (\d+)/i) || 
-                           result.label.match(/Suggested position: (\d+)/i);
-    const nePosition = nePositionMatch?.[1] || '';
-
-    const detailsMatch = result.label.match(/Details:\n(.*?)(?=\n\n|$)/s);
-    const details = detailsMatch?.[1]?.replace(/^[•○◆▫▪◇-]\s*/gm, '') || '';
-
-    // Base data exactly matching table structure
-    const baseData = {
+    const exportData = {
       'Original Sentence': result.text,
-      'Analysis': result.label, // The detailed analysis text from the table
+      'Analysis': result.label,
       'Prediction': result.classification,
     };
 
-    // Add Likelihood column only for rule-based mode (matches table behavior)
+    // Add Likelihood column only for rule-based mode (matches UI behavior exactly)
     if (mode === 'RULE_BASED' && result.likelihood) {
-      baseData['Likelihood'] = `${result.likelihood}/7 (${getLikelihoodDescription(result.likelihood)})`;
+      exportData['Likelihood'] = `${result.likelihood}/7 (${getLikelihoodDescription(result.likelihood)})`;
     }
 
-    // Add mode-specific columns (additional analysis data not in table)
-    switch (mode) {
-      case 'TRAINING_DATA':
-        return {
-          ...baseData,
-          'Confidence': confidence + '%',
-          'Has Expletive Ne': result.classification === 'Expletive' ? 'Yes' : 'No',
-          'Ne Position': nePosition,
-          'Trigger': trigger,
-          'Similar Examples': details.split('\n').filter(line => line.includes('Example:')).join('; '),
-          'Evidence': details.split('\n').filter(line => !line.includes('Example:')).join('; '),
-          'Proposed Sentence': result.proposedSentence || ''
-        };
-
-      case 'RULE_BASED':
-        return {
-          ...baseData,
-          'Confidence': confidence + '%',
-          'Trigger': trigger,
-          'Trigger Category': result.label.match(/Category: (.*?)(?:\n|$)/i)?.[1] || '',
-          'Has Subjunctive': result.label.includes('subjunctive found') ? 'Yes' : 'No',
-          'Ne Position': nePosition,
-          'Surface Form': result.surfaceForm || 'No change suggested',
-          'Evidence': details,
-          'Proposed Sentence': result.proposedSentence || ''
-        };
-
-      case 'HYBRID':
-        const llmAnalysis = result.label.match(/Analysis:\n(.*?)(?=\n\n|$)/s)?.[1] || '';
-        const reasoning = result.label.match(/Reasoning:\n(.*?)(?=\n\n|$)/s)?.[1] || '';
-        return {
-          ...baseData,
-          'Confidence': confidence + '%',
-          'Trigger': trigger,
-          'LLM Analysis': llmAnalysis.replace(/\n/g, ' '),
-          'Reasoning': reasoning.replace(/\n/g, ' '),
-          'Ne Position': nePosition,
-          'Surface Form': result.surfaceForm || 'No change suggested',
-          'Evidence': details,
-          'Proposed Sentence': result.proposedSentence || ''
-        };
-
-      default:
-        return {
-          ...baseData,
-          'Analysis Details': details,
-          'Ne Position': nePosition,
-          'Proposed Sentence': result.proposedSentence || ''
-        };
-    }
+    return exportData;
   });
 
   // Create workbook and worksheet
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.json_to_sheet(data);
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(data);
 
-  // Set column widths based on mode
-  const baseWidths = [
-    { wch: 50 },  // Input Text
-    { wch: 15 },  // Classification
-    { wch: 10 },  // Confidence
-    { wch: 20 }   // Trigger
+  // Set column widths for better readability
+  const columnWidths = [
+    { wch: 50 }, // Original Sentence
+    { wch: 80 }, // Analysis
+    { wch: 15 }, // Prediction
   ];
 
-  const modeSpecificWidths = {
-    'TRAINING_DATA': [
-      { wch: 15 },  // Has Expletive Ne
-      { wch: 10 },  // Ne Position
-      { wch: 50 },  // Similar Examples
-      { wch: 50 },  // Evidence
-      { wch: 50 }   // Proposed Sentence
-    ],
-    'RULE_BASED': [
-      { wch: 20 },  // Trigger Category
-      { wch: 15 },  // Has Subjunctive
-      { wch: 10 },  // Ne Position
-      { wch: 50 },  // Evidence
-      { wch: 50 }   // Proposed Sentence
-    ],
-    'HYBRID': [
-      { wch: 50 },  // LLM Analysis
-      { wch: 50 },  // Reasoning
-      { wch: 10 },  // Ne Position
-      { wch: 50 },  // Evidence
-      { wch: 50 }   // Proposed Sentence
-    ]
-  };
+  // Add Likelihood column width if present
+  if (mode === 'RULE_BASED') {
+    columnWidths.push({ wch: 25 }); // Likelihood
+  }
 
-  ws['!cols'] = [...baseWidths, ...(modeSpecificWidths[mode] || [
-    { wch: 50 },  // Analysis Details
-    { wch: 10 },  // Ne Position
-    { wch: 50 }   // Proposed Sentence
-  ])];
+  worksheet['!cols'] = columnWidths;
 
   // Add worksheet to workbook
-  XLSX.utils.book_append_sheet(wb, ws, 'Analysis Results');
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Analysis Results');
 
-  // Generate filename with timestamp and mode
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  const filename = `negation-analysis-${mode.toLowerCase()}-${timestamp}.xlsx`;
+  // Generate filename with timestamp
+  const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+  const filename = `french-negation-analysis-${mode.toLowerCase()}-${timestamp}.xlsx`;
 
-  // Save file
-  XLSX.writeFile(wb, filename);
+  // Download the file
+  XLSX.writeFile(workbook, filename);
 };
