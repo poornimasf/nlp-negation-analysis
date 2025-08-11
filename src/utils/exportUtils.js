@@ -33,23 +33,27 @@ export const exportToXLSX = (results, mode) => {
     const detailsMatch = result.label.match(/Details:\n(.*?)(?=\n\n|$)/s);
     const details = detailsMatch?.[1]?.replace(/^[•○◆▫▪◇-]\s*/gm, '') || '';
 
-    // Base data matching table structure
+    // Base data exactly matching table structure
     const baseData = {
       'Original Sentence': result.text,
+      'Analysis': result.label, // The detailed analysis text from the table
       'Prediction': result.classification,
-      'Likelihood': result.likelihood ? `${result.likelihood}/7 (${getLikelihoodDescription(result.likelihood)})` : 'N/A',
-      'Confidence': confidence + '%',
-      'Trigger': trigger,
-      'Surface Form': result.surfaceForm || 'No change suggested' // NEW: Add surface form
     };
 
-    // Add mode-specific columns
+    // Add Likelihood column only for rule-based mode (matches table behavior)
+    if (mode === 'RULE_BASED' && result.likelihood) {
+      baseData['Likelihood'] = `${result.likelihood}/7 (${getLikelihoodDescription(result.likelihood)})`;
+    }
+
+    // Add mode-specific columns (additional analysis data not in table)
     switch (mode) {
       case 'TRAINING_DATA':
         return {
           ...baseData,
+          'Confidence': confidence + '%',
           'Has Expletive Ne': result.classification === 'Expletive' ? 'Yes' : 'No',
           'Ne Position': nePosition,
+          'Trigger': trigger,
           'Similar Examples': details.split('\n').filter(line => line.includes('Example:')).join('; '),
           'Evidence': details.split('\n').filter(line => !line.includes('Example:')).join('; '),
           'Proposed Sentence': result.proposedSentence || ''
@@ -58,9 +62,12 @@ export const exportToXLSX = (results, mode) => {
       case 'RULE_BASED':
         return {
           ...baseData,
+          'Confidence': confidence + '%',
+          'Trigger': trigger,
           'Trigger Category': result.label.match(/Category: (.*?)(?:\n|$)/i)?.[1] || '',
           'Has Subjunctive': result.label.includes('subjunctive found') ? 'Yes' : 'No',
           'Ne Position': nePosition,
+          'Surface Form': result.surfaceForm || 'No change suggested',
           'Evidence': details,
           'Proposed Sentence': result.proposedSentence || ''
         };
@@ -70,9 +77,12 @@ export const exportToXLSX = (results, mode) => {
         const reasoning = result.label.match(/Reasoning:\n(.*?)(?=\n\n|$)/s)?.[1] || '';
         return {
           ...baseData,
+          'Confidence': confidence + '%',
+          'Trigger': trigger,
           'LLM Analysis': llmAnalysis.replace(/\n/g, ' '),
           'Reasoning': reasoning.replace(/\n/g, ' '),
           'Ne Position': nePosition,
+          'Surface Form': result.surfaceForm || 'No change suggested',
           'Evidence': details,
           'Proposed Sentence': result.proposedSentence || ''
         };
