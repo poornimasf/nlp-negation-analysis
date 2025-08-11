@@ -234,7 +234,7 @@ export const BatchAnalysis = ({
                       onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
                       onMouseLeave={(e) => e.target.style.backgroundColor = '#f8f9fa'}
                     >
-                      Likelihood
+                      Likelihood of NE
                       <SortIndicator column="likelihood" />
                     </th>
                   )}

@@ -26,7 +26,7 @@ export const exportToXLSX = (results, mode) => {
 
     // Add Likelihood column only for rule-based mode (matches UI behavior exactly)
     if (mode === 'RULE_BASED' && result.likelihood) {
-      exportData['Likelihood'] = `${result.likelihood}/7 (${getLikelihoodDescription(result.likelihood)})`;
+      exportData['Likelihood of NE'] = `${result.likelihood}/7 (${getLikelihoodDescription(result.likelihood)})`;
     }
 
     return exportData;
@@ -43,9 +43,9 @@ export const exportToXLSX = (results, mode) => {
     { wch: 15 }, // Prediction
   ];
 
-  // Add Likelihood column width if present
+  // Add Likelihood of NE column width if present
   if (mode === 'RULE_BASED') {
-    columnWidths.push({ wch: 25 }); // Likelihood
+    columnWidths.push({ wch: 25 }); // Likelihood of NE
   }
 
   worksheet['!cols'] = columnWidths;
