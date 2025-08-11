@@ -163,23 +163,23 @@ class EnhancedSemanticAnalyzer {
                 
                 const clauseEndPatterns = [
                     // Sentence terminators (highest priority)
-                    { pattern: /[.!?]/, priority: 1 },
+                    { pattern: /[.!?]/, priority: 1, name: 'sentence-terminator' },
                     // Semicolons
-                    { pattern: /;/, priority: 1 },
+                    { pattern: /;/, priority: 1, name: 'semicolon' },
                     // Coordinating conjunctions that start new main clauses
-                    { pattern: /,\s*(?:mais|et|car|donc|alors|cependant|néanmoins|toutefois|or)\b/i, priority: 2 },
+                    { pattern: /,\s*(?:mais|et|car|donc|alors|cependant|néanmoins|toutefois|or)\b/i, priority: 2, name: 'coordinating-conjunction' },
                     // New main clause indicators (subject + verb after comma)
-                    { pattern: /,\s*(?:le|la|les|il|elle|ils|elles|ce|cette|ces|on|nous|vous|je|tu|[A-Z][a-z]+)\s+(?:a|est|sont|ont|sera|seront|était|étaient|avait|avaient)\b/i, priority: 3 }
+                    { pattern: /,\s*(?:le|la|les|il|elle|ils|elles|ce|cette|ces|on|nous|vous|je|tu|[A-Z][a-z]+)\s+(?:a|est|sont|ont|sera|seront|était|étaient|avait|avaient)\b/i, priority: 3, name: 'new-main-clause' }
                 ];
                 
-                let bestMatch = null;
                 let bestPriority = 999;
+                let bestPatternName = '';
                 
-                for (const { pattern, priority } of clauseEndPatterns) {
+                for (const { pattern, priority, name } of clauseEndPatterns) {
                     const endMatch = afterTrigger.match(pattern);
                     if (endMatch && priority < bestPriority) {
-                        bestMatch = endMatch;
                         bestPriority = priority;
+                        bestPatternName = name;
                         clauseEnd = triggerIndex + endMatch.index;
                     }
                 }
@@ -839,9 +839,6 @@ class EnhancedSemanticAnalyzer {
         }
     }
     
-    /**
-     * Split text into sentences respecting French punctuation
-     */
 }
 
 export { EnhancedSemanticAnalyzer };
