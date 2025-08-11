@@ -151,8 +151,10 @@ const SimpleNegationAnalyzer = () => {
               console.log('🔍 BATCH DEBUG - Classification values:', {
                 prediction: analysis.prediction,
                 type: analysis.type,
+                likelihood: analysis.likelihood,
                 finalClassification: classification,
-                sentence: sentence.substring(0, 50) + '...'
+                sentence: sentence.substring(0, 50) + '...',
+                fullAnalysis: analysis
               });
               // Generate proposed sentence if expletive
               if (classification === 'Expletive' && analysis.evidence?.trigger) {
@@ -244,6 +246,7 @@ const SimpleNegationAnalyzer = () => {
             highlightedText: highlight(sentence),
             label: formattedResult,
             classification,
+            likelihood: analysis.likelihood,
             proposedSentence
           });
           
@@ -262,6 +265,7 @@ const SimpleNegationAnalyzer = () => {
             highlightedText: sentence,
             label: formatErrorMessage(error),
             classification: "Error",
+            likelihood: null,
             proposedSentence: sentence
           });
           setBatchResults([...results]);

@@ -142,8 +142,10 @@ export const BatchAnalysis = ({
                   console.log('🔍 BATCH DISPLAY DEBUG:', {
                     id: result.id,
                     classification: result.classification,
+                    likelihood: result.likelihood,
                     prediction,
-                    text: result.text?.substring(0, 30) + '...'
+                    text: result.text?.substring(0, 30) + '...',
+                    fullResult: result
                   });
                   
                   return (
@@ -151,7 +153,7 @@ export const BatchAnalysis = ({
                       backgroundColor: index % 2 === 0 ? 'white' : '#f8f9fa',
                       borderBottom: '1px solid #dee2e6'
                     }}>
-                      <td style={{ padding: '12px', maxWidth: '200px' }}>
+                      <td style={{ padding: '12px', maxWidth: '200px', verticalAlign: 'top' }}>
                         {result.text && result.label.match(/trigger: "(.*?)"/i) ? (
                           <span dangerouslySetInnerHTML={{
                             __html: result.text.replace(
@@ -161,10 +163,10 @@ export const BatchAnalysis = ({
                           }} />
                         ) : result.text}
                       </td>
-                      <td style={{ padding: '12px' }}>
+                      <td style={{ padding: '12px', verticalAlign: 'top' }}>
                         <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{result.label}</pre>
                       </td>
-                      <td style={{ padding: '12px', textAlign: 'center' }}>
+                      <td style={{ padding: '12px', textAlign: 'center', verticalAlign: 'top' }}>
                         <span style={{
                           padding: '4px 8px',
                           borderRadius: '4px',
@@ -179,7 +181,7 @@ export const BatchAnalysis = ({
                         </span>
                       </td>
                       {analysisMode === 'RULE_BASED' && (
-                        <td style={{ padding: '12px', textAlign: 'center' }}>
+                        <td style={{ padding: '12px', textAlign: 'center', verticalAlign: 'top' }}>
                           <span style={{
                             padding: '4px 8px',
                             borderRadius: '4px',
