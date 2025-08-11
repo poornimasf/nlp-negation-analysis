@@ -137,6 +137,154 @@ class EnhancedSemanticAnalyzer {
     }
     
     /**
+     * Extract the clause containing expletive triggers (avant que, peur que, etc.)
+     * This prevents cross-clause logical negation from interfering
+     */
+    extractExpletiveClause(sentence) {
+        const triggerPatterns = [
+            { pattern: /\bavant\s+qu[e']?\b/i, name: 'avant que' },
+            { pattern: /\bpeur\s+qu[e']?\b/i, name: 'peur que' },
+            { pattern: /\bcrainte\s+qu[e']?\b/i, name: 'crainte que' },
+            { pattern: /\bde\s+peur\s+qu[e']?\b/i, name: 'de peur que' }
+        ];
+        
+        for (const trigger of triggerPatterns) {
+            const match = sentence.match(trigger.pattern);
+            if (match) {
+                const triggerIndex = match.index;
+                
+                // IMPROVED APPROACH: Extract only the subordinate clause precisely
+                // This prevents cross-clause logical negation from interfering
+                let clauseStart = triggerIndex;
+                let clauseEnd = sentence.length;
+                
+                // Look for clause boundaries AFTER the trigger with priority system
+                const afterTrigger = sentence.substring(triggerIndex);
+                
+                const clauseEndPatterns = [
+                    // Sentence terminators (highest priority)
+                    { pattern: /[.!?]/, priority: 1 },
+                    // Semicolons
+                    { pattern: /;/, priority: 1 },
+                    // Coordinating conjunctions that start new main clauses
+                    { pattern: /,\s*(?:mais|et|car|donc|alors|cependant|néanmoins|toutefois|or)\b/i, priority: 2 },
+                    // New main clause indicators (subject + verb after comma)
+                    { pattern: /,\s*(?:le|la|les|il|elle|ils|elles|ce|cette|ces|on|nous|vous|je|tu|[A-Z][a-z]+)\s+(?:a|est|sont|ont|sera|seront|était|étaient|avait|avaient)\b/i, priority: 3 }
+                ];
+                
+                let bestMatch = null;
+                let bestPriority = 999;
+                
+                for (const { pattern, priority } of clauseEndPatterns) {
+                    const endMatch = afterTrigger.match(pattern);
+                    if (endMatch && priority < bestPriority) {
+                        bestMatch = endMatch;
+                        bestPriority = priority;
+                        clauseEnd = triggerIndex + endMatch.index;
+                    }
+                }
+                
+                const clause = sentence.substring(clauseStart, clauseEnd).trim();
+                
+                return {
+                    clause: clause,
+                    trigger: trigger.name,
+                    triggerIndex: triggerIndex,
+                    clauseStart: clauseStart,
+                    clauseEnd: clauseEnd,
+                    boundaryType: bestPriority === 999 ? 'end-of-sentence' : 'clause-boundary'
+                };
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Check if logical negation is in the same clause as the expletive trigger
+     */
+    isLogicalNegationInSameClause(sentence, expletiveClauseInfo) {
+        if (!expletiveClauseInfo) {
+            return {
+                hasLogicalInClause: false,
+                indicators: [],
+                clause: null,
+                analysis: 'No expletive clause found'
+            };
+        }
+        
+        const clause = expletiveClauseInfo.clause;
+        const logicalInClause = [];
+        
+        // Check for logical negation within the expletive clause only
+        for (const indicator of this.logicalIndicators) {
+            const matches = clause.match(indicator.pattern);
+            if (matches) {
+                logicalInClause.push({
+                    indicator: matches[0],
+                    type: indicator.type,
+                    weight: indicator.weight,
+                    inSameClause: true
+                });
+            }
+        }
+        
+        return {
+            hasLogicalInClause: logicalInClause.length > 0,
+            indicators: logicalInClause,
+            clause: clause,
+            analysis: logicalInClause.length > 0 ? 
+                'Logical negation in same clause as expletive trigger' : 
+                'No logical negation in expletive clause'
+        };
+    }
+
+    /**
+     * Split text into sentences respecting French punctuation
+     */
+    splitIntoSentences(text) {
+        // Split on sentence-ending punctuation, keeping the punctuation
+        const sentences = text.split(/([.!?]+)/).filter(part => part.trim().length > 0);
+        
+        // Recombine sentences with their punctuation
+        const result = [];
+        for (let i = 0; i < sentences.length; i += 2) {
+            const sentence = sentences[i]?.trim();
+            const punctuation = sentences[i + 1] || '';
+            if (sentence) {
+                result.push((sentence + punctuation).trim());
+            }
+        }
+        
+        return result.length > 0 ? result : [text]; // Fallback to original if no splits
+    }
+
+    /**
+     * Find which sentence contains the target construction (avant que, peur que, etc.)
+     */
+    findTargetSentence(sentences, originalSentence) {
+        // Look for expletive trigger patterns to identify the relevant sentence
+        const triggerPatterns = [
+            /\bavant\s+qu[e']?\b/i,
+            /\bpeur\s+qu[e']?\b/i,
+            /\bpeu\s+s'en\s+faut\b/i,
+            /\bcrainte\s+qu[e']?\b/i,
+            /\bde\s+peur\s+qu[e']?\b/i
+        ];
+        
+        for (const sentence of sentences) {
+            for (const pattern of triggerPatterns) {
+                if (pattern.test(sentence)) {
+                    return sentence;
+                }
+            }
+        }
+        
+        // If no trigger found, return the first sentence (fallback)
+        return sentences[0] || originalSentence;
+    }
+    
+    /**
      * Main analysis method implementing corpus-driven hierarchy WITH discourse analysis
      * Priority: Logical > Expletive > Syntactic + Discourse modulation
      */
@@ -377,46 +525,101 @@ class EnhancedSemanticAnalyzer {
         // Step 2: Find the sentence containing expletive triggers
         const targetSentence = this.findTargetSentence(sentences, sentence);
         
-        // Step 3: Analyze logical strength ONLY in the target sentence
+        // Step 3: NEW - Extract the clause containing the expletive trigger
+        const expletiveClauseInfo = this.extractExpletiveClause(targetSentence);
+        
+        // Step 4: NEW - Check for logical negation in the same clause
+        const clauseAnalysis = this.isLogicalNegationInSameClause(targetSentence, expletiveClauseInfo);
+        
+        // Step 5: Analyze logical strength with clause-level precision
         let totalScore = 0;
         const indicators = [];
         
-        for (const indicator of this.logicalIndicators) {
-            const matches = targetSentence.match(indicator.pattern);
-            if (matches) {
-                totalScore += indicator.weight * matches.length;
+        if (clauseAnalysis.hasLogicalInClause) {
+            // Only count logical negation that's in the same clause as the expletive trigger
+            for (const indicator of clauseAnalysis.indicators) {
+                totalScore += indicator.weight;
                 indicators.push({
-                    indicator: matches[0],
+                    indicator: indicator.indicator,
                     type: indicator.type,
                     weight: indicator.weight,
-                    matches: matches.length,
-                    sentence: targetSentence.substring(0, 50) + '...' // For debugging
+                    matches: 1,
+                    clauseScope: 'same-clause'
                 });
+            }
+        } else {
+            // Check for cross-clause logical negation with reduced weight
+            for (const indicator of this.logicalIndicators) {
+                const matches = targetSentence.match(indicator.pattern);
+                if (matches) {
+                    const reducedWeight = indicator.weight * 0.3; // 70% reduction for cross-clause
+                    totalScore += reducedWeight * matches.length;
+                    indicators.push({
+                        indicator: matches[0],
+                        type: indicator.type,
+                        weight: reducedWeight,
+                        originalWeight: indicator.weight,
+                        matches: matches.length,
+                        clauseScope: 'cross-clause',
+                        sentence: targetSentence.substring(0, 50) + '...'
+                    });
+                }
             }
         }
         
-        // Special boost for compound logical patterns (within target sentence only)
-        if (/\bne.*(?:pas|jamais|plus|guère|point)\b/i.test(targetSentence)) {
-            totalScore += 2.0; // Strong compound logical pattern
+        // Special boost for compound logical patterns (check clause scope)
+        const compoundPattern = /\bne.*(?:pas|jamais|plus|guère|point)\b/i;
+        if (expletiveClauseInfo && compoundPattern.test(expletiveClauseInfo.clause)) {
+            // Same clause compound pattern - full weight
+            totalScore += 2.0;
             indicators.push({
                 indicator: 'compound_logical_pattern',
                 type: 'compound',
                 weight: 2.0,
-                matches: 1
+                matches: 1,
+                clauseScope: 'same-clause'
+            });
+        } else if (compoundPattern.test(targetSentence)) {
+            // Cross-clause compound pattern - reduced weight
+            totalScore += 0.6; // 70% reduction
+            indicators.push({
+                indicator: 'compound_logical_pattern',
+                type: 'compound',
+                weight: 0.6,
+                originalWeight: 2.0,
+                matches: 1,
+                clauseScope: 'cross-clause'
             });
         }
         
         const level = totalScore > 3.0 ? 'strong' : totalScore > 1.0 ? 'medium' : totalScore > 0 ? 'weak' : 'none';
         
+        // Enhanced override logic that considers clause boundaries
+        let overridesExpletive = false;
+        if (clauseAnalysis.hasLogicalInClause) {
+            // Same-clause logical negation - use original thresholds
+            overridesExpletive = level === 'strong' || totalScore > 2.5;
+        } else {
+            // Cross-clause logical negation - much higher threshold required
+            overridesExpletive = level === 'strong' && totalScore > 4.0;
+        }
+        
         return {
             score: totalScore,
             level,
             indicators,
-            overridesExpletive: level === 'strong' || totalScore > 2.5,
+            overridesExpletive,
             sentenceBoundary: {
                 totalSentences: sentences.length,
                 targetSentence: targetSentence.substring(0, 100) + (targetSentence.length > 100 ? '...' : ''),
                 analyzedSentenceOnly: sentences.length > 1
+            },
+            clauseBoundary: {
+                hasExpletiveClause: expletiveClauseInfo !== null,
+                expletiveClause: expletiveClauseInfo ? expletiveClauseInfo.clause.substring(0, 100) : null,
+                trigger: expletiveClauseInfo ? expletiveClauseInfo.trigger : null,
+                logicalInSameClause: clauseAnalysis.hasLogicalInClause,
+                clauseAnalysis: clauseAnalysis.analysis
             }
         };
     }
