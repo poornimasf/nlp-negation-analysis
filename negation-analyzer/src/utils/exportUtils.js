@@ -1,6 +1,21 @@
 import * as XLSX from 'xlsx';
 
 export const exportToXLSX = (results, mode) => {
+  // Helper function to get likelihood description
+  const getLikelihoodDescription = (score) => {
+    if (!score) return '';
+    switch(score) {
+      case 1: return 'Highly Unlikely';
+      case 2: return 'Unlikely';
+      case 3: return 'Somewhat Unlikely';
+      case 4: return 'Neutral/Optional';
+      case 5: return 'Somewhat Likely';
+      case 6: return 'Likely';
+      case 7: return 'Highly Likely';
+      default: return '';
+    }
+  };
+
   // Format data for export
   const data = results.map(result => {
     // Extract evidence from the label
@@ -18,10 +33,11 @@ export const exportToXLSX = (results, mode) => {
     const detailsMatch = result.label.match(/Details:\n(.*?)(?=\n\n|$)/s);
     const details = detailsMatch?.[1]?.replace(/^[•○◆▫▪◇-]\s*/gm, '') || '';
 
-    // Base data common to all modes
+    // Base data matching table structure
     const baseData = {
-      'Input Text': result.text,
-      'Classification': result.classification,
+      'Original Sentence': result.text,
+      'Prediction': result.classification,
+      'Likelihood': result.likelihood ? `${result.likelihood}/7 (${getLikelihoodDescription(result.likelihood)})` : 'N/A',
       'Confidence': confidence + '%',
       'Trigger': trigger,
       'Surface Form': result.surfaceForm || 'No change suggested' // NEW: Add surface form
