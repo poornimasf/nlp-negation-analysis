@@ -3,7 +3,7 @@ import './NegationAnalyzer.css';
 import NegationAnalyzer from '../utils/NegationAnalyzer';
 import { formatErrorMessage } from '../utils/errorFormatter';
 import { formatRuleBasedResult, formatHybridResult, formatTrainingResult } from '../utils/resultFormatters';
-import { highlight, determineClassification } from '../utils/textProcessing';
+import { highlight } from '../utils/textProcessing';
 import { classifyExpletive, classify } from '../utils/classifiers';
 import { calculateNePosition, formatWithNe } from '../utils/nePositionCalculator';
 import { BatchAnalysis } from './BatchAnalysis';
@@ -146,7 +146,8 @@ const SimpleNegationAnalyzer = () => {
           switch (analysisMode) {
             case 'RULE_BASED':
               formattedResult = formatRuleBasedResult(analysis);
-              classification = await determineClassification(sentence, formattedResult);
+              // Use the analysis result directly instead of parsing formatted text
+              classification = analysis.prediction || analysis.type || 'Unknown';
               // Generate proposed sentence if expletive
               if (classification === 'Expletive' && analysis.evidence?.trigger) {
                 const triggerInfo = {
@@ -162,7 +163,7 @@ const SimpleNegationAnalyzer = () => {
             case 'HYBRID': {
               const llmAnalysis = await classifyExpletive(sentence);
               formattedResult = formatHybridResult(analysis, llmAnalysis);
-              classification = llmAnalysis.classification || await determineClassification(sentence, formattedResult);
+              classification = llmAnalysis.classification || analysis.prediction || analysis.type || 'Unknown';
               // Generate proposed sentence based on LLM analysis
               if (llmAnalysis.classification === 'EXPLETIVE' && llmAnalysis.nePosition) {
                 const nePos = sentence.indexOf(llmAnalysis.nePosition.replace('After ', ''));
@@ -217,13 +218,13 @@ const SimpleNegationAnalyzer = () => {
                 }
               } else {
                 formattedResult = formatRuleBasedResult(analysis);
-                classification = await determineClassification(sentence, formattedResult);
+                classification = analysis.prediction || analysis.type || 'Unknown';
               }
               break;
 
             default:
               formattedResult = formatRuleBasedResult(analysis);
-              classification = await determineClassification(sentence, formattedResult);
+              classification = analysis.prediction || analysis.type || 'Unknown';
           }
 
           // Add debug logging
