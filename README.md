@@ -12,7 +12,22 @@ A specialized linguistic analysis platform for predicting whether removed "ne" m
 - [Analysis Modes](negation-analyzer/ANALYSIS_MODES.md) - Detailed description of analysis modes and features
 - [Training Data Mode Logic](TRAINING_DATA_MODE_LOGIC.md) - **NEW**: Comprehensive guide to the sophisticated AI+linguistics system
 
-## Latest Updates (v2.8.1 - August 10, 2025)
+## Latest Updates (v2.10.0 - August 11, 2025)
+
+### 🆕 Expletive Likelihood Scoring System
+- 🎯 **1-7 Likert Scale**: Measures appropriateness of adding expletive "ne" (1=Highly Inappropriate, 7=Highly Appropriate)
+- 📊 **Captures Optionality**: Acknowledges that both forms can be correct in many contexts
+- 🎓 **Educational Value**: Shows degree of stylistic appropriateness beyond binary classification
+- 📋 **Results Table Enhancement**: New "Likelihood" column in rule-based batch analysis
+- 🔧 **UI Improvements**: Top-aligned table cells for better readability
+
+### 🆕 Critical Bug Fixes (v2.9.1 - August 11, 2025)
+- 🚨 **Classification Header Fix**: Analysis header now matches decision logic (was showing wrong classification)
+- 🚨 **Results Table Fix**: Prediction column now uses analysis results instead of text parsing
+- 🔧 **Object Display Fix**: Eliminated "[object Object]" displays in analysis output
+- 📊 **Formatter Enhancement**: Uses prediction field instead of type field for consistency
+
+## Previous Updates (v2.8.1 - August 10, 2025)
 
 ### Validated Performance Results
 
@@ -202,6 +217,33 @@ aws amplify start-job --app-id d1gx30ivteuneq --branch-name main
 - **Advanced Pattern Recognition**: Handles complex sentence structures and edge cases
 - **Complete Transparency**: Detailed logging and reasoning chains for every decision
 - **Educational Value**: Teaches users about French grammar while providing classifications
+
+### Expletive Likelihood Scale (1-7)
+
+The system now provides a **Likert scale score** alongside binary predictions to capture the optional nature of expletive "ne":
+
+#### **Scale Interpretation:**
+- **1-2**: Highly Unlikely - Adding "ne" would be grammatically wrong (logical negation present)
+- **3**: Somewhat Unlikely - Adding "ne" would be stylistically poor (informal context)
+- **4**: Neutral/Optional - Both forms equally acceptable (speaker's choice)
+- **5**: Somewhat Likely - Adding "ne" would be stylistically good (moderate expletive context)
+- **6**: Likely - Adding "ne" would be highly appropriate (strong context + formal register)
+- **7**: Highly Likely - Adding "ne" would be expected/preferred (classical expletive contexts)
+
+#### **Example Interpretations:**
+```
+Sentence: "Il faut partir avant qu'elle arrive"
+Prediction: No Expletive (system's recommendation)
+Likelihood: 4/7 (both "avant qu'elle arrive" and "avant qu'elle n'arrive" are acceptable)
+
+Sentence: "J'ai peur qu'il soit trop tard"  
+Prediction: Expletive (system recommends adding "ne")
+Likelihood: 6/7 (adding "ne" is highly appropriate in this fear context)
+
+Sentence: "Pas trop épais sinon..."
+Prediction: No Expletive (correct)
+Likelihood: 1/7 (don't add "ne" - would be grammatically wrong with "pas")
+```
 
 ### Batch Processing
 

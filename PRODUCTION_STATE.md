@@ -1,11 +1,19 @@
 # Production State Documentation
 
-## Current System Status (v2.8.1 - August 10, 2025)
+## Current System Status (v2.10.0 - August 11, 2025)
 
-- **Version**: 2.8.1
-- **Last Updated**: August 10, 2025
-- **Status**: ✅ Active and Validated
+- **Version**: 2.10.0
+- **Last Updated**: August 11, 2025
+- **Status**: ✅ Active and Enhanced with Likelihood Scoring
 - **URL**: https://main.d1gx30ivteuneq.amplifyapp.com/
+
+### 🆕 **NEW FEATURE: Expletive Likelihood Scoring**
+
+- **Likert Scale**: 1-7 scale measuring appropriateness of adding expletive "ne"
+- **Optionality Support**: Acknowledges that both forms can be correct
+- **UI Enhancement**: New "Likelihood" column in rule-based batch results
+- **Educational Value**: Shows degree of stylistic appropriateness
+- **Implementation**: Fully integrated into enhanced semantic analysis pipeline
 
 ### 🎯 **VALIDATED PERFORMANCE METRICS**
 
