@@ -196,10 +196,11 @@ Text Input → NegationAnalyzer.js → patterns.js → Base Analysis
 - **Test files**: `test_enhanced_analysis.js`, `CORPUS_ENHANCEMENT_SUMMARY.md`
 
 #### Enhanced Files
-- **`NegationAnalyzer.js`**: Added `analyzeNegationEnhanced()` method
+- **`NegationAnalyzer.js`**: Added `analyzeNegationEnhanced()` method (now default for rule-based mode)
 - **`ruleBasedAnalyzer.js`**: Added `analyzeTextEnhanced()` function
 - **`enhancedTrainingAnalyzer.js`**: Added `analyzeWithCorpusInsights()` function
-- **`SimpleNegationAnalyzer.jsx`**: Added corpus enhancement toggle UI
+- **`SimpleNegationAnalyzer.jsx`**: Enhanced analysis now default for rule-based mode
+- **`resultFormatters.js`**: Enhanced to display rich semantic analysis data
 
 #### Preserved Files (Backward Compatibility)
 - ✅ All original analysis functions maintained
@@ -242,14 +243,16 @@ Text Input → NegationAnalyzer.js → patterns.js → Base Analysis
 ### User Experience Enhancements
 
 #### UI Controls
-- **Corpus Enhancement Toggle**: Users can enable/disable enhanced analysis
-- **Status Indicators**: Clear feedback on which analysis mode is active
-- **Reasoning Display**: Enhanced explanations include discourse factors
+- **Enhanced Analysis Default**: Enhanced analysis is now the default for rule-based mode
+- **Rich Data Display**: Complete semantic analysis visible in UI
+- **Status Indicators**: Clear feedback on analysis mode and corrections applied
+- **Reasoning Display**: Detailed explanations include discourse factors and semantic hierarchy
 
 #### Backward Compatibility
-- **Toggle Off**: System functions exactly as before enhancement
-- **Toggle On**: Enhanced analysis with corpus insights and discourse factors
+- **Enhanced by Default**: Rule-based mode now uses enhanced analysis automatically
+- **Original Methods Preserved**: All original analysis functions maintained for other modes
 - **Graceful Fallback**: Enhanced analysis falls back to original on errors
+- **Full Transparency**: Rich analysis data displayed in user interface
 
 ### Performance Characteristics
 
