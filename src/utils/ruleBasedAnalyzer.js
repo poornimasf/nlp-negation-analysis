@@ -155,7 +155,10 @@ export const analyzeTextEnhanced = (text) => {
  */
 function hasFormalPolitenessContext(semantic) {
     const discourse = semantic.discourseAnalysis;
-    if (!discourse) return false;
+    if (!discourse) {
+        console.log('🔍 FORMAL POLITENESS DEBUG: No discourse analysis found');
+        return false;
+    }
     
     // Check for formal register + polite stance combination
     const isFormalRegister = discourse.register && 
@@ -171,6 +174,16 @@ function hasFormalPolitenessContext(semantic) {
         discourse.pragmatic.factors &&
         (discourse.pragmatic.factors.includes('question') || 
          discourse.pragmatic.factors.includes('directAddress'));
+    
+    console.log('🔍 FORMAL POLITENESS DEBUG:', {
+        register: discourse.register,
+        stance: discourse.stance,
+        pragmatic: discourse.pragmatic,
+        isFormalRegister,
+        isPoliteStance,
+        hasPolitenessMarkers,
+        result: isFormalRegister && isPoliteStance && hasPolitenessMarkers
+    });
     
     // Formal politeness context requires formal register + polite stance + politeness markers
     return isFormalRegister && isPoliteStance && hasPolitenessMarkers;
