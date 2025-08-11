@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { exportToXLSX } from '../utils/exportUtils';
 
 export const BatchAnalysis = ({
@@ -10,6 +10,73 @@ export const BatchAnalysis = ({
   handleBatchAnalyze,
   analysisMode
 }) => {
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+
+  // Function to get likelihood description
+  const getLikelihoodDescription = (score) => {
+    if (!score) return '';
+    switch(score) {
+      case 1: return '(Highly Unlikely)';
+      case 2: return '(Unlikely)';
+      case 3: return '(Somewhat Unlikely)';
+      case 4: return '(Neutral/Optional)';
+      case 5: return '(Somewhat Likely)';
+      case 6: return '(Likely)';
+      case 7: return '(Highly Likely)';
+      default: return '';
+    }
+  };
+
+  // Sorting function
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Sort the results
+  const sortedResults = React.useMemo(() => {
+    if (!sortConfig.key) return batchResults;
+    
+    return [...batchResults].sort((a, b) => {
+      let aValue, bValue;
+      
+      switch(sortConfig.key) {
+        case 'text':
+          aValue = a.text || '';
+          bValue = b.text || '';
+          break;
+        case 'classification':
+          aValue = a.classification || '';
+          bValue = b.classification || '';
+          break;
+        case 'likelihood':
+          aValue = a.likelihood || 0;
+          bValue = b.likelihood || 0;
+          break;
+        default:
+          return 0;
+      }
+      
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [batchResults, sortConfig]);
+
+  // Sort indicator component
+  const SortIndicator = ({ column }) => {
+    if (sortConfig.key !== column) {
+      return <span style={{ color: '#ccc', marginLeft: '5px' }}>↕</span>;
+    }
+    return (
+      <span style={{ marginLeft: '5px' }}>
+        {sortConfig.direction === 'asc' ? '↑' : '↓'}
+      </span>
+    );
+  };
   return (
     <div className="card">
       <h3 className="title">Batch Analysis</h3>
@@ -118,24 +185,63 @@ export const BatchAnalysis = ({
             }}>
               <thead>
                 <tr style={{ backgroundColor: '#f8f9fa' }}>
-                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
+                  <th 
+                    style={{ 
+                      padding: '12px', 
+                      textAlign: 'left', 
+                      borderBottom: '2px solid #dee2e6',
+                      cursor: 'pointer',
+                      userSelect: 'none',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onClick={() => handleSort('text')}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                  >
                     Original Sentence
+                    <SortIndicator column="text" />
                   </th>
                   <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
                     Analysis
                   </th>
-                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
+                  <th 
+                    style={{ 
+                      padding: '12px', 
+                      textAlign: 'center', 
+                      borderBottom: '2px solid #dee2e6',
+                      cursor: 'pointer',
+                      userSelect: 'none',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onClick={() => handleSort('classification')}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                  >
                     Prediction
+                    <SortIndicator column="classification" />
                   </th>
                   {analysisMode === 'RULE_BASED' && (
-                    <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
+                    <th 
+                      style={{ 
+                        padding: '12px', 
+                        textAlign: 'center', 
+                        borderBottom: '2px solid #dee2e6',
+                        cursor: 'pointer',
+                        userSelect: 'none',
+                        transition: 'background-color 0.2s'
+                      }}
+                      onClick={() => handleSort('likelihood')}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#e9ecef'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#f8f9fa'}
+                    >
                       Likelihood
+                      <SortIndicator column="likelihood" />
                     </th>
                   )}
                 </tr>
               </thead>
               <tbody>
-                {batchResults.map((result, index) => {
+                {sortedResults.map((result, index) => {
                   // Use the classification field directly instead of parsing text
                   let prediction = result.classification || 'Uncertain';
                   
@@ -182,16 +288,30 @@ export const BatchAnalysis = ({
                       </td>
                       {analysisMode === 'RULE_BASED' && (
                         <td style={{ padding: '12px', textAlign: 'center', verticalAlign: 'top' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            borderRadius: '4px',
-                            fontSize: '0.9em',
-                            backgroundColor: '#f8f9fa',
-                            color: '#495057',
-                            border: '1px solid #dee2e6'
-                          }}>
-                            {result.likelihood ? `${result.likelihood}/7` : 'N/A'}
-                          </span>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                            <span style={{
+                              padding: '4px 8px',
+                              borderRadius: '4px',
+                              fontSize: '0.9em',
+                              backgroundColor: '#f8f9fa',
+                              color: '#495057',
+                              border: '1px solid #dee2e6',
+                              fontWeight: '500'
+                            }}>
+                              {result.likelihood ? `${result.likelihood}/7` : 'N/A'}
+                            </span>
+                            {result.likelihood && (
+                              <span style={{
+                                fontSize: '0.75em',
+                                color: '#6c757d',
+                                fontStyle: 'italic',
+                                textAlign: 'center',
+                                lineHeight: '1.2'
+                              }}>
+                                {getLikelihoodDescription(result.likelihood)}
+                              </span>
+                            )}
+                          </div>
                         </td>
                       )}
                     </tr>
