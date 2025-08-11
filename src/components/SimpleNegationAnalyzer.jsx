@@ -2,13 +2,10 @@ import React, { useState } from 'react';
 import './NegationAnalyzer.css';
 import NegationAnalyzer from '../utils/NegationAnalyzer';
 import { formatErrorMessage } from '../utils/errorFormatter';
-import { formatRuleBasedResult, formatHybridResult, formatTrainingResult } from '../utils/resultFormatters';
+import { formatRuleBasedResult } from '../utils/resultFormatters';
 import { highlight } from '../utils/textProcessing';
-import { classifyExpletive, classify } from '../utils/classifiers';
 import { calculateNePosition, formatWithNe } from '../utils/nePositionCalculator';
 import { BatchAnalysis } from './BatchAnalysis';
-import { ModeSelector, ModeInfoBox } from './AnalysisModes';
-import { TrainingDataSection } from './TrainingDataSection';
 
 const SimpleNegationAnalyzer = () => {
   // State definitions
@@ -16,13 +13,9 @@ const SimpleNegationAnalyzer = () => {
   const [batchResults, setBatchResults] = useState([]);
   const [batchLoading, setBatchLoading] = useState(false);
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
-  const [analysisMode, setAnalysisMode] = useState('TRAINING_DATA');
-  const [useTrainingEnhancement, setUseTrainingEnhancement] = useState(false);
-  // REMOVED: useCorpusEnhancement - enhanced analysis is now default for rule-based mode
-  const [infoBoxExpanded, setInfoBoxExpanded] = useState(false);
-  const [trainingData, setTrainingData] = useState({ examples: [] });
+  const analysisMode = 'RULE_BASED'; // Fixed to rule-based mode
+  const [trainingData] = useState({ examples: [] }); // Minimal training data for compatibility
   const [error, setError] = useState(null);
-  const [uploadError, setUploadError] = useState(null);
 
   // Expected JSON structure:
   // [
@@ -135,106 +128,31 @@ const SimpleNegationAnalyzer = () => {
             await new Promise(resolve => setTimeout(resolve, 1000));
           }
 
-          // Always use enhanced analysis for rule-based mode, original for others
-          const analysis = analysisMode === 'RULE_BASED'
-            ? await analyzer.analyzeNegationEnhanced(sentence, analysisMode, trainingData)
-            : await analyzer.analyzeNegation(sentence);
-          let formattedResult;
-          let classification;
+          // Always use enhanced analysis for rule-based mode
+          const analysis = await analyzer.analyzeNegationEnhanced(sentence, analysisMode, trainingData);
+          const formattedResult = formatRuleBasedResult(analysis);
+          // Use the analysis result directly instead of parsing formatted text
+          const classification = analysis.prediction || analysis.type || 'Unknown';
+          console.log('🔍 BATCH DEBUG - Classification values:', {
+            prediction: analysis.prediction,
+            type: analysis.type,
+            likelihood: analysis.likelihood,
+            finalClassification: classification,
+            sentence: sentence.substring(0, 50) + '...',
+            fullAnalysis: analysis
+          });
+          
+          // Generate proposed sentence if expletive
           let proposedSentence = null;
-
-          switch (analysisMode) {
-            case 'RULE_BASED':
-              formattedResult = formatRuleBasedResult(analysis);
-              // Use the analysis result directly instead of parsing formatted text
-              classification = analysis.prediction || analysis.type || 'Unknown';
-              console.log('🔍 BATCH DEBUG - Classification values:', {
-                prediction: analysis.prediction,
-                type: analysis.type,
-                likelihood: analysis.likelihood,
-                finalClassification: classification,
-                sentence: sentence.substring(0, 50) + '...',
-                fullAnalysis: analysis
-              });
-              // Generate proposed sentence if expletive
-              if (classification === 'Expletive' && analysis.evidence?.trigger) {
-                const triggerInfo = {
-                  trigger: analysis.evidence.trigger,
-                  position: sentence.toLowerCase().indexOf(analysis.evidence.trigger.toLowerCase()),
-                  category: analysis.evidence.triggerType
-                };
-                const nePosition = calculateNePosition(sentence, triggerInfo, 'RULE_BASED');
-                proposedSentence = formatWithNe(sentence, nePosition);
-              }
-              break;
-
-            case 'HYBRID': {
-              const llmAnalysis = await classifyExpletive(sentence);
-              formattedResult = formatHybridResult(analysis, llmAnalysis);
-              classification = llmAnalysis.classification || analysis.prediction || analysis.type || 'Unknown';
-              // Generate proposed sentence based on LLM analysis
-              if (llmAnalysis.classification === 'EXPLETIVE' && llmAnalysis.nePosition) {
-                const nePos = sentence.indexOf(llmAnalysis.nePosition.replace('After ', ''));
-                if (nePos !== -1) {
-                  proposedSentence = formatWithNe(sentence, nePos);
-                }
-              }
-              break;
-            }
-
-            case 'TRAINING_DATA':
-            case 'SVM_ANALYSIS':
-              if (useTrainingEnhancement && trainingData.examples.length > 0) {
-                const mode = analysisMode === 'SVM_ANALYSIS' ? 'SVM' : 'BINARY';
-                const trainingAnalysis = classify(sentence, trainingData.examples, mode);
-                
-                console.log('🎯 UI received trainingAnalysis:', {
-                  classification: trainingAnalysis.classification,
-                  confidence: trainingAnalysis.confidence,
-                  type: typeof trainingAnalysis.classification
-                });
-                
-                // Map boolean classification to display format
-                const displayType = trainingAnalysis.classification === true ? 'Expletive' : 'No Expletive';
-                
-                console.log('🎯 UI displayType determined:', displayType, 'from classification:', trainingAnalysis.classification);
-                
-                // Create analysis object with display format and trigger info
-                const analysisObj = {
-                  type: displayType,
-                  confidence: trainingAnalysis.confidence,
-                  evidence: {
-                    details: trainingAnalysis.message,
-                    trigger: trainingAnalysis.context?.trigger || null,
-                    hasSubjunctive: trainingAnalysis.context?.hasSubjunctive || false,
-                    nePosition: trainingAnalysis.nePosition
-                  }
-                };
-                
-                formattedResult = formatTrainingResult(analysisObj, trainingAnalysis);
-                classification = displayType;
-                
-                // Generate proposed sentence if expletive
-                if (trainingAnalysis.classification === true && trainingAnalysis.context?.trigger) {
-                  const triggerInfo = {
-                    trigger: trainingAnalysis.context.trigger,
-                    position: sentence.toLowerCase().indexOf(trainingAnalysis.context.trigger.toLowerCase()),
-                    category: trainingAnalysis.context.triggerType
-                  };
-                  const nePosition = calculateNePosition(sentence, triggerInfo, mode);
-                  proposedSentence = formatWithNe(sentence, nePosition);
-                }
-              } else {
-                formattedResult = formatRuleBasedResult(analysis);
-                classification = analysis.prediction || analysis.type || 'Unknown';
-              }
-              break;
-
-            default:
-              formattedResult = formatRuleBasedResult(analysis);
-              classification = analysis.prediction || analysis.type || 'Unknown';
+          if (classification === 'Expletive' && analysis.evidence?.trigger) {
+            const triggerInfo = {
+              trigger: analysis.evidence.trigger,
+              position: sentence.toLowerCase().indexOf(analysis.evidence.trigger.toLowerCase()),
+              category: analysis.evidence.triggerType
+            };
+            const nePosition = calculateNePosition(sentence, triggerInfo, 'RULE_BASED');
+            proposedSentence = formatWithNe(sentence, nePosition);
           }
-
           // Add debug logging
           console.log('Analysis Mode:', analysisMode);
           console.log('Classification:', classification);
@@ -310,32 +228,9 @@ const SimpleNegationAnalyzer = () => {
         </div>
       )}
 
-      <div className="card">
-        <ModeSelector 
-          analysisMode={analysisMode}
-          setAnalysisMode={setAnalysisMode}
-          setInfoBoxExpanded={setInfoBoxExpanded}
-          isInfoBoxExpanded={infoBoxExpanded}
-        />
+      {/* Mode selector removed - now fixed to RULE_BASED */}
 
-        <ModeInfoBox
-          mode={analysisMode}
-          isExpanded={infoBoxExpanded}
-          setExpanded={setInfoBoxExpanded}
-        />
-      </div>
-
-      {/* Training Data Section */}
-      {(analysisMode === 'TRAINING_DATA' || analysisMode === 'SVM_ANALYSIS') && (
-        <div className="card">
-          <TrainingDataSection
-            trainingData={trainingData}
-            handleFileUpload={handleFileUpload}
-            clearTrainingData={clearTrainingData}
-            uploadError={uploadError}
-          />
-        </div>
-      )}
+      {/* Training Data Section removed - not needed for rule-based mode */}
 
       <BatchAnalysis
         batchInput={batchInput}
