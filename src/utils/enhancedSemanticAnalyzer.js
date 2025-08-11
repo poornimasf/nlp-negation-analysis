@@ -368,26 +368,35 @@ class EnhancedSemanticAnalyzer {
     
     /**
      * Assess logical negation strength - addresses the 3/10 accuracy problem
+     * NOW WITH SENTENCE BOUNDARY DETECTION
      */
     assessLogicalStrength(sentence) {
+        // Step 1: Split into sentences
+        const sentences = this.splitIntoSentences(sentence);
+        
+        // Step 2: Find the sentence containing expletive triggers
+        const targetSentence = this.findTargetSentence(sentences, sentence);
+        
+        // Step 3: Analyze logical strength ONLY in the target sentence
         let totalScore = 0;
         const indicators = [];
         
         for (const indicator of this.logicalIndicators) {
-            const matches = sentence.match(indicator.pattern);
+            const matches = targetSentence.match(indicator.pattern);
             if (matches) {
                 totalScore += indicator.weight * matches.length;
                 indicators.push({
                     indicator: matches[0],
                     type: indicator.type,
                     weight: indicator.weight,
-                    matches: matches.length
+                    matches: matches.length,
+                    sentence: targetSentence.substring(0, 50) + '...' // For debugging
                 });
             }
         }
         
-        // Special boost for compound logical patterns
-        if (/\bne.*(?:pas|jamais|plus|guère|point)\b/i.test(sentence)) {
+        // Special boost for compound logical patterns (within target sentence only)
+        if (/\bne.*(?:pas|jamais|plus|guère|point)\b/i.test(targetSentence)) {
             totalScore += 2.0; // Strong compound logical pattern
             indicators.push({
                 indicator: 'compound_logical_pattern',
@@ -403,7 +412,12 @@ class EnhancedSemanticAnalyzer {
             score: totalScore,
             level,
             indicators,
-            overridesExpletive: level === 'strong' || totalScore > 2.5
+            overridesExpletive: level === 'strong' || totalScore > 2.5,
+            sentenceBoundary: {
+                totalSentences: sentences.length,
+                targetSentence: targetSentence.substring(0, 100) + (targetSentence.length > 100 ? '...' : ''),
+                analyzedSentenceOnly: sentences.length > 1
+            }
         };
     }
     
@@ -619,6 +633,51 @@ class EnhancedSemanticAnalyzer {
     }
     
     /**
+     * Split text into sentences respecting French punctuation
+     */
+    splitIntoSentences(text) {
+        // Split on sentence-ending punctuation, keeping the punctuation
+        const sentences = text.split(/([.!?]+)/).filter(part => part.trim().length > 0);
+        
+        // Recombine sentences with their punctuation
+        const result = [];
+        for (let i = 0; i < sentences.length; i += 2) {
+            const sentence = sentences[i]?.trim();
+            const punctuation = sentences[i + 1] || '';
+            if (sentence) {
+                result.push((sentence + punctuation).trim());
+            }
+        }
+        
+        return result.length > 0 ? result : [text]; // Fallback to original if no splits
+    }
+
+    /**
+     * Find which sentence contains the target construction (avant que, peur que, etc.)
+     */
+    findTargetSentence(sentences, originalSentence) {
+        // Look for expletive trigger patterns to identify the relevant sentence
+        const triggerPatterns = [
+            /\bavant\s+qu[e']?\b/i,
+            /\bpeur\s+qu[e']?\b/i,
+            /\bpeu\s+s'en\s+faut\b/i,
+            /\bcrainte\s+qu[e']?\b/i,
+            /\bde\s+peur\s+qu[e']?\b/i
+        ];
+        
+        for (const sentence of sentences) {
+            for (const pattern of triggerPatterns) {
+                if (pattern.test(sentence)) {
+                    return sentence;
+                }
+            }
+        }
+        
+        // If no trigger found, return the first sentence (fallback)
+        return sentences[0] || originalSentence;
+    }
+
+    /**
      * Calculate expletive likelihood on 1-7 Likert scale
      * 1 = Highly Unlikely, 4 = Neutral/Optional, 7 = Highly Likely
      */
@@ -674,6 +733,11 @@ class EnhancedSemanticAnalyzer {
             if (logicalAnalysis.indicators.length > 0) {
                 const indicators = logicalAnalysis.indicators.map(i => i.indicator).join(', ');
                 reasons.push(`Logical indicators: ${indicators}`);
+            }
+            // Add sentence boundary information if multiple sentences
+            if (logicalAnalysis.sentenceBoundary?.analyzedSentenceOnly) {
+                reasons.push(`Sentence boundary: Analyzed only target sentence (${logicalAnalysis.sentenceBoundary.totalSentences} total sentences)`);
+                reasons.push(`Target sentence: "${logicalAnalysis.sentenceBoundary.targetSentence}"`);
             }
         }
         
