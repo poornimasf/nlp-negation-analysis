@@ -134,7 +134,7 @@ const SimpleNegationAnalyzer = () => {
             await new Promise(resolve => setTimeout(resolve, 1000));
           }
 
-          const analysis = await analyzer.analyzeNegation(sentence);
+          const analysis = await analyzer.analyzeNegationEnhanced(sentence, 'RULE_BASED');
           let formattedResult;
           let classification;
           let proposedSentence = null;
