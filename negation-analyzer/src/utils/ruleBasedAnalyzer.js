@@ -281,7 +281,7 @@ export const analyzeText = (text) => {
     let foundTrigger = null;
     let triggerMatch = null;
 
-    for (const [key, config] of Object.entries(TRIGGER_PATTERNS)) {
+    for (const [, config] of Object.entries(TRIGGER_PATTERNS)) {
         const match = text.match(config.pattern);
         if (match) {
             foundTrigger = config;
