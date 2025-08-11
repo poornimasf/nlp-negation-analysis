@@ -151,6 +151,32 @@ export const analyzeTextEnhanced = (text) => {
 };
 
 /**
+ * Check if the context represents a formal politeness situation that favors expletive usage
+ */
+function hasFormalPolitenessContext(semantic) {
+    const discourse = semantic.discourseAnalysis;
+    if (!discourse) return false;
+    
+    // Check for formal register + polite stance combination
+    const isFormalRegister = discourse.register && 
+        (discourse.register.type === 'formal' || discourse.register.type === 'literary') &&
+        discourse.register.confidence > 0.5;
+        
+    const isPoliteStance = discourse.stance && 
+        discourse.stance.type === 'polite' &&
+        discourse.stance.confidence > 0.5;
+        
+    // Check for politeness markers in pragmatic context
+    const hasPolitenessMarkers = discourse.pragmatic && 
+        discourse.pragmatic.factors &&
+        (discourse.pragmatic.factors.includes('question') || 
+         discourse.pragmatic.factors.includes('directAddress'));
+    
+    // Formal politeness context requires formal register + polite stance + politeness markers
+    return isFormalRegister && isPoliteStance && hasPolitenessMarkers;
+}
+
+/**
  * Integrate traditional rule-based analysis with enhanced semantic analysis
  */
 function integrateAnalyses(traditional, semantic, text) {
@@ -207,6 +233,13 @@ function integrateAnalyses(traditional, semantic, text) {
         result.confidence = semantic.semanticBias;
         result.reasoning = `SEMANTIC BIAS: ${semantic.reasoning}`;
         result.correctionApplied = 'semantic_bias_expletive';
+        
+    } else if (semantic.semanticBias > 0.15 && hasFormalPolitenessContext(semantic)) {
+        // Special case: Formal politeness contexts with moderate expletive bias
+        result.prediction = 'Expletive';
+        result.confidence = Math.min(0.75, semantic.semanticBias + 0.2); // Boost confidence for formal contexts
+        result.reasoning = `FORMAL POLITENESS: ${semantic.reasoning} | Formal register + polite stance favors expletive usage`;
+        result.correctionApplied = 'formal_politeness_context';
         
     } else {
         // No strong semantic bias - use traditional analysis but add semantic context

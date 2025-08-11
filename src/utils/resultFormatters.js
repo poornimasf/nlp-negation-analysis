@@ -47,7 +47,8 @@ function getEnhancementDescription(correctionApplied) {
         'ambiguous_case': 'Multiple interpretations possible, using traditional analysis',
         'overcorrection_adjustment': 'Prevented common grammar overcorrection',
         'discourse_bias_expletive': 'Formal/polite context favors expletive usage',
-        'discourse_bias_logical': 'Informal/direct context favors logical negation'
+        'discourse_bias_logical': 'Informal/direct context favors logical negation',
+        'formal_politeness_context': 'Formal politeness context detected - expletive usage appropriate'
     };
     return descriptions[correctionApplied] || 'Advanced linguistic analysis applied';
 }
