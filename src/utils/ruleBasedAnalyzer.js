@@ -199,7 +199,8 @@ function integrateAnalyses(traditional, semantic, text) {
         semanticAnalysis: semantic,
         originalPrediction: traditional.type,  // Fix: use 'type' from traditional analysis
         originalConfidence: traditional.confidence,
-        prediction: traditional.type  // Fix: initialize prediction from traditional.type
+        prediction: traditional.type,  // Fix: initialize prediction from traditional.type
+        likelihood: semantic.likelihood  // NEW: Add likelihood score
     };
     
     // Apply corpus-driven corrections

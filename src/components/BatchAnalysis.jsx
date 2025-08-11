@@ -127,6 +127,11 @@ export const BatchAnalysis = ({
                   <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
                     Prediction
                   </th>
+                  {analysisMode === 'RULE_BASED' && (
+                    <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
+                      Likelihood
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -173,6 +178,20 @@ export const BatchAnalysis = ({
                           {prediction}
                         </span>
                       </td>
+                      {analysisMode === 'RULE_BASED' && (
+                        <td style={{ padding: '12px', textAlign: 'center' }}>
+                          <span style={{
+                            padding: '4px 8px',
+                            borderRadius: '4px',
+                            fontSize: '0.9em',
+                            backgroundColor: '#f8f9fa',
+                            color: '#495057',
+                            border: '1px solid #dee2e6'
+                          }}>
+                            {result.likelihood ? `${result.likelihood}/7` : 'N/A'}
+                          </span>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}

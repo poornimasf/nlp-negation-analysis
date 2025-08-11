@@ -161,6 +161,9 @@ class EnhancedSemanticAnalyzer {
         // Step 6: Calculate final semantic bias using hierarchy + discourse
         const semanticBias = this.calculateHierarchicalBias(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, conflictAnalysis, discourseAnalysis);
         
+        // Step 7: Calculate expletive likelihood on 1-7 scale
+        const likelihood = this.calculateExpletiveLikelihood(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, discourseAnalysis, semanticBias);
+        
         return {
             logicalAnalysis,
             expletiveAnalysis,
@@ -168,6 +171,7 @@ class EnhancedSemanticAnalyzer {
             discourseAnalysis,  // NEW!
             conflictAnalysis,
             semanticBias,
+            likelihood,  // NEW!
             classification: this.determineClassification(semanticBias, conflictAnalysis),
             reasoning: this.generateReasoning(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, conflictAnalysis, semanticBias, discourseAnalysis)
         };
@@ -614,6 +618,50 @@ class EnhancedSemanticAnalyzer {
         }
     }
     
+    /**
+     * Calculate expletive likelihood on 1-7 Likert scale
+     * 1 = Highly Unlikely, 4 = Neutral/Optional, 7 = Highly Likely
+     */
+    calculateExpletiveLikelihood(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, discourseAnalysis, semanticBias) {
+        let score = 4; // Start at neutral (both forms acceptable)
+        
+        // Strong logical indicators override everything (1-2 range)
+        if (logicalAnalysis.overridesExpletive) {
+            return logicalAnalysis.level === 'high' ? 1 : 2;
+        }
+        
+        // Semantic bias adjustment (-3 to +3)
+        if (semanticBias > 0.4) {
+            score += 2; // Strong expletive context
+        } else if (semanticBias > 0.2) {
+            score += 1; // Moderate expletive context
+        } else if (semanticBias < -0.2) {
+            score -= 1; // Moderate logical tendency
+        } else if (semanticBias < -0.4) {
+            score -= 2; // Strong logical tendency
+        }
+        
+        // Discourse factor adjustments
+        if (discourseAnalysis.discourseInfluence) {
+            const influence = discourseAnalysis.discourseInfluence;
+            if (influence.strength === 'strong') {
+                score += influence.direction === 'expletive' ? 1 : -1;
+            } else if (influence.strength === 'medium') {
+                score += influence.direction === 'expletive' ? 0.5 : -0.5;
+            }
+        }
+        
+        // Syntactic licensing provides baseline opportunity
+        if (syntacticAnalysis.hasLicensing) {
+            // Already accounted for in baseline score of 4
+        } else {
+            score -= 1; // No syntactic licensing makes expletive less likely
+        }
+        
+        // Ensure score stays within 1-7 range
+        return Math.max(1, Math.min(7, Math.round(score)));
+    }
+
     /**
      * Generate human-readable reasoning including discourse factors
      */
