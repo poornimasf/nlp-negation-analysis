@@ -35,6 +35,154 @@ function getRecommendationFromType(negationType) {
 /**
  * Format rule-based analysis results
  */
+// Helper functions to translate technical analysis to plain language
+function getEnhancementDescription(correctionApplied) {
+    const descriptions = {
+        'semantic_enhancement': 'Context and meaning analysis applied',
+        'logical_override': 'Strong logical negation detected and applied',
+        'conflict_resolution_logical': 'Conflicting signals resolved in favor of logical negation',
+        'conflict_resolution_expletive': 'Conflicting signals resolved in favor of expletive usage',
+        'semantic_bias_logical': 'Context strongly suggests logical negation',
+        'semantic_bias_expletive': 'Context strongly suggests expletive usage',
+        'ambiguous_case': 'Multiple interpretations possible, using traditional analysis',
+        'overcorrection_adjustment': 'Prevented common grammar overcorrection',
+        'discourse_bias_expletive': 'Formal/polite context favors expletive usage',
+        'discourse_bias_logical': 'Informal/direct context favors logical negation'
+    };
+    return descriptions[correctionApplied] || 'Advanced linguistic analysis applied';
+}
+
+function translateReasoningToPlainLanguage(reasoning) {
+    return reasoning
+        .replace(/TRADITIONAL \+ SEMANTIC:/g, 'Grammar rules combined with context analysis:')
+        .replace(/Rule-based/g, 'Standard French grammar rules')
+        .replace(/Discourse:/g, 'Language style:')
+        .replace(/Stance:/g, 'Speaker attitude:')
+        .replace(/Pragmatic:/g, 'Sentence type:')
+        .replace(/question, directAddress/g, 'polite question directed at someone')
+        .replace(/Discourse influence: strong expletive/g, 'Context strongly suggests expletive "ne" usage')
+        .replace(/Final semantic bias: ([\d.]+) \(favors expletive\)/g, 'Overall tendency: slightly favors expletive "ne" (+$1)')
+        .replace(/Final semantic bias: ([-\d.]+) \(favors logical\)/g, 'Overall tendency: favors logical negation ($1)');
+}
+
+function getRegisterDescription(registerType) {
+    const descriptions = {
+        'formal': 'Formal/polite language (like business or academic writing)',
+        'informal': 'Casual/everyday language',
+        'literary': 'Literary/sophisticated language (like in books)',
+        'technical': 'Technical/specialized language',
+        'administrative': 'Official/bureaucratic language'
+    };
+    return descriptions[registerType] || registerType;
+}
+
+function getStanceDescription(stanceType) {
+    const descriptions = {
+        'polite': 'Polite and respectful tone',
+        'assertive': 'Direct and confident tone',
+        'tentative': 'Uncertain or hesitant tone',
+        'emphatic': 'Strong and emphatic tone'
+    };
+    return descriptions[stanceType] || stanceType;
+}
+
+function getPragmaticDescription(factors) {
+    const descriptions = {
+        'question': 'Question',
+        'directAddress': 'Speaking directly to someone',
+        'imperative': 'Command or instruction',
+        'exclamation': 'Exclamation',
+        'complexSyntax': 'Complex sentence structure'
+    };
+    return factors.map(factor => descriptions[factor] || factor).join(', ');
+}
+
+function translateDiscourseInfluence(summary) {
+    return summary
+        .replace(/strong expletive/g, 'strongly suggests using expletive "ne"')
+        .replace(/weak expletive/g, 'slightly suggests using expletive "ne"')
+        .replace(/strong logical/g, 'strongly suggests logical negation')
+        .replace(/weak logical/g, 'slightly suggests logical negation');
+}
+
+function getClassificationDescription(prediction) {
+    return prediction === 'expletive' ? 'Expletive "ne" is appropriate' : 'Logical negation (no expletive "ne")';
+}
+
+function getCertaintyDescription(certainty) {
+    const descriptions = {
+        'high': 'Very confident',
+        'medium': 'Moderately confident', 
+        'low': 'Less confident (multiple interpretations possible)'
+    };
+    return descriptions[certainty] || certainty;
+}
+
+function getBiasDescription(bias) {
+    if (bias > 0.3) return 'Strongly favors expletive "ne"';
+    if (bias > 0.1) return 'Slightly favors expletive "ne"';
+    if (bias < -0.3) return 'Strongly favors logical negation';
+    if (bias < -0.1) return 'Slightly favors logical negation';
+    return 'Neutral (no strong preference)';
+}
+
+function getLogicalStrengthDescription(level) {
+    const descriptions = {
+        'strong': 'Strong logical negation detected',
+        'medium': 'Moderate logical negation detected',
+        'weak': 'Weak logical negation detected'
+    };
+    return descriptions[level] || level;
+}
+
+function getExpletiveStrengthDescription(strength) {
+    const descriptions = {
+        'strong': 'Strong expletive context detected',
+        'medium': 'Moderate expletive context detected', 
+        'weak': 'Weak expletive context detected'
+    };
+    return descriptions[strength] || strength;
+}
+
+function getExpletiveContextDescription(contexts) {
+    const descriptions = {
+        'emotional': 'Emotional context (fear, worry, etc.)',
+        'temporal': 'Time-related uncertainty',
+        'preventive': 'Preventing something from happening',
+        'impersonal': 'Impersonal expression'
+    };
+    return contexts.map(context => descriptions[context] || context).join(', ');
+}
+
+function translateSyntacticNote(note) {
+    return note
+        .replace(/Syntactic licensing enables but does not require expletive usage/g, 
+                'Grammar allows expletive "ne" but doesn\'t require it')
+        .replace(/No syntactic licensing found/g, 
+                'No grammar pattern that typically uses expletive "ne"');
+}
+
+function getConflictTypeDescription(conflictTypes) {
+    const descriptions = {
+        'logical_vs_expletive': 'Logical negation vs. expletive usage',
+        'syntactic_vs_semantic': 'Grammar rules vs. context meaning',
+        'discourse_conflict': 'Conflicting style/context signals'
+    };
+    return conflictTypes.map(type => descriptions[type] || type).join(', ');
+}
+
+function getResolutionDescription(resolution) {
+    const winner = resolution.winner === 'logical' ? 'logical negation' : 'expletive usage';
+    return `${winner} chosen based on stronger evidence`;
+}
+
+function getConfidenceDescription(confidence) {
+    if (confidence > 0.8) return 'very confident';
+    if (confidence > 0.6) return 'confident';
+    if (confidence > 0.4) return 'somewhat confident';
+    return 'less confident';
+}
+
 export const formatRuleBasedResult = (analysis) => {
     const { type, confidence, evidence, enhancedAvantQue, enhanced, semanticAnalysis, reasoning, correctionApplied } = analysis;
     const confidencePercent = Math.round(confidence * 100);
@@ -48,83 +196,79 @@ export const formatRuleBasedResult = (analysis) => {
     
     // Enhanced corpus-driven analysis (NEW)
     if (enhanced && semanticAnalysis) {
-        result += '🧠 Enhanced Corpus Analysis:\n';
-        result += `- Analysis Mode: ${analysis.mode || 'RULE_BASED_ENHANCED'}\n`;
-        result += `- Correction Applied: ${correctionApplied || 'none'}\n\n`;
+        result += '🧠 Enhanced French Grammar Analysis:\n';
+        result += `- Analysis Type: Advanced linguistic analysis\n`;
+        result += `- Enhancement Applied: ${getEnhancementDescription(correctionApplied)}\n\n`;
         
-        // Semantic reasoning
+        // Semantic reasoning in plain language
         if (reasoning) {
-            result += 'Detailed Reasoning:\n';
-            result += `- ${reasoning}\n\n`;
+            result += 'Why This Classification:\n';
+            result += `- ${translateReasoningToPlainLanguage(reasoning)}\n\n`;
         }
         
-        // Discourse Analysis
+        // Discourse Analysis in plain language
         if (semanticAnalysis.discourseAnalysis) {
             const discourse = semanticAnalysis.discourseAnalysis;
-            result += 'Discourse Factors:\n';
-            if (discourse.register) {
-                result += `- Register: ${discourse.register.type} (${discourse.register.confidence})\n`;
+            result += 'French Language Context:\n';
+            if (discourse.register && discourse.register.type !== 'neutral') {
+                result += `- Language Style: ${getRegisterDescription(discourse.register.type)} (${getConfidenceDescription(discourse.register.confidence)})\n`;
             }
-            if (discourse.stance) {
-                result += `- Stance: ${discourse.stance.type} (${discourse.stance.confidence})\n`;
+            if (discourse.stance && discourse.stance.type !== 'neutral') {
+                result += `- Speaker Attitude: ${getStanceDescription(discourse.stance.type)} (${getConfidenceDescription(discourse.stance.confidence)})\n`;
             }
             if (discourse.pragmatic && discourse.pragmatic.factors.length > 0) {
-                result += `- Pragmatic: ${discourse.pragmatic.factors.join(', ')}\n`;
+                result += `- Sentence Type: ${getPragmaticDescription(discourse.pragmatic.factors)}\n`;
             }
-            if (discourse.discourseInfluence) {
-                result += `- Discourse Influence: ${discourse.discourseInfluence.summary}\n`;
+            if (discourse.discourseInfluence && discourse.discourseInfluence.summary) {
+                result += `- Context Effect: ${translateDiscourseInfluence(discourse.discourseInfluence.summary)}\n`;
             }
             result += '\n';
         }
         
-        // Semantic Analysis Summary
+        // Semantic Analysis Summary in plain language
         if (semanticAnalysis.classification) {
-            result += 'Semantic Classification:\n';
-            result += `- Prediction: ${semanticAnalysis.classification.prediction}\n`;
-            result += `- Confidence: ${Math.round(semanticAnalysis.classification.confidence * 100)}%\n`;
-            result += `- Certainty: ${semanticAnalysis.classification.certainty}\n`;
-            result += `- Semantic Bias: ${semanticAnalysis.semanticBias > 0 ? '+' : ''}${semanticAnalysis.semanticBias.toFixed(2)} (${semanticAnalysis.semanticBias > 0 ? 'favors expletive' : 'favors logical'})\n\n`;
+            result += 'Grammar Analysis Summary:\n';
+            result += `- Grammar Suggests: ${getClassificationDescription(semanticAnalysis.classification.prediction)}\n`;
+            result += `- Certainty Level: ${getCertaintyDescription(semanticAnalysis.classification.certainty)} (${Math.round(semanticAnalysis.classification.confidence * 100)}%)\n`;
+            result += `- Overall Tendency: ${getBiasDescription(semanticAnalysis.semanticBias)}\n\n`;
         }
         
-        // Logical Analysis
+        // Logical Analysis in plain language
         if (semanticAnalysis.logicalAnalysis && semanticAnalysis.logicalAnalysis.level !== 'none') {
-            result += 'Logical Analysis:\n';
-            result += `- Strength: ${semanticAnalysis.logicalAnalysis.level}\n`;
-            result += `- Score: ${semanticAnalysis.logicalAnalysis.score}\n`;
+            result += 'Logical Negation Check:\n';
+            result += `- Strength: ${getLogicalStrengthDescription(semanticAnalysis.logicalAnalysis.level)}\n`;
             if (semanticAnalysis.logicalAnalysis.indicators.length > 0) {
-                result += `- Indicators: ${semanticAnalysis.logicalAnalysis.indicators.join(', ')}\n`;
+                result += `- Found Words: "${semanticAnalysis.logicalAnalysis.indicators.join('", "')}"\n`;
             }
-            result += `- Overrides Expletive: ${semanticAnalysis.logicalAnalysis.overridesExpletive ? 'Yes' : 'No'}\n\n`;
+            result += `- Overrides Expletive: ${semanticAnalysis.logicalAnalysis.overridesExpletive ? 'Yes - strong logical negation detected' : 'No'}\n\n`;
         }
         
-        // Expletive Analysis
+        // Expletive Analysis in plain language
         if (semanticAnalysis.expletiveAnalysis && semanticAnalysis.expletiveAnalysis.strength !== 'none') {
-            result += 'Expletive Context Analysis:\n';
-            result += `- Strength: ${semanticAnalysis.expletiveAnalysis.strength}\n`;
-            result += `- Score: ${semanticAnalysis.expletiveAnalysis.score}\n`;
+            result += 'Expletive Context Check:\n';
+            result += `- Context Strength: ${getExpletiveStrengthDescription(semanticAnalysis.expletiveAnalysis.strength)}\n`;
             if (semanticAnalysis.expletiveAnalysis.contexts.length > 0) {
-                result += `- Contexts: ${semanticAnalysis.expletiveAnalysis.contexts.join(', ')}\n`;
+                result += `- Context Types: ${getExpletiveContextDescription(semanticAnalysis.expletiveAnalysis.contexts)}\n`;
             }
-            result += `- Favors Expletive: ${semanticAnalysis.expletiveAnalysis.favorsExpletive ? 'Yes' : 'No'}\n\n`;
+            result += `- Supports Expletive "ne": ${semanticAnalysis.expletiveAnalysis.favorsExpletive ? 'Yes' : 'No'}\n\n`;
         }
         
-        // Syntactic Analysis
+        // Syntactic Analysis in plain language
         if (semanticAnalysis.syntacticAnalysis) {
-            result += 'Syntactic Analysis:\n';
-            result += `- Has Licensing: ${semanticAnalysis.syntacticAnalysis.hasLicensing ? 'Yes' : 'No'}\n`;
+            result += 'Grammar Structure Check:\n';
+            result += `- Has Grammar Pattern: ${semanticAnalysis.syntacticAnalysis.hasLicensing ? 'Yes' : 'No'}\n`;
             if (semanticAnalysis.syntacticAnalysis.triggers.length > 0) {
-                result += `- Triggers: ${semanticAnalysis.syntacticAnalysis.triggers.join(', ')}\n`;
+                result += `- Grammar Patterns: "${semanticAnalysis.syntacticAnalysis.triggers.join('", "')}"\n`;
             }
-            result += `- Note: ${semanticAnalysis.syntacticAnalysis.note}\n\n`;
+            result += `- Important Note: ${translateSyntacticNote(semanticAnalysis.syntacticAnalysis.note)}\n\n`;
         }
         
-        // Conflict Analysis
+        // Conflict Analysis in plain language
         if (semanticAnalysis.conflictAnalysis && semanticAnalysis.conflictAnalysis.hasConflict) {
-            result += 'Conflict Resolution:\n';
-            result += `- Has Conflict: Yes\n`;
-            result += `- Conflict Types: ${semanticAnalysis.conflictAnalysis.conflictTypes.join(', ')}\n`;
-            result += `- Resolution: ${semanticAnalysis.conflictAnalysis.resolution.winner} wins\n`;
-            result += `- Reasoning: ${semanticAnalysis.conflictAnalysis.resolution.reasoning}\n\n`;
+            result += 'Conflicting Signals Resolution:\n';
+            result += `- Conflicting Evidence: Yes\n`;
+            result += `- Conflict Types: ${getConflictTypeDescription(semanticAnalysis.conflictAnalysis.conflictTypes)}\n`;
+            result += `- Resolution: ${getResolutionDescription(semanticAnalysis.conflictAnalysis.resolution)}\n\n`;
         }
     }
     
