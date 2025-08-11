@@ -36,7 +36,7 @@ function getRecommendationFromType(negationType) {
  * Format rule-based analysis results
  */
 export const formatRuleBasedResult = (analysis) => {
-    const { type, confidence, evidence, enhancedAvantQue } = analysis;
+    const { type, confidence, evidence, enhancedAvantQue, enhanced, semanticAnalysis, reasoning, correctionApplied } = analysis;
     const confidencePercent = Math.round(confidence * 100);
     
     let result = 'Rule-Based Analysis\n';
@@ -45,6 +45,88 @@ export const formatRuleBasedResult = (analysis) => {
     // Classification and confidence
     result += `Classification: ${type}\n`;
     result += `Confidence: ${confidencePercent}%\n\n`;
+    
+    // Enhanced corpus-driven analysis (NEW)
+    if (enhanced && semanticAnalysis) {
+        result += '🧠 Enhanced Corpus Analysis:\n';
+        result += `- Analysis Mode: ${analysis.mode || 'RULE_BASED_ENHANCED'}\n`;
+        result += `- Correction Applied: ${correctionApplied || 'none'}\n\n`;
+        
+        // Semantic reasoning
+        if (reasoning) {
+            result += 'Detailed Reasoning:\n';
+            result += `- ${reasoning}\n\n`;
+        }
+        
+        // Discourse Analysis
+        if (semanticAnalysis.discourseAnalysis) {
+            const discourse = semanticAnalysis.discourseAnalysis;
+            result += 'Discourse Factors:\n';
+            if (discourse.register) {
+                result += `- Register: ${discourse.register.type} (${discourse.register.confidence})\n`;
+            }
+            if (discourse.stance) {
+                result += `- Stance: ${discourse.stance.type} (${discourse.stance.confidence})\n`;
+            }
+            if (discourse.pragmatic && discourse.pragmatic.factors.length > 0) {
+                result += `- Pragmatic: ${discourse.pragmatic.factors.join(', ')}\n`;
+            }
+            if (discourse.discourseInfluence) {
+                result += `- Discourse Influence: ${discourse.discourseInfluence.summary}\n`;
+            }
+            result += '\n';
+        }
+        
+        // Semantic Analysis Summary
+        if (semanticAnalysis.classification) {
+            result += 'Semantic Classification:\n';
+            result += `- Prediction: ${semanticAnalysis.classification.prediction}\n`;
+            result += `- Confidence: ${Math.round(semanticAnalysis.classification.confidence * 100)}%\n`;
+            result += `- Certainty: ${semanticAnalysis.classification.certainty}\n`;
+            result += `- Semantic Bias: ${semanticAnalysis.semanticBias > 0 ? '+' : ''}${semanticAnalysis.semanticBias.toFixed(2)} (${semanticAnalysis.semanticBias > 0 ? 'favors expletive' : 'favors logical'})\n\n`;
+        }
+        
+        // Logical Analysis
+        if (semanticAnalysis.logicalAnalysis && semanticAnalysis.logicalAnalysis.level !== 'none') {
+            result += 'Logical Analysis:\n';
+            result += `- Strength: ${semanticAnalysis.logicalAnalysis.level}\n`;
+            result += `- Score: ${semanticAnalysis.logicalAnalysis.score}\n`;
+            if (semanticAnalysis.logicalAnalysis.indicators.length > 0) {
+                result += `- Indicators: ${semanticAnalysis.logicalAnalysis.indicators.join(', ')}\n`;
+            }
+            result += `- Overrides Expletive: ${semanticAnalysis.logicalAnalysis.overridesExpletive ? 'Yes' : 'No'}\n\n`;
+        }
+        
+        // Expletive Analysis
+        if (semanticAnalysis.expletiveAnalysis && semanticAnalysis.expletiveAnalysis.strength !== 'none') {
+            result += 'Expletive Context Analysis:\n';
+            result += `- Strength: ${semanticAnalysis.expletiveAnalysis.strength}\n`;
+            result += `- Score: ${semanticAnalysis.expletiveAnalysis.score}\n`;
+            if (semanticAnalysis.expletiveAnalysis.contexts.length > 0) {
+                result += `- Contexts: ${semanticAnalysis.expletiveAnalysis.contexts.join(', ')}\n`;
+            }
+            result += `- Favors Expletive: ${semanticAnalysis.expletiveAnalysis.favorsExpletive ? 'Yes' : 'No'}\n\n`;
+        }
+        
+        // Syntactic Analysis
+        if (semanticAnalysis.syntacticAnalysis) {
+            result += 'Syntactic Analysis:\n';
+            result += `- Has Licensing: ${semanticAnalysis.syntacticAnalysis.hasLicensing ? 'Yes' : 'No'}\n`;
+            if (semanticAnalysis.syntacticAnalysis.triggers.length > 0) {
+                result += `- Triggers: ${semanticAnalysis.syntacticAnalysis.triggers.join(', ')}\n`;
+            }
+            result += `- Note: ${semanticAnalysis.syntacticAnalysis.note}\n\n`;
+        }
+        
+        // Conflict Analysis
+        if (semanticAnalysis.conflictAnalysis && semanticAnalysis.conflictAnalysis.hasConflict) {
+            result += 'Conflict Resolution:\n';
+            result += `- Has Conflict: Yes\n`;
+            result += `- Conflict Types: ${semanticAnalysis.conflictAnalysis.conflictTypes.join(', ')}\n`;
+            result += `- Resolution: ${semanticAnalysis.conflictAnalysis.resolution.winner} wins\n`;
+            result += `- Reasoning: ${semanticAnalysis.conflictAnalysis.resolution.reasoning}\n\n`;
+        }
+    }
     
     // Enhanced avant que analysis (if present)
     if (enhancedAvantQue && enhancedAvantQue.isAvantQue) {
