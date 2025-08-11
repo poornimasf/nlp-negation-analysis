@@ -839,6 +839,54 @@ class EnhancedSemanticAnalyzer {
         }
     }
     
+    /**
+     * Calculate expletive likelihood on 1-7 Likert scale
+     * 1 = Highly Inappropriate, 7 = Highly Appropriate
+     */
+    calculateExpletiveLikelihood(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, discourseAnalysis, semanticBias) {
+        let baseScore = 4; // Neutral starting point
+        
+        // Strong logical negation makes expletive highly inappropriate
+        if (logicalAnalysis.overridesExpletive && logicalAnalysis.level === 'strong') {
+            return 1; // Highly inappropriate - logical negation present
+        }
+        
+        // Medium logical negation makes expletive somewhat inappropriate  
+        if (logicalAnalysis.level === 'medium') {
+            baseScore = 2; // Somewhat inappropriate
+        } else if (logicalAnalysis.level === 'weak') {
+            baseScore = 3; // Slightly inappropriate
+        }
+        
+        // Strong expletive context makes it highly appropriate
+        if (expletiveAnalysis.strength === 'strong') {
+            baseScore = Math.max(baseScore, 6); // Likely appropriate
+        } else if (expletiveAnalysis.strength === 'medium') {
+            baseScore = Math.max(baseScore, 5); // Somewhat likely
+        }
+        
+        // Syntactic licensing enables but doesn't require
+        if (syntacticAnalysis.hasLicensing) {
+            baseScore = Math.max(baseScore, 4); // At least neutral
+        }
+        
+        // Discourse factors adjustment
+        if (discourseAnalysis && discourseAnalysis.discourseInfluence) {
+            const discourseBonus = discourseAnalysis.discourseInfluence.totalBias * 2; // Scale to 1-7
+            baseScore += discourseBonus;
+        }
+        
+        // Semantic bias adjustment
+        if (semanticBias > 0.3) {
+            baseScore += 1; // Strong expletive bias
+        } else if (semanticBias < -0.3) {
+            baseScore -= 1; // Strong logical bias
+        }
+        
+        // Ensure score stays within 1-7 range
+        return Math.max(1, Math.min(7, Math.round(baseScore)));
+    }
+    
 }
 
 export { EnhancedSemanticAnalyzer };
