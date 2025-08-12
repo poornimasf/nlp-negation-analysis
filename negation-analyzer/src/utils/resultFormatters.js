@@ -605,7 +605,7 @@ function getTheoreticalImplications(semanticAnalysis, prediction) {
         implications += 'Shows how emotional/urgency semantics interact with formal register to favor expletive realization. ';
     }
     
-    implications += 'Cross-linguistic Relevance: Demonstrates how computational models must integrate gradient acceptability rather than binary grammaticality judgments for optional morphosyntactic phenomena.';
+    implications += 'Cross-linguistic Relevance: Demonstrates how computational models must integrate gradient acceptability rather than binary grammaticality judgments for optional morphosyntactic phenomena.\n';
     
     return implications;
 }
