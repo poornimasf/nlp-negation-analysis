@@ -358,7 +358,7 @@ function formatEnhancedLinguisticAnalysis(analysis) {
             const trigger = syntactic.triggers[0];
             const triggerName = typeof trigger === 'string' ? trigger : (trigger.name || trigger.type);
             result += `Construction: *${triggerName}* + subjunctive\n`;
-            result += `Licensing Status: ${syntactic.hasLicensing ? '✅ Classical licensing environment (Muller 1991)' : '❌ No syntactic licensing detected'}\n`;
+            result += `Licensing Status: ${syntactic.hasLicensing ? '✅ Classical temporal licensing environment' : '❌ No syntactic licensing detected'}\n`;
             result += `Theoretical Significance: ${syntactic.hasLicensing ? 'Demonstrates syntactic enablement vs. semantic requirement distinction' : 'Non-licensing context requires alternative analysis'}\n\n`;
         }
     }
@@ -409,6 +409,19 @@ function formatEnhancedLinguisticAnalysis(analysis) {
     result += '🔬 THEORETICAL IMPLICATIONS:\n';
     result += getTheoreticalImplications(semanticAnalysis, prediction);
     result += '\n';
+    
+    // FINAL DECISION LOGIC (restored from original format)
+    result += '🎯 FINAL DECISION LOGIC:\n';
+    result += explainFinalDecision(analysis, semanticAnalysis);
+    result += '\n';
+    
+    // CONFLICTING SIGNALS RESOLUTION (restored from original format)
+    if (semanticAnalysis.conflictAnalysis && semanticAnalysis.conflictAnalysis.hasConflict) {
+        result += '⚖️ CONFLICTING SIGNALS RESOLUTION:\n';
+        result += `- Conflicting Evidence: Yes\n`;
+        result += `- Conflict Types: ${getConflictTypeDescription(semanticAnalysis.conflictAnalysis.conflictTypes)}\n`;
+        result += `- Resolution: ${getResolutionDescription(semanticAnalysis.conflictAnalysis.resolution)}\n\n`;
+    }
     
     // GRADIENT ACCEPTABILITY
     result += '📈 GRADIENT ACCEPTABILITY:\n';
