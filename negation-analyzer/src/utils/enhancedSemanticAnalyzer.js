@@ -1094,7 +1094,68 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\b(expérience|essai|test|utilisation)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'consumer_experience' },
         ];
         
-        // 8h. ENVIRONMENTAL/NATURAL ROUTINE CONTEXTS (MEDIUM SIGNAL)
+        // 8h. TECHNICAL/DIY ROUTINE CONTEXTS (MEDIUM SIGNAL)
+        const technicalDIYPatterns = [
+            // Technical planning and design
+            { pattern: /\b(étude|projet|conception|planification)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'technical_planning' },
+            { pattern: /\b(mettre sur papier|croquis|plan|métrage)\b[\s\S]*avant\s+qu/i, weight: 1.5, context: 'design_documentation' },
+            { pattern: /\b(dimensions|emplacement|matière|outils)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'technical_specifications' },
+            // Manufacturing and construction
+            { pattern: /\b(machine|usiner|fabriquer|construire)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'manufacturing' },
+            { pattern: /\b(pièces|composants|matériel|équipement)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'technical_components' },
+            { pattern: /\b(opérationnel|fonctionnel|prêt|terminé)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'completion_status' },
+            // Time and resource management
+            { pattern: /\b(temps estimé|délai|planning|échéance)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'project_timing' },
+            { pattern: /\b(moyens financier|budget|coût|ressources)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'resource_management' },
+        ];
+        
+        // 8i. INFORMAL COMMUNICATION CONTEXTS (MEDIUM SIGNAL)
+        const informalCommPatterns = [
+            // Casual requests and messages
+            { pattern: /\b(je vous pris|s'il vous plaît|merci|bonjour)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'casual_politeness' },
+            { pattern: /\b(commande|facture|paiement|compte)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'commercial_communication' },
+            { pattern: /\b(envoie|envoyez|photos|images)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'informal_requests' },
+            // Informal expressions and slang
+            { pattern: /\b(désolant|merde|putain|bordel)\b[\s\S]*avant\s+qu/i, weight: 1.6, context: 'informal_expressions' },
+            { pattern: /\b(allez|bon|alors|voila)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'casual_discourse_markers' },
+            { pattern: /\b(tu prenne|tu fasse|tu sois)\b[\s\S]*avant\s+qu/i, weight: 1.5, context: 'informal_grammar_errors' },
+            // Online/digital communication
+            { pattern: /\b(msn|email|message|texto)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'digital_communication' },
+            { pattern: /\b(cliquer|télécharger|sauvegarder|uploader)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'digital_actions' },
+        ];
+        
+        // 8j. TRAVEL/TOURISM CONTEXTS (MEDIUM SIGNAL)
+        const travelTourismPatterns = [
+            // Travel experiences and destinations
+            { pattern: /\b(j'ai testé|j'ai essayé|j'ai découvert)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'personal_experience' },
+            { pattern: /\b(Thaïlande|France|pays|destination)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'travel_destinations' },
+            { pattern: /\b(voyage|tourisme|vacances|séjour)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'travel_activities' },
+            // Cultural and experiential contexts
+            { pattern: /\b(concept|mode|tendance|culture)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'cultural_trends' },
+            { pattern: /\b(réserve naturelle|parc|site|lieu)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'tourist_locations' },
+            { pattern: /\b(expérience|aventure|découverte|rencontre)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'travel_experiences' },
+            // Personal travel narratives
+            { pattern: /\b(j'ai même eu la chance|j'ai pu|j'ai réussi)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'personal_travel_narrative' },
+            { pattern: /\b(me baigner|visiter|explorer|profiter)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'travel_activities_personal' },
+        ];
+        
+        // 8k. GAMING/ONLINE CONTEXTS (MEDIUM SIGNAL)
+        const gamingOnlinePatterns = [
+            // Gaming terminology
+            { pattern: /\b(cliquer|clique|click|bouton)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'gaming_actions' },
+            { pattern: /\b(faire sauter|exploser|détruire|attaquer)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'gaming_violence' },
+            { pattern: /\b(jeu|game|gaming|jouer)\b[\s\S]*avant\s+qu/i, weight: 1.5, context: 'gaming_general' },
+            // Online betting and gambling
+            { pattern: /\b(paris|pari|bet|mise)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'online_betting' },
+            { pattern: /\b(paiement|retarder|élégance|hasard)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'betting_issues' },
+            // Online interactions
+            { pattern: /\b(clairement|franchement|sérieusement)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'online_discourse' },
+            { pattern: /\b(allez allez|bon allez|vite)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'urgent_online_communication' },
+            // Technical gaming contexts
+            { pattern: /\b(serveur|lag|bug|crash)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'gaming_technical' },
+        ];
+        
+        // 8l. ENVIRONMENTAL/NATURAL ROUTINE CONTEXTS (MEDIUM SIGNAL)
         const environmentalRoutinePatterns = [
             { pattern: /\b(cycle|processus naturel|évolution|développement)\b.*avant\s+que/i, weight: 1.3, context: 'natural_routine' },
             { pattern: /\b(saison|période|phase|étape naturelle)\b.*avant\s+que/i, weight: 1.2, context: 'seasonal_routine' },
@@ -1116,6 +1177,10 @@ class EnhancedSemanticAnalyzer {
             ...techRoutinePatterns,
             ...legalRoutinePatterns,
             ...consumerRoutinePatterns,
+            ...technicalDIYPatterns,
+            ...informalCommPatterns,
+            ...travelTourismPatterns,
+            ...gamingOnlinePatterns,
             ...environmentalRoutinePatterns
         ];
         
