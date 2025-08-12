@@ -998,17 +998,17 @@ class EnhancedSemanticAnalyzer {
         
         // 7. BUSINESS/FORMAL PROCEDURAL (MEDIUM SIGNAL)
         const businessPatterns = [
-            { pattern: /\b(entreprise|société|organisation|administration)\b.*avant\s+que/i, weight: 1.4, context: 'business_context' },
-            { pattern: /\b(contrat|accord|décision|modification)\b.*avant\s+que/i, weight: 1.2, context: 'legal_administrative' },
-            // Economic/Statistical terminology (EXISTING)
-            { pattern: /\b(intérim|emploi|secteurs|indicateur|infléchissements)\b.*avant\s+que/i, weight: 1.5, context: 'economic_statistical' },
-            { pattern: /\b(mouvements d'emploi|indicateur avancé|zone portuaire)\b.*avant\s+que/i, weight: 1.6, context: 'economic_technical' },
-            { pattern: /\b(économie|marché|secteur|industrie|commercial)\b.*avant\s+que/i, weight: 1.4, context: 'economic_context' },
-            { pattern: /\b(statistique|données|analyse|tendance|évolution)\b.*avant\s+que/i, weight: 1.3, context: 'statistical_context' },
-            { pattern: /\b(rapport|étude|recherche|enquête|sondage)\b.*avant\s+que/i, weight: 1.3, context: 'analytical_context' },
-            // Legal/Administrative overlap (NEW)
-            { pattern: /\b(association|organisme|institution|établissement)\b.*avant\s+que/i, weight: 1.4, context: 'institutional_context' },
-            { pattern: /\b(déclaré|annoncé|communiqué|publié|révélé)\b.*avant\s+que/i, weight: 1.2, context: 'official_communication' },
+            { pattern: /\b(entreprise|société|organisation|administration)\b.*avant\s+que/i, weight: 1.2, context: 'business_context' },
+            { pattern: /\b(contrat|accord|décision|modification)\b.*avant\s+que/i, weight: 1.0, context: 'legal_administrative' },
+            // Economic/Statistical terminology (REDUCED WEIGHTS)
+            { pattern: /\b(intérim|emploi|secteurs|indicateur|infléchissements)\b.*avant\s+que/i, weight: 1.3, context: 'economic_statistical' },
+            { pattern: /\b(mouvements d'emploi|indicateur avancé|zone portuaire)\b.*avant\s+que/i, weight: 1.4, context: 'economic_technical' },
+            { pattern: /\b(économie|marché|secteur|industrie|commercial)\b.*avant\s+que/i, weight: 1.2, context: 'economic_context' },
+            { pattern: /\b(statistique|données|analyse|tendance|évolution)\b.*avant\s+que/i, weight: 1.1, context: 'statistical_context' },
+            { pattern: /\b(rapport|étude|recherche|enquête|sondage)\b.*avant\s+que/i, weight: 1.1, context: 'analytical_context' },
+            // Legal/Administrative overlap (REDUCED WEIGHTS)
+            { pattern: /\b(association|organisme|institution|établissement)\b.*avant\s+que/i, weight: 1.2, context: 'institutional_context' },
+            { pattern: /\b(déclaré|annoncé|communiqué|publié|révélé)\b.*avant\s+que/i, weight: 1.0, context: 'official_communication' },
         ];
         
         // 8. NEW ANTI-EXPLETIVE CATEGORIES (BALANCED APPROACH)
@@ -1052,107 +1052,107 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\b(données|fichier|base de données|serveur)\b.*avant\s+que/i, weight: 1.2, context: 'tech_data' },
         ];
         
-        // 8f. LEGAL/ADMINISTRATIVE ROUTINE CONTEXTS (MEDIUM SIGNAL)
+        // 8f. LEGAL/ADMINISTRATIVE ROUTINE CONTEXTS (REDUCED WEIGHTS)
         const legalRoutinePatterns = [
-            { pattern: /\b(formulaire|demande|dossier|inscription)\b.*avant\s+que/i, weight: 1.3, context: 'legal_routine' },
-            { pattern: /\b(procédure standard|démarche|formalité)\b.*avant\s+que/i, weight: 1.4, context: 'administrative_routine' },
-            { pattern: /\b(délai|échéance|date limite|expiration)\b.*avant\s+que/i, weight: 1.2, context: 'administrative_deadlines' },
-            // Legal/Administrative authorities and institutions (FLEXIBLE MATCHING)
-            { pattern: /\b(commissaire|autorités|tribunal|cour|juge|procureur)\b[\s\S]*avant\s+qu/i, weight: 1.6, context: 'legal_authorities' },
-            { pattern: /\b(administration|ministère|gouvernement|préfecture|mairie)\b[\s\S]*avant\s+qu/i, weight: 1.5, context: 'administrative_institutions' },
-            // Data protection and privacy terminology (FLEXIBLE MATCHING)
-            { pattern: /\b(protection des données|vie privée|renseignements|données personnelles)\b[\s\S]*avant\s+qu/i, weight: 1.7, context: 'data_protection' },
-            { pattern: /\b(LPRPDE|RGPD|CNIL|loi sur la protection|règlement)\b[\s\S]*avant\s+qu/i, weight: 1.8, context: 'privacy_legislation' },
-            // Legal procedures and measures (FLEXIBLE MATCHING)
-            { pattern: /\b(mesures de protection|mesures de sécurité|protocoles de sécurité)\b[\s\S]*avant\s+qu/i, weight: 1.6, context: 'security_measures' },
-            { pattern: /\b(modification|amendement|révision|mise à jour)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'legal_modifications' },
-            { pattern: /\b(enquêtes|investigations|vérifications|contrôles)\b[\s\S]*avant\s+qu/i, weight: 1.5, context: 'legal_investigations' },
-            { pattern: /\b(collaboration|coopération|échange|communication)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'administrative_cooperation' },
-            // Formal procedural language (FLEXIBLE MATCHING)
-            { pattern: /\b(doivent être mises en place|doivent être adoptées|doivent être appliquées)\b[\s\S]*avant\s+qu/i, weight: 1.7, context: 'mandatory_procedures' },
-            { pattern: /\b(une telle|de telles|ce type de|cette nature de)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'formal_reference' },
+            { pattern: /\b(formulaire|demande|dossier|inscription)\b.*avant\s+que/i, weight: 1.1, context: 'legal_routine' },
+            { pattern: /\b(procédure standard|démarche|formalité)\b.*avant\s+que/i, weight: 1.2, context: 'administrative_routine' },
+            { pattern: /\b(délai|échéance|date limite|expiration)\b.*avant\s+que/i, weight: 1.0, context: 'administrative_deadlines' },
+            // Legal/Administrative authorities and institutions (MORE SPECIFIC)
+            { pattern: /\b(commissaire à la protection|autorités chargées|tribunal administratif)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'legal_authorities' },
+            { pattern: /\b(administration publique|ministère|gouvernement fédéral)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'administrative_institutions' },
+            // Data protection and privacy terminology (MORE SPECIFIC)
+            { pattern: /\b(protection des données personnelles|vie privée et données|renseignements confidentiels)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'data_protection' },
+            { pattern: /\b(LPRPDE|RGPD|CNIL|loi sur la protection des données)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'privacy_legislation' },
+            // Legal procedures and measures (MORE SPECIFIC)
+            { pattern: /\b(mesures de protection obligatoires|mesures de sécurité réglementaires)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'security_measures' },
+            { pattern: /\b(modification réglementaire|amendement législatif)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'legal_modifications' },
+            { pattern: /\b(enquêtes officielles|investigations judiciaires)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'legal_investigations' },
+            { pattern: /\b(collaboration administrative|coopération institutionnelle)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'administrative_cooperation' },
+            // Formal procedural language (MORE SPECIFIC)
+            { pattern: /\b(doivent être mises en place par la loi|doivent être adoptées officiellement)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'mandatory_procedures' },
+            { pattern: /\b(une telle communication officielle|de telles mesures réglementaires)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'formal_reference' },
         ];
         
-        // 8g. CONSUMER/PRODUCT ROUTINE CONTEXTS (MEDIUM SIGNAL)
+        // 8g. CONSUMER/PRODUCT ROUTINE CONTEXTS (REDUCED WEIGHTS)
         const consumerRoutinePatterns = [
-            { pattern: /\b(produit|article|objet|chose)\b.*avant\s+que/i, weight: 1.3, context: 'consumer_products' },
-            { pattern: /\b(utilisation|usage|emploi|application)\b.*avant\s+que/i, weight: 1.2, context: 'product_usage' },
-            { pattern: /\b(fonctionnement|marche|opération)\b.*avant\s+que/i, weight: 1.1, context: 'product_operation' },
-            // Personal care and hygiene products (NEW)
-            { pattern: /\b(pâte à dentifrice|dentifrice|shampooing|savon|crème)\b[\s\S]*avant\s+qu/i, weight: 1.5, context: 'hygiene_products' },
-            { pattern: /\b(brosse à dents|peigne|rasoir|maquillage)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'personal_care_tools' },
-            // Sensory descriptions in practical contexts (NEW)
-            { pattern: /\b(couleur|goût|odeur|texture|sensation)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'practical_sensory' },
-            { pattern: /\b(surprend|étonne|frappe|impressionne)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'casual_surprise' },
-            { pattern: /\b(au départ|d'abord|initialement|en premier)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'practical_sequence' },
-            // Consumer experience terminology (NEW)
-            { pattern: /\b(haleine|bouche|dents|visage|peau)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'body_parts_practical' },
-            { pattern: /\b(mentholée|fraîche|douce|agréable|efficace)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'product_qualities' },
-            { pattern: /\b(s'empare|prend|saisit|envahit)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'practical_action' },
-            // Everyday practical contexts (NEW)
-            { pattern: /\b(notre|nos|votre|vos)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'inclusive_practical' },
-            { pattern: /\b(expérience|essai|test|utilisation)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'consumer_experience' },
+            { pattern: /\b(produit|article|objet|chose)\b.*avant\s+que/i, weight: 1.1, context: 'consumer_products' },
+            { pattern: /\b(utilisation|usage|emploi|application)\b.*avant\s+que/i, weight: 1.0, context: 'product_usage' },
+            { pattern: /\b(fonctionnement|marche|opération)\b.*avant\s+que/i, weight: 0.9, context: 'product_operation' },
+            // Personal care and hygiene products (MORE SPECIFIC)
+            { pattern: /\b(pâte à dentifrice|dentifrice électrique|shampooing anti-pelliculaire)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'hygiene_products' },
+            { pattern: /\b(brosse à dents électrique|peigne démêloir|rasoir de sécurité)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'personal_care_tools' },
+            // Sensory descriptions in practical contexts (MORE SPECIFIC)
+            { pattern: /\b(couleur noire|goût amer|odeur forte|texture rugueuse)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'practical_sensory' },
+            { pattern: /\b(surprend au départ|étonne d'abord|frappe initialement)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'casual_surprise' },
+            { pattern: /\b(au départ du produit|d'abord lors de l'utilisation)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'practical_sequence' },
+            // Consumer experience terminology (MORE SPECIFIC)
+            { pattern: /\b(haleine mentholée|bouche fraîche|dents propres)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'body_parts_practical' },
+            { pattern: /\b(mentholée|fraîche|douce|agréable|efficace)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'product_qualities' },
+            { pattern: /\b(s'empare de notre|prend possession|saisit notre)\b[\s\S]*avant\s+qu/i, weight: 0.9, context: 'practical_action' },
+            // Everyday practical contexts (REDUCED)
+            { pattern: /\b(notre produit|nos tests|votre expérience)\b[\s\S]*avant\s+qu/i, weight: 0.8, context: 'inclusive_practical' },
+            { pattern: /\b(expérience produit|essai consommateur|test utilisateur)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'consumer_experience' },
         ];
         
-        // 8h. TECHNICAL/DIY ROUTINE CONTEXTS (MEDIUM SIGNAL)
+        // 8h. TECHNICAL/DIY ROUTINE CONTEXTS (REDUCED WEIGHTS)
         const technicalDIYPatterns = [
-            // Technical planning and design
-            { pattern: /\b(étude|projet|conception|planification)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'technical_planning' },
-            { pattern: /\b(mettre sur papier|croquis|plan|métrage)\b[\s\S]*avant\s+qu/i, weight: 1.5, context: 'design_documentation' },
-            { pattern: /\b(dimensions|emplacement|matière|outils)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'technical_specifications' },
-            // Manufacturing and construction
-            { pattern: /\b(machine|usiner|fabriquer|construire)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'manufacturing' },
-            { pattern: /\b(pièces|composants|matériel|équipement)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'technical_components' },
-            { pattern: /\b(opérationnel|fonctionnel|prêt|terminé)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'completion_status' },
-            // Time and resource management
-            { pattern: /\b(temps estimé|délai|planning|échéance)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'project_timing' },
-            { pattern: /\b(moyens financier|budget|coût|ressources)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'resource_management' },
+            // Technical planning and design (MORE SPECIFIC)
+            { pattern: /\b(étude technique|projet d'ingénierie|conception mécanique)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'technical_planning' },
+            { pattern: /\b(mettre sur papier les plans|croquis techniques|plan d'assemblage)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'design_documentation' },
+            { pattern: /\b(dimensions précises|emplacement exact|matière première)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'technical_specifications' },
+            // Manufacturing and construction (MORE SPECIFIC)
+            { pattern: /\b(machine-outil|usiner des pièces|fabriquer en série)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'manufacturing' },
+            { pattern: /\b(pièces usinées|composants mécaniques|matériel industriel)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'technical_components' },
+            { pattern: /\b(opérationnel industriellement|fonctionnel mécaniquement)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'completion_status' },
+            // Time and resource management (MORE SPECIFIC)
+            { pattern: /\b(temps estimé pour la fabrication|délai de production)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'project_timing' },
+            { pattern: /\b(moyens financier pour l'outillage|budget de fabrication)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'resource_management' },
         ];
         
-        // 8i. INFORMAL COMMUNICATION CONTEXTS (MEDIUM SIGNAL)
+        // 8i. INFORMAL COMMUNICATION CONTEXTS (REDUCED WEIGHTS)
         const informalCommPatterns = [
-            // Casual requests and messages
-            { pattern: /\b(je vous pris|s'il vous plaît|merci|bonjour)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'casual_politeness' },
-            { pattern: /\b(commande|facture|paiement|compte)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'commercial_communication' },
-            { pattern: /\b(envoie|envoyez|photos|images)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'informal_requests' },
-            // Informal expressions and slang
-            { pattern: /\b(désolant|merde|putain|bordel)\b[\s\S]*avant\s+qu/i, weight: 1.6, context: 'informal_expressions' },
-            { pattern: /\b(allez|bon|alors|voila)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'casual_discourse_markers' },
-            { pattern: /\b(tu prenne|tu fasse|tu sois)\b[\s\S]*avant\s+qu/i, weight: 1.5, context: 'informal_grammar_errors' },
-            // Online/digital communication
-            { pattern: /\b(msn|email|message|texto)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'digital_communication' },
-            { pattern: /\b(cliquer|télécharger|sauvegarder|uploader)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'digital_actions' },
+            // Casual requests and messages (MORE SPECIFIC)
+            { pattern: /\b(je vous pris de faire|s'il vous plaît envoyez|merci de bien vouloir)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'casual_politeness' },
+            { pattern: /\b(commande en ligne|facture impayée|paiement en retard)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'commercial_communication' },
+            { pattern: /\b(envoie les photos|envoyez-moi les images)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'informal_requests' },
+            // Informal expressions and slang (KEEP STRONG)
+            { pattern: /\b(désolant|merde alors|putain de|bordel de)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'informal_expressions' },
+            { pattern: /\b(allez bon|alors voila|bon ben)\b[\s\S]*avant\s+qu/i, weight: 0.9, context: 'casual_discourse_markers' },
+            { pattern: /\b(tu prenne des|tu fasse attention|tu sois là)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'informal_grammar_errors' },
+            // Online/digital communication (MORE SPECIFIC)
+            { pattern: /\b(message sur msn|email urgent|texto important)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'digital_communication' },
+            { pattern: /\b(cliquer sur le lien|télécharger le fichier)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'digital_actions' },
         ];
         
-        // 8j. TRAVEL/TOURISM CONTEXTS (MEDIUM SIGNAL)
+        // 8j. TRAVEL/TOURISM CONTEXTS (REDUCED WEIGHTS)
         const travelTourismPatterns = [
-            // Travel experiences and destinations
-            { pattern: /\b(j'ai testé|j'ai essayé|j'ai découvert)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'personal_experience' },
-            { pattern: /\b(Thaïlande|France|pays|destination)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'travel_destinations' },
-            { pattern: /\b(voyage|tourisme|vacances|séjour)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'travel_activities' },
-            // Cultural and experiential contexts
-            { pattern: /\b(concept|mode|tendance|culture)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'cultural_trends' },
-            { pattern: /\b(réserve naturelle|parc|site|lieu)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'tourist_locations' },
-            { pattern: /\b(expérience|aventure|découverte|rencontre)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'travel_experiences' },
-            // Personal travel narratives
-            { pattern: /\b(j'ai même eu la chance|j'ai pu|j'ai réussi)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'personal_travel_narrative' },
-            { pattern: /\b(me baigner|visiter|explorer|profiter)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'travel_activities_personal' },
+            // Travel experiences and destinations (MORE SPECIFIC)
+            { pattern: /\b(j'ai testé ce concept|j'ai essayé cette activité|j'ai découvert ce lieu)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'personal_experience' },
+            { pattern: /\b(voyage en Thaïlande|séjour en France|destination touristique)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'travel_destinations' },
+            { pattern: /\b(voyage organisé|tourisme culturel|vacances d'été)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'travel_activities' },
+            // Cultural and experiential contexts (REDUCED)
+            { pattern: /\b(concept touristique|mode de voyage|tendance culturelle)\b[\s\S]*avant\s+qu/i, weight: 0.9, context: 'cultural_trends' },
+            { pattern: /\b(réserve naturelle protégée|parc national|site touristique)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'tourist_locations' },
+            { pattern: /\b(expérience de voyage|aventure touristique|découverte culturelle)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'travel_experiences' },
+            // Personal travel narratives (MORE SPECIFIC)
+            { pattern: /\b(j'ai même eu la chance de voyager|j'ai pu visiter|j'ai réussi à explorer)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'personal_travel_narrative' },
+            { pattern: /\b(me baigner dans la mer|visiter des monuments|explorer la région)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'travel_activities_personal' },
         ];
         
-        // 8k. GAMING/ONLINE CONTEXTS (MEDIUM SIGNAL)
+        // 8k. GAMING/ONLINE CONTEXTS (REDUCED WEIGHTS)
         const gamingOnlinePatterns = [
-            // Gaming terminology
-            { pattern: /\b(cliquer|clique|click|bouton)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'gaming_actions' },
-            { pattern: /\b(faire sauter|exploser|détruire|attaquer)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'gaming_violence' },
-            { pattern: /\b(jeu|game|gaming|jouer)\b[\s\S]*avant\s+qu/i, weight: 1.5, context: 'gaming_general' },
-            // Online betting and gambling
-            { pattern: /\b(paris|pari|bet|mise)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'online_betting' },
-            { pattern: /\b(paiement|retarder|élégance|hasard)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'betting_issues' },
-            // Online interactions
-            { pattern: /\b(clairement|franchement|sérieusement)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'online_discourse' },
-            { pattern: /\b(allez allez|bon allez|vite)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'urgent_online_communication' },
-            // Technical gaming contexts
-            { pattern: /\b(serveur|lag|bug|crash)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'gaming_technical' },
+            // Gaming terminology (MORE SPECIFIC)
+            { pattern: /\b(cliquer sur le bouton|clique pour jouer|click to play)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'gaming_actions' },
+            { pattern: /\b(faire sauter la base|exploser l'ennemi|détruire le boss)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'gaming_violence' },
+            { pattern: /\b(jeu vidéo|game online|gaming session)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'gaming_general' },
+            // Online betting and gambling (MORE SPECIFIC)
+            { pattern: /\b(paris sportifs|pari en ligne|bet sur le match)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'online_betting' },
+            { pattern: /\b(paiement des gains|retarder les paris|élégance du bookmaker)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'betting_issues' },
+            // Online interactions (REDUCED)
+            { pattern: /\b(clairement dans le chat|franchement en ligne|sérieusement sur le forum)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'online_discourse' },
+            { pattern: /\b(allez allez vite|bon allez dépêche|vite avant la fin)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'urgent_online_communication' },
+            // Technical gaming contexts (MORE SPECIFIC)
+            { pattern: /\b(serveur de jeu|lag important|bug du jeu|crash du serveur)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'gaming_technical' },
         ];
         
         // 8l. ENVIRONMENTAL/NATURAL ROUTINE CONTEXTS (MEDIUM SIGNAL)
