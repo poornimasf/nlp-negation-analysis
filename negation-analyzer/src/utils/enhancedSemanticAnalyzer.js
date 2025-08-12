@@ -951,8 +951,12 @@ class EnhancedSemanticAnalyzer {
         
         // 1. GRAMMATICAL ERRORS - Indicative mood instead of subjunctive (STRONGEST SIGNAL)
         const indicativePatterns = [
+            // Standard form: "avant que je ai", "avant que tu as", etc.
             { pattern: /avant\s+qu[e']?\s*(?:je|tu|il|elle|on|nous|vous|ils|elles)\s+(?:ai|as|a|avons|avez|ont|suis|es|est|sommes|êtes|sont|vais|vas|va|allons|allez|vont|pars|part|partons|partez|partent|prend|prends|prenons|prenez|prennent|fait|fais|faisons|faites|font|vient|viens|venons|venez|viennent|dit|dis|disons|dites|disent|peut|peux|pouvons|pouvez|peuvent|veut|veux|voulons|voulez|veulent)\b/i, 
               weight: 3.0, context: 'indicative_mood_error' },
+            // Contracted forms: "avant que j'ai", "avant que j'aie" (wrong), etc.
+            { pattern: /avant\s+qu[e']?\s*(?:j'|tu\s+|il\s+|elle\s+|on\s+|nous\s+|vous\s+|ils\s+|elles\s+)(?:ai|as|a|avons|avez|ont|suis|es|est|sommes|êtes|sont|vais|vas|va|allons|allez|vont|pars|part|partons|partez|partent|prend|prends|prenons|prenez|prennent|fait|fais|faisons|faites|font|vient|viens|venons|venez|viennent|dit|dis|disons|dites|disent|peut|peux|pouvons|pouvez|peuvent|veut|veux|voulons|voulez|veulent)\b/i, 
+              weight: 3.0, context: 'indicative_mood_error_contracted' },
         ];
         
         // 2. INFORMAL/COLLOQUIAL MARKERS (STRONG SIGNAL)

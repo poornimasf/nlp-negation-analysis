@@ -249,23 +249,26 @@ function explainFinalDecision(analysis, semanticAnalysis) {
     if (logicalOverride) {
         explanation += `   → Result: "No Expletive" (logical override)\n`;
         explanation += `   → Reason: Strong logical negation always takes priority\n`;
-    } else if (semanticConfidence >= 0.6 && semanticBias >= 0.3) {
-        explanation += `   → Result: "Expletive" (confident + strong context)\n`;
-        explanation += `   → Reason: High confidence AND strong expletive context\n`;
     } else if (semanticBias < -0.3) {
         explanation += `   → Result: "No Expletive" (strong logical bias)\n`;
         explanation += `   → Reason: Context strongly suggests logical negation\n`;
+    } else if (semanticBias > 0.3) {
+        explanation += `   → Result: "Expletive" (strong expletive bias)\n`;
+        explanation += `   → Reason: Strong semantic bias toward expletive\n`;
+    } else if (semanticBias > 0.15) {
+        explanation += `   → Result: "Expletive" (weak expletive bias)\n`;
+        explanation += `   → Reason: Weak positive bias + syntactic licensing\n`;
     } else {
         explanation += `   → Result: "No Expletive" (conservative default)\n`;
         explanation += `   → Reason: `;
         
         const reasons = [];
         if (semanticConfidence < 0.6) reasons.push('low confidence');
-        if (semanticBias < 0.3) reasons.push('weak expletive context');
+        if (semanticBias <= 0.15) reasons.push('insufficient expletive context');
         if (!hasLicensing) reasons.push('no grammar requirement');
         
         explanation += reasons.join(' + ');
-        explanation += `\n   → Conservative approach: only classify as expletive when confident\n`;
+        explanation += `\n   → Conservative approach: only classify as expletive with positive semantic support\n`;
     }
     
     // Step 6: Confidence explanation
