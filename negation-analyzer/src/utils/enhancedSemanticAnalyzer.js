@@ -297,29 +297,33 @@ class EnhancedSemanticAnalyzer {
         // Step 2: Detect expletive contexts (medium priority) - use normalized for pattern matching
         const expletiveAnalysis = this.detectExpletiveContext(normalizedSentence);
         
+        // Step 2.5: NEW - Detect anti-expletive contexts (contexts that suggest NO expletive)
+        const antiExpletiveAnalysis = this.detectAntiExpletiveContext(sentence);
+        
         // Step 3: Check syntactic licensing (lowest priority) - use normalized for pattern matching
         const syntacticAnalysis = this.checkSyntacticLicensing(normalizedSentence);
         
         // Step 4: DISCOURSE ANALYSIS - NEW!
         const discourseAnalysis = this.analyzeDiscourseFactors(sentence, normalizedSentence);
         
-        // Step 5: Detect semantic conflicts
-        const conflictAnalysis = this.detectSemanticConflict(logicalAnalysis, expletiveAnalysis, syntacticAnalysis);
+        // Step 5: Detect semantic conflicts (now includes anti-expletive)
+        const conflictAnalysis = this.detectSemanticConflict(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, antiExpletiveAnalysis);
         
-        // Step 6: Calculate final semantic bias using hierarchy + discourse
-        const semanticBias = this.calculateHierarchicalBias(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, conflictAnalysis, discourseAnalysis);
+        // Step 6: Calculate final semantic bias using hierarchy + discourse + anti-expletive
+        const semanticBias = this.calculateHierarchicalBias(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, conflictAnalysis, discourseAnalysis, antiExpletiveAnalysis);
         
-        // Step 7: Calculate expletive likelihood on 1-7 scale
-        const likelihood = this.calculateExpletiveLikelihood(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, discourseAnalysis, semanticBias);
+        // Step 7: Calculate expletive likelihood on 1-7 scale (now considers anti-expletive)
+        const likelihood = this.calculateExpletiveLikelihood(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, discourseAnalysis, semanticBias, antiExpletiveAnalysis);
         
         return {
             logicalAnalysis,
             expletiveAnalysis,
+            antiExpletiveAnalysis,  // NEW!
             syntacticAnalysis,
-            discourseAnalysis,  // NEW!
+            discourseAnalysis,
             conflictAnalysis,
             semanticBias,
-            likelihood,  // NEW!
+            likelihood,
             classification: this.determineClassification(semanticBias, conflictAnalysis),
             reasoning: this.generateReasoning(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, conflictAnalysis, semanticBias, discourseAnalysis)
         };
@@ -757,10 +761,20 @@ class EnhancedSemanticAnalyzer {
     }
     
     /**
-     * Calculate semantic bias using hierarchical approach + discourse modulation
+     * Calculate semantic bias using hierarchical approach + discourse modulation + anti-expletive detection
      */
-    calculateHierarchicalBias(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, conflictAnalysis, discourseAnalysis) {
+    calculateHierarchicalBias(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, conflictAnalysis, discourseAnalysis, antiExpletiveAnalysis) {
         let bias = 0;
+        
+        // PRIORITY 0: Anti-expletive contexts (NEW - highest priority for false positive reduction)
+        if (antiExpletiveAnalysis && antiExpletiveAnalysis.overridesExpletive) {
+            bias -= 0.8; // Strong bias against expletive
+            console.log(`🚫 ANTI-EXPLETIVE OVERRIDE: ${antiExpletiveAnalysis.strength} (score: ${antiExpletiveAnalysis.score})`);
+        } else if (antiExpletiveAnalysis && antiExpletiveAnalysis.strength === 'medium') {
+            bias -= 0.4; // Moderate bias against expletive
+        } else if (antiExpletiveAnalysis && antiExpletiveAnalysis.strength === 'weak') {
+            bias -= 0.2; // Slight bias against expletive
+        }
         
         // PRIORITY 1: Logical indicators (addresses overcorrection)
         if (logicalAnalysis.level === 'strong') {
@@ -771,8 +785,8 @@ class EnhancedSemanticAnalyzer {
             bias -= 0.2; // Slight favor logical
         }
         
-        // PRIORITY 2: Expletive contexts (only if logical is not strong)
-        if (!logicalAnalysis.overridesExpletive) {
+        // PRIORITY 2: Expletive contexts (only if logical AND anti-expletive are not strong)
+        if (!logicalAnalysis.overridesExpletive && (!antiExpletiveAnalysis || !antiExpletiveAnalysis.overridesExpletive)) {
             if (expletiveAnalysis.strength === 'strong') {
                 bias += 0.6;
             } else if (expletiveAnalysis.strength === 'medium') {
@@ -840,9 +854,72 @@ class EnhancedSemanticAnalyzer {
     }
     
     /**
-     * Calculate expletive likelihood on 1-7 Likert scale
-     * Original implementation from commit cbf7c82
+     * Detect contexts that strongly suggest NO expletive "ne" should be used
+     * Based on corpus analysis of false positive patterns
      */
+    detectAntiExpletiveContext(sentence) {
+        const contexts = [];
+        let totalScore = 0;
+        
+        // 1. GRAMMATICAL ERRORS - Indicative mood instead of subjunctive
+        const indicativePatterns = [
+            { pattern: /avant\s+qu[e']?\s*(?:je|tu|il|elle|on|nous|vous|ils|elles)\s+(?:ai|as|a|avons|avez|ont|suis|es|est|sommes|êtes|sont|vais|vas|va|allons|allez|vont|pars|part|partons|partez|partent)\b/i, 
+              weight: 2.0, context: 'indicative_mood_error' },
+        ];
+        
+        // 2. INFORMAL/COLLOQUIAL MARKERS
+        const informalPatterns = [
+            { pattern: /\b(allez|bon|bah|ouais|nan|putain|merde)\b/i, weight: 1.0, context: 'informal_language' },
+            { pattern: /\b(clairement|franchement|carrément)\b/i, weight: 0.8, context: 'colloquial_adverbs' },
+            { pattern: /[.]{2,}|!!+|\^\^|:\)|:\(/i, weight: 0.5, context: 'informal_punctuation' },
+        ];
+        
+        // 3. WEAK TEMPORAL CONTEXTS (simple sequence, not emotional)
+        const weakTemporalPatterns = [
+            { pattern: /avant\s+qu[e']?\s*(?:une?|le|la|les|ce|cette|ces)\s+(?:école|service|moment|temps|jour|heure)\b/i, 
+              weight: 1.0, context: 'weak_temporal_sequence' },
+            { pattern: /avant\s+qu[e']?\s*(?:il|elle|on)\s+(?:commence|finisse|arrive|parte|ouvre|ferme)\b/i, 
+              weight: 0.8, context: 'neutral_temporal_action' },
+        ];
+        
+        // 4. NARRATIVE/DESCRIPTIVE CONTEXTS
+        const narrativePatterns = [
+            { pattern: /\b(se déroula|se passa|eut lieu|arriva)\b.*avant\s+que/i, weight: 0.8, context: 'past_narrative' },
+            { pattern: /\b(j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont|elles ont)\b.*avant\s+que/i, 
+              weight: 0.6, context: 'past_tense_context' },
+        ];
+        
+        // 5. TECHNICAL/NEUTRAL CONTEXTS
+        const technicalPatterns = [
+            { pattern: /avant\s+qu[e']?\s*(?:le|la|les)\s+(?:système|service|programme|logiciel|application)\b/i, 
+              weight: 0.7, context: 'technical_context' },
+        ];
+        
+        const allPatterns = [
+            ...indicativePatterns,
+            ...informalPatterns, 
+            ...weakTemporalPatterns,
+            ...narrativePatterns,
+            ...technicalPatterns
+        ];
+        
+        for (const { pattern, weight, context } of allPatterns) {
+            if (pattern.test(sentence)) {
+                contexts.push({ context, weight, pattern: pattern.toString() });
+                totalScore += weight;
+            }
+        }
+        
+        const strength = totalScore > 2.0 ? 'strong' : totalScore > 1.0 ? 'medium' : totalScore > 0 ? 'weak' : 'none';
+        
+        return {
+            hasAntiExpletive: totalScore > 0,
+            strength,
+            score: totalScore,
+            contexts,
+            overridesExpletive: totalScore > 1.5 // Strong anti-expletive context overrides
+        };
+    }
     calculateExpletiveLikelihood(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, discourseAnalysis, semanticBias) {
         let score = 4; // Start at neutral (both forms acceptable)
         
