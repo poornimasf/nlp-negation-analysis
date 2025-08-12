@@ -1000,6 +1000,12 @@ class EnhancedSemanticAnalyzer {
         const businessPatterns = [
             { pattern: /\b(entreprise|société|organisation|administration)\b.*avant\s+que/i, weight: 1.4, context: 'business_context' },
             { pattern: /\b(contrat|accord|décision|modification)\b.*avant\s+que/i, weight: 1.2, context: 'legal_administrative' },
+            // Economic/Statistical terminology (NEW)
+            { pattern: /\b(intérim|emploi|secteurs|indicateur|infléchissements)\b.*avant\s+que/i, weight: 1.5, context: 'economic_statistical' },
+            { pattern: /\b(mouvements d'emploi|indicateur avancé|zone portuaire)\b.*avant\s+que/i, weight: 1.6, context: 'economic_technical' },
+            { pattern: /\b(économie|marché|secteur|industrie|commercial)\b.*avant\s+que/i, weight: 1.4, context: 'economic_context' },
+            { pattern: /\b(statistique|données|analyse|tendance|évolution)\b.*avant\s+que/i, weight: 1.3, context: 'statistical_context' },
+            { pattern: /\b(rapport|étude|recherche|enquête|sondage)\b.*avant\s+que/i, weight: 1.3, context: 'analytical_context' },
         ];
         
         // 8. NEW ANTI-EXPLETIVE CATEGORIES (BALANCED APPROACH)
@@ -1023,6 +1029,10 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\b(processus|workflow|procédure|protocole)\b.*avant\s+que/i, weight: 1.4, context: 'business_routine' },
             { pattern: /\b(réunion|meeting|conférence|présentation)\b.*avant\s+que/i, weight: 1.2, context: 'business_meetings' },
             { pattern: /\b(rapport|document|fichier|dossier)\b.*avant\s+que/i, weight: 1.1, context: 'business_documentation' },
+            // Economic/Statistical routine contexts (NEW)
+            { pattern: /\b(observés|intervenant|perceptibles|mesurés)\b.*avant\s+que/i, weight: 1.4, context: 'statistical_observation' },
+            { pattern: /\b(\d+\s+à\s+\d+\s+mois|\d+\s+mois|\d+\s+ans)\b.*avant\s+que/i, weight: 1.5, context: 'temporal_measurement' },
+            { pattern: /\b(constitue|représente|indique|démontre|révèle)\b.*avant\s+que/i, weight: 1.3, context: 'analytical_statement' },
         ];
         
         // 8d. MEDICAL/HEALTH ROUTINE CONTEXTS (MEDIUM SIGNAL)
