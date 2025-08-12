@@ -295,137 +295,28 @@ export const formatRuleBasedResult = (analysis) => {
     const { type, confidence, evidence, enhancedAvantQue, enhanced, semanticAnalysis, reasoning, correctionApplied, prediction } = analysis;
     const confidencePercent = Math.round(confidence * 100);
     
+    // Use prediction if available (enhanced analysis), otherwise type
+    const finalClassification = prediction || type;
+    
+    // NEW: Check if we should use the enhanced linguistic format
+    if (enhanced && semanticAnalysis) {
+        return formatEnhancedLinguisticAnalysis(analysis);
+    }
+    
+    // FALLBACK: Original format for non-enhanced analysis
     let result = 'Rule-Based Analysis\n';
     result += '-----------------\n\n';
     
-    // Classification and confidence - use prediction if available (enhanced analysis), otherwise type
-    const finalClassification = prediction || type;
     result += `Classification: ${finalClassification}\n`;
     result += `Confidence: ${confidencePercent}%\n\n`;
     
-    // Enhanced corpus-driven analysis (NEW)
-    if (enhanced && semanticAnalysis) {
-        result += '🧠 Enhanced French Grammar Analysis:\n';
-        result += `- Analysis Type: Advanced linguistic analysis\n`;
-        result += `- Enhancement Applied: ${getEnhancementDescription(correctionApplied)}\n\n`;
-        
-        // Semantic reasoning in plain language
-        if (reasoning) {
-            result += 'Why This Classification:\n';
-            result += `- ${translateReasoningToPlainLanguage(reasoning)}\n\n`;
-        }
-        
-        // Discourse Analysis in plain language
-        if (semanticAnalysis.discourseAnalysis) {
-            const discourse = semanticAnalysis.discourseAnalysis;
-            result += 'French Language Context:\n';
-            if (discourse.register && discourse.register.type && discourse.register.type !== 'neutral') {
-                result += `- Language Style: ${getRegisterDescription(discourse.register.type)} (${getConfidenceDescription(discourse.register.confidence)})\n`;
-            }
-            if (discourse.stance && discourse.stance.type && discourse.stance.type !== 'neutral') {
-                result += `- Speaker Attitude: ${getStanceDescription(discourse.stance.type)} (${getConfidenceDescription(discourse.stance.confidence)})\n`;
-            }
-            if (discourse.pragmatic && discourse.pragmatic.factors && discourse.pragmatic.factors.length > 0) {
-                result += `- Sentence Type: ${getPragmaticDescription(discourse.pragmatic.factors)}\n`;
-            }
-            if (discourse.discourseInfluence && discourse.discourseInfluence.summary) {
-                result += `- Context Effect: ${translateDiscourseInfluence(discourse.discourseInfluence.summary)}\n`;
-            }
-            result += '\n';
-        }
-        
-        // Semantic Analysis Summary in plain language
-        if (semanticAnalysis.classification) {
-            result += 'Grammar Analysis Summary:\n';
-            result += `- Grammar Suggests: ${getClassificationDescription(semanticAnalysis.classification.prediction)}\n`;
-            result += `- Certainty Level: ${getCertaintyDescription(semanticAnalysis.classification.certainty)} (${Math.round(semanticAnalysis.classification.confidence * 100)}%)\n`;
-            result += `- Overall Tendency: ${getBiasDescription(semanticAnalysis.semanticBias)}\n\n`;
-        }
-        
-        // Logical Analysis in plain language
-        if (semanticAnalysis.logicalAnalysis && semanticAnalysis.logicalAnalysis.level !== 'none') {
-            result += 'Logical Negation Check:\n';
-            result += `- Strength: ${getLogicalStrengthDescription(semanticAnalysis.logicalAnalysis.level)}\n`;
-            if (semanticAnalysis.logicalAnalysis.indicators.length > 0) {
-                const indicatorStrings = semanticAnalysis.logicalAnalysis.indicators.map(indicator => 
-                    typeof indicator === 'string' ? indicator : (indicator.word || indicator.type || 'unknown')
-                );
-                result += `- Found Words: "${indicatorStrings.join('", "')}"\n`;
-            }
-            result += `- Overrides Expletive: ${semanticAnalysis.logicalAnalysis.overridesExpletive ? 'Yes - strong logical negation detected' : 'No'}\n\n`;
-        }
-        
-        // Expletive Analysis in plain language
-        if (semanticAnalysis.expletiveAnalysis && semanticAnalysis.expletiveAnalysis.strength !== 'none') {
-            result += 'Expletive Context Check:\n';
-            result += `- Context Strength: ${getExpletiveStrengthDescription(semanticAnalysis.expletiveAnalysis.strength)}\n`;
-            if (semanticAnalysis.expletiveAnalysis.contexts.length > 0) {
-                result += `- Context Types: ${getExpletiveContextDescription(semanticAnalysis.expletiveAnalysis.contexts)}\n`;
-            }
-            result += `- Supports Expletive "ne": ${semanticAnalysis.expletiveAnalysis.favorsExpletive ? 'Yes' : 'No'}\n\n`;
-        }
-        
-        // Syntactic Analysis in plain language
-        if (semanticAnalysis.syntacticAnalysis) {
-            result += 'Grammar Structure Check:\n';
-            result += `- Has Grammar Pattern: ${semanticAnalysis.syntacticAnalysis.hasLicensing ? 'Yes' : 'No'}\n`;
-            if (semanticAnalysis.syntacticAnalysis.triggers.length > 0) {
-                const triggerStrings = semanticAnalysis.syntacticAnalysis.triggers.map(trigger => 
-                    typeof trigger === 'string' ? trigger : (trigger.name || trigger.type || 'unknown')
-                );
-                result += `- Grammar Patterns: "${triggerStrings.join('", "')}"\n`;
-            }
-            result += `- Important Note: ${translateSyntacticNote(semanticAnalysis.syntacticAnalysis.note)}\n\n`;
-        }
-        
-        // Final Decision Logic (NEW - explains the calculation)
-        result += '🎯 Final Decision Logic:\n';
-        result += explainFinalDecision(analysis, semanticAnalysis);
-        result += '\n';
-        
-        // Conflict Analysis in plain language
-        if (semanticAnalysis.conflictAnalysis && semanticAnalysis.conflictAnalysis.hasConflict) {
-            result += 'Conflicting Signals Resolution:\n';
-            result += `- Conflicting Evidence: Yes\n`;
-            result += `- Conflict Types: ${getConflictTypeDescription(semanticAnalysis.conflictAnalysis.conflictTypes)}\n`;
-            result += `- Resolution: ${getResolutionDescription(semanticAnalysis.conflictAnalysis.resolution)}\n\n`;
-        }
-    }
-    
-    // Enhanced avant que analysis (if present)
-    if (enhancedAvantQue && enhancedAvantQue.isAvantQue) {
-        result += 'Enhanced Avant Que Analysis:\n';
-        result += `- Classification: ${enhancedAvantQue.classification}\n`;
-        result += `- Confidence: ${Math.round(enhancedAvantQue.confidence * 100)}%\n`;
-        result += `- Reasoning: ${enhancedAvantQue.classificationReason}\n\n`;
-        
-        result += 'Linguistic Analysis:\n';
-        result += `- Complement Clause: ${enhancedAvantQue.complementClause.isComplementClause ? 'Present' : 'Absent'} (${Math.round(enhancedAvantQue.complementClause.confidence * 100)}% confidence)\n`;
-        result += `- Subjunctive Mood: ${enhancedAvantQue.subjunctiveMood.hasSubjunctive ? 'Present' : 'Absent'} (${Math.round(enhancedAvantQue.subjunctiveMood.confidence * 100)}% confidence)\n`;
-        
-        if (enhancedAvantQue.complementClause.indicators && enhancedAvantQue.complementClause.indicators.length > 0) {
-            result += `- Complement Indicators: ${enhancedAvantQue.complementClause.indicators.join(', ')}\n`;
-        }
-        
-        if (enhancedAvantQue.subjunctiveMood.hasSubjunctive) {
-            result += `- Subjunctive Verb: "${enhancedAvantQue.subjunctiveMood.verb}" (${enhancedAvantQue.subjunctiveMood.verbType})\n`;
-        }
-        
-        result += '\nDetailed Reasoning:\n';
-        enhancedAvantQue.reasoning.forEach(reason => {
-            result += `- ${reason}\n`;
-        });
-        result += '\n';
-    }
-    
+    // ... rest of original formatting logic for fallback cases
     if (evidence) {
-        // Trigger information
         if (evidence.trigger) {
             result += 'Trigger Analysis:\n';
             result += `- Found: "${evidence.trigger}"\n`;
             if (evidence.category) {
                 result += `- Category: ${evidence.category}\n`;
-                // Add subcategory for avant que
                 if (evidence.category === 'TEMPORAL' && evidence.trigger.includes('avant')) {
                     result += `- Subcategory: ${evidence.subcategory || 'DEFAULT'}\n`;
                     result += `- Usage: ${getAvantQueUsageDescription(evidence.subcategory)}\n`;
@@ -433,7 +324,6 @@ export const formatRuleBasedResult = (analysis) => {
             }
         }
         
-        // Additional evidence points
         if (evidence.details) {
             result += '\nDetails:\n';
             const points = Array.isArray(evidence.details) 
@@ -447,6 +337,317 @@ export const formatRuleBasedResult = (analysis) => {
     
     return result;
 };
+
+/**
+ * NEW: Enhanced linguistic analysis format for academic/research audience
+ */
+function formatEnhancedLinguisticAnalysis(analysis) {
+    const { confidence, semanticAnalysis, reasoning, correctionApplied, prediction } = analysis;
+    const confidencePercent = Math.round(confidence * 100);
+    
+    let result = '=== COMPUTATIONAL LINGUISTIC ANALYSIS ===\n\n';
+    
+    result += `Classification: ${prediction}\n`;
+    result += `Theoretical Confidence: ${confidencePercent}%\n\n`;
+    
+    // SYNTACTIC LICENSING EVALUATION
+    result += '🎯 SYNTACTIC LICENSING EVALUATION:\n';
+    if (semanticAnalysis.syntacticAnalysis) {
+        const syntactic = semanticAnalysis.syntacticAnalysis;
+        if (syntactic.triggers && syntactic.triggers.length > 0) {
+            const trigger = syntactic.triggers[0];
+            const triggerName = typeof trigger === 'string' ? trigger : (trigger.name || trigger.type);
+            result += `Construction: *${triggerName}* + subjunctive\n`;
+            result += `Licensing Status: ${syntactic.hasLicensing ? '✅ Classical licensing environment (Muller 1991)' : '❌ No syntactic licensing detected'}\n`;
+            result += `Theoretical Significance: ${syntactic.hasLicensing ? 'Demonstrates syntactic enablement vs. semantic requirement distinction' : 'Non-licensing context requires alternative analysis'}\n\n`;
+        }
+    }
+    
+    // SEMANTIC-PRAGMATIC ANALYSIS
+    result += '📊 SEMANTIC-PRAGMATIC ANALYSIS:\n';
+    
+    // Lexical and temporal semantics
+    if (semanticAnalysis.expletiveAnalysis && semanticAnalysis.expletiveAnalysis.contexts.length > 0) {
+        const contexts = semanticAnalysis.expletiveAnalysis.contexts;
+        const emotionalContexts = contexts.filter(c => c.type && (c.type.includes('emotional') || c.type.includes('urgency') || c.type.includes('finality')));
+        const temporalContexts = contexts.filter(c => c.type && c.type.includes('temporal'));
+        
+        if (emotionalContexts.length > 0) {
+            result += `Lexical Semantics: High emotional valence detected - ${emotionalContexts.map(c => c.context).join(', ')}\n`;
+        }
+        if (temporalContexts.length > 0) {
+            result += `Temporal Semantics: ${temporalContexts.length > 0 ? 'Anticipatory aspect with emotional investment' : 'Neutral temporal sequence'}\n`;
+        }
+    }
+    
+    result += `Discourse Function: ${getDiscourseFunction(semanticAnalysis)}\n`;
+    result += `Semantic Bias: ${getSemanticBiasDescription(semanticAnalysis.semanticBias)}\n\n`;
+    
+    // REGISTER & DISCOURSE FACTORS
+    result += '🎭 REGISTER & DISCOURSE FACTORS:\n';
+    if (semanticAnalysis.discourseAnalysis) {
+        const discourse = semanticAnalysis.discourseAnalysis;
+        if (discourse.register && discourse.register.type !== 'neutral') {
+            result += `Register: ${getLinguisticRegisterDescription(discourse.register.type)} (confidence: ${Math.round(discourse.register.confidence * 100)}%)\n`;
+        }
+        if (discourse.pragmatic && discourse.pragmatic.factors && discourse.pragmatic.factors.length > 0) {
+            result += `Stylistic Context: ${getPragmaticLinguisticDescription(discourse.pragmatic.factors)}\n`;
+        }
+        result += `Pragmatic Weight: ${getPragmaticWeight(semanticAnalysis)}\n`;
+        result += `Expletive Function: ${getExpletiveFunction(semanticAnalysis)}\n\n`;
+    }
+    
+    // HIERARCHICAL CONFLICT RESOLUTION
+    result += '⚖️ HIERARCHICAL CONFLICT RESOLUTION:\n';
+    result += `Priority 0 (Anti-expletive): ${getAntiExpletiveStatus(semanticAnalysis)}\n`;
+    result += `Priority 1 (Logical override): ${getLogicalOverrideStatus(semanticAnalysis)}\n`;
+    result += `Priority 2 (Expletive context): ${getExpletiveContextStatus(semanticAnalysis)}\n`;
+    result += `Priority 3 (Syntactic licensing): ${getSyntacticLicensingStatus(semanticAnalysis)}\n`;
+    result += `Resolution: ${getResolutionExplanation(semanticAnalysis, correctionApplied)}\n\n`;
+    
+    // THEORETICAL IMPLICATIONS
+    result += '🔬 THEORETICAL IMPLICATIONS:\n';
+    result += getTheoreticalImplications(semanticAnalysis, prediction);
+    result += '\n';
+    
+    // GRADIENT ACCEPTABILITY
+    result += '📈 GRADIENT ACCEPTABILITY:\n';
+    result += getGradientAcceptabilityAnalysis(semanticAnalysis, prediction, confidence);
+    result += '\n';
+    
+    // SURFACE REALIZATION
+    result += '🎯 SURFACE REALIZATION:\n';
+    result += getSurfaceRealizationPrediction(semanticAnalysis, prediction, confidence);
+    
+    return result;
+}
+
+// Helper functions for the new linguistic format
+function getDiscourseFunction(semanticAnalysis) {
+    if (semanticAnalysis.expletiveAnalysis && semanticAnalysis.expletiveAnalysis.contexts.length > 0) {
+        const contexts = semanticAnalysis.expletiveAnalysis.contexts;
+        if (contexts.some(c => c.type && c.type.includes('urgency'))) {
+            return 'Narrative tension building toward climactic event';
+        }
+        if (contexts.some(c => c.type && c.type.includes('emotional'))) {
+            return 'Emotional investment marking in temporal anticipation';
+        }
+        if (contexts.some(c => c.type && c.type.includes('preventive'))) {
+            return 'Preventive action framing with urgency marking';
+        }
+    }
+    return 'Neutral temporal sequencing without emotional marking';
+}
+
+function getSemanticBiasDescription(bias) {
+    if (bias > 0.3) return `Strong expletive tendency (+${bias.toFixed(2)}) - multiple converging factors`;
+    if (bias > 0.1) return `Moderate expletive tendency (+${bias.toFixed(2)}) - some supporting factors`;
+    if (bias < -0.3) return `Strong logical tendency (${bias.toFixed(2)}) - competing logical negation`;
+    if (bias < -0.1) return `Moderate logical tendency (${bias.toFixed(2)}) - weak logical signals`;
+    return `Neutral (${bias.toFixed(2)}) - no strong semantic preference`;
+}
+
+function getLinguisticRegisterDescription(registerType) {
+    const descriptions = {
+        'formal': 'Formal academic/literary register',
+        'informal': 'Colloquial conversational register',
+        'literary': 'Literary narrative register with sophisticated lexical choices',
+        'technical': 'Technical/procedural register prioritizing clarity',
+        'administrative': 'Administrative/bureaucratic register'
+    };
+    return descriptions[registerType] || registerType;
+}
+
+function getPragmaticLinguisticDescription(factors) {
+    const descriptions = {
+        'question': 'Interrogative construction',
+        'directAddress': 'Direct addressee orientation',
+        'imperative': 'Imperative mood construction',
+        'exclamation': 'Exclamatory construction with emotional emphasis',
+        'complexSyntax': 'Complex syntactic embedding',
+        'longSentence': 'Extended syntactic structure'
+    };
+    
+    return factors.map(factor => {
+        const factorType = typeof factor === 'string' ? factor : (factor.type || 'unknown');
+        return descriptions[factorType] || factorType;
+    }).join(', ');
+}
+
+function getPragmaticWeight(semanticAnalysis) {
+    if (semanticAnalysis.discourseAnalysis && semanticAnalysis.discourseAnalysis.pragmatic) {
+        const factors = semanticAnalysis.discourseAnalysis.pragmatic.factors || [];
+        if (factors.some(f => (typeof f === 'string' ? f : f.type) === 'exclamation')) {
+            return 'Temporal clause carries emotional significance for narrative arc';
+        }
+        if (factors.some(f => (typeof f === 'string' ? f : f.type) === 'complexSyntax')) {
+            return 'Complex embedding creates formal stylistic context';
+        }
+    }
+    return 'Standard temporal clause without special pragmatic marking';
+}
+
+function getExpletiveFunction(semanticAnalysis) {
+    if (semanticAnalysis.discourseAnalysis && semanticAnalysis.discourseAnalysis.register) {
+        const register = semanticAnalysis.discourseAnalysis.register.type;
+        if (register === 'formal' || register === 'literary') {
+            return 'Stylistic marking appropriate for formal register';
+        }
+        if (register === 'informal') {
+            return 'Stylistic marking inappropriate for informal register';
+        }
+    }
+    return 'Optional stylistic enhancement without semantic necessity';
+}
+
+function getAntiExpletiveStatus(semanticAnalysis) {
+    if (semanticAnalysis.antiExpletiveAnalysis) {
+        const anti = semanticAnalysis.antiExpletiveAnalysis;
+        if (anti.overridesExpletive) {
+            return `❌ Strong blocking contexts detected (${anti.strength}, score: ${anti.score.toFixed(1)})`;
+        }
+        if (anti.strength === 'medium') {
+            return `⚠️ Medium blocking contexts detected (${anti.strength}, score: ${anti.score.toFixed(1)})`;
+        }
+        if (anti.strength === 'weak') {
+            return `⚠️ Weak blocking contexts detected (${anti.strength}, score: ${anti.score.toFixed(1)})`;
+        }
+    }
+    return '✅ No anti-expletive contexts detected';
+}
+
+function getLogicalOverrideStatus(semanticAnalysis) {
+    if (semanticAnalysis.logicalAnalysis) {
+        const logical = semanticAnalysis.logicalAnalysis;
+        if (logical.overridesExpletive) {
+            return `❌ Strong logical negation competition (${logical.level})`;
+        }
+        if (logical.level === 'medium') {
+            return `⚠️ Moderate logical negation detected (${logical.level})`;
+        }
+        if (logical.level === 'weak') {
+            return `⚠️ Weak logical negation detected (${logical.level})`;
+        }
+    }
+    return '✅ No logical negation competition';
+}
+
+function getExpletiveContextStatus(semanticAnalysis) {
+    if (semanticAnalysis.expletiveAnalysis) {
+        const expletive = semanticAnalysis.expletiveAnalysis;
+        if (expletive.strength === 'strong') {
+            return `✅ Strong expletive context (${expletive.contexts.length} factors)`;
+        }
+        if (expletive.strength === 'medium') {
+            return `✅ Moderate expletive context (${expletive.contexts.length} factors)`;
+        }
+        if (expletive.strength === 'weak') {
+            return `⚠️ Weak expletive context (${expletive.contexts.length} factors)`;
+        }
+    }
+    return '❌ No expletive context detected';
+}
+
+function getSyntacticLicensingStatus(semanticAnalysis) {
+    if (semanticAnalysis.syntacticAnalysis) {
+        const syntactic = semanticAnalysis.syntacticAnalysis;
+        if (syntactic.hasLicensing) {
+            return `✅ Strong licensing environment (${syntactic.triggers.length} triggers)`;
+        }
+    }
+    return '❌ No syntactic licensing detected';
+}
+
+function getResolutionExplanation(semanticAnalysis, correctionApplied) {
+    const corrections = {
+        'anti_expletive_override': 'Anti-expletive blocking takes precedence → No Expletive',
+        'logical_override': 'Logical negation competition takes precedence → No Expletive',
+        'conflict_resolution_expletive': 'Expletive context + syntactic licensing → Expletive',
+        'formal_politeness_context': 'Formal politeness + moderate bias → Expletive',
+        'semantic_bias_expletive': 'Strong semantic bias toward expletive → Expletive',
+        'semantic_bias_logical': 'Strong semantic bias toward logical → No Expletive',
+        'ambiguous_case': 'Syntactic licensing without semantic support → Conservative default'
+    };
+    return corrections[correctionApplied] || 'Standard hierarchical resolution applied';
+}
+
+function getTheoreticalImplications(semanticAnalysis, prediction) {
+    let implications = '';
+    
+    // Check for key theoretical scenarios
+    const hasLicensing = semanticAnalysis.syntacticAnalysis?.hasLicensing;
+    const hasExpletiveContext = semanticAnalysis.expletiveAnalysis?.strength !== 'none';
+    const hasAntiExpletive = semanticAnalysis.antiExpletiveAnalysis?.hasAntiExpletive;
+    
+    if (hasLicensing && !hasExpletiveContext) {
+        implications += 'This exemplifies the "syntactic licensing vs. semantic requirement" distinction - ';
+        implications += 'syntactic licensing creates potential but discourse-pragmatic factors determine actualization. ';
+    }
+    
+    if (hasAntiExpletive) {
+        implications += 'Demonstrates systematic anti-expletive contexts that actively block realization despite syntactic licensing. ';
+    }
+    
+    if (prediction === 'Expletive' && hasExpletiveContext) {
+        implications += 'Shows how emotional/urgency semantics interact with formal register to favor expletive realization. ';
+    }
+    
+    implications += 'Cross-linguistic Relevance: Demonstrates how computational models must integrate gradient acceptability rather than binary grammaticality judgments for optional morphosyntactic phenomena.';
+    
+    return implications;
+}
+
+function getGradientAcceptabilityAnalysis(semanticAnalysis, prediction, confidence) {
+    let analysis = '';
+    
+    const oppositePrediction = prediction === 'Expletive' ? 'No Expletive' : 'Expletive';
+    analysis += `Both variants acceptable: Standard form and ${prediction === 'Expletive' ? 'expletive-marked' : 'unmarked'} variant\n`;
+    
+    if (prediction === 'Expletive') {
+        const registerBoost = semanticAnalysis.discourseAnalysis?.register?.type === 'formal' || 
+                           semanticAnalysis.discourseAnalysis?.register?.type === 'literary' ? 15 : 0;
+        analysis += `Expletive variant: +${registerBoost}% stylistic appropriateness in current context\n`;
+    } else {
+        analysis += `Non-expletive variant: Preferred due to blocking contexts or lack of supporting factors\n`;
+    }
+    
+    analysis += `Computational Decision: ${prediction} recommended (confidence: ${Math.round(confidence * 100)}%)`;
+    
+    return analysis;
+}
+
+function getSurfaceRealizationPrediction(semanticAnalysis, prediction, confidence) {
+    let realization = '';
+    
+    if (prediction === 'Expletive') {
+        // Try to extract the trigger to show surface form
+        if (semanticAnalysis.syntacticAnalysis?.triggers?.length > 0) {
+            const trigger = semanticAnalysis.syntacticAnalysis.triggers[0];
+            const triggerName = typeof trigger === 'string' ? trigger : (trigger.name || trigger.type);
+            realization += `Predicted form: "${triggerName} + ne + subjunctive"\n`;
+        } else {
+            realization += `Predicted form: "Construction with expletive ne"\n`;
+        }
+    } else {
+        realization += `Predicted form: "Construction without expletive ne"\n`;
+    }
+    
+    realization += `Confidence: ${Math.round(confidence * 100)}% (${getConfidenceRationale(confidence, semanticAnalysis)})`;
+    
+    return realization;
+}
+
+function getConfidenceRationale(confidence, semanticAnalysis) {
+    if (confidence > 0.85) {
+        return 'high certainty based on converging evidence';
+    } else if (confidence > 0.70) {
+        return 'good certainty with clear linguistic signals';
+    } else if (confidence > 0.55) {
+        return 'moderate certainty with some ambiguity';
+    } else {
+        return 'lower certainty due to conflicting or weak signals';
+    }
+}
 
 /**
  * Format training data analysis results with enhanced linguistic features
