@@ -134,6 +134,37 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\b(?:procédure|processus)\b.*(?:débute|commence)\b.*avant\s+que/i, weight: 1.9, type: 'procedural_onset' },
             { pattern: /\bavant\s+que.*(?:expire|se termine|finisse)\b/i, weight: 1.8, type: 'deadline_urgency' },
             { pattern: /\b(?:phase d'accélération|délais|échéance)\b.*avant\s+que/i, weight: 1.7, type: 'timeline_pressure' },
+            
+            // STRONG EXPLETIVE OVERRIDE CONTEXTS (NEW - compete with anti-expletive)
+            // Historical/cultural significance (VERY STRONG)
+            { pattern: /\b(?:bien avant que|colons français|colons anglais)\b.*avant\s+qu/i, weight: 2.8, type: 'historical_significance' },
+            { pattern: /\b(?:historique|culturel|patrimoine|tradition)\b.*avant\s+que/i, weight: 2.6, type: 'cultural_heritage' },
+            { pattern: /\b(?:amérindienne|autochtone|première nation)\b.*avant\s+que/i, weight: 2.5, type: 'indigenous_history' },
+            
+            // Emotional farewell/departure (VERY STRONG)
+            { pattern: /\b(?:dire au revoir|dernière fois|adieu|partir pour toujours)\b.*avant\s+qu/i, weight: 2.8, type: 'emotional_farewell' },
+            { pattern: /\b(?:je suis venu pour te dire|tu va me manquer|cœur brisé)\b.*avant\s+qu/i, weight: 2.7, type: 'emotional_departure' },
+            { pattern: /\b(?:larmes aux yeux|derniers mots|embrassa une dernière fois)\b.*avant\s+qu/i, weight: 2.6, type: 'emotional_intensity' },
+            
+            // Existential/philosophical concerns (STRONG)
+            { pattern: /\b(?:nous dépasse|de façon irréversible|s'effondre|fin du monde)\b.*avant\s+qu/i, weight: 2.5, type: 'existential_concern' },
+            { pattern: /\b(?:créature|détruire|légende|question posée)\b.*avant\s+qu/i, weight: 2.3, type: 'philosophical_dilemma' },
+            
+            // Religious/spiritual contexts (STRONG)
+            { pattern: /\b(?:Paul VI|télévision pour la religion|fidèles|émissions religieuses)\b.*avant\s+qu/i, weight: 2.4, type: 'religious_context' },
+            { pattern: /\b(?:la Toile|foyers|spirituel|divin)\b.*avant\s+qu/i, weight: 2.2, type: 'spiritual_transition' },
+            
+            // Formal legal/official procedures (MEDIUM-STRONG)
+            { pattern: /\b(?:tribunal|officiellement|cour le désigne|casier judiciaire)\b.*avant\s+qu/i, weight: 2.2, type: 'formal_legal' },
+            { pattern: /\b(?:informations devront être présentées|tuteur officiel)\b.*avant\s+qu/i, weight: 2.1, type: 'legal_requirements' },
+            
+            // Personal physical/emotional states (MEDIUM-STRONG)
+            { pattern: /\b(?:trop fatigué|condition physique|fatigue vient s'ajouter)\b.*avant\s+qu/i, weight: 2.3, type: 'physical_concern' },
+            { pattern: /\b(?:chaleur sous le casque|je sais que ce n'est pas facile)\b.*avant\s+qu/i, weight: 2.1, type: 'personal_struggle' },
+            
+            // Military/historical drama (MEDIUM-STRONG)
+            { pattern: /\b(?:troupes soviétiques|sabordé|nazis le renflouent)\b.*avant\s+qu/i, weight: 2.4, type: 'military_historical' },
+            { pattern: /\b(?:rebaptise|guerre|conflit historique)\b.*avant\s+qu/i, weight: 2.2, type: 'historical_conflict' },
             { pattern: /\bavant\s+que.*(?:recherche|analyse|étude|expérience|découverte)\b/i, weight: 1.7, type: 'academic_processes' },
             { pattern: /\bavant\s+que.*(?:comprenne|réalise|découvre|apprenne|maîtrise)\b/i, weight: 1.8, type: 'learning_processes' },
             { pattern: /\b(?:théorie|hypothèse|concept|principe)\b.*avant\s+que/i, weight: 1.5, type: 'academic_concepts' },
@@ -1182,7 +1213,7 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\b(quelque chose qui fonctionne|n'amène pas de blessure)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'functional_safety' },
         ];
         
-        // 8j. INFORMAL/GRAMMAR ERROR CONTEXTS (NEW - STRONG SIGNAL)
+        // 8j. INFORMAL/GRAMMAR ERROR CONTEXTS (STRENGTHENED)
         const informalGrammarPatterns = [
             // Grammar errors (STRONG SIGNAL)
             { pattern: /\b(je part|tu part|il part|on part)\b[\s\S]*avant\s+qu/i, weight: 3.2, context: 'grammar_errors_partir' },
@@ -1197,6 +1228,32 @@ class EnhancedSemanticAnalyzer {
             // Spelling errors and informal writing
             { pattern: /\b(c'etait|ecole|nee|endrois|arriver a mon cheval)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'spelling_errors' },
             { pattern: /\b(je croisse|nous ne le faisons pas sécher)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'informal_constructions' },
+        ];
+        
+        // 8k. PROCEDURAL/DURATION CONTEXTS (NEW - VERY STRONG SIGNAL)
+        const proceduralDurationPatterns = [
+            // Duration and completion contexts (VERY STRONG)
+            { pattern: /\b(ne fallut pas longtemps|n'a duré que|s'écouleront)\b[\s\S]*avant\s+qu/i, weight: 3.5, context: 'duration_completion' },
+            { pattern: /\b(il a fallu attendre|cela a duré|ça n'a duré que)\b[\s\S]*avant\s+qu/i, weight: 3.4, context: 'waiting_duration' },
+            { pattern: /\b(plusieurs décennies|plusieurs mois|quelques pages)\b[\s\S]*avant\s+qu/i, weight: 3.2, context: 'time_periods' },
+            // Administrative procedures (VERY STRONG)
+            { pattern: /\b(il faut qu'on|on va ajouter|DPJ|procédure administrative)\b[\s\S]*avant\s+qu/i, weight: 3.2, context: 'admin_procedures' },
+            { pattern: /\b(il faut qu'on travaille|il faut qu'on prévienne|il faut qu'on évite)\b[\s\S]*avant\s+qu/i, weight: 3.1, context: 'preventive_procedures' },
+            // Technical instructions (STRONG)
+            { pattern: /\b(il faut le faire|ouvrez|cliquez|chargée|se charge)\b[\s\S]*avant\s+qu/i, weight: 3.0, context: 'technical_instructions' },
+            { pattern: /\b(photo de couverture|visite complète|bouton|lettres)\b[\s\S]*avant\s+qu/i, weight: 2.9, context: 'ui_instructions' },
+            // Casual past descriptions (STRONG)
+            { pattern: /\b(ça n'a duré|j'ai fait|finalement aujourd'hui|visiblement j'avais)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'casual_past' },
+            { pattern: /\b(mais ça n'a|chaque fois qu'ils|il y a un silence)\b[\s\S]*avant\s+qu/i, weight: 2.7, context: 'routine_descriptions' },
+            // Practical advice/instructions (STRONG)
+            { pattern: /\b(il peut être utile|il faut le faire|n'hésitez plus)\b[\s\S]*avant\s+qu/i, weight: 2.9, context: 'practical_advice' },
+            { pattern: /\b(vous mettez en avant|grâce à|vitamines et minéraux)\b[\s\S]*avant\s+qu/i, weight: 2.6, context: 'informational_content' },
+            // Sports/game contexts (STRONG)
+            { pattern: /\b(festival offensif|dernier quart|scorent derrière l'arc)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'sports_reporting' },
+            { pattern: /\b(finale aura duré|tournoi|joueur tire son épingle)\b[\s\S]*avant\s+qu/i, weight: 2.7, context: 'competition_reporting' },
+            // Business/economic contexts (STRONG)
+            { pattern: /\b(résultats financiers|entreprise|rentabilité oblige)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'business_reporting' },
+            { pattern: /\b(roman anglo-saxon|payé|mis en avant)\b[\s\S]*avant\s+qu/i, weight: 2.6, context: 'publishing_business' },
         ];
         
         // 8i. INFORMAL COMMUNICATION CONTEXTS (REDUCED WEIGHTS)
@@ -1270,6 +1327,7 @@ class EnhancedSemanticAnalyzer {
             ...historicalFactualPatterns,
             ...technicalDIYPatterns,
             ...informalGrammarPatterns,
+            ...proceduralDurationPatterns,
             ...informalCommPatterns,
             ...travelTourismPatterns,
             ...gamingOnlinePatterns,
