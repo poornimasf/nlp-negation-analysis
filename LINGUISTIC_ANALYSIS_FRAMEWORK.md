@@ -386,40 +386,174 @@ In our corpus, "avant que" constructions without emotional context use expletive
 - Computationally more complex
 - May over-rely on discourse factors in edge cases
 
-## 8. Theoretical Implications
+## 8. When NOT to Use Expletive "Ne" - Anti-Expletive Contexts
 
-### 8.1 Syntactic Licensing Reconsidered
+### 8.1 The Discovery of "Anti-Expletive" Patterns
+
+Through analysis of classification errors, we discovered that certain contexts actively **discourage** expletive "ne" usage, even when traditional grammar rules might suggest it. These "anti-expletive" contexts are just as important as expletive-favoring contexts.
+
+### 8.2 Major Anti-Expletive Patterns (In Simple Terms)
+
+**1. Grammatical Mistakes Signal No Expletive**
+
+When people make grammar errors with "avant que," they almost never use expletive "ne":
+
+- ❌ "Avant que j'**ai** l'élévateur..." (wrong verb form)
+- ✅ Should be: "Avant que j'**aie** l'élévateur..." (correct subjunctive)
+- 🎯 **Rule**: Grammar mistakes = no expletive "ne"
+
+**Why this works**: If someone doesn't know the correct verb form, they're unlikely to know about expletive "ne" either.
+
+**2. Casual, Informal Speech**
+
+When people talk casually, they skip expletive "ne":
+
+- "Allez, dépêche-toi avant qu'ils arrivent!" (casual tone)
+- "Clairement, il faut partir avant qu'elle décide..." (informal style)
+- 🎯 **Rule**: Casual language = no expletive "ne"
+
+**Why this works**: Expletive "ne" is a formal, literary feature that doesn't fit casual conversation.
+
+**3. Simple Time Sequences (Not Emotional)**
+
+When "avant que" just describes when things happen (not fears or worries), no expletive:
+
+- "Je l'ai pris en photo avant que le service de nettoyage l'efface" (simple timing)
+- "Un moment se déroula avant que le jeune homme se relève" (neutral description)
+- 🎯 **Rule**: Simple timing = no expletive "ne"
+
+**Why this works**: Expletive "ne" appears with emotions (fear, worry), not neutral time descriptions.
+
+**4. Past Stories and Descriptions**
+
+When telling stories about what already happened, expletive "ne" is rare:
+
+- "Il a couru avant qu'elle arrive" (describing past events)
+- "J'ai fini avant que la réunion commence" (past narrative)
+- 🎯 **Rule**: Past stories = usually no expletive "ne"
+
+**Why this works**: Expletive "ne" is about uncertainty and emotion, but past events already happened.
+
+**5. Technical or Neutral Contexts**
+
+In technical, business, or neutral contexts, expletive "ne" is uncommon:
+
+- "Sauvegardez avant que le système redémarre" (technical instruction)
+- "Contactez-nous avant que l'offre expire" (business communication)
+- 🎯 **Rule**: Technical/business language = usually no expletive "ne"
+
+**Why this works**: These contexts prioritize clarity over literary style.
+
+### 8.3 How the System Uses Anti-Expletive Detection
+
+**Priority System (Updated):**
+
+1. **🚫 Anti-Expletive Contexts** (HIGHEST PRIORITY)
+   - Grammar errors → Definitely no expletive
+   - Very informal language → Probably no expletive
+   
+2. **❌ Logical Negation** (HIGH PRIORITY)
+   - "pas", "jamais", "plus" → Definitely no expletive
+   
+3. **✅ Expletive Contexts** (MEDIUM PRIORITY)
+   - Fear, worry, emotions → Probably expletive
+   - Only if no anti-expletive or logical signals
+   
+4. **📝 Grammar Rules** (LOW PRIORITY)
+   - "avant que + subjunctive" → Maybe expletive
+   - Only if no stronger signals
+
+### 8.4 Real Examples from Our Analysis
+
+**Before Anti-Expletive Detection (Wrong):**
+- Input: "Clairement allez cliquer dessus avant qu'ils décident..."
+- Old System: "Expletive" (saw "avant que" and assumed expletive needed)
+- ❌ **Wrong**: Missed the casual, informal tone
+
+**After Anti-Expletive Detection (Correct):**
+- Input: "Clairement allez cliquer dessus avant qu'ils décident..."
+- New System: "No Expletive" (detected informal language patterns)
+- ✅ **Correct**: Recognized casual context discourages expletive
+
+**Before (Wrong):**
+- Input: "Avant que j'ai l'élévateur, j'utilisais un miroir..."
+- Old System: "Expletive" (saw "avant que" pattern)
+- ❌ **Wrong**: Missed the grammar error
+
+**After (Correct):**
+- Input: "Avant que j'ai l'élévateur, j'utilisais un miroir..."
+- New System: "No Expletive" (detected indicative mood error)
+- ✅ **Correct**: Grammar mistakes signal no expletive knowledge
+
+### 8.5 Why This Matters for Language Learning
+
+**For French Learners:**
+- Don't worry about expletive "ne" in casual conversation
+- Focus on expletive "ne" in formal, literary, or emotional contexts
+- Grammar mistakes are a sign you're not ready for expletive "ne" yet
+
+**For Teachers:**
+- Teach expletive "ne" as an advanced, formal feature
+- Emphasize it's optional in most contexts
+- Show students when NOT to use it (casual speech, grammar errors)
+
+**For Writers:**
+- Use expletive "ne" to sound more formal or literary
+- Skip it in casual, technical, or simple descriptive writing
+- Consider your audience and context
+
+### 8.6 The Balance Problem Solved
+
+**The Original Problem:**
+- System got very good at finding expletive "ne" (90% accuracy)
+- But got worse at recognizing when NOT to use it (10% accuracy)
+- This created an imbalance
+
+**The Solution:**
+- Added anti-expletive detection as the highest priority
+- Now the system first asks: "Should there definitely NOT be expletive ne?"
+- Only then asks: "Should there be expletive ne?"
+- This creates better balance between the two decisions
+
+**Result:**
+- Better precision (fewer false positives)
+- Maintained recall (still catches true expletive cases)
+- More realistic language understanding
+
+## 9. Theoretical Implications
+
+### 9.1 Syntactic Licensing Reconsidered
 
 Our findings challenge the traditional view of syntactic licensing as deterministic. Instead, we propose:
 
 **Licensing as Enablement, Not Requirement:**
 Syntactic contexts like "avant que + subjunctive" create _potential_ for expletive usage but do not mandate it. The actual realization depends on semantic and discourse factors.
 
-### 8.2 Discourse-Syntax Interface
+### 9.2 Discourse-Syntax Interface
 
 The success of our discourse-integrated model supports theories of grammar that recognize pragmatic factors as integral to syntactic realization, not merely post-syntactic additions.
 
-### 8.3 Register and Grammatical Variation
+### 9.3 Register and Grammatical Variation
 
 Our corpus demonstrates that register is not merely stylistic but affects core grammatical choices, supporting sociolinguistic theories of grammar as inherently variable.
 
-## 9. Computational Linguistics Contributions
+## 10. Computational Linguistics Contributions
 
-### 9.1 Hierarchical Decision Models
+### 10.1 Hierarchical Decision Models
 
-Our four-tier hierarchy (Logical > Expletive > Syntactic > Discourse) provides a template for other ambiguous linguistic phenomena where multiple factors interact.
+Our four-tier hierarchy (Anti-Expletive > Logical > Expletive > Syntactic > Discourse) provides a template for other ambiguous linguistic phenomena where multiple factors interact.
 
-### 9.2 Corpus-Driven Rule Refinement
+### 10.2 Corpus-Driven Rule Refinement
 
 The methodology of using corpus evidence to refine traditional grammatical rules offers a model for improving other rule-based NLP systems.
 
-### 9.3 Confidence-Weighted Classification
+### 10.3 Confidence-Weighted Classification
 
 Our confidence scoring system, based on corpus frequency and inter-annotator agreement, provides interpretable uncertainty quantification.
 
-## 10. Future Directions
+## 11. Future Directions
 
-### 10.1 Cross-Linguistic Extension
+### 11.1 Cross-Linguistic Extension
 
 The framework could be adapted for similar phenomena in other Romance languages:
 
@@ -427,11 +561,11 @@ The framework could be adapted for similar phenomena in other Romance languages:
 - Italian conditional constructions
 - Portuguese infinitive variation
 
-### 10.2 Diachronic Analysis
+### 11.2 Diachronic Analysis
 
 Historical corpus analysis could reveal how expletive "ne" usage has evolved, informing both linguistic theory and computational models.
 
-### 10.3 Machine Learning Integration
+### 11.3 Machine Learning Integration
 
 The rule-based framework could be enhanced with:
 
@@ -439,7 +573,7 @@ The rule-based framework could be enhanced with:
 - Transfer learning from related linguistic phenomena
 - Active learning for corpus expansion
 
-## 11. Conclusion
+## 12. Conclusion
 
 This corpus-driven computational framework demonstrates that sophisticated linguistic phenomena require multi-factorial analysis integrating syntax, semantics, and pragmatics. The hierarchical decision model successfully addresses the overcorrection problem in traditional rule-based systems while maintaining interpretability and linguistic grounding.
 
