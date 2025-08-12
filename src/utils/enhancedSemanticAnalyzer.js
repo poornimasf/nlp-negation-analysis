@@ -60,25 +60,95 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\bpour éviter que|afin d'éviter que\b/i, weight: 1.7, type: 'preventive' },
             { pattern: /\bempêcher que|prévenir que\b/i, weight: 1.5, type: 'preventive' },
             
-            // Preventive/Documentation contexts (NEW - medium confidence)
+            // Preventive/Documentation contexts (medium confidence)
             { pattern: /\b(?:pris en photo|photographié|filmé|enregistré|sauvegardé|documenté)\b.*avant\s+que/i, weight: 1.5, type: 'preventive_documentation' },
             { pattern: /\bavant que.*(?:efface|supprime|détruise|disparaisse|s'en aille)\b/i, weight: 1.6, type: 'preventive_loss' },
             
-            // Urgency/Finality contexts (NEW - strong confidence)
+            // Urgency/Finality contexts (strong confidence)
             { pattern: /\bavant\s+qu[e']?.*(?:soit trop tard|il soit trop tard)\b/i, weight: 2.4, type: 'urgency_finality' },
             { pattern: /\bavant\s+qu[e']?.*(?:quitte définitivement|parte pour toujours|disparaisse à jamais)\b/i, weight: 2.2, type: 'definitive_departure' },
             { pattern: /\bavant\s+qu[e']?.*(?:ait fini|ait terminé|ait achevé)\b/i, weight: 1.8, type: 'completion_anticipation' },
             { pattern: /\bavant\s+que.*(?:fut trop tardive|fût trop tard)\b/i, weight: 2.0, type: 'literary_urgency' },
             
-            // Emotional/Dramatic lexicon contexts (NEW - strong confidence)
+            // Emotional/Dramatic lexicon contexts (strong confidence)
             { pattern: /\b(?:catastrophe|tragédie|désastre|drame|malheur|calamité)\b.*avant\s+que/i, weight: 2.2, type: 'dramatic_emotional' },
             { pattern: /\bavant\s+que.*(?:catastrophe|tragédie|désastre|drame|malheur|calamité)\b/i, weight: 2.2, type: 'dramatic_emotional' },
             { pattern: /\b(?:crise|urgence|danger|menace|péril)\b.*avant\s+que/i, weight: 2.0, type: 'crisis_urgency' },
             { pattern: /\bavant\s+que.*(?:crise|urgence|danger|menace|péril)\b/i, weight: 2.0, type: 'crisis_urgency' },
             
-            // Literary/Narrative emotional contexts (NEW - medium-strong confidence)
+            // Literary/Narrative emotional contexts (medium-strong confidence)
             { pattern: /\b(?:révélation|découverte|surprise|choc|bouleversement)\b.*avant\s+que/i, weight: 1.8, type: 'narrative_emotional' },
             { pattern: /\bavant\s+que.*(?:révélation|découverte|surprise|choc|bouleversement)\b/i, weight: 1.8, type: 'narrative_emotional' },
+            
+            // 1. HISTORICAL/CULTURAL CONTEXTS (NEW - medium-strong confidence)
+            { pattern: /\b(?:bien avant|longtemps avant|des siècles avant|des années avant)\s+que/i, weight: 2.0, type: 'historical_precedence' },
+            { pattern: /\b(?:colons|peuples|civilisations|ancêtres|générations)\b.*avant\s+que/i, weight: 1.9, type: 'historical_actors' },
+            { pattern: /\bavant\s+que.*(?:colons|peuples|civilisations|ancêtres|générations)\b/i, weight: 1.9, type: 'historical_actors' },
+            { pattern: /\b(?:colonisation|immigration|établissement|invasion|conquête)\b.*avant\s+que/i, weight: 1.8, type: 'historical_processes' },
+            { pattern: /\bavant\s+que.*(?:colonisation|immigration|établissement|invasion|conquête)\b/i, weight: 1.8, type: 'historical_processes' },
+            { pattern: /\b(?:habité|peuplé|occupé|dominé|gouverné)\b.*avant\s+que/i, weight: 1.7, type: 'historical_states' },
+            { pattern: /\bavant\s+que.*(?:civilisation|culture|tradition|patrimoine)\b.*(?:disparaisse|s'efface|se perde)\b/i, weight: 2.1, type: 'cultural_loss' },
+            
+            // 2. ACADEMIC/EDUCATIONAL CONTEXTS (NEW - medium confidence)
+            { pattern: /\b(?:étudiant|chercheur|professeur|scientifique|élève)\b.*avant\s+que/i, weight: 1.6, type: 'academic_actors' },
+            { pattern: /\bavant\s+que.*(?:étudiant|chercheur|professeur|scientifique|élève)\b/i, weight: 1.6, type: 'academic_actors' },
+            { pattern: /\b(?:recherche|analyse|étude|expérience|découverte)\b.*avant\s+que/i, weight: 1.7, type: 'academic_processes' },
+            { pattern: /\bavant\s+que.*(?:recherche|analyse|étude|expérience|découverte)\b/i, weight: 1.7, type: 'academic_processes' },
+            { pattern: /\bavant\s+que.*(?:comprenne|réalise|découvre|apprenne|maîtrise)\b/i, weight: 1.8, type: 'learning_processes' },
+            { pattern: /\b(?:théorie|hypothèse|concept|principe)\b.*avant\s+que/i, weight: 1.5, type: 'academic_concepts' },
+            
+            // 3. LITERARY/NARRATIVE CONTEXTS (ENHANCED - medium-strong confidence)
+            { pattern: /\b(?:héros|personnage|protagoniste|narrateur)\b.*avant\s+que/i, weight: 1.8, type: 'narrative_characters' },
+            { pattern: /\bavant\s+que.*(?:héros|personnage|protagoniste|narrateur)\b/i, weight: 1.8, type: 'narrative_characters' },
+            { pattern: /\b(?:histoire|récit|conte|roman|intrigue)\b.*avant\s+que/i, weight: 1.7, type: 'narrative_structure' },
+            { pattern: /\bavant\s+que.*(?:histoire|récit|conte|roman|intrigue)\b.*(?:se termine|finisse|s'achève)\b/i, weight: 1.9, type: 'narrative_conclusion' },
+            { pattern: /\bavant\s+que.*(?:mystère|secret|vérité|révélation)\b.*(?:soit révélé|soit découvert|éclate)\b/i, weight: 2.0, type: 'narrative_revelation' },
+            { pattern: /\b(?:destin|sort|avenir|futur)\b.*avant\s+que/i, weight: 1.8, type: 'narrative_fate' },
+            
+            // 4. BUSINESS/PROFESSIONAL CONTEXTS (ENHANCED - medium confidence)
+            { pattern: /\b(?:entreprise|société|organisation|compagnie)\b.*avant\s+que/i, weight: 1.5, type: 'business_entities' },
+            { pattern: /\bavant\s+que.*(?:entreprise|société|organisation|compagnie)\b/i, weight: 1.5, type: 'business_entities' },
+            { pattern: /\b(?:marché|économie|secteur|industrie)\b.*avant\s+que/i, weight: 1.6, type: 'economic_contexts' },
+            { pattern: /\bavant\s+que.*(?:marché|économie|secteur|industrie)\b.*(?:s'effondre|chute|décline)\b/i, weight: 1.9, type: 'economic_crisis' },
+            { pattern: /\b(?:négociation|accord|contrat|deal)\b.*avant\s+que/i, weight: 1.4, type: 'business_processes' },
+            { pattern: /\bavant\s+que.*(?:négociation|accord|contrat|deal)\b.*(?:échoue|expire|soit annulé)\b/i, weight: 1.8, type: 'business_failure' },
+            { pattern: /\b(?:investissement|financement|budget|capital)\b.*avant\s+que/i, weight: 1.5, type: 'financial_contexts' },
+            
+            // 5. MEDICAL/HEALTH CONTEXTS (NEW - medium-strong confidence)
+            { pattern: /\b(?:patient|malade|médecin|chirurgien|docteur)\b.*avant\s+que/i, weight: 1.7, type: 'medical_actors' },
+            { pattern: /\bavant\s+que.*(?:patient|malade|médecin|chirurgien|docteur)\b/i, weight: 1.7, type: 'medical_actors' },
+            { pattern: /\b(?:maladie|infection|virus|épidémie|cancer)\b.*avant\s+que/i, weight: 1.8, type: 'medical_conditions' },
+            { pattern: /\bavant\s+que.*(?:maladie|infection|virus|épidémie|cancer)\b.*(?:progresse|s'aggrave|se propage)\b/i, weight: 2.0, type: 'medical_progression' },
+            { pattern: /\b(?:traitement|médicament|thérapie|intervention|opération)\b.*avant\s+que/i, weight: 1.6, type: 'medical_treatments' },
+            { pattern: /\bavant\s+que.*(?:traitement|médicament|thérapie|intervention|opération)\b.*(?:fasse effet|guérisse|soigne)\b/i, weight: 1.9, type: 'medical_healing' },
+            { pattern: /\bavant\s+que.*(?:soit trop tard|il soit trop tard)\b.*(?:médical|santé|vie)\b/i, weight: 2.3, type: 'medical_urgency' },
+            
+            // 6. LEGAL/ADMINISTRATIVE CONTEXTS (ENHANCED - medium confidence)
+            { pattern: /\b(?:tribunal|cour|juge|avocat|procureur)\b.*avant\s+que/i, weight: 1.6, type: 'legal_actors' },
+            { pattern: /\bavant\s+que.*(?:tribunal|cour|juge|avocat|procureur)\b/i, weight: 1.6, type: 'legal_actors' },
+            { pattern: /\b(?:loi|règlement|décret|ordonnance|arrêté)\b.*avant\s+que/i, weight: 1.5, type: 'legal_instruments' },
+            { pattern: /\bavant\s+que.*(?:loi|règlement|décret|ordonnance|arrêté)\b.*(?:entre en vigueur|soit adopté|soit voté)\b/i, weight: 1.7, type: 'legal_enactment' },
+            { pattern: /\b(?:procès|procédure|enquête|investigation)\b.*avant\s+que/i, weight: 1.6, type: 'legal_processes' },
+            { pattern: /\bavant\s+que.*(?:procès|procédure|enquête|investigation)\b.*(?:commence|aboutisse|se termine)\b/i, weight: 1.8, type: 'legal_proceedings' },
+            { pattern: /\bavant\s+que.*(?:justice|verdict|sentence|jugement)\b.*(?:soit rendu|tombe|soit prononcé)\b/i, weight: 1.9, type: 'legal_judgment' },
+            
+            // 7. ENVIRONMENTAL/NATURAL CONTEXTS (NEW - medium-strong confidence)
+            { pattern: /\b(?:nature|environnement|écosystème|planète|terre)\b.*avant\s+que/i, weight: 1.7, type: 'environmental_entities' },
+            { pattern: /\bavant\s+que.*(?:nature|environnement|écosystème|planète|terre)\b/i, weight: 1.7, type: 'environmental_entities' },
+            { pattern: /\b(?:espèce|animal|plante|forêt|océan)\b.*avant\s+que/i, weight: 1.6, type: 'natural_entities' },
+            { pattern: /\bavant\s+que.*(?:espèce|animal|plante|forêt|océan)\b.*(?:disparaisse|s'éteigne|meure)\b/i, weight: 2.0, type: 'environmental_loss' },
+            { pattern: /\b(?:climat|température|réchauffement|changement climatique)\b.*avant\s+que/i, weight: 1.8, type: 'climate_contexts' },
+            { pattern: /\bavant\s+que.*(?:climat|température|réchauffement|pollution)\b.*(?:empire|s'aggrave|détruise)\b/i, weight: 2.1, type: 'environmental_crisis' },
+            { pattern: /\b(?:saison|cycle|évolution|adaptation)\b.*avant\s+que/i, weight: 1.4, type: 'natural_processes' },
+            
+            // 8. TECHNOLOGICAL/DIGITAL CONTEXTS (NEW - medium confidence)
+            { pattern: /\b(?:système|ordinateur|serveur|réseau|plateforme)\b.*avant\s+que/i, weight: 1.5, type: 'tech_systems' },
+            { pattern: /\bavant\s+que.*(?:système|ordinateur|serveur|réseau|plateforme)\b/i, weight: 1.5, type: 'tech_systems' },
+            { pattern: /\b(?:technologie|innovation|algorithme|intelligence artificielle)\b.*avant\s+que/i, weight: 1.6, type: 'tech_innovation' },
+            { pattern: /\bavant\s+que.*(?:technologie|innovation|algorithme|IA)\b.*(?:évolue|révolutionne|transforme)\b/i, weight: 1.8, type: 'tech_evolution' },
+            { pattern: /\bavant\s+que.*(?:système|serveur|ordinateur)\b.*(?:plante|crash|tombe en panne)\b/i, weight: 1.7, type: 'tech_failure' },
+            { pattern: /\b(?:données|information|fichier|sauvegarde)\b.*avant\s+que/i, weight: 1.4, type: 'data_contexts' },
+            { pattern: /\bavant\s+que.*(?:données|information|fichier)\b.*(?:soit perdu|disparaisse|soit corrompu)\b/i, weight: 1.8, type: 'data_loss' },
             
             // Impersonal constructions (medium-high confidence)
             { pattern: /\bil s'en faut|peu s'en faut|tant s'en faut\b/i, weight: 2.2, type: 'impersonal' },
@@ -930,6 +1000,57 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\b(contrat|accord|décision|modification)\b.*avant\s+que/i, weight: 1.2, context: 'legal_administrative' },
         ];
         
+        // 8. NEW ANTI-EXPLETIVE CATEGORIES (BALANCED APPROACH)
+        
+        // 8a. NEUTRAL HISTORICAL/FACTUAL CONTEXTS (MEDIUM SIGNAL)
+        const neutralHistoricalPatterns = [
+            { pattern: /\b(historiquement|factuellement|objectivement|simplement)\b.*avant\s+que/i, weight: 1.3, context: 'neutral_historical' },
+            { pattern: /\b(chronologie|séquence|ordre|succession)\b.*avant\s+que/i, weight: 1.4, context: 'chronological_sequence' },
+            { pattern: /\b(date|époque|période|moment)\b.*avant\s+que/i, weight: 1.2, context: 'temporal_factual' },
+        ];
+        
+        // 8b. ACADEMIC/TECHNICAL INSTRUCTION CONTEXTS (MEDIUM SIGNAL)
+        const academicInstructionalPatterns = [
+            { pattern: /\b(étape|phase|stade|niveau)\b.*avant\s+que/i, weight: 1.3, context: 'academic_procedural' },
+            { pattern: /\b(méthode|technique|approche|stratégie)\b.*avant\s+que/i, weight: 1.4, context: 'methodological' },
+            { pattern: /\b(résultat|conclusion|analyse|évaluation)\b.*avant\s+que/i, weight: 1.2, context: 'academic_neutral' },
+        ];
+        
+        // 8c. BUSINESS/PROFESSIONAL ROUTINE CONTEXTS (MEDIUM SIGNAL)
+        const businessRoutinePatterns = [
+            { pattern: /\b(processus|workflow|procédure|protocole)\b.*avant\s+que/i, weight: 1.4, context: 'business_routine' },
+            { pattern: /\b(réunion|meeting|conférence|présentation)\b.*avant\s+que/i, weight: 1.2, context: 'business_meetings' },
+            { pattern: /\b(rapport|document|fichier|dossier)\b.*avant\s+que/i, weight: 1.1, context: 'business_documentation' },
+        ];
+        
+        // 8d. MEDICAL/HEALTH ROUTINE CONTEXTS (MEDIUM SIGNAL)
+        const medicalRoutinePatterns = [
+            { pattern: /\b(consultation|examen|contrôle|visite)\b.*avant\s+que/i, weight: 1.3, context: 'medical_routine' },
+            { pattern: /\b(protocole|procédure|traitement standard)\b.*avant\s+que/i, weight: 1.4, context: 'medical_procedural' },
+            { pattern: /\b(diagnostic|analyse|test|résultat)\b.*avant\s+que/i, weight: 1.2, context: 'medical_analytical' },
+        ];
+        
+        // 8e. TECHNOLOGICAL/DIGITAL ROUTINE CONTEXTS (MEDIUM SIGNAL)
+        const techRoutinePatterns = [
+            { pattern: /\b(installation|configuration|mise à jour|sauvegarde)\b.*avant\s+que/i, weight: 1.4, context: 'tech_routine' },
+            { pattern: /\b(automatique|programmé|planifié|systématique)\b.*avant\s+que/i, weight: 1.5, context: 'tech_automated' },
+            { pattern: /\b(données|fichier|base de données|serveur)\b.*avant\s+que/i, weight: 1.2, context: 'tech_data' },
+        ];
+        
+        // 8f. LEGAL/ADMINISTRATIVE ROUTINE CONTEXTS (MEDIUM SIGNAL)
+        const legalRoutinePatterns = [
+            { pattern: /\b(formulaire|demande|dossier|inscription)\b.*avant\s+que/i, weight: 1.3, context: 'legal_routine' },
+            { pattern: /\b(procédure standard|démarche|formalité)\b.*avant\s+que/i, weight: 1.4, context: 'administrative_routine' },
+            { pattern: /\b(délai|échéance|date limite|expiration)\b.*avant\s+que/i, weight: 1.2, context: 'administrative_deadlines' },
+        ];
+        
+        // 8g. ENVIRONMENTAL/NATURAL ROUTINE CONTEXTS (MEDIUM SIGNAL)
+        const environmentalRoutinePatterns = [
+            { pattern: /\b(cycle|processus naturel|évolution|développement)\b.*avant\s+que/i, weight: 1.3, context: 'natural_routine' },
+            { pattern: /\b(saison|période|phase|étape naturelle)\b.*avant\s+que/i, weight: 1.2, context: 'seasonal_routine' },
+            { pattern: /\b(croissance|maturation|développement|formation)\b.*avant\s+que/i, weight: 1.1, context: 'natural_development' },
+        ];
+        
         const allPatterns = [
             ...indicativePatterns,
             ...informalPatterns, 
@@ -937,7 +1058,14 @@ class EnhancedSemanticAnalyzer {
             ...narrativePatterns,
             ...technicalPatterns,
             ...conversationalPatterns,
-            ...businessPatterns
+            ...businessPatterns,
+            ...neutralHistoricalPatterns,
+            ...academicInstructionalPatterns,
+            ...businessRoutinePatterns,
+            ...medicalRoutinePatterns,
+            ...techRoutinePatterns,
+            ...legalRoutinePatterns,
+            ...environmentalRoutinePatterns
         ];
         
         for (const { pattern, weight, context } of allPatterns) {
