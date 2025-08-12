@@ -521,24 +521,7 @@ When describing what already happened in a neutral way:
 ✅ "Agis avant qu'il soit trop tard!" → System says "Expletive" (urgency detected)
 ✅ "Dis-lui au revoir avant qu'il quitte définitivement" → System says "Expletive" (finality detected)
 
-### 8.6 Why This Matters for Language Learning
-
-**For French Learners:**
-- **Don't worry** about expletive "ne" in casual conversation, technical writing, or when describing durations
-- **Do consider** expletive "ne" in urgent situations, formal writing, or emotional contexts
-- **Grammar mistakes** are a sign you're not ready for expletive "ne" yet - focus on basic subjunctive first
-
-**For Teachers:**
-- Teach expletive "ne" as an **advanced, optional feature**
-- Show students the **many contexts where it's NOT used** (casual, technical, duration)
-- Emphasize it's most important in **urgent, emotional, or very formal contexts**
-
-**For Writers:**
-- Use expletive "ne" **sparingly** - only when you want to sound formal, literary, or express urgency
-- **Skip it** in technical writing, casual conversation, or neutral descriptions
-- Consider your **audience and context** - most readers won't expect it
-
-### 8.7 The Balance Problem Solved
+### 8.6 The Balance Problem Solved
 
 **The Original Problem:**
 - System was too generous with "Expletive" predictions (84 false positives)
@@ -556,7 +539,7 @@ When describing what already happened in a neutral way:
 - **Maintained recall**: Still catches true expletive cases when they matter
 - **More realistic**: Reflects how French is actually spoken and written
 
-### 8.8 Key Insight: Expletive "Ne" is Rare
+### 8.7 Key Insight: Expletive "Ne" is Rare
 
 **The most important discovery**: Expletive "ne" is much rarer than traditional grammar books suggest.
 
@@ -565,7 +548,7 @@ When describing what already happened in a neutral way:
 - **Technical writing**: Rarely uses expletive "ne"
 - **True expletive contexts**: Urgent, emotional, or very formal situations
 
-**This means**: If you're unsure whether to use expletive "ne", the safe choice is usually **don't use it**. You'll be right most of the time, and native speakers won't notice its absence in most contexts.
+**This means**: The computational system's conservative approach reflects actual usage patterns, where expletive "ne" appears in specific, limited contexts rather than as a general feature of subjunctive constructions.
 
 ## 9. Theoretical Implications
 
