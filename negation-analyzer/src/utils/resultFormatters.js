@@ -345,7 +345,7 @@ function formatEnhancedLinguisticAnalysis(analysis) {
     const { confidence, semanticAnalysis, reasoning, correctionApplied, prediction } = analysis;
     const confidencePercent = Math.round(confidence * 100);
     
-    let result = '=== COMPUTATIONAL LINGUISTIC ANALYSIS ===\n\n';
+    let result = 'ANALYSIS:\n\n';
     
     result += `Classification: ${prediction}\n`;
     result += `Theoretical Confidence: ${confidencePercent}%\n\n`;
