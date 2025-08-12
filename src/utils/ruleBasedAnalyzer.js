@@ -299,6 +299,28 @@ function integrateAnalyses(traditional, semantic, text) {
         }
     }
     
+    // FINAL FALLBACK: Ensure conservative default is always applied when no other conditions are met
+    // This fixes the bug where traditional analysis prediction wasn't being overridden
+    if (!result.correctionApplied || result.correctionApplied === undefined) {
+        // No corrections were applied - apply conservative default logic
+        if (semantic.semanticBias > 0.15) {
+            // Weak positive bias + syntactic licensing = Expletive
+            result.prediction = 'Expletive';
+            result.reasoning = `WEAK EXPLETIVE BIAS: ${semantic.reasoning} | Syntactic licensing + weak semantic support`;
+            result.correctionApplied = 'weak_expletive_bias';
+        } else {
+            // No positive bias = Conservative default to No Expletive
+            result.prediction = 'No Expletive';
+            result.reasoning = `CONSERVATIVE DEFAULT: ${semantic.reasoning} | Syntactic licensing without semantic support - conservative approach`;
+            result.correctionApplied = 'conservative_default';
+        }
+        
+        // Adjust confidence based on semantic uncertainty
+        if (semantic.classification.certainty === 'low') {
+            result.confidence = Math.min(result.confidence, 0.7);
+        }
+    }
+    
     // Add corpus-specific insights
     result.corpusInsights = generateCorpusInsights(traditional, semantic, text);
     
