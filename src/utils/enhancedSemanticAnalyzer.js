@@ -60,6 +60,10 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\bpour éviter que|afin d'éviter que\b/i, weight: 1.7, type: 'preventive' },
             { pattern: /\bempêcher que|prévenir que\b/i, weight: 1.5, type: 'preventive' },
             
+            // Preventive/Documentation contexts (NEW - medium confidence)
+            { pattern: /\b(?:pris en photo|photographié|filmé|enregistré|sauvegardé|documenté)\b.*avant\s+que/i, weight: 1.5, type: 'preventive_documentation' },
+            { pattern: /\bavant que.*(?:efface|supprime|détruise|disparaisse|s'en aille)\b/i, weight: 1.6, type: 'preventive_loss' },
+            
             // Impersonal constructions (medium-high confidence)
             { pattern: /\bil s'en faut|peu s'en faut|tant s'en faut\b/i, weight: 2.2, type: 'impersonal' },
             { pattern: /\bil suffit que|il arrive que|il se peut que\b/i, weight: 1.4, type: 'impersonal' }
@@ -882,11 +886,13 @@ class EnhancedSemanticAnalyzer {
               weight: 0.8, context: 'neutral_temporal_action' },
         ];
         
-        // 4. NARRATIVE/DESCRIPTIVE CONTEXTS
+        // 4. NARRATIVE/DESCRIPTIVE CONTEXTS (refined to avoid preventive contexts)
         const narrativePatterns = [
             { pattern: /\b(se déroula|se passa|eut lieu|arriva)\b.*avant\s+que/i, weight: 0.8, context: 'past_narrative' },
-            { pattern: /\b(j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont|elles ont)\b.*avant\s+que/i, 
-              weight: 0.6, context: 'past_tense_context' },
+            // REFINED: Only match past tense when it's clearly completion/neutral, not preventive
+            { pattern: /\b(j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont|elles ont)\s+(fini|terminé|complété|achevé)\b.*avant\s+que/i, 
+              weight: 0.6, context: 'past_completion_context' },
+            // Avoid preventive contexts like "j'ai pris en photo avant que", "j'ai sauvé avant que"
         ];
         
         // 5. TECHNICAL/NEUTRAL CONTEXTS
