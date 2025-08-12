@@ -390,135 +390,182 @@ In our corpus, "avant que" constructions without emotional context use expletive
 
 ### 8.1 The Discovery of "Anti-Expletive" Patterns
 
-Through analysis of classification errors, we discovered that certain contexts actively **discourage** expletive "ne" usage, even when traditional grammar rules might suggest it. These "anti-expletive" contexts are just as important as expletive-favoring contexts.
+Through analysis of classification errors on 95 real sentences, we discovered that certain contexts actively **discourage** expletive "ne" usage, even when traditional grammar rules might suggest it. These "anti-expletive" contexts are just as important as expletive-favoring contexts.
+
+**The Problem We Solved:**
+- System was classifying 84 sentences as "Expletive" when they should be "No Expletive"
+- Only 11 sentences were missed as "Expletive" 
+- This 84:11 imbalance showed the system was too generous with expletive predictions
 
 ### 8.2 Major Anti-Expletive Patterns (In Simple Terms)
 
-**1. Grammatical Mistakes Signal No Expletive**
+**1. Grammar Mistakes Signal No Expletive (STRONGEST SIGNAL)**
 
 When people make grammar errors with "avant que," they almost never use expletive "ne":
 
 - ❌ "Avant que j'**ai** l'élévateur..." (wrong verb form)
 - ✅ Should be: "Avant que j'**aie** l'élévateur..." (correct subjunctive)
-- 🎯 **Rule**: Grammar mistakes = no expletive "ne"
+- 🎯 **Rule**: Grammar mistakes = definitely no expletive "ne"
 
 **Why this works**: If someone doesn't know the correct verb form, they're unlikely to know about expletive "ne" either.
 
-**2. Casual, Informal Speech**
+**2. Duration and Completion Contexts (VERY STRONG SIGNAL)**
+
+When talking about how long something took or waiting for completion:
+
+- "Il a fallu attendre jusqu'à la 11e minute avant que..." (duration)
+- "Cela a duré six mois avant que..." (completion time)
+- "Il faut compter plusieurs jours avant que..." (expected duration)
+- 🎯 **Rule**: Duration/waiting contexts = no expletive "ne"
+
+**Why this works**: These describe completed processes or expected timeframes, not emotional uncertainty.
+
+**3. Technical and Business Language (STRONG SIGNAL)**
+
+In professional, technical, or administrative contexts:
+
+- "Il faut que le système redémarre avant que..." (technical)
+- "L'entreprise doit prendre des mesures avant que..." (business)
+- "Il convient de valider le contrat avant que..." (administrative)
+- 🎯 **Rule**: Technical/business language = usually no expletive "ne"
+
+**Why this works**: These contexts prioritize clarity and precision over literary style.
+
+**4. Casual, Informal Speech (STRONG SIGNAL)**
 
 When people talk casually, they skip expletive "ne":
 
 - "Allez, dépêche-toi avant qu'ils arrivent!" (casual tone)
-- "Clairement, il faut partir avant qu'elle décide..." (informal style)
-- 🎯 **Rule**: Casual language = no expletive "ne"
+- "Bon, il faut partir avant qu'elle décide..." (conversational)
+- "Je pense qu'on devrait y aller avant que..." (tentative opinion)
+- 🎯 **Rule**: Casual conversation = no expletive "ne"
 
 **Why this works**: Expletive "ne" is a formal, literary feature that doesn't fit casual conversation.
 
-**3. Simple Time Sequences (Not Emotional)**
+**5. Simple Past Descriptions (MEDIUM SIGNAL)**
 
-When "avant que" just describes when things happen (not fears or worries), no expletive:
+When describing what already happened in a neutral way:
 
-- "Je l'ai pris en photo avant que le service de nettoyage l'efface" (simple timing)
-- "Un moment se déroula avant que le jeune homme se relève" (neutral description)
-- 🎯 **Rule**: Simple timing = no expletive "ne"
-
-**Why this works**: Expletive "ne" appears with emotions (fear, worry), not neutral time descriptions.
-
-**4. Past Stories and Descriptions**
-
-When telling stories about what already happened, expletive "ne" is rare:
-
-- "Il a couru avant qu'elle arrive" (describing past events)
-- "J'ai fini avant que la réunion commence" (past narrative)
-- 🎯 **Rule**: Past stories = usually no expletive "ne"
+- "Un court moment se déroula avant que..." (past narrative)
+- "Ça n'a duré que quelques pages avant que..." (neutral description)
+- "Il s'est écoulé plusieurs mois avant que..." (time passage)
+- 🎯 **Rule**: Neutral past descriptions = usually no expletive "ne"
 
 **Why this works**: Expletive "ne" is about uncertainty and emotion, but past events already happened.
 
-**5. Technical or Neutral Contexts**
+### 8.3 When TO Use Expletive "Ne" - The Exceptions
 
-In technical, business, or neutral contexts, expletive "ne" is uncommon:
+**Despite all the anti-expletive contexts, some situations still strongly favor expletive "ne":**
 
-- "Sauvegardez avant que le système redémarre" (technical instruction)
-- "Contactez-nous avant que l'offre expire" (business communication)
-- 🎯 **Rule**: Technical/business language = usually no expletive "ne"
+**1. Urgency and "Too Late" Contexts (VERY STRONG EXPLETIVE SIGNAL)**
 
-**Why this works**: These contexts prioritize clarity over literary style.
+- "Il faut agir avant qu'il soit trop tard!" (urgency)
+- "Dépêche-toi avant qu'il soit trop tard!" (time pressure)
+- 🎯 **Rule**: "Too late" contexts = probably expletive "ne"
 
-### 8.3 How the System Uses Anti-Expletive Detection
+**2. Finality and Permanent Departure (STRONG EXPLETIVE SIGNAL)**
 
-**Priority System (Updated):**
+- "Dis-lui au revoir avant qu'il quitte définitivement" (permanent leaving)
+- "Profite de lui avant qu'il parte pour toujours" (finality)
+- 🎯 **Rule**: Permanent departure = probably expletive "ne"
 
-1. **🚫 Anti-Expletive Contexts** (HIGHEST PRIORITY)
+**3. Completion Anticipation (MEDIUM EXPLETIVE SIGNAL)**
+
+- "Interromps-le avant qu'il ait fini de parler" (anticipating completion)
+- "Arrête-le avant qu'il ait terminé son discours" (preventing completion)
+- 🎯 **Rule**: Preventing completion = maybe expletive "ne"
+
+### 8.4 How the System Uses This Knowledge
+
+**New Priority System (Based on Real Data):**
+
+1. **🚫 Strong Anti-Expletive Contexts** (HIGHEST PRIORITY)
    - Grammar errors → Definitely no expletive
-   - Very informal language → Probably no expletive
+   - Duration/completion → Definitely no expletive
+   - Technical/business → Probably no expletive
    
-2. **❌ Logical Negation** (HIGH PRIORITY)
-   - "pas", "jamais", "plus" → Definitely no expletive
+2. **🚫 Medium Anti-Expletive Contexts** (HIGH PRIORITY)
+   - Casual conversation → Probably no expletive
+   - Past descriptions → Probably no expletive
    
-3. **✅ Expletive Contexts** (MEDIUM PRIORITY)
-   - Fear, worry, emotions → Probably expletive
-   - Only if no anti-expletive or logical signals
+3. **✅ Strong Expletive Contexts** (MEDIUM PRIORITY)
+   - "Too late" urgency → Probably expletive
+   - Permanent departure → Probably expletive
+   - Only if no anti-expletive signals
    
 4. **📝 Grammar Rules** (LOW PRIORITY)
    - "avant que + subjunctive" → Maybe expletive
    - Only if no stronger signals
 
-### 8.4 Real Examples from Our Analysis
+### 8.5 Real Examples from Our 95-Sentence Analysis
 
-**Before Anti-Expletive Detection (Wrong):**
-- Input: "Clairement allez cliquer dessus avant qu'ils décident..."
-- Old System: "Expletive" (saw "avant que" and assumed expletive needed)
-- ❌ **Wrong**: Missed the casual, informal tone
+**Before Improvement (Wrong - Too Many "Expletive" Predictions):**
 
-**After Anti-Expletive Detection (Correct):**
-- Input: "Clairement allez cliquer dessus avant qu'ils décident..."
-- New System: "No Expletive" (detected informal language patterns)
-- ✅ **Correct**: Recognized casual context discourages expletive
+❌ "Il a fallu attendre jusqu'à la 11e minute avant que..." → System said "Expletive"
+- **Should be**: "No Expletive" (duration context)
 
-**Before (Wrong):**
-- Input: "Avant que j'ai l'élévateur, j'utilisais un miroir..."
-- Old System: "Expletive" (saw "avant que" pattern)
-- ❌ **Wrong**: Missed the grammar error
+❌ "Il faut compter plusieurs jours avant que..." → System said "Expletive"  
+- **Should be**: "No Expletive" (technical instruction)
 
-**After (Correct):**
-- Input: "Avant que j'ai l'élévateur, j'utilisais un miroir..."
-- New System: "No Expletive" (detected indicative mood error)
-- ✅ **Correct**: Grammar mistakes signal no expletive knowledge
+❌ "Ça n'a duré que quelques pages avant que..." → System said "Expletive"
+- **Should be**: "No Expletive" (casual past description)
 
-### 8.5 Why This Matters for Language Learning
+**After Improvement (Correct - More Conservative):**
+
+✅ "Il a fallu attendre..." → System now says "No Expletive" (duration detected)
+✅ "Il faut compter..." → System now says "No Expletive" (technical detected)
+✅ "Ça n'a duré..." → System now says "No Expletive" (casual detected)
+
+**Still Catches True Expletive Cases:**
+
+✅ "Agis avant qu'il soit trop tard!" → System says "Expletive" (urgency detected)
+✅ "Dis-lui au revoir avant qu'il quitte définitivement" → System says "Expletive" (finality detected)
+
+### 8.6 Why This Matters for Language Learning
 
 **For French Learners:**
-- Don't worry about expletive "ne" in casual conversation
-- Focus on expletive "ne" in formal, literary, or emotional contexts
-- Grammar mistakes are a sign you're not ready for expletive "ne" yet
+- **Don't worry** about expletive "ne" in casual conversation, technical writing, or when describing durations
+- **Do consider** expletive "ne" in urgent situations, formal writing, or emotional contexts
+- **Grammar mistakes** are a sign you're not ready for expletive "ne" yet - focus on basic subjunctive first
 
 **For Teachers:**
-- Teach expletive "ne" as an advanced, formal feature
-- Emphasize it's optional in most contexts
-- Show students when NOT to use it (casual speech, grammar errors)
+- Teach expletive "ne" as an **advanced, optional feature**
+- Show students the **many contexts where it's NOT used** (casual, technical, duration)
+- Emphasize it's most important in **urgent, emotional, or very formal contexts**
 
 **For Writers:**
-- Use expletive "ne" to sound more formal or literary
-- Skip it in casual, technical, or simple descriptive writing
-- Consider your audience and context
+- Use expletive "ne" **sparingly** - only when you want to sound formal, literary, or express urgency
+- **Skip it** in technical writing, casual conversation, or neutral descriptions
+- Consider your **audience and context** - most readers won't expect it
 
-### 8.6 The Balance Problem Solved
+### 8.7 The Balance Problem Solved
 
 **The Original Problem:**
-- System got very good at finding expletive "ne" (90% accuracy)
-- But got worse at recognizing when NOT to use it (10% accuracy)
-- This created an imbalance
+- System was too generous with "Expletive" predictions (84 false positives)
+- Only missed a few true expletive cases (11 false negatives)
+- This created an unrealistic view of how often expletive "ne" is actually used
 
 **The Solution:**
-- Added anti-expletive detection as the highest priority
-- Now the system first asks: "Should there definitely NOT be expletive ne?"
-- Only then asks: "Should there be expletive ne?"
-- This creates better balance between the two decisions
+- Added comprehensive anti-expletive detection as the highest priority
+- System now asks: "Are there strong reasons NOT to use expletive ne?" first
+- Only then asks: "Are there reasons TO use expletive ne?"
+- Much more conservative and realistic predictions
 
 **Result:**
-- Better precision (fewer false positives)
-- Maintained recall (still catches true expletive cases)
-- More realistic language understanding
+- **Better precision**: Fewer false "Expletive" predictions
+- **Maintained recall**: Still catches true expletive cases when they matter
+- **More realistic**: Reflects how French is actually spoken and written
+
+### 8.8 Key Insight: Expletive "Ne" is Rare
+
+**The most important discovery**: Expletive "ne" is much rarer than traditional grammar books suggest.
+
+- **Most "avant que" sentences**: Don't use expletive "ne"
+- **Casual conversation**: Almost never uses expletive "ne"  
+- **Technical writing**: Rarely uses expletive "ne"
+- **True expletive contexts**: Urgent, emotional, or very formal situations
+
+**This means**: If you're unsure whether to use expletive "ne", the safe choice is usually **don't use it**. You'll be right most of the time, and native speakers won't notice its absence in most contexts.
 
 ## 9. Theoretical Implications
 
