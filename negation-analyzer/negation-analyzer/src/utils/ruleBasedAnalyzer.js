@@ -207,6 +207,7 @@ function integrateAnalyses(traditional, semantic, text) {
     if (semantic.antiExpletiveAnalysis && semantic.antiExpletiveAnalysis.overridesExpletive) {
         // PRIORITY 0: Anti-expletive contexts override everything
         result.prediction = 'No Expletive';
+        result.type = 'No Expletive';
         result.confidence = Math.max(0.85, Math.min(0.95, 0.7 + semantic.antiExpletiveAnalysis.score * 0.1));
         result.reasoning = `ANTI-EXPLETIVE OVERRIDE: ${semantic.antiExpletiveAnalysis.strength} anti-expletive context (score: ${semantic.antiExpletiveAnalysis.score.toFixed(1)}) | ${semantic.reasoning}`;
         result.correctionApplied = 'anti_expletive_override';
@@ -214,6 +215,7 @@ function integrateAnalyses(traditional, semantic, text) {
     } else if (semantic.logicalAnalysis.overridesExpletive) {
         // PRIORITY 1: Strong logical indicators override syntactic patterns
         result.prediction = 'No Expletive';
+        result.type = 'No Expletive';
         result.confidence = Math.max(0.85, semantic.classification.confidence);
         result.reasoning = `LOGICAL OVERRIDE: ${semantic.reasoning}`;
         result.correctionApplied = 'logical_override';
@@ -224,12 +226,14 @@ function integrateAnalyses(traditional, semantic, text) {
         
         if (resolution.winner === 'logical') {
             result.prediction = 'No Expletive';
+            result.type = 'No Expletive';
             result.confidence = resolution.confidence;
             result.reasoning = `CONFLICT RESOLUTION: ${resolution.reasoning}`;
             result.correctionApplied = 'conflict_resolution_logical';
             
         } else if (resolution.winner === 'expletive') {
             result.prediction = 'Expletive';
+            result.type = 'Expletive';
             result.confidence = resolution.confidence;
             result.reasoning = `CONFLICT RESOLUTION: ${resolution.reasoning}`;
             result.correctionApplied = 'conflict_resolution_expletive';
@@ -244,6 +248,7 @@ function integrateAnalyses(traditional, semantic, text) {
     } else if (semantic.antiExpletiveAnalysis && semantic.antiExpletiveAnalysis.strength === 'medium') {
         // PRIORITY 1.5: Medium anti-expletive contexts (before formal politeness)
         result.prediction = 'No Expletive';
+        result.type = 'No Expletive';
         result.confidence = Math.max(0.70, Math.min(0.85, 0.6 + semantic.antiExpletiveAnalysis.score * 0.1));
         result.reasoning = `ANTI-EXPLETIVE CONTEXT: ${semantic.antiExpletiveAnalysis.strength} anti-expletive signals detected | ${semantic.reasoning}`;
         result.correctionApplied = 'anti_expletive_medium';
@@ -252,6 +257,7 @@ function integrateAnalyses(traditional, semantic, text) {
         // Special case: Formal politeness contexts with moderate expletive bias
         console.log('🎯 DECISION DEBUG: Formal politeness context triggered', semantic.semanticBias);
         result.prediction = 'Expletive';
+        result.type = 'Expletive';
         result.confidence = Math.min(0.75, semantic.semanticBias + 0.2); // Boost confidence for formal contexts
         result.reasoning = `FORMAL POLITENESS: ${semantic.reasoning} | Formal register + polite stance favors expletive usage`;
         result.correctionApplied = 'formal_politeness_context';
@@ -260,6 +266,7 @@ function integrateAnalyses(traditional, semantic, text) {
         // Strong semantic bias toward logical
         console.log('🎯 DECISION DEBUG: Strong logical bias (<-0.3)', semantic.semanticBias);
         result.prediction = 'No Expletive';
+        result.type = 'No Expletive';
         result.confidence = Math.abs(semantic.semanticBias);
         result.reasoning = `SEMANTIC BIAS: ${semantic.reasoning}`;
         result.correctionApplied = 'semantic_bias_logical';
@@ -268,6 +275,7 @@ function integrateAnalyses(traditional, semantic, text) {
         // Strong semantic bias toward expletive
         console.log('🎯 DECISION DEBUG: Strong semantic bias (>0.3)', semantic.semanticBias);
         result.prediction = 'Expletive';
+        result.type = 'Expletive';
         result.confidence = semantic.semanticBias;
         result.reasoning = `SEMANTIC BIAS: ${semantic.reasoning}`;
         result.correctionApplied = 'semantic_bias_expletive';
@@ -284,11 +292,13 @@ function integrateAnalyses(traditional, semantic, text) {
         if (semantic.semanticBias > 0.15) {
             // Weak positive bias + syntactic licensing = Expletive
             result.prediction = 'Expletive';
+            result.type = 'Expletive';
             result.reasoning = `WEAK EXPLETIVE BIAS: ${semantic.reasoning} | Syntactic licensing + weak semantic support`;
             result.correctionApplied = 'weak_expletive_bias';
         } else {
             // No positive bias = Conservative default to No Expletive
             result.prediction = 'No Expletive';
+            result.type = 'No Expletive';
             result.reasoning = `CONSERVATIVE DEFAULT: ${semantic.reasoning} | Syntactic licensing without semantic support - conservative approach`;
             result.correctionApplied = 'conservative_default';
         }
@@ -306,11 +316,13 @@ function integrateAnalyses(traditional, semantic, text) {
         if (semantic.semanticBias > 0.15) {
             // Weak positive bias + syntactic licensing = Expletive
             result.prediction = 'Expletive';
+            result.type = 'Expletive';  // Ensure both fields are set
             result.reasoning = `WEAK EXPLETIVE BIAS: ${semantic.reasoning} | Syntactic licensing + weak semantic support`;
             result.correctionApplied = 'weak_expletive_bias';
         } else {
             // No positive bias = Conservative default to No Expletive
             result.prediction = 'No Expletive';
+            result.type = 'No Expletive';  // Ensure both fields are set
             result.reasoning = `CONSERVATIVE DEFAULT: ${semantic.reasoning} | Syntactic licensing without semantic support - conservative approach`;
             result.correctionApplied = 'conservative_default';
         }
