@@ -408,7 +408,7 @@ function formatEnhancedLinguisticAnalysis(analysis) {
     // THEORETICAL IMPLICATIONS
     result += '🔬 THEORETICAL IMPLICATIONS:\n';
     result += getTheoreticalImplications(semanticAnalysis, prediction);
-    result += '\n';
+    result += '\n\n';
     
     // FINAL DECISION LOGIC (restored from original format)
     result += '🎯 FINAL DECISION LOGIC:\n';
