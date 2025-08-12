@@ -2,7 +2,7 @@
 
 ## Abstract
 
-This document presents a comprehensive computational linguistic framework for distinguishing between expletive and logical negation in French sentences where the particle "ne" has been removed. The system integrates traditional syntactic licensing theory with corpus-driven semantic analysis and discourse pragmatics, addressing critical overcorrection problems in pattern-based classification approaches. Through analysis of 1000+ authentic French sentences, we demonstrate that a hierarchical decision model incorporating discourse factors achieves superior accuracy compared to purely syntactic approaches.
+This document presents a comprehensive computational linguistic framework for distinguishing between expletive and logical negation in French sentences where the particle "ne" has been removed. The system integrates traditional syntactic licensing theory with corpus-driven semantic analysis, discourse pragmatics, and novel anti-expletive context detection, addressing critical overcorrection problems in pattern-based classification approaches. Through analysis of 1000+ authentic French sentences and systematic error analysis of 95 misclassified cases, we demonstrate that a five-tier hierarchical decision model incorporating anti-expletive detection, positional boundary effects, and discourse factors achieves superior accuracy compared to purely syntactic approaches. Key innovations include the discovery of systematic anti-expletive contexts (grammatical errors, duration semantics, procedural discourse) and the reconceptualization of syntactic licensing as enablement rather than requirement.
 
 ## 1. Introduction
 
@@ -58,9 +58,11 @@ Our corpus analysis reveals critical limitations:
 
 ### 2.3 Proposed Hierarchical Model
 
-We propose a four-tier hierarchical decision model:
+We propose a five-tier hierarchical decision model based on corpus-driven conflict resolution:
 
 ```
+0. ANTI-EXPLETIVE ANALYSIS (Priority 0 - Highest)
+   ↓ (if no anti-expletive override)
 1. LOGICAL ANALYSIS (Priority 1)
    ↓ (if no strong logical indicators)
 2. EXPLETIVE CONTEXT ANALYSIS (Priority 2)
@@ -69,6 +71,8 @@ We propose a four-tier hierarchical decision model:
    ↓ (modulated by)
 4. DISCOURSE FACTORS (Priority 4)
 ```
+
+**Key Innovation**: Anti-expletive detection as the highest priority addresses systematic overcorrection by identifying contexts that actively discourage expletive realization, including grammatical errors, duration semantics, and procedural discourse.
 
 ## 3. Corpus Analysis Methodology
 
@@ -209,6 +213,14 @@ STANCE_MARKERS = {
 
 ```python
 def classify_expletive(sentence, semantic_analysis):
+    # Priority 0: Anti-Expletive Override (Highest Priority)
+    if semantic_analysis.anti_expletive_analysis.overrides_expletive:
+        return "No Expletive", confidence=0.90
+    
+    # Priority 0.5: Medium Anti-Expletive Context
+    if semantic_analysis.anti_expletive_analysis.strength == 'medium':
+        return "No Expletive", confidence=0.80
+
     # Priority 1: Logical Override
     if semantic_analysis.logical_score > 0.8:
         return "No Expletive", confidence=0.90
@@ -224,6 +236,15 @@ def classify_expletive(sentence, semantic_analysis):
 
     # Priority 4: General Semantic Bias
     if semantic_analysis.bias > 0.30:
+        return "Expletive", confidence=semantic_analysis.bias
+    elif semantic_analysis.bias < -0.30:
+        return "No Expletive", confidence=abs(semantic_analysis.bias)
+
+    # Default: Conservative Classification with Discourse Modulation
+    return traditional_analysis_with_discourse_factors(sentence), confidence=0.70
+```
+
+**Key Features**: Anti-expletive detection prevents systematic overcorrection, while maintaining hierarchical conflict resolution for competing linguistic factors.
         return "Expletive", confidence=semantic_analysis.bias
     elif semantic_analysis.bias < -0.30:
         return "No Expletive", confidence=abs(semantic_analysis.bias)
@@ -594,15 +615,21 @@ Our corpus demonstrates that register is not merely stylistic but affects core g
 
 ## 10. Computational Linguistics Contributions
 
-### 10.1 Hierarchical Decision Models
+### 10.1 Hierarchical Decision Models with Anti-Expletive Detection
 
-Our four-tier hierarchy (Anti-Expletive > Logical > Expletive > Syntactic > Discourse) provides a template for other ambiguous linguistic phenomena where multiple factors interact.
+Our five-tier hierarchy (Anti-Expletive > Logical > Expletive > Syntactic > Discourse) provides a template for other ambiguous linguistic phenomena where multiple factors interact. The innovation of anti-expletive detection as the highest priority demonstrates how systematic error analysis can reveal previously unrecognized linguistic patterns that actively block grammatical features.
 
-### 10.2 Corpus-Driven Rule Refinement
+### 10.2 Corpus-Driven Rule Refinement and Error-Based Discovery
 
-The methodology of using corpus evidence to refine traditional grammatical rules offers a model for improving other rule-based NLP systems.
+The methodology of using corpus evidence to refine traditional grammatical rules, combined with systematic analysis of classification errors (84:11 imbalance), offers a model for improving other rule-based NLP systems. This approach revealed that traditional syntactic licensing functions as enablement rather than requirement, fundamentally reconceptualizing the theoretical framework.
 
-### 10.3 Confidence-Weighted Classification
+### 10.3 Positional Boundary Effects in Semantic Analysis
+
+The framework demonstrates successful isolation of target clauses from interfering contexts through positional boundary detection, showing how cross-clause vs. same-clause semantic factors can be systematically differentiated in computational analysis.
+
+### 10.4 Confidence-Weighted Classification with Discourse Integration
+
+Our confidence scoring system, based on corpus frequency, inter-annotator agreement, and discourse factor weighting, provides interpretable uncertainty quantification while incorporating register-sensitive grammatical variation.
 
 Our confidence scoring system, based on corpus frequency and inter-annotator agreement, provides interpretable uncertainty quantification.
 
