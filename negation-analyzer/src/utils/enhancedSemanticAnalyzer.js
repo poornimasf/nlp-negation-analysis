@@ -1057,20 +1057,20 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\b(formulaire|demande|dossier|inscription)\b.*avant\s+que/i, weight: 1.3, context: 'legal_routine' },
             { pattern: /\b(procédure standard|démarche|formalité)\b.*avant\s+que/i, weight: 1.4, context: 'administrative_routine' },
             { pattern: /\b(délai|échéance|date limite|expiration)\b.*avant\s+que/i, weight: 1.2, context: 'administrative_deadlines' },
-            // Legal/Administrative authorities and institutions (NEW)
-            { pattern: /\b(commissaire|autorités|tribunal|cour|juge|procureur)\b.*avant\s+que/i, weight: 1.6, context: 'legal_authorities' },
-            { pattern: /\b(administration|ministère|gouvernement|préfecture|mairie)\b.*avant\s+que/i, weight: 1.5, context: 'administrative_institutions' },
-            // Data protection and privacy terminology (NEW)
-            { pattern: /\b(protection des données|vie privée|renseignements|données personnelles)\b.*avant\s+que/i, weight: 1.7, context: 'data_protection' },
-            { pattern: /\b(LPRPDE|RGPD|CNIL|loi sur la protection|règlement)\b.*avant\s+que/i, weight: 1.8, context: 'privacy_legislation' },
-            // Legal procedures and measures (NEW)
-            { pattern: /\b(mesures de protection|mesures de sécurité|protocoles de sécurité)\b.*avant\s+que/i, weight: 1.6, context: 'security_measures' },
-            { pattern: /\b(modification|amendement|révision|mise à jour)\b.*avant\s+que/i, weight: 1.4, context: 'legal_modifications' },
-            { pattern: /\b(enquêtes|investigations|vérifications|contrôles)\b.*avant\s+que/i, weight: 1.5, context: 'legal_investigations' },
-            { pattern: /\b(collaboration|coopération|échange|communication)\b.*avant\s+que/i, weight: 1.3, context: 'administrative_cooperation' },
-            // Formal procedural language (NEW)
-            { pattern: /\b(doivent être mises en place|doivent être adoptées|doivent être appliquées)\b.*avant\s+que/i, weight: 1.7, context: 'mandatory_procedures' },
-            { pattern: /\b(une telle|de telles|ce type de|cette nature de)\b.*avant\s+que/i, weight: 1.2, context: 'formal_reference' },
+            // Legal/Administrative authorities and institutions (FLEXIBLE MATCHING)
+            { pattern: /\b(commissaire|autorités|tribunal|cour|juge|procureur)\b[\s\S]*avant\s+qu/i, weight: 1.6, context: 'legal_authorities' },
+            { pattern: /\b(administration|ministère|gouvernement|préfecture|mairie)\b[\s\S]*avant\s+qu/i, weight: 1.5, context: 'administrative_institutions' },
+            // Data protection and privacy terminology (FLEXIBLE MATCHING)
+            { pattern: /\b(protection des données|vie privée|renseignements|données personnelles)\b[\s\S]*avant\s+qu/i, weight: 1.7, context: 'data_protection' },
+            { pattern: /\b(LPRPDE|RGPD|CNIL|loi sur la protection|règlement)\b[\s\S]*avant\s+qu/i, weight: 1.8, context: 'privacy_legislation' },
+            // Legal procedures and measures (FLEXIBLE MATCHING)
+            { pattern: /\b(mesures de protection|mesures de sécurité|protocoles de sécurité)\b[\s\S]*avant\s+qu/i, weight: 1.6, context: 'security_measures' },
+            { pattern: /\b(modification|amendement|révision|mise à jour)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'legal_modifications' },
+            { pattern: /\b(enquêtes|investigations|vérifications|contrôles)\b[\s\S]*avant\s+qu/i, weight: 1.5, context: 'legal_investigations' },
+            { pattern: /\b(collaboration|coopération|échange|communication)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'administrative_cooperation' },
+            // Formal procedural language (FLEXIBLE MATCHING)
+            { pattern: /\b(doivent être mises en place|doivent être adoptées|doivent être appliquées)\b[\s\S]*avant\s+qu/i, weight: 1.7, context: 'mandatory_procedures' },
+            { pattern: /\b(une telle|de telles|ce type de|cette nature de)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'formal_reference' },
         ];
         
         // 8g. ENVIRONMENTAL/NATURAL ROUTINE CONTEXTS (MEDIUM SIGNAL)
