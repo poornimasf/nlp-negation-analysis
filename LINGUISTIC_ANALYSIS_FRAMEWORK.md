@@ -539,16 +539,41 @@ When describing what already happened in a neutral way:
 - **Maintained recall**: Still catches true expletive cases when they matter
 - **More realistic**: Reflects how French is actually spoken and written
 
-### 8.7 Key Insight: Expletive "Ne" is Rare
+### 8.7 Comprehensive Linguistic Framework Insights
 
-**The most important discovery**: Expletive "ne" is much rarer than traditional grammar books suggest.
+**Semantic Hierarchy Discovery:**
+The computational analysis revealed a clear semantic hierarchy where **logical indicators override syntactic licensing**, resolving the traditional overcorrection problem. Strong logical contexts (negation particles, semantic negation verbs) consistently block expletive realization regardless of syntactic environment.
 
-- **Most "avant que" sentences**: Don't use expletive "ne"
-- **Casual conversation**: Almost never uses expletive "ne"  
-- **Technical writing**: Rarely uses expletive "ne"
-- **True expletive contexts**: Urgent, emotional, or very formal situations
+**Syntactic Licensing Reconceptualized:**
+Traditional syntactic licensing (e.g., "avant que + subjunctive") functions as **enablement rather than requirement**. The framework demonstrates that syntactic contexts create potential for expletive usage but do not mandate it, with actualization dependent on semantic and discourse factors.
 
-**This means**: The computational system's conservative approach reflects actual usage patterns, where expletive "ne" appears in specific, limited contexts rather than as a general feature of subjunctive constructions.
+**Discourse Factor Integration:**
+Register classification significantly modulates expletive realization:
+- **Formal/literary registers** increase expletive probability through discourse bias (+0.20 to +0.25)
+- **Technical/administrative contexts** reduce expletive probability through clarity prioritization
+- **Conversational registers** show systematic expletive avoidance patterns
+
+**Anti-Expletive Context Discovery:**
+The framework identified systematic **anti-expletive contexts** that actively discourage expletive realization:
+- **Grammatical errors** (indicative mood in subjunctive contexts) signal absence of expletive competence
+- **Duration/completion semantics** create temporal boundedness incompatible with expletive uncertainty
+- **Procedural/technical discourse** prioritizes informational clarity over stylistic marking
+
+**Conflict Resolution Mechanisms:**
+When multiple factors compete, the system employs hierarchical conflict resolution:
+1. **Logical override** (highest priority): Strong logical indicators block expletive
+2. **Anti-expletive override**: Contextual factors systematically preventing expletive
+3. **Expletive context**: Emotional, urgency, or formal politeness contexts favoring expletive
+4. **Syntactic licensing**: Baseline grammatical permission (lowest priority)
+
+**Positional Boundary Effects:**
+Cross-clause logical negation shows reduced impact on expletive classification compared to same-clause negation, supporting clause-bounded semantic analysis. The framework successfully isolates target clauses from interfering logical contexts in complex sentences.
+
+**Formal Politeness Exception:**
+High-register politeness constructions ("auriez-vous l'amabilité") create expletive-favoring contexts even without traditional syntactic licensing, demonstrating discourse-driven grammatical variation.
+
+**Urgency and Finality Semantics:**
+Temporal urgency contexts ("avant qu'il soit trop tard") and finality semantics ("quitte définitivement") emerge as strong expletive predictors, suggesting that expletive "ne" correlates with speaker emotional investment in temporal outcomes.
 
 ## 9. Theoretical Implications
 
