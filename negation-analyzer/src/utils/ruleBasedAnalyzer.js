@@ -336,6 +336,23 @@ function integrateAnalyses(traditional, semantic, text) {
     // Add corpus-specific insights
     result.corpusInsights = generateCorpusInsights(traditional, semantic, text);
     
+    // FINAL OVERRIDE: Ensure our integration logic always takes precedence over traditional analysis
+    // This prevents any field conflicts from the spread operator
+    if (result.correctionApplied && result.correctionApplied !== undefined) {
+        // Our integration logic ran - ensure all fields are consistent
+        result.type = result.prediction;  // Ensure type matches prediction
+        result.classification = result.prediction;  // Ensure classification matches prediction
+        
+        // Debug logging to track field consistency
+        console.log('🔧 INTEGRATION OVERRIDE:', {
+            prediction: result.prediction,
+            type: result.type,
+            classification: result.classification,
+            correctionApplied: result.correctionApplied,
+            semanticBias: semantic.semanticBias
+        });
+    }
+    
     return result;
 }
 

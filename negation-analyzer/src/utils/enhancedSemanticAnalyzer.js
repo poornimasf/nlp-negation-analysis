@@ -93,6 +93,27 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\b(?:étudiant|chercheur|professeur|scientifique|élève)\b.*avant\s+que/i, weight: 1.6, type: 'academic_actors' },
             { pattern: /\bavant\s+que.*(?:étudiant|chercheur|professeur|scientifique|élève)\b/i, weight: 1.6, type: 'academic_actors' },
             { pattern: /\b(?:recherche|analyse|étude|expérience|découverte)\b.*avant\s+que/i, weight: 1.7, type: 'academic_processes' },
+            
+            // NARRATIVE/LITERARY CONTEXTS (NEW - medium-strong confidence)
+            // First-person narrative contexts
+            { pattern: /\bj'ouvris|j'ouvrai|je découvris|je trouvai|je saisis\b.*avant\s+que/i, weight: 1.9, type: 'first_person_narrative' },
+            { pattern: /\bavant\s+que.*\bje.*(?:saisisse|découvre|trouve|ouvre|prenne)\b/i, weight: 1.9, type: 'first_person_narrative' },
+            
+            // Literary/dramatic discovery contexts
+            { pattern: /\b(?:découvris|trouvai|aperçus|remarquai|constatai)\b.*avant\s+que/i, weight: 1.8, type: 'narrative_discovery' },
+            { pattern: /\bavant\s+que.*(?:découverte|révélation|surprise|choc)\b/i, weight: 1.8, type: 'narrative_discovery' },
+            
+            // Literary register and vocabulary
+            { pattern: /\b(?:parmi ses semblables|dans ses affaires|à sa place)\b.*avant\s+que/i, weight: 1.7, type: 'literary_register' },
+            { pattern: /\bavant\s+que.*(?:parmi|semblables|affaires)\b/i, weight: 1.7, type: 'literary_register' },
+            
+            // Emotional/dramatic narrative contexts
+            { pattern: /\b(?:tiroir|coffre|boîte|cachette|secret)\b.*avant\s+que/i, weight: 1.6, type: 'narrative_concealment' },
+            { pattern: /\bavant\s+que.*(?:secret|caché|dissimulé|enfoui)\b/i, weight: 1.6, type: 'narrative_concealment' },
+            
+            // Literary temporal sequences
+            { pattern: /\b(?:alors|puis|ensuite|soudain|tout à coup)\b.*avant\s+que/i, weight: 1.5, type: 'narrative_sequence' },
+            { pattern: /\bavant\s+que.*(?:moment|instant|seconde|minute)\b.*(?:crucial|décisif|important)\b/i, weight: 1.8, type: 'narrative_timing' },
             { pattern: /\bavant\s+que.*(?:recherche|analyse|étude|expérience|découverte)\b/i, weight: 1.7, type: 'academic_processes' },
             { pattern: /\bavant\s+que.*(?:comprenne|réalise|découvre|apprenne|maîtrise)\b/i, weight: 1.8, type: 'learning_processes' },
             { pattern: /\b(?:théorie|hypothèse|concept|principe)\b.*avant\s+que/i, weight: 1.5, type: 'academic_concepts' },
