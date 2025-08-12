@@ -203,9 +203,16 @@ function integrateAnalyses(traditional, semantic, text) {
         likelihood: semantic.likelihood  // NEW: Add likelihood score
     };
     
-    // Apply corpus-driven corrections
-    if (semantic.logicalAnalysis.overridesExpletive) {
-        // CRITICAL: Strong logical indicators override syntactic patterns
+    // Apply corpus-driven corrections with ANTI-EXPLETIVE as highest priority
+    if (semantic.antiExpletiveAnalysis && semantic.antiExpletiveAnalysis.overridesExpletive) {
+        // PRIORITY 0: Anti-expletive contexts override everything
+        result.prediction = 'No Expletive';
+        result.confidence = Math.max(0.85, Math.min(0.95, 0.7 + semantic.antiExpletiveAnalysis.score * 0.1));
+        result.reasoning = `ANTI-EXPLETIVE OVERRIDE: ${semantic.antiExpletiveAnalysis.strength} anti-expletive context (score: ${semantic.antiExpletiveAnalysis.score.toFixed(1)}) | ${semantic.reasoning}`;
+        result.correctionApplied = 'anti_expletive_override';
+        
+    } else if (semantic.logicalAnalysis.overridesExpletive) {
+        // PRIORITY 1: Strong logical indicators override syntactic patterns
         result.prediction = 'No Expletive';
         result.confidence = Math.max(0.85, semantic.classification.confidence);
         result.reasoning = `LOGICAL OVERRIDE: ${semantic.reasoning}`;
@@ -233,6 +240,13 @@ function integrateAnalyses(traditional, semantic, text) {
             result.reasoning = `AMBIGUOUS: ${semantic.reasoning} | Traditional: ${traditional.reasoning || 'Rule-based analysis'}`;
             result.correctionApplied = 'ambiguous_case';
         }
+        
+    } else if (semantic.antiExpletiveAnalysis && semantic.antiExpletiveAnalysis.strength === 'medium') {
+        // PRIORITY 1.5: Medium anti-expletive contexts (before formal politeness)
+        result.prediction = 'No Expletive';
+        result.confidence = Math.max(0.70, Math.min(0.85, 0.6 + semantic.antiExpletiveAnalysis.score * 0.1));
+        result.reasoning = `ANTI-EXPLETIVE CONTEXT: ${semantic.antiExpletiveAnalysis.strength} anti-expletive signals detected | ${semantic.reasoning}`;
+        result.correctionApplied = 'anti_expletive_medium';
         
     } else if (semantic.semanticBias > 0.15 && hasFormalPolitenessContext(semantic)) {
         // Special case: Formal politeness contexts with moderate expletive bias

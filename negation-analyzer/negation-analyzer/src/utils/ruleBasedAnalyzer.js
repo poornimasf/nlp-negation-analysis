@@ -1,28 +1,34 @@
 /**
- * Rule-based analyzer with comprehensive structural analysis
- * Focused on avant que/avant qu' patterns
+ * Enhanced Rule-based analyzer with corpus-driven insights
+ * Addresses overcorrection: "avant que + subjunctive" enables but doesn't require expletive
+ * Implements hierarchy: Logical > Expletive > Syntactic
  */
 
-// Core patterns
+import { EnhancedSemanticAnalyzer } from './enhancedSemanticAnalyzer.js';
+
+// Core patterns - UPDATED with corpus insights
 const TRIGGER_PATTERNS = {
     // Triggers that can take expletive ne (but don't always require it)
     AVANT_QUE: {
         pattern: /\b(?:avant\s+(?:que|qu['']))\b/i,
         name: 'avant que',
         requiresSubjunctive: true,
-        allowsExpletive: true  // Can have expletive ne but not required
+        allowsExpletive: true,  // CRITICAL: Can have expletive ne but not required
+        corpusExpletiveRate: 0.0  // From corpus analysis - confirms overcorrection
     },
     PEUR_QUE: {
         pattern: /\b(?:peur\s+(?:que|qu['']))\b/i,
         name: 'peur que',
         requiresSubjunctive: true,
-        allowsExpletive: true
+        allowsExpletive: true,
+        corpusExpletiveRate: 0.8  // Higher expletive rate in emotional contexts
     },
     PEU_SEN_FAUT: {
         pattern: /\b(?:peu\s+s['']en\s+faut)\b/i,
         name: 'peu s\'en faut',
         requiresSubjunctive: true,
-        allowsExpletive: true
+        allowsExpletive: true,
+        corpusExpletiveRate: 0.9  // High expletive rate for impersonal constructions
     }
 };
 
@@ -126,6 +132,215 @@ const analyzeComplementClause = (text) => {
 };
 
 /**
+ * Enhanced rule-based analysis with corpus-driven semantic analysis
+ * Addresses the critical overcorrection problem identified in corpus analysis
+ */
+export const analyzeTextEnhanced = (text) => {
+    const semanticAnalyzer = new EnhancedSemanticAnalyzer();
+    
+    // Step 1: Traditional rule-based analysis
+    const traditionalAnalysis = analyzeText(text);
+    
+    // Step 2: Enhanced semantic analysis using corpus insights
+    const semanticAnalysis = semanticAnalyzer.analyzeSemantics(text);
+    
+    // Step 3: Integrate analyses with hierarchy: Logical > Expletive > Syntactic
+    const integratedAnalysis = integrateAnalyses(traditionalAnalysis, semanticAnalysis, text);
+    
+    return integratedAnalysis;
+};
+
+/**
+ * Check if the context represents a formal politeness situation that favors expletive usage
+ */
+function hasFormalPolitenessContext(semantic) {
+    const discourse = semantic.discourseAnalysis;
+    if (!discourse) {
+        console.log('🔍 FORMAL POLITENESS DEBUG: No discourse analysis found');
+        return false;
+    }
+    
+    // Check for formal register + polite stance combination
+    const isFormalRegister = discourse.register && 
+        (discourse.register.type === 'formal' || discourse.register.type === 'literary') &&
+        discourse.register.confidence > 0.5;
+        
+    const isPoliteStance = discourse.stance && 
+        discourse.stance.type === 'polite' &&
+        discourse.stance.confidence > 0.5;
+        
+    // Check for politeness markers in pragmatic context
+    const hasPolitenessMarkers = discourse.pragmatic && 
+        discourse.pragmatic.factors &&
+        (discourse.pragmatic.factors.includes('question') || 
+         discourse.pragmatic.factors.includes('directAddress'));
+    
+    console.log('🔍 FORMAL POLITENESS DEBUG:', {
+        register: discourse.register,
+        stance: discourse.stance,
+        pragmatic: discourse.pragmatic,
+        isFormalRegister,
+        isPoliteStance,
+        hasPolitenessMarkers,
+        result: isFormalRegister && isPoliteStance && hasPolitenessMarkers
+    });
+    
+    // Formal politeness context requires formal register + polite stance + politeness markers
+    return isFormalRegister && isPoliteStance && hasPolitenessMarkers;
+}
+
+/**
+ * Integrate traditional rule-based analysis with enhanced semantic analysis
+ */
+function integrateAnalyses(traditional, semantic, text) {
+    const result = {
+        ...traditional,  // Preserve all existing fields
+        enhanced: true,
+        semanticAnalysis: semantic,
+        originalPrediction: traditional.type,  // Fix: use 'type' from traditional analysis
+        originalConfidence: traditional.confidence,
+        prediction: traditional.type,  // Fix: initialize prediction from traditional.type
+        likelihood: semantic.likelihood  // NEW: Add likelihood score
+    };
+    
+    // Apply corpus-driven corrections with ANTI-EXPLETIVE as highest priority
+    if (semantic.antiExpletiveAnalysis && semantic.antiExpletiveAnalysis.overridesExpletive) {
+        // PRIORITY 0: Anti-expletive contexts override everything
+        result.prediction = 'No Expletive';
+        result.confidence = Math.max(0.85, Math.min(0.95, 0.7 + semantic.antiExpletiveAnalysis.score * 0.1));
+        result.reasoning = `ANTI-EXPLETIVE OVERRIDE: ${semantic.antiExpletiveAnalysis.strength} anti-expletive context (score: ${semantic.antiExpletiveAnalysis.score.toFixed(1)}) | ${semantic.reasoning}`;
+        result.correctionApplied = 'anti_expletive_override';
+        
+    } else if (semantic.logicalAnalysis.overridesExpletive) {
+        // PRIORITY 1: Strong logical indicators override syntactic patterns
+        result.prediction = 'No Expletive';
+        result.confidence = Math.max(0.85, semantic.classification.confidence);
+        result.reasoning = `LOGICAL OVERRIDE: ${semantic.reasoning}`;
+        result.correctionApplied = 'logical_override';
+        
+    } else if (semantic.conflictAnalysis.hasConflict) {
+        // Handle semantic conflicts using corpus hierarchy
+        const resolution = semantic.conflictAnalysis.resolution;
+        
+        if (resolution.winner === 'logical') {
+            result.prediction = 'No Expletive';
+            result.confidence = resolution.confidence;
+            result.reasoning = `CONFLICT RESOLUTION: ${resolution.reasoning}`;
+            result.correctionApplied = 'conflict_resolution_logical';
+            
+        } else if (resolution.winner === 'expletive') {
+            result.prediction = 'Expletive';
+            result.confidence = resolution.confidence;
+            result.reasoning = `CONFLICT RESOLUTION: ${resolution.reasoning}`;
+            result.correctionApplied = 'conflict_resolution_expletive';
+            
+        } else {
+            // Ambiguous case - use traditional analysis but lower confidence
+            result.confidence = Math.min(result.confidence, 0.6);
+            result.reasoning = `AMBIGUOUS: ${semantic.reasoning} | Traditional: ${traditional.reasoning || 'Rule-based analysis'}`;
+            result.correctionApplied = 'ambiguous_case';
+        }
+        
+    } else if (semantic.antiExpletiveAnalysis && semantic.antiExpletiveAnalysis.strength === 'medium') {
+        // PRIORITY 1.5: Medium anti-expletive contexts (before formal politeness)
+        result.prediction = 'No Expletive';
+        result.confidence = Math.max(0.70, Math.min(0.85, 0.6 + semantic.antiExpletiveAnalysis.score * 0.1));
+        result.reasoning = `ANTI-EXPLETIVE CONTEXT: ${semantic.antiExpletiveAnalysis.strength} anti-expletive signals detected | ${semantic.reasoning}`;
+        result.correctionApplied = 'anti_expletive_medium';
+        
+    } else if (semantic.semanticBias > 0.15 && hasFormalPolitenessContext(semantic)) {
+        // Special case: Formal politeness contexts with moderate expletive bias
+        console.log('🎯 DECISION DEBUG: Formal politeness context triggered', semantic.semanticBias);
+        result.prediction = 'Expletive';
+        result.confidence = Math.min(0.75, semantic.semanticBias + 0.2); // Boost confidence for formal contexts
+        result.reasoning = `FORMAL POLITENESS: ${semantic.reasoning} | Formal register + polite stance favors expletive usage`;
+        result.correctionApplied = 'formal_politeness_context';
+        
+    } else if (semantic.semanticBias < -0.3) {
+        // Strong semantic bias toward logical
+        console.log('🎯 DECISION DEBUG: Strong logical bias (<-0.3)', semantic.semanticBias);
+        result.prediction = 'No Expletive';
+        result.confidence = Math.abs(semantic.semanticBias);
+        result.reasoning = `SEMANTIC BIAS: ${semantic.reasoning}`;
+        result.correctionApplied = 'semantic_bias_logical';
+        
+    } else if (semantic.semanticBias > 0.3) {
+        // Strong semantic bias toward expletive
+        console.log('🎯 DECISION DEBUG: Strong semantic bias (>0.3)', semantic.semanticBias);
+        result.prediction = 'Expletive';
+        result.confidence = semantic.semanticBias;
+        result.reasoning = `SEMANTIC BIAS: ${semantic.reasoning}`;
+        result.correctionApplied = 'semantic_bias_expletive';
+        
+    } else {
+        // No strong semantic bias - use traditional analysis but add semantic context
+        console.log('🎯 DECISION DEBUG: No strong bias - using traditional', {
+            semanticBias: semantic.semanticBias,
+            biasCheck: semantic.semanticBias > 0.15,
+            traditionalPrediction: traditional.type
+        });
+        result.reasoning = `TRADITIONAL + SEMANTIC: ${traditional.reasoning || 'Rule-based'} | ${semantic.reasoning}`;
+        result.correctionApplied = 'semantic_enhancement';
+        
+        // Adjust confidence based on semantic uncertainty
+        if (semantic.classification.certainty === 'low') {
+            result.confidence = Math.min(result.confidence, 0.7);
+        }
+    }
+    
+    // Add corpus-specific insights
+    result.corpusInsights = generateCorpusInsights(traditional, semantic, text);
+    
+    return result;
+}
+
+/**
+ * Generate insights based on corpus analysis findings
+ */
+function generateCorpusInsights(traditional, semantic, text) {
+    const insights = [];
+    
+    // Overcorrection warning
+    if (semantic.syntacticAnalysis.hasLicensing && !semantic.expletiveAnalysis.favorsExpletive) {
+        insights.push({
+            type: 'overcorrection_warning',
+            message: 'Syntactic licensing detected but no expletive context - potential overcorrection case',
+            severity: 'medium'
+        });
+    }
+    
+    // Logical strength insights
+    if (semantic.logicalAnalysis.level === 'strong') {
+        insights.push({
+            type: 'strong_logical',
+            message: `Strong logical indicators detected: ${semantic.logicalAnalysis.indicators.map(i => i.indicator).join(', ')}`,
+            severity: 'high'
+        });
+    }
+    
+    // Expletive context insights
+    if (semantic.expletiveAnalysis.strength === 'strong') {
+        insights.push({
+            type: 'strong_expletive',
+            message: `Strong expletive context detected: ${semantic.expletiveAnalysis.contexts.map(c => c.context).join(', ')}`,
+            severity: 'high'
+        });
+    }
+    
+    // Conflict insights
+    if (semantic.conflictAnalysis.hasConflict) {
+        insights.push({
+            type: 'semantic_conflict',
+            message: `Semantic conflict resolved: ${semantic.conflictAnalysis.resolution.reasoning}`,
+            severity: 'medium'
+        });
+    }
+    
+    return insights;
+}
+
+/**
+ * Original rule-based analysis function - PRESERVED for backward compatibility
  * Main analysis function
  * @param {string} text - Text to analyze
  * @returns {Object} - Complete analysis
@@ -135,7 +350,7 @@ export const analyzeText = (text) => {
     let foundTrigger = null;
     let triggerMatch = null;
 
-    for (const [key, config] of Object.entries(TRIGGER_PATTERNS)) {
+    for (const [, config] of Object.entries(TRIGGER_PATTERNS)) {
         const match = text.match(config.pattern);
         if (match) {
             foundTrigger = config;
@@ -188,7 +403,7 @@ export const analyzeText = (text) => {
     }
 
     // Even with subjunctive and trigger, expletive ne is optional
-    return {
+    const result = {
         type: 'Expletive',
         confidence: 0.85, // Lower confidence since it's optional
         evidence: {
@@ -200,4 +415,30 @@ export const analyzeText = (text) => {
             note: 'Expletive ne is allowed but optional with this trigger'
         }
     };
+    
+    // PHASE 2: Enhanced subjunctive debugging for rule-based mode
+    console.log('🎯 RULE-BASED SUBJUNCTIVE DETECTION:', {
+        input: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
+        trigger: {
+            found: foundTrigger.name,
+            requiresSubjunctive: foundTrigger.requiresSubjunctive
+        },
+        subjunctiveAnalysis: {
+            hasSubjunctive: complementClause.hasSubjunctive,
+            detectedVerb: complementClause.verbInfo?.verb,
+            verbType: complementClause.verbInfo?.type,
+            isSpecificMatch: complementClause.verbInfo?.isSpecificMatch,
+            position: complementClause.verbInfo?.position
+        },
+        complementClause: {
+            properQueUsage: complementClause.properQueUsage,
+            hasSubjectAfterQue: complementClause.hasSubjectAfterQue,
+            hasCompleteVerbalStructure: complementClause.hasCompleteVerbalStructure,
+            text: complementClause.text
+        },
+        finalClassification: result.type,
+        confidence: result.confidence
+    });
+    
+    return result;
 };
