@@ -273,14 +273,25 @@ function integrateAnalyses(traditional, semantic, text) {
         result.correctionApplied = 'semantic_bias_expletive';
         
     } else {
-        // No strong semantic bias - use traditional analysis but add semantic context
-        console.log('🎯 DECISION DEBUG: No strong bias - using traditional', {
+        // No strong semantic bias - implement conservative hierarchy
+        console.log('🎯 DECISION DEBUG: No strong bias - implementing conservative hierarchy', {
             semanticBias: semantic.semanticBias,
-            biasCheck: semantic.semanticBias > 0.15,
-            traditionalPrediction: traditional.type
+            hasExpletiveContext: semantic.expletiveAnalysis?.strength !== 'none',
+            hasSyntacticLicensing: semantic.syntacticAnalysis?.hasLicensing
         });
-        result.reasoning = `TRADITIONAL + SEMANTIC: ${traditional.reasoning || 'Rule-based'} | ${semantic.reasoning}`;
-        result.correctionApplied = 'semantic_enhancement';
+        
+        // Conservative approach: Only classify as expletive with positive semantic support
+        if (semantic.semanticBias > 0.15) {
+            // Weak positive bias + syntactic licensing = Expletive
+            result.prediction = 'Expletive';
+            result.reasoning = `WEAK EXPLETIVE BIAS: ${semantic.reasoning} | Syntactic licensing + weak semantic support`;
+            result.correctionApplied = 'weak_expletive_bias';
+        } else {
+            // No positive bias = Conservative default to No Expletive
+            result.prediction = 'No Expletive';
+            result.reasoning = `CONSERVATIVE DEFAULT: ${semantic.reasoning} | Syntactic licensing without semantic support - conservative approach`;
+            result.correctionApplied = 'conservative_default';
+        }
         
         // Adjust confidence based on semantic uncertainty
         if (semantic.classification.certainty === 'low') {
