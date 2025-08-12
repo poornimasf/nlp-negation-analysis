@@ -33,6 +33,28 @@ const NON_SUBJUNCTIVE_WORDS = new Set([
   'guerre', 'terre', 'mere', 'pere', 'frere', 'soeur' // Common nouns
 ]);
 
+// Indicative forms that should NEVER be considered subjunctive
+const INDICATIVE_FORMS = new Set([
+  // PRENDRE indicative
+  'prend', 'prends', 'prenons', 'prenez', 'prennent',
+  // FAIRE indicative  
+  'fait', 'fais', 'faisons', 'faites', 'font',
+  // VENIR indicative
+  'vient', 'viens', 'venons', 'venez', 'viennent',
+  // DIRE indicative
+  'dit', 'dis', 'disons', 'dites', 'disent',
+  // POUVOIR indicative
+  'peut', 'peux', 'pouvons', 'pouvez', 'peuvent',
+  // VOULOIR indicative
+  'veut', 'veux', 'voulons', 'voulez', 'veulent',
+  // ALLER indicative
+  'va', 'vas', 'vais', 'allons', 'allez', 'vont',
+  // ÊTRE indicative
+  'est', 'es', 'suis', 'sommes', 'êtes', 'sont',
+  // AVOIR indicative
+  'a', 'as', 'ai', 'avons', 'avez', 'ont'
+]);
+
 /**
  * Main subjunctive detection function
  * @param {string} text - Text to analyze
@@ -45,6 +67,20 @@ export function detectSubjunctive(text, context = {}) {
   }
 
   const normalizedText = text.toLowerCase().trim();
+  
+  // Priority 0: Check for indicative forms first (prevents false positives)
+  const words = normalizedText.split(/\s+/);
+  for (const word of words) {
+    if (INDICATIVE_FORMS.has(word)) {
+      return {
+        found: false,
+        verb: word,
+        type: 'INDICATIVE_DETECTED',
+        confidence: 0,
+        reason: `Indicative form "${word}" detected - not subjunctive`
+      };
+    }
+  }
   
   // Priority 1: High-confidence irregular verbs
   for (const [type, pattern] of Object.entries(HIGH_PRIORITY_PATTERNS)) {

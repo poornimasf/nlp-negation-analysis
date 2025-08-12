@@ -883,7 +883,7 @@ class EnhancedSemanticAnalyzer {
         
         // 1. GRAMMATICAL ERRORS - Indicative mood instead of subjunctive (STRONGEST SIGNAL)
         const indicativePatterns = [
-            { pattern: /avant\s+qu[e']?\s*(?:je|tu|il|elle|on|nous|vous|ils|elles)\s+(?:ai|as|a|avons|avez|ont|suis|es|est|sommes|êtes|sont|vais|vas|va|allons|allez|vont|pars|part|partons|partez|partent)\b/i, 
+            { pattern: /avant\s+qu[e']?\s*(?:je|tu|il|elle|on|nous|vous|ils|elles)\s+(?:ai|as|a|avons|avez|ont|suis|es|est|sommes|êtes|sont|vais|vas|va|allons|allez|vont|pars|part|partons|partez|partent|prend|prends|prenons|prenez|prennent|fait|fais|faisons|faites|font|vient|viens|venons|venez|viennent|dit|dis|disons|dites|disent|peut|peux|pouvons|pouvez|peuvent|veut|veux|voulons|voulez|veulent)\b/i, 
               weight: 3.0, context: 'indicative_mood_error' },
         ];
         
@@ -892,6 +892,9 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\b(allez|bon|bah|ouais|nan|putain|merde|clairement|franchement|carrément)\b/i, weight: 2.0, context: 'informal_language' },
             { pattern: /[.]{2,}|!!+|\^\^|:\)|:\(|lol|mdr/i, weight: 1.5, context: 'informal_punctuation' },
             { pattern: /\*[^*]+\*/i, weight: 1.8, context: 'action_description' }, // *michael passait*
+            // Explicit/vulgar content (very strong informal signal)
+            { pattern: /\b(chatte|queue|salaud|fellation|pistonner|baiser|niquer|enculer|sucer|lécher)\b/i, weight: 2.5, context: 'explicit_vulgar_content' },
+            { pattern: /\b(positions|sexuel|sexuelle|cul|bite|con|connasse|pute|salope)\b/i, weight: 2.3, context: 'sexual_vulgar_content' },
         ];
         
         // 3. COMPLETION/DURATION CONTEXTS (STRONG SIGNAL)
