@@ -1073,7 +1073,28 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\b(une telle|de telles|ce type de|cette nature de)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'formal_reference' },
         ];
         
-        // 8g. ENVIRONMENTAL/NATURAL ROUTINE CONTEXTS (MEDIUM SIGNAL)
+        // 8g. CONSUMER/PRODUCT ROUTINE CONTEXTS (MEDIUM SIGNAL)
+        const consumerRoutinePatterns = [
+            { pattern: /\b(produit|article|objet|chose)\b.*avant\s+que/i, weight: 1.3, context: 'consumer_products' },
+            { pattern: /\b(utilisation|usage|emploi|application)\b.*avant\s+que/i, weight: 1.2, context: 'product_usage' },
+            { pattern: /\b(fonctionnement|marche|opération)\b.*avant\s+que/i, weight: 1.1, context: 'product_operation' },
+            // Personal care and hygiene products (NEW)
+            { pattern: /\b(pâte à dentifrice|dentifrice|shampooing|savon|crème)\b[\s\S]*avant\s+qu/i, weight: 1.5, context: 'hygiene_products' },
+            { pattern: /\b(brosse à dents|peigne|rasoir|maquillage)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'personal_care_tools' },
+            // Sensory descriptions in practical contexts (NEW)
+            { pattern: /\b(couleur|goût|odeur|texture|sensation)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'practical_sensory' },
+            { pattern: /\b(surprend|étonne|frappe|impressionne)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'casual_surprise' },
+            { pattern: /\b(au départ|d'abord|initialement|en premier)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'practical_sequence' },
+            // Consumer experience terminology (NEW)
+            { pattern: /\b(haleine|bouche|dents|visage|peau)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'body_parts_practical' },
+            { pattern: /\b(mentholée|fraîche|douce|agréable|efficace)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'product_qualities' },
+            { pattern: /\b(s'empare|prend|saisit|envahit)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'practical_action' },
+            // Everyday practical contexts (NEW)
+            { pattern: /\b(notre|nos|votre|vos)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'inclusive_practical' },
+            { pattern: /\b(expérience|essai|test|utilisation)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'consumer_experience' },
+        ];
+        
+        // 8h. ENVIRONMENTAL/NATURAL ROUTINE CONTEXTS (MEDIUM SIGNAL)
         const environmentalRoutinePatterns = [
             { pattern: /\b(cycle|processus naturel|évolution|développement)\b.*avant\s+que/i, weight: 1.3, context: 'natural_routine' },
             { pattern: /\b(saison|période|phase|étape naturelle)\b.*avant\s+que/i, weight: 1.2, context: 'seasonal_routine' },
@@ -1094,6 +1115,7 @@ class EnhancedSemanticAnalyzer {
             ...medicalRoutinePatterns,
             ...techRoutinePatterns,
             ...legalRoutinePatterns,
+            ...consumerRoutinePatterns,
             ...environmentalRoutinePatterns
         ];
         
