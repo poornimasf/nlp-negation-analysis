@@ -64,6 +64,12 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\b(?:pris en photo|photographié|filmé|enregistré|sauvegardé|documenté)\b.*avant\s+que/i, weight: 1.5, type: 'preventive_documentation' },
             { pattern: /\bavant que.*(?:efface|supprime|détruise|disparaisse|s'en aille)\b/i, weight: 1.6, type: 'preventive_loss' },
             
+            // Urgency/Finality contexts (NEW - strong confidence)
+            { pattern: /\bavant\s+qu[e']?.*(?:soit trop tard|il soit trop tard)\b/i, weight: 2.4, type: 'urgency_finality' },
+            { pattern: /\bavant\s+qu[e']?.*(?:quitte définitivement|parte pour toujours|disparaisse à jamais)\b/i, weight: 2.2, type: 'definitive_departure' },
+            { pattern: /\bavant\s+qu[e']?.*(?:ait fini|ait terminé|ait achevé)\b/i, weight: 1.8, type: 'completion_anticipation' },
+            { pattern: /\bavant\s+que.*(?:fut trop tardive|fût trop tard)\b/i, weight: 2.0, type: 'literary_urgency' },
+            
             // Impersonal constructions (medium-high confidence)
             { pattern: /\bil s'en faut|peu s'en faut|tant s'en faut\b/i, weight: 2.2, type: 'impersonal' },
             { pattern: /\bil suffit que|il arrive que|il se peut que\b/i, weight: 1.4, type: 'impersonal' }
@@ -859,54 +865,66 @@ class EnhancedSemanticAnalyzer {
     
     /**
      * Detect contexts that strongly suggest NO expletive "ne" should be used
-     * Based on corpus analysis of false positive patterns
+     * Based on comprehensive corpus analysis of false positive patterns
      */
     detectAntiExpletiveContext(sentence) {
         const contexts = [];
         let totalScore = 0;
         
-        // 1. GRAMMATICAL ERRORS - Indicative mood instead of subjunctive
+        // 1. GRAMMATICAL ERRORS - Indicative mood instead of subjunctive (STRONGEST SIGNAL)
         const indicativePatterns = [
             { pattern: /avant\s+qu[e']?\s*(?:je|tu|il|elle|on|nous|vous|ils|elles)\s+(?:ai|as|a|avons|avez|ont|suis|es|est|sommes|êtes|sont|vais|vas|va|allons|allez|vont|pars|part|partons|partez|partent)\b/i, 
-              weight: 2.0, context: 'indicative_mood_error' },
+              weight: 3.0, context: 'indicative_mood_error' },
         ];
         
-        // 2. INFORMAL/COLLOQUIAL MARKERS
+        // 2. INFORMAL/COLLOQUIAL MARKERS (STRONG SIGNAL)
         const informalPatterns = [
-            { pattern: /\b(allez|bon|bah|ouais|nan|putain|merde)\b/i, weight: 1.0, context: 'informal_language' },
-            { pattern: /\b(clairement|franchement|carrément)\b/i, weight: 0.8, context: 'colloquial_adverbs' },
-            { pattern: /[.]{2,}|!!+|\^\^|:\)|:\(/i, weight: 0.5, context: 'informal_punctuation' },
+            { pattern: /\b(allez|bon|bah|ouais|nan|putain|merde|clairement|franchement|carrément)\b/i, weight: 2.0, context: 'informal_language' },
+            { pattern: /[.]{2,}|!!+|\^\^|:\)|:\(|lol|mdr/i, weight: 1.5, context: 'informal_punctuation' },
+            { pattern: /\*[^*]+\*/i, weight: 1.8, context: 'action_description' }, // *michael passait*
         ];
         
-        // 3. WEAK TEMPORAL CONTEXTS (simple sequence, not emotional)
-        const weakTemporalPatterns = [
-            { pattern: /avant\s+qu[e']?\s*(?:une?|le|la|les|ce|cette|ces)\s+(?:école|service|moment|temps|jour|heure)\b/i, 
-              weight: 1.0, context: 'weak_temporal_sequence' },
-            { pattern: /avant\s+qu[e']?\s*(?:il|elle|on)\s+(?:commence|finisse|arrive|parte|ouvre|ferme)\b/i, 
-              weight: 0.8, context: 'neutral_temporal_action' },
+        // 3. COMPLETION/DURATION CONTEXTS (STRONG SIGNAL)
+        const completionPatterns = [
+            { pattern: /\b(il a fallu|ça a pris|cela a duré|il faut compter)\b.*avant\s+que/i, weight: 2.2, context: 'duration_completion' },
+            { pattern: /\b(plusieurs|quelques|des)\s+(années|mois|semaines|jours|heures|minutes)\b.*avant\s+que/i, weight: 1.8, context: 'time_duration' },
+            { pattern: /\b(jusqu'à|attendre|patienter)\b.*avant\s+que/i, weight: 1.6, context: 'waiting_completion' },
         ];
         
-        // 4. NARRATIVE/DESCRIPTIVE CONTEXTS (refined to avoid preventive contexts)
+        // 4. NEUTRAL DESCRIPTIVE/NARRATIVE CONTEXTS (MEDIUM-STRONG SIGNAL)
         const narrativePatterns = [
-            { pattern: /\b(se déroula|se passa|eut lieu|arriva)\b.*avant\s+que/i, weight: 0.8, context: 'past_narrative' },
-            // REFINED: Only match past tense when it's clearly completion/neutral, not preventive
-            { pattern: /\b(j'ai|tu as|il a|elle a|on a|nous avons|vous avez|ils ont|elles ont)\s+(fini|terminé|complété|achevé)\b.*avant\s+que/i, 
-              weight: 0.6, context: 'past_completion_context' },
-            // Avoid preventive contexts like "j'ai pris en photo avant que", "j'ai sauvé avant que"
+            { pattern: /\b(se déroula|se passa|eut lieu|arriva)\b.*avant\s+que/i, weight: 1.8, context: 'past_narrative' },
+            { pattern: /\b(mais ça|cela|ça)\s+(n'a duré|a duré|a commencé)\b.*avant\s+que/i, weight: 1.6, context: 'neutral_description' },
+            { pattern: /\b(un court moment|quelques pages|quelques minutes)\b.*avant\s+que/i, weight: 1.4, context: 'brief_duration' },
         ];
         
-        // 5. TECHNICAL/NEUTRAL CONTEXTS
+        // 5. TECHNICAL/PROCEDURAL CONTEXTS (MEDIUM-STRONG SIGNAL)
         const technicalPatterns = [
-            { pattern: /avant\s+qu[e']?\s*(?:le|la|les)\s+(?:système|service|programme|logiciel|application)\b/i, 
-              weight: 0.7, context: 'technical_context' },
+            { pattern: /\b(il faut|vous devez|il convient de|il est nécessaire de)\b.*avant\s+que/i, weight: 1.8, context: 'procedural_instruction' },
+            { pattern: /\b(système|service|programme|logiciel|application|processus)\b.*avant\s+que/i, weight: 1.6, context: 'technical_context' },
+            { pattern: /\b(mesures|dispositions|précautions)\b.*avant\s+que/i, weight: 1.4, context: 'administrative_context' },
+        ];
+        
+        // 6. CASUAL CONVERSATION MARKERS (MEDIUM SIGNAL)
+        const conversationalPatterns = [
+            { pattern: /\b(bon|alors|donc|enfin|bref|sinon)\b.*avant\s+que/i, weight: 1.2, context: 'conversational_markers' },
+            { pattern: /\b(je pense|je crois|il me semble)\b.*avant\s+que/i, weight: 1.0, context: 'tentative_opinion' },
+        ];
+        
+        // 7. BUSINESS/FORMAL PROCEDURAL (MEDIUM SIGNAL)
+        const businessPatterns = [
+            { pattern: /\b(entreprise|société|organisation|administration)\b.*avant\s+que/i, weight: 1.4, context: 'business_context' },
+            { pattern: /\b(contrat|accord|décision|modification)\b.*avant\s+que/i, weight: 1.2, context: 'legal_administrative' },
         ];
         
         const allPatterns = [
             ...indicativePatterns,
             ...informalPatterns, 
-            ...weakTemporalPatterns,
+            ...completionPatterns,
             ...narrativePatterns,
-            ...technicalPatterns
+            ...technicalPatterns,
+            ...conversationalPatterns,
+            ...businessPatterns
         ];
         
         for (const { pattern, weight, context } of allPatterns) {
@@ -916,14 +934,14 @@ class EnhancedSemanticAnalyzer {
             }
         }
         
-        const strength = totalScore > 2.0 ? 'strong' : totalScore > 1.0 ? 'medium' : totalScore > 0 ? 'weak' : 'none';
+        const strength = totalScore > 3.0 ? 'strong' : totalScore > 1.8 ? 'medium' : totalScore > 0.8 ? 'weak' : 'none';
         
         return {
             hasAntiExpletive: totalScore > 0,
             strength,
             score: totalScore,
             contexts,
-            overridesExpletive: totalScore > 1.5 // Strong anti-expletive context overrides
+            overridesExpletive: totalScore > 2.0 // Lowered threshold for stronger override
         };
     }
     calculateExpletiveLikelihood(logicalAnalysis, expletiveAnalysis, syntacticAnalysis, discourseAnalysis, semanticBias) {
