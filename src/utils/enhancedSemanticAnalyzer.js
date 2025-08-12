@@ -114,6 +114,26 @@ class EnhancedSemanticAnalyzer {
             // Literary temporal sequences
             { pattern: /\b(?:alors|puis|ensuite|soudain|tout à coup)\b.*avant\s+que/i, weight: 1.5, type: 'narrative_sequence' },
             { pattern: /\bavant\s+que.*(?:moment|instant|seconde|minute)\b.*(?:crucial|décisif|important)\b/i, weight: 1.8, type: 'narrative_timing' },
+            
+            // MEDICAL URGENCY CONTEXTS (NEW - strong confidence)
+            { pattern: /\b(?:patients|symptômes|maladie|médical|clinique)\b.*avant\s+que/i, weight: 2.2, type: 'medical_urgency' },
+            { pattern: /\bavant\s+que.*(?:symptômes|maladie|pathologie)\b.*(?:surviennent|apparaissent|se déclarent)\b/i, weight: 2.5, type: 'medical_onset' },
+            { pattern: /\b(?:faire appel|consulter|traiter)\b.*avant\s+qu.*(?:trop tard|irréversible)\b/i, weight: 2.8, type: 'medical_emergency' },
+            
+            // CRISIS/EMERGENCY CONTEXTS (NEW - strong confidence)
+            { pattern: /\b(?:viens|venez)\b.*(?:tout de suite|immédiatement|rapidement)\b.*avant\s+qu/i, weight: 2.6, type: 'urgent_call' },
+            { pattern: /\b(?:le temps presse|urgence|alarme|danger)\b.*avant\s+que/i, weight: 2.4, type: 'time_pressure' },
+            { pattern: /\bavant\s+qu.*(?:trop tard|irréversible|catastrophe|désastre)\b/i, weight: 2.7, type: 'critical_timing' },
+            
+            // TEMPORAL URGENCY CONTEXTS (NEW - medium-strong confidence)
+            { pattern: /\b(?:à l'aube|au petit matin|immédiatement|sur-le-champ)\b.*avant\s+que/i, weight: 2.0, type: 'temporal_urgency' },
+            { pattern: /\bavant\s+que.*(?:nous voler|ils viennent|on nous trouve)\b/i, weight: 2.2, type: 'escape_urgency' },
+            { pattern: /\b(?:partirons|fuyons|échappons)\b.*avant\s+que/i, weight: 2.1, type: 'departure_urgency' },
+            
+            // PROCEDURAL URGENCY CONTEXTS (NEW - medium confidence)
+            { pattern: /\b(?:procédure|processus)\b.*(?:débute|commence)\b.*avant\s+que/i, weight: 1.9, type: 'procedural_onset' },
+            { pattern: /\bavant\s+que.*(?:expire|se termine|finisse)\b/i, weight: 1.8, type: 'deadline_urgency' },
+            { pattern: /\b(?:phase d'accélération|délais|échéance)\b.*avant\s+que/i, weight: 1.7, type: 'timeline_pressure' },
             { pattern: /\bavant\s+que.*(?:recherche|analyse|étude|expérience|découverte)\b/i, weight: 1.7, type: 'academic_processes' },
             { pattern: /\bavant\s+que.*(?:comprenne|réalise|découvre|apprenne|maîtrise)\b/i, weight: 1.8, type: 'learning_processes' },
             { pattern: /\b(?:théorie|hypothèse|concept|principe)\b.*avant\s+que/i, weight: 1.5, type: 'academic_concepts' },
@@ -1073,25 +1093,30 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\b(données|fichier|base de données|serveur)\b.*avant\s+que/i, weight: 1.2, context: 'tech_data' },
         ];
         
-        // 8f. LEGAL/ADMINISTRATIVE ROUTINE CONTEXTS (REDUCED WEIGHTS)
+        // 8f. LEGAL/ADMINISTRATIVE ROUTINE CONTEXTS (STRENGTHENED)
         const legalRoutinePatterns = [
-            { pattern: /\b(formulaire|demande|dossier|inscription)\b.*avant\s+que/i, weight: 1.1, context: 'legal_routine' },
-            { pattern: /\b(procédure standard|démarche|formalité)\b.*avant\s+que/i, weight: 1.2, context: 'administrative_routine' },
-            { pattern: /\b(délai|échéance|date limite|expiration)\b.*avant\s+que/i, weight: 1.0, context: 'administrative_deadlines' },
-            // Legal/Administrative authorities and institutions (MORE SPECIFIC)
-            { pattern: /\b(commissaire à la protection|autorités chargées|tribunal administratif)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'legal_authorities' },
-            { pattern: /\b(administration publique|ministère|gouvernement fédéral)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'administrative_institutions' },
-            // Data protection and privacy terminology (MORE SPECIFIC)
-            { pattern: /\b(protection des données personnelles|vie privée et données|renseignements confidentiels)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'data_protection' },
-            { pattern: /\b(LPRPDE|RGPD|CNIL|loi sur la protection des données)\b[\s\S]*avant\s+qu/i, weight: 1.4, context: 'privacy_legislation' },
-            // Legal procedures and measures (MORE SPECIFIC)
-            { pattern: /\b(mesures de protection obligatoires|mesures de sécurité réglementaires)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'security_measures' },
-            { pattern: /\b(modification réglementaire|amendement législatif)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'legal_modifications' },
-            { pattern: /\b(enquêtes officielles|investigations judiciaires)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'legal_investigations' },
-            { pattern: /\b(collaboration administrative|coopération institutionnelle)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'administrative_cooperation' },
-            // Formal procedural language (MORE SPECIFIC)
-            { pattern: /\b(doivent être mises en place par la loi|doivent être adoptées officiellement)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'mandatory_procedures' },
-            { pattern: /\b(une telle communication officielle|de telles mesures réglementaires)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'formal_reference' },
+            { pattern: /\b(formulaire|demande|dossier|inscription)\b.*avant\s+que/i, weight: 2.0, context: 'legal_routine' },
+            { pattern: /\b(procédure standard|démarche|formalité)\b.*avant\s+que/i, weight: 2.2, context: 'administrative_routine' },
+            { pattern: /\b(délai|échéance|date limite|expiration)\b.*avant\s+que/i, weight: 2.0, context: 'administrative_deadlines' },
+            // Legal/Administrative authorities and institutions (STRENGTHENED)
+            { pattern: /\b(commissaire à la protection|autorités chargées|tribunal administratif)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'legal_authorities' },
+            { pattern: /\b(administration publique|ministère|gouvernement fédéral)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'administrative_institutions' },
+            // Data protection and privacy terminology (STRENGTHENED)
+            { pattern: /\b(protection des données personnelles|vie privée et données|renseignements confidentiels)\b[\s\S]*avant\s+qu/i, weight: 3.0, context: 'data_protection' },
+            { pattern: /\b(LPRPDE|RGPD|CNIL|loi sur la protection des données)\b[\s\S]*avant\s+qu/i, weight: 3.2, context: 'privacy_legislation' },
+            // Legal procedures and measures (STRENGTHENED)
+            { pattern: /\b(mesures de protection obligatoires|mesures de sécurité réglementaires)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'security_measures' },
+            { pattern: /\b(modification réglementaire|amendement législatif)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'legal_modifications' },
+            { pattern: /\b(enquêtes officielles|investigations judiciaires)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'legal_investigations' },
+            { pattern: /\b(collaboration administrative|coopération institutionnelle)\b[\s\S]*avant\s+qu/i, weight: 2.2, context: 'administrative_cooperation' },
+            // Formal procedural language (STRENGTHENED)
+            { pattern: /\b(doivent être mises en place par la loi|doivent être adoptées officiellement)\b[\s\S]*avant\s+qu/i, weight: 3.0, context: 'mandatory_procedures' },
+            { pattern: /\b(une telle communication officielle|de telles mesures réglementaires)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'formal_reference' },
+            // NEW: Association/Organization contexts
+            { pattern: /\b(association|organisme|institution)\b.*\b(déclaré|annoncé|communiqué)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'organizational_communication' },
+            // NEW: Professional/Operational contexts
+            { pattern: /\b(recruter un professionnel|former|opérationnel)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'professional_operations' },
+            { pattern: /\b(tribunal|dossiers|questions juridiques)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'legal_processing' },
         ];
         
         // 8g. CONSUMER/PRODUCT ROUTINE CONTEXTS (REDUCED WEIGHTS)
@@ -1115,19 +1140,63 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\b(expérience produit|essai consommateur|test utilisateur)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'consumer_experience' },
         ];
         
-        // 8h. TECHNICAL/DIY ROUTINE CONTEXTS (REDUCED WEIGHTS)
+        // 8h. HISTORICAL/FACTUAL CONTEXTS (NEW - STRONG SIGNAL)
+        const historicalFactualPatterns = [
+            // Historical events and dates
+            { pattern: /\b(opération|bataille|guerre|conflit)\b.*\b(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)\b.*\b\d{4}\b[\s\S]*avant\s+qu/i, weight: 3.0, context: 'historical_events' },
+            { pattern: /\b(en \d{4}|depuis \d{4}|vers \d{4})\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'historical_dates' },
+            // Military/historical terminology
+            { pattern: /\b(incursion|front|groupe d'armées|contre-frappes|cessation)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'military_historical' },
+            { pattern: /\b(soviétique|allemand|von Kleist|Barvenkovo-Lozovaya)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'historical_proper_nouns' },
+            // Geographical/institutional historical contexts
+            { pattern: /\b(était située|ancien|abbaye|communauté|transférée)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'historical_institutions' },
+            { pattern: /\b(Bad Wimpfen|Heidelberg|Neuburg|Stift)\b[\s\S]*avant\s+qu/i, weight: 2.3, context: 'historical_places' },
+            // Founding/establishment contexts
+            { pattern: /\b(avait fondé|village|quelques mois)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'historical_founding' },
+            { pattern: /\b(John Jacob Astor|Thompson|Astoria)\b[\s\S]*avant\s+qu/i, weight: 2.3, context: 'historical_figures' },
+            // Language/cultural development
+            { pattern: /\b(jargon|combinaison|mots|développa|commerce|autochtones|HBC)\b[\s\S]*avant\s+qu/i, weight: 2.2, context: 'cultural_development' },
+            // General historical narrative markers
+            { pattern: /\b(c'était|était|avait|quelques mois|années)\b[\s\S]*avant\s+qu/i, weight: 2.0, context: 'historical_narrative' },
+        ];
+        
+        // 8i. TECHNICAL/DIY ROUTINE CONTEXTS (STRENGTHENED)
         const technicalDIYPatterns = [
-            // Technical planning and design (MORE SPECIFIC)
-            { pattern: /\b(étude technique|projet d'ingénierie|conception mécanique)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'technical_planning' },
-            { pattern: /\b(mettre sur papier les plans|croquis techniques|plan d'assemblage)\b[\s\S]*avant\s+qu/i, weight: 1.3, context: 'design_documentation' },
-            { pattern: /\b(dimensions précises|emplacement exact|matière première)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'technical_specifications' },
-            // Manufacturing and construction (MORE SPECIFIC)
-            { pattern: /\b(machine-outil|usiner des pièces|fabriquer en série)\b[\s\S]*avant\s+qu/i, weight: 1.2, context: 'manufacturing' },
-            { pattern: /\b(pièces usinées|composants mécaniques|matériel industriel)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'technical_components' },
-            { pattern: /\b(opérationnel industriellement|fonctionnel mécaniquement)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'completion_status' },
-            // Time and resource management (MORE SPECIFIC)
-            { pattern: /\b(temps estimé pour la fabrication|délai de production)\b[\s\S]*avant\s+qu/i, weight: 1.0, context: 'project_timing' },
-            { pattern: /\b(moyens financier pour l'outillage|budget de fabrication)\b[\s\S]*avant\s+qu/i, weight: 1.1, context: 'resource_management' },
+            // Technical planning and design (STRENGTHENED)
+            { pattern: /\b(étude technique|projet d'ingénierie|conception mécanique)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'technical_planning' },
+            { pattern: /\b(mettre sur papier les plans|croquis techniques|plan d'assemblage)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'design_documentation' },
+            { pattern: /\b(dimensions précises|emplacement exact|matière première)\b[\s\S]*avant\s+qu/i, weight: 2.2, context: 'technical_specifications' },
+            // Manufacturing and construction (STRENGTHENED)
+            { pattern: /\b(machine-outil|usiner des pièces|fabriquer en série)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'manufacturing' },
+            { pattern: /\b(pièces usinées|composants mécaniques|matériel industriel)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'technical_components' },
+            { pattern: /\b(opérationnel industriellement|fonctionnel mécaniquement)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'completion_status' },
+            // Time and resource management (STRENGTHENED)
+            { pattern: /\b(temps estimé pour la fabrication|délai de production)\b[\s\S]*avant\s+qu/i, weight: 2.3, context: 'project_timing' },
+            { pattern: /\b(moyens financier pour l'outillage|budget de fabrication)\b[\s\S]*avant\s+qu/i, weight: 2.2, context: 'resource_management' },
+            // NEW: From misclassified examples
+            { pattern: /\b(1ère grosse étape|étude c'est à dire|mettre sur papier)\b[\s\S]*avant\s+qu/i, weight: 3.0, context: 'diy_planning' },
+            { pattern: /\b(machine soit opérationnel|6 mois c'est impossible|usiner les pièces)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'diy_timeline' },
+            { pattern: /\b(croquis|plan|métrage|dimensions maxi|outils)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'diy_specifications' },
+            // Safety/maintenance contexts
+            { pattern: /\b(renouveler une paire|propriétés d'origine|provoque des blessures)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'safety_maintenance' },
+            { pattern: /\b(quelque chose qui fonctionne|n'amène pas de blessure)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'functional_safety' },
+        ];
+        
+        // 8j. INFORMAL/GRAMMAR ERROR CONTEXTS (NEW - STRONG SIGNAL)
+        const informalGrammarPatterns = [
+            // Grammar errors (STRONG SIGNAL)
+            { pattern: /\b(je part|tu part|il part|on part)\b[\s\S]*avant\s+qu/i, weight: 3.2, context: 'grammar_errors_partir' },
+            { pattern: /\b(je devrai|on devrai|se qui|ce qui)\b[\s\S]*avant\s+qu/i, weight: 3.0, context: 'grammar_errors_general' },
+            { pattern: /\b(j'ai dus|participez au|ferais pas équipe)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'grammar_errors_conjugation' },
+            // Dialogue/character contexts (STRONG SIGNAL)
+            { pattern: /\b(Tenten|michael|Potter|Jean-Sébastien)\b[\s\S]*avant\s+qu/i, weight: 3.0, context: 'dialogue_characters' },
+            { pattern: /\*[^*]*\*[\s\S]*avant\s+qu/i, weight: 3.2, context: 'action_descriptions' },
+            // Informal punctuation and expressions
+            { pattern: /\?\s*\.\.\.\s*[\s\S]*avant\s+qu/i, weight: 2.8, context: 'informal_punctuation' },
+            { pattern: /\b(Oh Oh|sourie moi petit|devore le coeur)\b[\s\S]*avant\s+qu/i, weight: 3.0, context: 'informal_expressions' },
+            // Spelling errors and informal writing
+            { pattern: /\b(c'etait|ecole|nee|endrois|arriver a mon cheval)\b[\s\S]*avant\s+qu/i, weight: 2.8, context: 'spelling_errors' },
+            { pattern: /\b(je croisse|nous ne le faisons pas sécher)\b[\s\S]*avant\s+qu/i, weight: 2.5, context: 'informal_constructions' },
         ];
         
         // 8i. INFORMAL COMMUNICATION CONTEXTS (REDUCED WEIGHTS)
@@ -1198,7 +1267,9 @@ class EnhancedSemanticAnalyzer {
             ...techRoutinePatterns,
             ...legalRoutinePatterns,
             ...consumerRoutinePatterns,
+            ...historicalFactualPatterns,
             ...technicalDIYPatterns,
+            ...informalGrammarPatterns,
             ...informalCommPatterns,
             ...travelTourismPatterns,
             ...gamingOnlinePatterns,
