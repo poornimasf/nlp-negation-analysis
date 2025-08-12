@@ -263,13 +263,11 @@ class EnhancedSemanticAnalyzer {
                 ];
                 
                 let bestPriority = 999;
-                let bestPatternName = '';
                 
-                for (const { pattern, priority, name } of clauseEndPatterns) {
+                for (const { pattern, priority } of clauseEndPatterns) {
                     const endMatch = afterTrigger.match(pattern);
                     if (endMatch && priority < bestPriority) {
                         bestPriority = priority;
-                        bestPatternName = name;
                         clauseEnd = triggerIndex + endMatch.index;
                     }
                 }
