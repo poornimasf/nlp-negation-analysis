@@ -70,6 +70,16 @@ class EnhancedSemanticAnalyzer {
             { pattern: /\bavant\s+qu[e']?.*(?:ait fini|ait terminé|ait achevé)\b/i, weight: 1.8, type: 'completion_anticipation' },
             { pattern: /\bavant\s+que.*(?:fut trop tardive|fût trop tard)\b/i, weight: 2.0, type: 'literary_urgency' },
             
+            // Emotional/Dramatic lexicon contexts (NEW - strong confidence)
+            { pattern: /\b(?:catastrophe|tragédie|désastre|drame|malheur|calamité)\b.*avant\s+que/i, weight: 2.2, type: 'dramatic_emotional' },
+            { pattern: /\bavant\s+que.*(?:catastrophe|tragédie|désastre|drame|malheur|calamité)\b/i, weight: 2.2, type: 'dramatic_emotional' },
+            { pattern: /\b(?:crise|urgence|danger|menace|péril)\b.*avant\s+que/i, weight: 2.0, type: 'crisis_urgency' },
+            { pattern: /\bavant\s+que.*(?:crise|urgence|danger|menace|péril)\b/i, weight: 2.0, type: 'crisis_urgency' },
+            
+            // Literary/Narrative emotional contexts (NEW - medium-strong confidence)
+            { pattern: /\b(?:révélation|découverte|surprise|choc|bouleversement)\b.*avant\s+que/i, weight: 1.8, type: 'narrative_emotional' },
+            { pattern: /\bavant\s+que.*(?:révélation|découverte|surprise|choc|bouleversement)\b/i, weight: 1.8, type: 'narrative_emotional' },
+            
             // Impersonal constructions (medium-high confidence)
             { pattern: /\bil s'en faut|peu s'en faut|tant s'en faut\b/i, weight: 2.2, type: 'impersonal' },
             { pattern: /\bil suffit que|il arrive que|il se peut que\b/i, weight: 1.4, type: 'impersonal' }
