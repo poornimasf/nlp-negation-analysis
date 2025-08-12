@@ -240,6 +240,8 @@ function integrateAnalyses(traditional, semantic, text) {
             
         } else {
             // Ambiguous case - use traditional analysis but lower confidence
+            result.prediction = traditional.type;  // Explicitly set prediction
+            result.type = traditional.type;        // Explicitly set type
             result.confidence = Math.min(result.confidence, 0.6);
             result.reasoning = `AMBIGUOUS: ${semantic.reasoning} | Traditional: ${traditional.reasoning || 'Rule-based analysis'}`;
             result.correctionApplied = 'ambiguous_case';

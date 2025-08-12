@@ -268,12 +268,12 @@ const SimpleNegationAnalyzer = () => {
                 console.log('🔍 NOT using enhanced training analysis - falling back to rule-based with semantic context');
                 console.log('🔍 Fallback reason - useTrainingEnhancement:', useTrainingEnhancement, 'examples length:', trainingData.examples.length);
                 
-                // NEW: Apply semantic context analysis even in rule-based fallback
-                let finalClassification = analysis.type === 'Expletive' ? 'Expletive' : 'No Expletive';
+                // Use integration logic results directly - don't override them
+                let finalClassification = analysis.prediction || analysis.type || 'No Expletive';
                 let semanticOverrideApplied = false;
                 
-                // Check for semantic context override
-                if (analysis.type === 'Expletive') {
+                // Only apply semantic override if integration logic didn't run (no enhanced analysis)
+                if (!analysis.enhanced && analysis.type === 'Expletive') {
                   try {
                     // Import semantic context analyzer
                     const { analyzeSemanticContext, shouldOverrideToLogicalNegation } = await import('../utils/semanticContextAnalyzer');
@@ -299,6 +299,8 @@ const SimpleNegationAnalyzer = () => {
                   } catch (error) {
                     console.error('Error in semantic context analysis:', error);
                   }
+                } else if (analysis.enhanced) {
+                  console.log('🎯 Using integration logic result - no UI override needed');
                 }
                 
                 formattedResult = formatRuleBasedResult(analysis);
@@ -306,6 +308,8 @@ const SimpleNegationAnalyzer = () => {
                 
                 if (semanticOverrideApplied) {
                   console.log('🎯 Final classification after semantic override:', classification);
+                } else if (analysis.enhanced) {
+                  console.log('🎯 Final classification from integration logic:', classification);
                 }
               }
               break;
