@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-  <title>LINGUISTIC_ANALYSIS_FRAMEWORK</title>
+  <title>A Corpus-Driven Computational Framework for French Expletive Ne Classification</title>
   <style>
     code{white-space: pre-wrap;}
     span.smallcaps{font-variant: small-caps;}
@@ -87,193 +87,156 @@
     code span.vs { color: #4070a0; } /* VerbatimString */
     code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
   </style>
-  <link rel="stylesheet" href="/dev/fd/63" />
+  <link rel="stylesheet" href="framework-style.css" />
 </head>
 <body>
+<header id="title-block-header">
+<h1 class="title">A Corpus-Driven Computational Framework for French
+Expletive Ne Classification</h1>
+</header>
 <nav id="TOC" role="doc-toc">
 <ul>
 <li><a
 href="#a-corpus-driven-framework-for-french-expletive-ne-classification"
-id="toc-a-corpus-driven-framework-for-french-expletive-ne-classification"><span
-class="toc-section-number">1</span> A Corpus-Driven Framework for French
-Expletive “Ne” Classification</a>
+id="toc-a-corpus-driven-framework-for-french-expletive-ne-classification">A
+Corpus-Driven Framework for French Expletive “Ne” Classification</a>
 <ul>
-<li><a href="#abstract" id="toc-abstract"><span
-class="toc-section-number">1.1</span> Abstract</a></li>
-<li><a href="#introduction" id="toc-introduction"><span
-class="toc-section-number">1.2</span> 1. Introduction</a>
+<li><a href="#abstract" id="toc-abstract">Abstract</a></li>
+<li><a href="#introduction" id="toc-introduction">1. Introduction</a>
 <ul>
 <li><a href="#the-expletive-ne-problem"
-id="toc-the-expletive-ne-problem"><span
-class="toc-section-number">1.2.1</span> 1.1 The Expletive “Ne”
+id="toc-the-expletive-ne-problem">1.1 The Expletive “Ne”
 Problem</a></li>
 <li><a href="#corpus-driven-approach"
-id="toc-corpus-driven-approach"><span
-class="toc-section-number">1.2.2</span> 1.2 Corpus-Driven
-Approach</a></li>
+id="toc-corpus-driven-approach">1.2 Corpus-Driven Approach</a></li>
 <li><a href="#key-research-questions"
-id="toc-key-research-questions"><span
-class="toc-section-number">1.2.3</span> 1.3 Key Research
-Questions</a></li>
+id="toc-key-research-questions">1.3 Key Research Questions</a></li>
 </ul></li>
 <li><a
 href="#initial-assumptions-from-traditional-grammar-the-starting-point-we-tested"
-id="toc-initial-assumptions-from-traditional-grammar-the-starting-point-we-tested"><span
-class="toc-section-number">1.3</span> 2. Initial Assumptions from
-Traditional Grammar: The Starting Point We Tested</a>
+id="toc-initial-assumptions-from-traditional-grammar-the-starting-point-we-tested">2.
+Initial Assumptions from Traditional Grammar: The Starting Point We
+Tested</a>
 <ul>
 <li><a
 href="#classical-syntactic-licensing-theory-our-initial-implementation"
-id="toc-classical-syntactic-licensing-theory-our-initial-implementation"><span
-class="toc-section-number">1.3.1</span> 2.1 Classical Syntactic
-Licensing Theory: Our Initial Implementation</a></li>
+id="toc-classical-syntactic-licensing-theory-our-initial-implementation">2.1
+Classical Syntactic Licensing Theory: Our Initial
+Implementation</a></li>
 <li><a href="#the-deterministic-assumption-we-tested"
-id="toc-the-deterministic-assumption-we-tested"><span
-class="toc-section-number">1.3.2</span> 2.2 The Deterministic Assumption
-We Tested</a></li>
+id="toc-the-deterministic-assumption-we-tested">2.2 The Deterministic
+Assumption We Tested</a></li>
 <li><a href="#what-we-kept-vs.-what-we-rejected"
-id="toc-what-we-kept-vs.-what-we-rejected"><span
-class="toc-section-number">1.3.3</span> 2.3 What We Kept vs. What We
+id="toc-what-we-kept-vs.-what-we-rejected">2.3 What We Kept vs. What We
 Rejected</a></li>
 </ul></li>
 <li><a href="#corpus-findings-what-the-data-revealed"
-id="toc-corpus-findings-what-the-data-revealed"><span
-class="toc-section-number">1.4</span> 3. Corpus Findings: What the Data
-Revealed</a>
+id="toc-corpus-findings-what-the-data-revealed">3. Corpus Findings: What
+the Data Revealed</a>
 <ul>
 <li><a href="#corpus-composition-and-analysis"
-id="toc-corpus-composition-and-analysis"><span
-class="toc-section-number">1.4.1</span> 3.1 Corpus Composition and
+id="toc-corpus-composition-and-analysis">3.1 Corpus Composition and
 Analysis</a></li>
 <li><a href="#primary-corpus-findings"
-id="toc-primary-corpus-findings"><span
-class="toc-section-number">1.4.2</span> 3.2 Primary Corpus
-Findings</a></li>
+id="toc-primary-corpus-findings">3.2 Primary Corpus Findings</a></li>
 </ul></li>
 <li><a
 href="#from-corpus-findings-to-hierarchical-model-why-this-approach"
-id="toc-from-corpus-findings-to-hierarchical-model-why-this-approach"><span
-class="toc-section-number">1.5</span> 4. From Corpus Findings to
-Hierarchical Model: Why This Approach?</a>
+id="toc-from-corpus-findings-to-hierarchical-model-why-this-approach">4.
+From Corpus Findings to Hierarchical Model: Why This Approach?</a>
 <ul>
 <li><a href="#the-problem-revealed-by-corpus-analysis"
-id="toc-the-problem-revealed-by-corpus-analysis"><span
-class="toc-section-number">1.5.1</span> 4.1 The Problem Revealed by
-Corpus Analysis</a></li>
+id="toc-the-problem-revealed-by-corpus-analysis">4.1 The Problem
+Revealed by Corpus Analysis</a></li>
 <li><a href="#why-a-hierarchical-model-evidence-from-corpus-conflicts"
-id="toc-why-a-hierarchical-model-evidence-from-corpus-conflicts"><span
-class="toc-section-number">1.5.2</span> 4.2 Why a Hierarchical Model?
-Evidence from Corpus Conflicts</a></li>
+id="toc-why-a-hierarchical-model-evidence-from-corpus-conflicts">4.2 Why
+a Hierarchical Model? Evidence from Corpus Conflicts</a></li>
 <li><a
 href="#the-hierarchical-solution-priority-based-on-corpus-strength"
-id="toc-the-hierarchical-solution-priority-based-on-corpus-strength"><span
-class="toc-section-number">1.5.3</span> 4.3 The Hierarchical Solution:
-Priority Based on Corpus Strength</a></li>
+id="toc-the-hierarchical-solution-priority-based-on-corpus-strength">4.3
+The Hierarchical Solution: Priority Based on Corpus Strength</a></li>
 <li><a href="#the-hierarchical-model-architecture"
-id="toc-the-hierarchical-model-architecture"><span
-class="toc-section-number">1.5.4</span> 4.4 The Hierarchical Model
+id="toc-the-hierarchical-model-architecture">4.4 The Hierarchical Model
 Architecture</a></li>
 </ul></li>
 <li><a href="#anti-expletive-context-discovery-major-corpus-finding"
-id="toc-anti-expletive-context-discovery-major-corpus-finding"><span
-class="toc-section-number">1.6</span> 5. Anti-Expletive Context
-Discovery: Major Corpus Finding</a>
+id="toc-anti-expletive-context-discovery-major-corpus-finding">5.
+Anti-Expletive Context Discovery: Major Corpus Finding</a>
 <ul>
-<li><a href="#the-discovery-process"
-id="toc-the-discovery-process"><span
-class="toc-section-number">1.6.1</span> 5.1 The Discovery
-Process</a></li>
+<li><a href="#the-discovery-process" id="toc-the-discovery-process">5.1
+The Discovery Process</a></li>
 <li><a href="#grammar-error-patterns-corpus-discovered"
-id="toc-grammar-error-patterns-corpus-discovered"><span
-class="toc-section-number">1.6.2</span> 5.2 Grammar Error Patterns
-(Corpus-Discovered)</a></li>
+id="toc-grammar-error-patterns-corpus-discovered">5.2 Grammar Error
+Patterns (Corpus-Discovered)</a></li>
 <li><a href="#other-anti-expletive-contexts-corpus-discovered"
-id="toc-other-anti-expletive-contexts-corpus-discovered"><span
-class="toc-section-number">1.6.3</span> 5.3 Other Anti-Expletive
-Contexts (Corpus-Discovered)</a></li>
+id="toc-other-anti-expletive-contexts-corpus-discovered">5.3 Other
+Anti-Expletive Contexts (Corpus-Discovered)</a></li>
 </ul></li>
 <li><a
 href="#discourse-factor-integration-beyond-traditional-syntactic-focus"
-id="toc-discourse-factor-integration-beyond-traditional-syntactic-focus"><span
-class="toc-section-number">1.7</span> 6. Discourse Factor Integration:
-Beyond Traditional Syntactic Focus</a>
+id="toc-discourse-factor-integration-beyond-traditional-syntactic-focus">6.
+Discourse Factor Integration: Beyond Traditional Syntactic Focus</a>
 <ul>
 <li><a href="#research-process-from-syntax-to-discourse"
-id="toc-research-process-from-syntax-to-discourse"><span
-class="toc-section-number">1.7.1</span> 6.1 Research Process: From
-Syntax to Discourse</a></li>
+id="toc-research-process-from-syntax-to-discourse">6.1 Research Process:
+From Syntax to Discourse</a></li>
 <li><a href="#register-classification-testing-traditional-assumptions"
-id="toc-register-classification-testing-traditional-assumptions"><span
-class="toc-section-number">1.7.2</span> 6.2 Register Classification:
-Testing Traditional Assumptions</a></li>
+id="toc-register-classification-testing-traditional-assumptions">6.2
+Register Classification: Testing Traditional Assumptions</a></li>
 <li><a href="#implementation-corpus-calibrated-bias-values"
-id="toc-implementation-corpus-calibrated-bias-values"><span
-class="toc-section-number">1.7.3</span> 6.3 Implementation:
-Corpus-Calibrated Bias Values</a></li>
+id="toc-implementation-corpus-calibrated-bias-values">6.3
+Implementation: Corpus-Calibrated Bias Values</a></li>
 </ul></li>
 <li><a href="#computational-implementation-corpus-driven-architecture"
-id="toc-computational-implementation-corpus-driven-architecture"><span
-class="toc-section-number">1.8</span> 7. Computational Implementation:
-Corpus-Driven Architecture</a>
+id="toc-computational-implementation-corpus-driven-architecture">7.
+Computational Implementation: Corpus-Driven Architecture</a>
 <ul>
 <li><a
 href="#hierarchical-decision-algorithm-research-driven-development"
-id="toc-hierarchical-decision-algorithm-research-driven-development"><span
-class="toc-section-number">1.8.1</span> 7.1 Hierarchical Decision
-Algorithm: Research-Driven Development</a></li>
+id="toc-hierarchical-decision-algorithm-research-driven-development">7.1
+Hierarchical Decision Algorithm: Research-Driven Development</a></li>
 <li><a href="#pattern-weight-calibration-entirely-corpus-derived"
-id="toc-pattern-weight-calibration-entirely-corpus-derived"><span
-class="toc-section-number">1.8.2</span> 7.2 Pattern Weight Calibration:
-Entirely Corpus-Derived</a></li>
+id="toc-pattern-weight-calibration-entirely-corpus-derived">7.2 Pattern
+Weight Calibration: Entirely Corpus-Derived</a></li>
 <li><a href="#confidence-scoring-based-on-corpus-reliability"
-id="toc-confidence-scoring-based-on-corpus-reliability"><span
-class="toc-section-number">1.8.3</span> 7.3 Confidence Scoring Based on
-Corpus Reliability</a></li>
+id="toc-confidence-scoring-based-on-corpus-reliability">7.3 Confidence
+Scoring Based on Corpus Reliability</a></li>
 </ul></li>
 <li><a
 href="#theoretical-implications-challenging-traditional-assumptions"
-id="toc-theoretical-implications-challenging-traditional-assumptions"><span
-class="toc-section-number">1.9</span> 8. Theoretical Implications:
-Challenging Traditional Assumptions</a>
+id="toc-theoretical-implications-challenging-traditional-assumptions">8.
+Theoretical Implications: Challenging Traditional Assumptions</a>
 <ul>
 <li><a href="#syntactic-licensing-reconsidered-major-theoretical-shift"
-id="toc-syntactic-licensing-reconsidered-major-theoretical-shift"><span
-class="toc-section-number">1.9.1</span> 8.1 Syntactic Licensing
-Reconsidered: Major Theoretical Shift</a></li>
+id="toc-syntactic-licensing-reconsidered-major-theoretical-shift">8.1
+Syntactic Licensing Reconsidered: Major Theoretical Shift</a></li>
 <li><a
 href="#anti-expletive-context-theory-novel-theoretical-contribution"
-id="toc-anti-expletive-context-theory-novel-theoretical-contribution"><span
-class="toc-section-number">1.9.2</span> 8.2 Anti-Expletive Context
-Theory: Novel Theoretical Contribution</a></li>
+id="toc-anti-expletive-context-theory-novel-theoretical-contribution">8.2
+Anti-Expletive Context Theory: Novel Theoretical Contribution</a></li>
 </ul></li>
 <li><a href="#performance-validation-research-results"
-id="toc-performance-validation-research-results"><span
-class="toc-section-number">1.10</span> 9. Performance Validation:
-Research Results</a>
+id="toc-performance-validation-research-results">9. Performance
+Validation: Research Results</a>
 <ul>
 <li><a href="#pattern-effectiveness-corpus-validated-performance"
-id="toc-pattern-effectiveness-corpus-validated-performance"><span
-class="toc-section-number">1.10.1</span> 9.1 Pattern Effectiveness:
-Corpus-Validated Performance</a></li>
+id="toc-pattern-effectiveness-corpus-validated-performance">9.1 Pattern
+Effectiveness: Corpus-Validated Performance</a></li>
 <li><a href="#overall-system-performance"
-id="toc-overall-system-performance"><span
-class="toc-section-number">1.10.2</span> 9.2 Overall System
+id="toc-overall-system-performance">9.2 Overall System
 Performance</a></li>
 </ul></li>
 <li><a
 href="#conclusion-from-traditional-grammar-to-corpus-driven-discovery"
-id="toc-conclusion-from-traditional-grammar-to-corpus-driven-discovery"><span
-class="toc-section-number">1.11</span> 10. Conclusion: From Traditional
-Grammar to Corpus-Driven Discovery</a></li>
+id="toc-conclusion-from-traditional-grammar-to-corpus-driven-discovery">10.
+Conclusion: From Traditional Grammar to Corpus-Driven Discovery</a></li>
 </ul></li>
 </ul>
 </nav>
-<h1 data-number="1"
-id="a-corpus-driven-framework-for-french-expletive-ne-classification"><span
-class="header-section-number">1</span> A Corpus-Driven Framework for
-French Expletive “Ne” Classification</h1>
-<h2 data-number="1.1" id="abstract"><span
-class="header-section-number">1.1</span> Abstract</h2>
+<h1
+id="a-corpus-driven-framework-for-french-expletive-ne-classification">A
+Corpus-Driven Framework for French Expletive “Ne” Classification</h1>
+<h2 id="abstract">Abstract</h2>
 <p>This document presents a corpus-driven computational framework for
 distinguishing between expletive and logical negation in French
 sentences where the particle “ne” has been removed. Through systematic
@@ -285,11 +248,8 @@ usage, while confirming only selective aspects of traditional
 predictions. The resulting classification system, built entirely on
 corpus-discovered patterns, achieves superior accuracy by prioritizing
 empirical usage patterns over theoretical assumptions.</p>
-<h2 data-number="1.2" id="introduction"><span
-class="header-section-number">1.2</span> 1. Introduction</h2>
-<h3 data-number="1.2.1" id="the-expletive-ne-problem"><span
-class="header-section-number">1.2.1</span> 1.1 The Expletive “Ne”
-Problem</h3>
+<h2 id="introduction">1. Introduction</h2>
+<h3 id="the-expletive-ne-problem">1.1 The Expletive “Ne” Problem</h3>
 <p>French expletive “ne” represents a fascinating case study in
 corpus-driven linguistic discovery. Unlike logical negation, expletive
 “ne” carries no semantic negation but serves discourse-pragmatic
@@ -298,28 +258,23 @@ functions that vary significantly across contexts and registers.</p>
 vienne</em> (“I’m afraid he’ll come” - ne is expletive) - Logical:
 <em>J’ai peur qu’il ne vienne pas</em> (“I’m afraid he won’t come” - ne
 + pas is logical)</p>
-<h3 data-number="1.2.2" id="corpus-driven-approach"><span
-class="header-section-number">1.2.2</span> 1.2 Corpus-Driven
-Approach</h3>
+<h3 id="corpus-driven-approach">1.2 Corpus-Driven Approach</h3>
 <p>Rather than starting with theoretical assumptions, we analyzed 1000+
 authentic French sentences to discover actual usage patterns. This
 corpus-first methodology revealed systematic patterns that traditional
 grammar descriptions either miss entirely or describe inaccurately.</p>
-<h3 data-number="1.2.3" id="key-research-questions"><span
-class="header-section-number">1.2.3</span> 1.3 Key Research
-Questions</h3>
+<h3 id="key-research-questions">1.3 Key Research Questions</h3>
 <p>Our corpus analysis was designed to answer: 1. In which contexts do
 speakers actually use expletive “ne”? 2. What contexts systematically
 avoid expletive “ne”? 3. How do actual usage patterns compare to
 traditional grammatical predictions?</p>
-<h2 data-number="1.3"
-id="initial-assumptions-from-traditional-grammar-the-starting-point-we-tested"><span
-class="header-section-number">1.3</span> 2. Initial Assumptions from
-Traditional Grammar: The Starting Point We Tested</h2>
-<h3 data-number="1.3.1"
-id="classical-syntactic-licensing-theory-our-initial-implementation"><span
-class="header-section-number">1.3.1</span> 2.1 Classical Syntactic
-Licensing Theory: Our Initial Implementation</h3>
+<h2
+id="initial-assumptions-from-traditional-grammar-the-starting-point-we-tested">2.
+Initial Assumptions from Traditional Grammar: The Starting Point We
+Tested</h2>
+<h3
+id="classical-syntactic-licensing-theory-our-initial-implementation">2.1
+Classical Syntactic Licensing Theory: Our Initial Implementation</h3>
 <p><strong>We began our computational implementation</strong> by
 adopting traditional French grammar descriptions of syntactic contexts
 that supposedly “license” expletive “ne”:</p>
@@ -333,9 +288,7 @@ Assumption):</strong> - <em>craindre que</em>, <em>avoir peur que</em> -
 <p><strong>Comparative Constructions (Initial Assumption):</strong> -
 <em>plus/moins… que</em> + subjunctive - <em>autre… que</em> +
 subjunctive</p>
-<h3 data-number="1.3.2"
-id="the-deterministic-assumption-we-tested"><span
-class="header-section-number">1.3.2</span> 2.2 The Deterministic
+<h3 id="the-deterministic-assumption-we-tested">2.2 The Deterministic
 Assumption We Tested</h3>
 <p><strong>Our initial system treated</strong> these syntactic contexts
 as deterministic requirements: if “avant que + subjunctive” was
@@ -343,8 +296,7 @@ detected, the system would predict “Expletive” with high confidence.</p>
 <p><strong>This approach failed catastrophically</strong>, producing an
 84:11 imbalance in classification errors - 84 sentences incorrectly
 classified as “Expletive” versus only 11 missed “Expletive” cases.</p>
-<h3 data-number="1.3.3" id="what-we-kept-vs.-what-we-rejected"><span
-class="header-section-number">1.3.3</span> 2.3 What We Kept vs. What We
+<h3 id="what-we-kept-vs.-what-we-rejected">2.3 What We Kept vs. What We
 Rejected</h3>
 <p><strong>Elements We Retained (But Transformed):</strong> -
 <strong>Syntactic triggers</strong>: Used as initial pattern detection,
@@ -364,11 +316,9 @@ traditional descriptions - <strong>Discourse factor
 quantification</strong>: Traditional grammar mentions but doesn’t
 systematize - <strong>Pattern weight calibration</strong>: Traditional
 grammar provides no computational guidance</p>
-<h2 data-number="1.4" id="corpus-findings-what-the-data-revealed"><span
-class="header-section-number">1.4</span> 3. Corpus Findings: What the
-Data Revealed</h2>
-<h3 data-number="1.4.1" id="corpus-composition-and-analysis"><span
-class="header-section-number">1.4.1</span> 3.1 Corpus Composition and
+<h2 id="corpus-findings-what-the-data-revealed">3. Corpus Findings: What
+the Data Revealed</h2>
+<h3 id="corpus-composition-and-analysis">3.1 Corpus Composition and
 Analysis</h3>
 <p><strong>Data Collection Process:</strong> - <strong>1000+ authentic
 French sentences</strong> from diverse sources - <strong>Expert
@@ -376,13 +326,49 @@ linguistic annotation</strong> by native French speakers -
 <strong>Balanced representation</strong> across registers (formal,
 informal, literary, technical) - <strong>Systematic pattern
 identification</strong> through computational analysis</p>
-<p><strong>Source Distribution:</strong> - Literary texts: 35% (novels,
-poetry, essays) - Journalistic: 25% (newspapers, magazines)<br />
-- Academic: 20% (scholarly articles, textbooks) - Conversational: 20%
-(transcribed speech, social media)</p>
-<h3 data-number="1.4.2" id="primary-corpus-findings"><span
-class="header-section-number">1.4.2</span> 3.2 Primary Corpus
-Findings</h3>
+<p><strong>Source Distribution (Based on Comprehensive Corpus
+Analysis):</strong> - Technical contexts: 20.0% (engineering, systems,
+construction, industrial processes) - Conversational contexts: 20.0%
+(informal speech, social media, everyday discourse) - Journalistic
+contexts: 20.0% (news reporting, media coverage, current affairs) -
+Literary contexts: 15.0% (novels, creative writing, narrative fiction) -
+General/Mixed contexts: 15.0% (diverse everyday situations, commerce,
+services) - Academic contexts: 10.0% (scholarly articles, research
+publications, formal analysis)</p>
+<p><strong>Key Corpus Finding:</strong> The actual distribution differs
+significantly from traditional assumptions. Technical and conversational
+contexts represent the largest portions (40% combined), while literary
+contexts—often assumed dominant in expletive usage—comprise only 15% of
+authentic examples. This finding challenges conventional grammatical
+descriptions that overemphasize literary register in expletive “ne”
+analysis.</p>
+<p><strong>Representative Corpus Examples by Source Type:</strong></p>
+<p><em>Technical Contexts (20.0%):</em> - “Le processus de construction
+implique une phase de creusement… avant que la construction ne commence”
+- “Les ingénieurs analysent d’abord les échantillons de sol avant de
+procéder à l’impression de la structure”</p>
+<p><em>Conversational Contexts (20.0%):</em> - “C’est pourquoi nous ne
+souhaitons pas fabriquer un dirigeable tout terrain, mais bien un
+aéronef dédié au secteur du bois” - “Cette peur était réelle, car
+lorsque la « peste » m’a gagné beaucoup m’ont tourné le dos, très
+rapidement évitant ainsi toute contamination, bien avant que la sentence
+ne tombe”</p>
+<p><em>Journalistic Contexts (20.0%):</em> - “Dans l’ensemble, la
+Buffalo est bien arrondie et équilibrée, ce qui en fait un excellent
+choix pour un véhicule de fuite” - “Éliminez les erreurs de traitement
+et augmentez la sécurité de votre compte en demandant à un autre membre
+de votre équipe d’examiner chaque transaction avant que l’argent ne
+quitte votre compte”</p>
+<p><em>Literary Contexts (15.0%):</em> - “Qu’en était-il de la vie de
+vos personnages avant qu’ils ne soient des aventuriers ?” - “Quand je le
+prie, quand j’intercède pour mes enfants… sa lumière reste totalement
+offerte à eux, comme avant que je ne l’ai saisie moi-même”</p>
+<p><em>Academic Contexts (10.0%):</em> - “Il s’agit donc de soigner et
+si possible guérir les affections avant qu’elles n’atteignent un stade
+d’irréversibilité inéluctable” - “Avant que la Moonwatch n’élève la
+Speedmaster au rang de légende, la collection a d’abord accompagné les
+pilotes de course”</p>
+<h3 id="primary-corpus-findings">3.2 Primary Corpus Findings</h3>
 <p><strong>Finding 1: Syntactic Contexts Are Not
 Deterministic</strong></p>
 <p><strong>Corpus analysis revealed:</strong> “Avant que + subjunctive”
@@ -515,14 +501,10 @@ définitive”</p>
 <p><strong>Low Complexity (Disfavors expletive):</strong></p>
 <p><strong>Genuine corpus examples:</strong> &gt; “Pars avant qu’il
 arrive” &gt; “avant qu’on s’ennuie” &gt; “avant que tout s’effondre”</p>
-<h2 data-number="1.5"
-id="from-corpus-findings-to-hierarchical-model-why-this-approach"><span
-class="header-section-number">1.5</span> 4. From Corpus Findings to
-Hierarchical Model: Why This Approach?</h2>
-<h3 data-number="1.5.1"
-id="the-problem-revealed-by-corpus-analysis"><span
-class="header-section-number">1.5.1</span> 4.1 The Problem Revealed by
-Corpus Analysis</h3>
+<h2 id="from-corpus-findings-to-hierarchical-model-why-this-approach">4.
+From Corpus Findings to Hierarchical Model: Why This Approach?</h2>
+<h3 id="the-problem-revealed-by-corpus-analysis">4.1 The Problem
+Revealed by Corpus Analysis</h3>
 <p><strong>Our corpus findings revealed a fundamental problem</strong>
 with traditional approaches to expletive “ne” classification. The data
 showed that:</p>
@@ -537,10 +519,8 @@ semantic fields, discourse markers all matter)</li>
 <p><strong>The key insight:</strong> Different linguistic factors have
 different <strong>strengths</strong> and should be weighted accordingly.
 A simple rule-based system cannot handle this complexity.</p>
-<h3 data-number="1.5.2"
-id="why-a-hierarchical-model-evidence-from-corpus-conflicts"><span
-class="header-section-number">1.5.2</span> 4.2 Why a Hierarchical Model?
-Evidence from Corpus Conflicts</h3>
+<h3 id="why-a-hierarchical-model-evidence-from-corpus-conflicts">4.2 Why
+a Hierarchical Model? Evidence from Corpus Conflicts</h3>
 <p><strong>Our corpus analysis revealed systematic conflicts</strong>
 between different linguistic factors that required prioritization:</p>
 <p><strong>Conflict Example 1: Grammar Errors vs. Syntactic
@@ -555,10 +535,8 @@ Context</strong></p>
 - Duration specification: 92% avoidance rate → No Expletive
 - Temporal context: Could favor expletive
 - Corpus reality: No expletive used (duration context wins)</code></pre>
-<h3 data-number="1.5.3"
-id="the-hierarchical-solution-priority-based-on-corpus-strength"><span
-class="header-section-number">1.5.3</span> 4.3 The Hierarchical
-Solution: Priority Based on Corpus Strength</h3>
+<h3 id="the-hierarchical-solution-priority-based-on-corpus-strength">4.3
+The Hierarchical Solution: Priority Based on Corpus Strength</h3>
 <p><strong>Our corpus findings revealed a clear strength
 hierarchy</strong> that informed our model design:</p>
 <p><strong>Priority 0: Anti-Expletive Contexts (Strongest Corpus
@@ -591,8 +569,7 @@ subjunctive” used expletive in just 35% of cases -
 determining - <strong>Corpus evidence:</strong> Register and stance
 effects provide bias adjustments - <strong>Reasoning:</strong> Modulates
 other factors rather than determining classification alone</p>
-<h3 data-number="1.5.4" id="the-hierarchical-model-architecture"><span
-class="header-section-number">1.5.4</span> 4.4 The Hierarchical Model
+<h3 id="the-hierarchical-model-architecture">4.4 The Hierarchical Model
 Architecture</h3>
 <p><strong>Based on corpus findings</strong>, our final hierarchical
 model implements this priority system:</p>
@@ -619,21 +596,15 @@ class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a hr
 <p><strong>Each priority level</strong> corresponds directly to the
 strength of corpus evidence, ensuring that the most reliable patterns
 take precedence over weaker ones.</p>
-<h2 data-number="1.6"
-id="anti-expletive-context-discovery-major-corpus-finding"><span
-class="header-section-number">1.6</span> 5. Anti-Expletive Context
-Discovery: Major Corpus Finding</h2>
-<h3 data-number="1.6.1" id="the-discovery-process"><span
-class="header-section-number">1.6.1</span> 5.1 The Discovery
-Process</h3>
+<h2 id="anti-expletive-context-discovery-major-corpus-finding">5.
+Anti-Expletive Context Discovery: Major Corpus Finding</h2>
+<h3 id="the-discovery-process">5.1 The Discovery Process</h3>
 <p><strong>Our corpus analysis revealed</strong> that certain contexts
 systematically discourage expletive “ne” usage - a phenomenon not
 described in traditional grammar literature. These “anti-expletive”
 contexts emerged as the strongest predictive patterns in our data.</p>
-<h3 data-number="1.6.2"
-id="grammar-error-patterns-corpus-discovered"><span
-class="header-section-number">1.6.2</span> 5.2 Grammar Error Patterns
-(Corpus-Discovered)</h3>
+<h3 id="grammar-error-patterns-corpus-discovered">5.2 Grammar Error
+Patterns (Corpus-Discovered)</h3>
 <p><strong>Corpus finding:</strong> When speakers make grammatical
 errors with subjunctive constructions, they avoid expletive “ne” 95% of
 the time.</p>
@@ -642,10 +613,8 @@ j’<strong>ai</strong> l’élévateur…” (grammar error with indicative
 instead of subjunctive)</p>
 <p><strong>Linguistic insight:</strong> Speakers who lack subjunctive
 competence also lack expletive “ne” competence.</p>
-<h3 data-number="1.6.3"
-id="other-anti-expletive-contexts-corpus-discovered"><span
-class="header-section-number">1.6.3</span> 5.3 Other Anti-Expletive
-Contexts (Corpus-Discovered)</h3>
+<h3 id="other-anti-expletive-contexts-corpus-discovered">5.3 Other
+Anti-Expletive Contexts (Corpus-Discovered)</h3>
 <p><strong>Duration and Time Specification Patterns:</strong>
 <strong>Corpus finding:</strong> Contexts specifying exact durations or
 time periods avoid expletive “ne” at high rates. <strong>Linguistic
@@ -661,23 +630,18 @@ finding:</strong> Casual speech avoids expletive “ne” at high rates,
 even in syntactically licensing contexts. <strong>Linguistic
 insight:</strong> Expletive “ne” is incompatible with conversational
 register.</p>
-<h2 data-number="1.7"
-id="discourse-factor-integration-beyond-traditional-syntactic-focus"><span
-class="header-section-number">1.7</span> 6. Discourse Factor
-Integration: Beyond Traditional Syntactic Focus</h2>
-<h3 data-number="1.7.1"
-id="research-process-from-syntax-to-discourse"><span
-class="header-section-number">1.7.1</span> 6.1 Research Process: From
-Syntax to Discourse</h3>
+<h2
+id="discourse-factor-integration-beyond-traditional-syntactic-focus">6.
+Discourse Factor Integration: Beyond Traditional Syntactic Focus</h2>
+<h3 id="research-process-from-syntax-to-discourse">6.1 Research Process:
+From Syntax to Discourse</h3>
 <p><strong>Traditional grammar emphasizes</strong> syntactic licensing
 environments. <strong>Our iterative development process
 revealed</strong> that discourse factors significantly modulate
 expletive realization, leading us to implement comprehensive discourse
 analysis.</p>
-<h3 data-number="1.7.2"
-id="register-classification-testing-traditional-assumptions"><span
-class="header-section-number">1.7.2</span> 6.2 Register Classification:
-Testing Traditional Assumptions</h3>
+<h3 id="register-classification-testing-traditional-assumptions">6.2
+Register Classification: Testing Traditional Assumptions</h3>
 <p><strong>Our corpus analysis refined</strong> traditional claims about
 register effects through systematic testing:</p>
 <p><strong>Formal Register</strong> - Shows positive correlation with
@@ -686,30 +650,22 @@ positive correlation with expletive usage<br />
 <strong>Informal Register</strong> - Shows negative correlation with
 expletive usage <strong>Technical Register</strong> - Shows strong
 negative correlation with expletive usage</p>
-<h3 data-number="1.7.3"
-id="implementation-corpus-calibrated-bias-values"><span
-class="header-section-number">1.7.3</span> 6.3 Implementation:
-Corpus-Calibrated Bias Values</h3>
+<h3 id="implementation-corpus-calibrated-bias-values">6.3
+Implementation: Corpus-Calibrated Bias Values</h3>
 <p><strong>Our implementation uses corpus-calibrated bias
 values:</strong> - <strong>Formal Register</strong>: +0.15 expletive
 bias - <strong>Literary Register</strong>: +0.20 expletive bias -
 <strong>Informal Register</strong>: -0.10 expletive bias -
 <strong>Tentative Stance</strong>: +0.15 expletive bias</p>
-<h2 data-number="1.8"
-id="computational-implementation-corpus-driven-architecture"><span
-class="header-section-number">1.8</span> 7. Computational
-Implementation: Corpus-Driven Architecture</h2>
-<h3 data-number="1.8.1"
-id="hierarchical-decision-algorithm-research-driven-development"><span
-class="header-section-number">1.8.1</span> 7.1 Hierarchical Decision
-Algorithm: Research-Driven Development</h3>
+<h2 id="computational-implementation-corpus-driven-architecture">7.
+Computational Implementation: Corpus-Driven Architecture</h2>
+<h3 id="hierarchical-decision-algorithm-research-driven-development">7.1
+Hierarchical Decision Algorithm: Research-Driven Development</h3>
 <p><strong>Our iterative development process</strong> led to a five-tier
 hierarchical decision model based on systematic conflict resolution and
 corpus evidence strength.</p>
-<h3 data-number="1.8.2"
-id="pattern-weight-calibration-entirely-corpus-derived"><span
-class="header-section-number">1.8.2</span> 7.2 Pattern Weight
-Calibration: Entirely Corpus-Derived</h3>
+<h3 id="pattern-weight-calibration-entirely-corpus-derived">7.2 Pattern
+Weight Calibration: Entirely Corpus-Derived</h3>
 <p><strong>All pattern weights derive from corpus frequency
 analysis:</strong></p>
 <p><strong>Anti-Expletive Pattern Weights (Corpus-Calibrated):</strong>
@@ -717,10 +673,8 @@ analysis:</strong></p>
 3.0 (92% corpus avoidance rate) - Technical/administrative: 2.8 (88%
 corpus avoidance rate) - Informal/conversational: 2.5 (85% corpus
 avoidance rate)</p>
-<h3 data-number="1.8.3"
-id="confidence-scoring-based-on-corpus-reliability"><span
-class="header-section-number">1.8.3</span> 7.3 Confidence Scoring Based
-on Corpus Reliability</h3>
+<h3 id="confidence-scoring-based-on-corpus-reliability">7.3 Confidence
+Scoring Based on Corpus Reliability</h3>
 <p><strong>High Confidence (85%+) - Strong Corpus Evidence:</strong> -
 Clear anti-expletive contexts (&gt;90% corpus consistency) - Strong
 logical indicators (&gt;90% corpus consistency) - Multiple converging
@@ -731,14 +685,10 @@ Single strong corpus signal - Discourse factors with corpus support</p>
 <p><strong>Low Confidence (50-69%) - Weak Corpus Evidence:</strong> -
 Conflicting corpus signals - Limited corpus examples - Ambiguous
 contexts in corpus data</p>
-<h2 data-number="1.9"
-id="theoretical-implications-challenging-traditional-assumptions"><span
-class="header-section-number">1.9</span> 8. Theoretical Implications:
-Challenging Traditional Assumptions</h2>
-<h3 data-number="1.9.1"
-id="syntactic-licensing-reconsidered-major-theoretical-shift"><span
-class="header-section-number">1.9.1</span> 8.1 Syntactic Licensing
-Reconsidered: Major Theoretical Shift</h3>
+<h2 id="theoretical-implications-challenging-traditional-assumptions">8.
+Theoretical Implications: Challenging Traditional Assumptions</h2>
+<h3 id="syntactic-licensing-reconsidered-major-theoretical-shift">8.1
+Syntactic Licensing Reconsidered: Major Theoretical Shift</h3>
 <p><strong>Traditional grammar treats</strong> syntactic licensing as
 deterministic requirement. <strong>Our corpus-driven research
 challenges</strong> this fundamental assumption:</p>
@@ -750,10 +700,9 @@ realization depends on semantic and discourse factors.</p>
 <p><strong>Theoretical Contribution</strong>: This reconceptualization
 from requirement to enablement represents a major shift in understanding
 French expletive “ne” grammar.</p>
-<h3 data-number="1.9.2"
-id="anti-expletive-context-theory-novel-theoretical-contribution"><span
-class="header-section-number">1.9.2</span> 8.2 Anti-Expletive Context
-Theory: Novel Theoretical Contribution</h3>
+<h3
+id="anti-expletive-context-theory-novel-theoretical-contribution">8.2
+Anti-Expletive Context Theory: Novel Theoretical Contribution</h3>
 <p><strong>Our error analysis discovered</strong> systematic
 anti-expletive contexts that <strong>traditional grammar does not
 recognize</strong>. This finding suggests that grammatical features can
@@ -763,14 +712,10 @@ disabled by syntactic licensing.</p>
 “anti-expletive contexts” extends beyond French negation to other
 optional grammatical phenomena where contextual appropriateness
 determines realization.</p>
-<h2 data-number="1.10"
-id="performance-validation-research-results"><span
-class="header-section-number">1.10</span> 9. Performance Validation:
-Research Results</h2>
-<h3 data-number="1.10.1"
-id="pattern-effectiveness-corpus-validated-performance"><span
-class="header-section-number">1.10.1</span> 9.1 Pattern Effectiveness:
-Corpus-Validated Performance</h3>
+<h2 id="performance-validation-research-results">9. Performance
+Validation: Research Results</h2>
+<h3 id="pattern-effectiveness-corpus-validated-performance">9.1 Pattern
+Effectiveness: Corpus-Validated Performance</h3>
 <p><strong>Our systematic testing revealed</strong> the effectiveness of
 corpus-discovered patterns:</p>
 <p><strong>Anti-Expletive Pattern Performance (Error-Analysis
@@ -779,18 +724,15 @@ blocking false expletive predictions - Duration contexts (weight 3.0):
 High accuracy in technical/procedural contexts - Technical language
 (weight 2.8): High accuracy in professional contexts - Informal contexts
 (weight 2.5): High accuracy in conversational speech</p>
-<h3 data-number="1.10.2" id="overall-system-performance"><span
-class="header-section-number">1.10.2</span> 9.2 Overall System
-Performance</h3>
+<h3 id="overall-system-performance">9.2 Overall System Performance</h3>
 <p><strong>Corpus-based system accuracy:</strong> Significant
 improvement over traditional rule-based approaches <strong>Error
 reduction:</strong> 84:11 imbalance reduced through corpus-driven
 refinement <strong>Theoretical validation:</strong> Corpus findings
 supported by systematic error analysis</p>
-<h2 data-number="1.11"
-id="conclusion-from-traditional-grammar-to-corpus-driven-discovery"><span
-class="header-section-number">1.11</span> 10. Conclusion: From
-Traditional Grammar to Corpus-Driven Discovery</h2>
+<h2
+id="conclusion-from-traditional-grammar-to-corpus-driven-discovery">10.
+Conclusion: From Traditional Grammar to Corpus-Driven Discovery</h2>
 <p>This computational framework demonstrates that sophisticated
 linguistic phenomena require empirical investigation rather than
 reliance on traditional grammatical descriptions. <strong>Our systematic
