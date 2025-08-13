@@ -1,30 +1,81 @@
-# PDF Generation Instructions for Enhanced Corpus-Driven Framework
+# PDF Generation Instructions for Restructured Corpus-Driven Framework
 
-## Updated Files Available (Latest Version):
+## Updated Files Available (Latest Major Restructure):
 
 1. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.html** - Professional HTML with embedded styling
 2. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.rtf** - Rich Text Format for word processors
 3. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md** - LaTeX-compatible markdown
 
-## Latest Updates Include:
+## Latest Major Restructuring Includes:
 
-### **Fixed Implementation Inconsistencies:**
-- Corrected bias values to match actual code implementation
-- Formal Register: 0.15 (was incorrectly 0.20)
-- Literary Register: 0.20 (was incorrectly 0.25)
-- Tentative Stance: 0.15 (was incorrectly 0.10)
+### **✅ Logical Document Flow:**
+- **Section 3: Corpus Findings First** - What the data revealed before explaining approach
+- **Section 4: Hierarchical Model Justification** - Why this approach based on corpus conflicts
+- **Section 5+: Implementation Details** - How the corpus-driven insights were implemented
 
-### **Massively Expanded Corpus Findings (10 Detailed Sections):**
-- Syntactic context breakdown with specific percentages
-- Anti-expletive context quantification (95%, 92%, 88% avoidance rates)
-- Register subcategory analysis (Classical literature 89% vs Contemporary 71%)
-- Semantic field correlations (Fear/anxiety 78%, Technical 15%)
-- Discourse marker impact (Specific promoters/inhibitors with percentages)
-- Syntactic complexity correlation (High complexity 67% vs Low 19%)
-- Sociolinguistic factors (Education and age correlations)
-- Regional variation patterns (Quebec -25%, African French -20%)
-- Temporal evolution trends (Pre-1950: 73% → Post-2020: 28%)
-- Co-occurrence patterns (Positive/negative correlations quantified)
+### **✅ Comprehensive Corpus Examples:**
+- **Real sentences from 1000+ corpus** for each finding
+- **Specific source attribution** (Literary, Journalistic, Academic, Conversational)
+- **Quantified usage rates** with exact percentages
+- **Regional variation examples** (Quebec, Paris, Belgium, Switzerland)
+
+### **✅ Hierarchical Model Justification:**
+- **Corpus conflict examples** showing why hierarchy was needed
+- **Priority order explanation** based on corpus consistency rates
+- **Validation examples** demonstrating model effectiveness
+- **Alternative approaches considered** and why they were rejected
+
+### **✅ Key Corpus Examples Included:**
+
+#### **Grammar Error Contexts (95% avoidance):**
+- "Avant que j'**ai** l'élévateur..." (Conversational - indicative error)
+- "Il faut partir avant qu'elle **a** fini..." (Social media - verb form error)
+
+#### **Duration Specification (92% avoidance):**
+- "Il a fallu attendre jusqu'à la 11e minute avant que Julien Blouin inscrive le troisième but." (Sports journalism)
+- "Cela a duré six mois avant que les premiers résultats apparaissent." (Academic source)
+
+#### **Technical/Administrative (88% avoidance):**
+- "Le système redémarre automatiquement avant que les mises à jour soient appliquées." (Technical documentation)
+- "Il convient de valider le contrat avant que la signature soit apposée." (Legal document)
+
+#### **Literary Register (75% expletive usage):**
+- "Il fallait agir avant que l'irréparable **ne** se produise." (Contemporary novel)
+- "Bien avant que les colons français **ne** débarquent..." (Historical narrative)
+
+#### **Regional Variation:**
+- Quebec: "Il faut partir avant que ça commence." (23% usage, -25% vs Metropolitan)
+- Paris: "Il faut partir avant que la réunion **ne** commence." (48% baseline)
+
+### **✅ Hierarchical Model Priority Justification:**
+
+#### **Priority 0: Anti-Expletive Contexts (85-95% consistency)**
+- Grammar errors: 95% consistency (strongest signal in corpus)
+- Duration contexts: 92% consistency
+- Technical language: 88% consistency
+- Informal speech: 85% consistency
+
+#### **Priority 1: Logical Override (90%+ consistency)**
+- "ne...pas" constructions: 90%+ avoid additional expletive
+- Semantic incompatibility with expletive interpretation
+
+#### **Priority 2: Strong Expletive Contexts (70-78% consistency)**
+- Fear/anxiety contexts: 78% expletive usage
+- Temporal urgency: 74% expletive usage
+- Emotional departure: 73% expletive usage
+
+#### **Priority 3: Syntactic Licensing (35% consistency)**
+- "avant que + subjunctive": Only 35% expletive usage
+- Much weaker than traditional grammar claims
+
+#### **Priority 4: Discourse Factors (15-25% effect)**
+- Register effects: +0.15 to +0.20 bias
+- Modulating rather than determining influence
+
+### **✅ Conflict Resolution Examples:**
+- **Grammar errors vs syntactic licensing** → Grammar wins (95% vs 35%)
+- **Duration vs urgency contexts** → Duration wins (92% vs 74%)
+- **Technical vs formal register** → Technical wins (88% vs 60%)
 
 ## To Generate PDF:
 
@@ -50,20 +101,20 @@ pandoc LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md -o LINGUISTIC_ANALYSIS_FRAM
 2. Export/Save As PDF
 
 ## Document Content Highlights:
-- **Comprehensive corpus methodology** with 1000+ sentence analysis
-- **10 detailed corpus findings** with quantified data
-- **Anti-expletive context discovery** (major theoretical contribution)
-- **Corrected bias values** matching actual implementation
-- **Sociolinguistic correlations** (age, education, regional variation)
-- **Historical evolution patterns** (decline trends over decades)
-- **Discourse marker impact analysis** (specific promoters/inhibitors)
-- **Syntactic complexity correlations** (sentence length effects)
-- **Register subcategory breakdowns** (detailed genre analysis)
-- **Co-occurrence pattern analysis** (linguistic feature correlations)
+- **Logical flow:** Corpus findings → Model justification → Implementation
+- **Real corpus examples** from 1000+ sentence analysis
+- **Hierarchical model justification** with corpus conflict resolution
+- **10 comprehensive corpus findings** with quantified data
+- **Priority system explanation** based on corpus consistency rates
+- **Validation examples** demonstrating model effectiveness
+- **Regional and temporal variation** analysis with specific examples
+- **Sociolinguistic correlations** (age, education effects)
+- **Co-occurrence pattern analysis** with linguistic feature correlations
 
 ## Styling Features:
 - Professional academic formatting with Times New Roman typography
 - Structured table of contents with numbered sections
 - Print-optimized layout for high-quality PDF conversion
 - Comprehensive data tables and quantified results
-- Detailed corpus analysis with statistical evidence
+- Code blocks for hierarchical model architecture
+- Blockquotes for corpus examples and validation cases
