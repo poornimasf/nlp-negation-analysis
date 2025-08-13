@@ -75,8 +75,8 @@ Our corpus analysis was designed to answer:
 > "Avant que j'**ai** l'élévateur, j'utilisais un miroir pour regarder à travers le plancher grillagé." (Conversational source - indicative error)
 > "Il faut partir avant qu'elle **a** fini son travail." (Social media source - verb form error)
 
-- **Indicative instead of subjunctive:** "avant que j'ai" → 97% avoid expletive
-- **Wrong verb forms:** "avant qu'elle a fini" → 94% avoid expletive  
+- **Indicative instead of subjunctive:** "avant que j'ai" -> 97% avoid expletive
+- **Wrong verb forms:** "avant qu'elle a fini" -> 94% avoid expletive  
 - **Missing subjunctive competence:** Strong correlation between grammatical errors and expletive absence
 
 **Duration Specification Contexts (92% avoidance rate):**
@@ -86,9 +86,9 @@ Our corpus analysis was designed to answer:
 > "Cela a duré six mois avant que les premiers résultats apparaissent." (Academic source)
 > "Il faut compter plusieurs jours avant que la livraison arrive." (Commercial source)
 
-- **Exact time periods:** "pendant 3 heures avant que" → 96% avoid expletive
-- **Completion timeframes:** "Il a fallu 20 minutes avant que" → 91% avoid expletive
-- **Process duration:** "Cela a duré des mois avant que" → 89% avoid expletive
+- **Exact time periods:** "pendant 3 heures avant que" -> 96% avoid expletive
+- **Completion timeframes:** "Il a fallu 20 minutes avant que" -> 91% avoid expletive
+- **Process duration:** "Cela a duré des mois avant que" -> 89% avoid expletive
 
 **Technical/Administrative Language (88% avoidance rate):**
 
@@ -97,9 +97,9 @@ Our corpus analysis was designed to answer:
 > "Il convient de valider le contrat avant que la signature soit apposée." (Legal document)
 > "L'entreprise doit prendre des mesures avant que la situation s'aggrave." (Business report)
 
-- **System procedures:** "Le système redémarre avant que" → 93% avoid expletive
-- **Legal/regulatory:** "Il convient de valider avant que" → 87% avoid expletive
-- **Business processes:** "L'entreprise doit prendre des mesures avant que" → 85% avoid expletive
+- **System procedures:** "Le système redémarre avant que" -> 93% avoid expletive
+- **Legal/regulatory:** "Il convient de valider avant que" -> 87% avoid expletive
+- **Business processes:** "L'entreprise doit prendre des mesures avant que" -> 85% avoid expletive
 
 **Informal/Conversational Contexts (85% avoidance rate):**
 
@@ -108,9 +108,9 @@ Our corpus analysis was designed to answer:
 > "Bon, il faut partir avant qu'elle décide de nous accompagner." (Social media)
 > "Je pense qu'on devrait y aller avant que ça ferme." (Conversational transcript)
 
-- **Casual imperatives:** "Allez, dépêche-toi avant que" → 91% avoid expletive
-- **Conversational markers:** "Bon, il faut partir avant que" → 83% avoid expletive
-- **Opinion expressions:** "Je pense qu'on devrait avant que" → 79% avoid expletive
+- **Casual imperatives:** "Allez, dépêche-toi avant que" -> 91% avoid expletive
+- **Conversational markers:** "Bon, il faut partir avant que" -> 83% avoid expletive
+- **Opinion expressions:** "Je pense qu'on devrait avant que" -> 79% avoid expletive
 
 **Finding 3: Register Effects Are Quantifiable and Context-Dependent**
 
@@ -210,10 +210,10 @@ Our corpus analysis was designed to answer:
 > "C'est crucial qu'on agisse avant que la situation **ne** s'aggrave." (+38% expletive probability)
 > "Il est impératif de réagir avant que le problème **ne** s'étende." (+42% expletive probability)
 
-- **"Il faut absolument"** → +45% expletive probability
-- **"C'est crucial que"** → +38% expletive probability
-- **"Il est impératif"** → +42% expletive probability
-- **"Attention à ce que"** → +35% expletive probability
+- **"Il faut absolument"** -> +45% expletive probability
+- **"C'est crucial que"** -> +38% expletive probability
+- **"Il est impératif"** -> +42% expletive probability
+- **"Attention à ce que"** -> +35% expletive probability
 
 **Strong Expletive Inhibitors:**
 
@@ -222,10 +222,10 @@ Our corpus analysis was designed to answer:
 > "Juste vérifier avant que le système redémarre." (-48% expletive probability)
 > "En gros, il faut partir avant qu'ils arrivent." (-61% expletive probability)
 
-- **"Simplement"** → -52% expletive probability
-- **"Juste"** → -48% expletive probability
-- **"En gros"** → -61% expletive probability
-- **"Bon, alors"** → -58% expletive probability
+- **"Simplement"** -> -52% expletive probability
+- **"Juste"** -> -48% expletive probability
+- **"En gros"** -> -61% expletive probability
+- **"Bon, alors"** -> -58% expletive probability
 
 **Finding 6: Syntactic Complexity Correlation**
 
@@ -378,24 +378,24 @@ Our corpus analysis was designed to answer:
 **Conflict Example 1: Grammar Errors vs. Syntactic Licensing**
 ```
 Corpus sentence: "Avant que j'ai l'élévateur..." (grammar error)
-- Syntactic licensing: "avant que" → should predict Expletive
-- Grammar error context: 95% avoidance rate → should predict No Expletive
+- Syntactic licensing: "avant que" -> should predict Expletive
+- Grammar error context: 95% avoidance rate -> should predict No Expletive
 - Corpus reality: No expletive used (grammar error wins)
 ```
 
 **Conflict Example 2: Duration Context vs. Emotional Context**
 ```
 Corpus sentence: "Il a fallu 20 minutes d'attente avant qu'il soit trop tard"
-- Duration specification: 92% avoidance rate → No Expletive
-- "Trop tard" urgency: 74% usage rate → Expletive  
+- Duration specification: 92% avoidance rate -> No Expletive
+- "Trop tard" urgency: 74% usage rate -> Expletive  
 - Corpus reality: No expletive used (duration context wins)
 ```
 
 **Conflict Example 3: Technical Language vs. Formal Register**
 ```
 Corpus sentence: "Le système doit redémarrer avant que la procédure soit validée"
-- Technical language: 88% avoidance rate → No Expletive
-- Formal register: 60% usage rate → Expletive
+- Technical language: 88% avoidance rate -> No Expletive
+- Formal register: 60% usage rate -> Expletive
 - Corpus reality: No expletive used (technical context wins)
 ```
 
@@ -509,32 +509,32 @@ Polite stance effect: +0.15 bias (15% increase in probability)
 ```
 Corpus sentence: "Faut juste attendre 5 minutes avant que ça redémarre."
 Factors present:
-- Informal speech (85% avoidance) → Priority 0
-- Duration specification (92% avoidance) → Priority 0  
-- Technical process (88% avoidance) → Priority 0
+- Informal speech (85% avoidance) -> Priority 0
+- Duration specification (92% avoidance) -> Priority 0  
+- Technical process (88% avoidance) -> Priority 0
 Result: No expletive (multiple Priority 0 factors reinforce)
-Corpus validation: ✓ Correct prediction
+Corpus validation: * Correct prediction
 ```
 
 **Validation Example 2: Anti-Expletive vs. Strong Expletive**
 ```
 Corpus sentence: "Il a fallu 20 minutes d'attente avant qu'il soit trop tard."
 Factors present:
-- Duration specification (92% avoidance) → Priority 0
-- "Trop tard" urgency (74% usage) → Priority 2
+- Duration specification (92% avoidance) -> Priority 0
+- "Trop tard" urgency (74% usage) -> Priority 2
 Result: No expletive (Priority 0 overrides Priority 2)
-Corpus validation: ✓ Correct prediction
+Corpus validation: * Correct prediction
 ```
 
 **Validation Example 3: Discourse Modulation**
 ```
 Corpus sentence: "Il convient d'examiner cette question avant que les décisions ne soient prises."
 Factors present:
-- Formal register (+0.15 bias) → Priority 4
-- Academic context (+0.20 bias) → Priority 4
-- Syntactic licensing (35% baseline) → Priority 3
+- Formal register (+0.15 bias) -> Priority 4
+- Academic context (+0.20 bias) -> Priority 4
+- Syntactic licensing (35% baseline) -> Priority 3
 Result: Expletive (discourse factors tip syntactic licensing over threshold)
-Corpus validation: ✓ Correct prediction
+Corpus validation: * Correct prediction
 ```
 
 ### 4.6 The Hierarchical Model Architecture
@@ -576,8 +576,8 @@ def classify_expletive(sentence, semantic_analysis):
 **Corpus finding:** When speakers make grammatical errors with subjunctive constructions, they avoid expletive "ne" 95% of the time.
 
 **Examples from corpus:**
-- "Avant que j'**ai** l'élévateur..." (incorrect indicative) → No expletive
-- "Il faut partir avant qu'elle **a** fini..." (grammar error) → No expletive
+- "Avant que j'**ai** l'élévateur..." (incorrect indicative) -> No expletive
+- "Il faut partir avant qu'elle **a** fini..." (grammar error) -> No expletive
 
 **Linguistic insight:** Speakers who lack subjunctive competence also lack expletive "ne" competence.
 
@@ -586,9 +586,9 @@ def classify_expletive(sentence, semantic_analysis):
 **Corpus finding:** Contexts specifying exact durations or time periods avoid expletive "ne" 92% of the time.
 
 **Examples from corpus:**
-- "Il a fallu attendre 11 minutes avant que..." → No expletive
-- "Cela a duré six mois avant que..." → No expletive
-- "Il faut compter plusieurs jours avant que..." → No expletive
+- "Il a fallu attendre 11 minutes avant que..." -> No expletive
+- "Cela a duré six mois avant que..." -> No expletive
+- "Il faut compter plusieurs jours avant que..." -> No expletive
 
 **Linguistic insight:** Bounded temporal contexts are incompatible with the uncertainty semantics of expletive "ne".
 
@@ -597,9 +597,9 @@ def classify_expletive(sentence, semantic_analysis):
 **Corpus finding:** Professional, technical, or administrative contexts avoid expletive "ne" 88% of the time.
 
 **Examples from corpus:**
-- "Le système redémarre avant que..." → No expletive
-- "Il convient de valider le contrat avant que..." → No expletive
-- "Les mesures doivent être mises en place avant que..." → No expletive
+- "Le système redémarre avant que..." -> No expletive
+- "Il convient de valider le contrat avant que..." -> No expletive
+- "Les mesures doivent être mises en place avant que..." -> No expletive
 
 **Linguistic insight:** Technical discourse prioritizes clarity over stylistic marking.
 
@@ -608,9 +608,9 @@ def classify_expletive(sentence, semantic_analysis):
 **Corpus finding:** Casual speech avoids expletive "ne" 85% of the time, even in syntactically licensing contexts.
 
 **Examples from corpus:**
-- "Allez, dépêche-toi avant qu'ils arrivent!" → No expletive
-- "Bon, il faut partir avant qu'elle décide..." → No expletive
-- "Je pense qu'on devrait y aller avant que..." → No expletive
+- "Allez, dépêche-toi avant qu'ils arrivent!" -> No expletive
+- "Bon, il faut partir avant qu'elle décide..." -> No expletive
+- "Je pense qu'on devrait y aller avant que..." -> No expletive
 
 **Linguistic insight:** Expletive "ne" is incompatible with conversational register.
 
@@ -625,19 +625,19 @@ def classify_expletive(sentence, semantic_analysis):
 **Corpus finding:** "Too late" constructions use expletive "ne" 89% of the time.
 
 **Examples from corpus:**
-- "Il faut agir avant qu'il soit trop tard!" → Expletive (89% of cases)
-- "Dépêche-toi avant qu'il soit trop tard!" → Expletive (91% of cases)
+- "Il faut agir avant qu'il soit trop tard!" -> Expletive (89% of cases)
+- "Dépêche-toi avant qu'il soit trop tard!" -> Expletive (91% of cases)
 
 **Corpus extension:** We discovered that medical urgency contexts show similar patterns:
-- "Il faut consulter avant que les symptômes s'aggravent" → Expletive (87% of cases)
+- "Il faut consulter avant que les symptômes s'aggravent" -> Expletive (87% of cases)
 
 ### 4.3 Emotional Departure Contexts (Corpus-Discovered)
 
 **Corpus finding:** Contexts involving permanent departure or farewell use expletive "ne" 83% of the time.
 
 **Examples from corpus:**
-- "Dis-lui au revoir avant qu'il quitte définitivement" → Expletive
-- "Profite de lui avant qu'il parte pour toujours" → Expletive
+- "Dis-lui au revoir avant qu'il quitte définitivement" -> Expletive
+- "Profite de lui avant qu'il parte pour toujours" -> Expletive
 
 **Linguistic insight:** Permanent departure creates emotional investment in temporal outcomes.
 
@@ -646,8 +646,8 @@ def classify_expletive(sentence, semantic_analysis):
 **Corpus finding:** Contexts describing culturally significant historical events use expletive "ne" 78% of the time.
 
 **Examples from corpus:**
-- "bien avant que les colons français n'y débarquent" → Expletive
-- "avant que la révolution industrielle ne transforme" → Expletive
+- "bien avant que les colons français n'y débarquent" -> Expletive
+- "avant que la révolution industrielle ne transforme" -> Expletive
 
 **Linguistic insight:** Cultural/historical significance enhances formal register effects.
 

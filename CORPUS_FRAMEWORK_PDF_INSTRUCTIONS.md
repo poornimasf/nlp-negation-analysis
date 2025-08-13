@@ -1,11 +1,11 @@
-# Streamlined Format Guide for Corpus-Driven Framework
+# Format Guide for Corpus-Driven Framework
 
-## Available Formats (Essential Collection):
+## Available Formats (Clean Collection):
 
 ### **Core Formats:**
 1. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf** - **✅ READY-TO-USE PDF (261KB)**
 2. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.html** - Professional HTML with embedded styling
-3. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md** - LaTeX-compatible markdown source
+3. **LINGUISTIC_ANALYSIS_FRAMEWORK.md** - Main source document (LaTeX-compatible)
 
 ## ✅ PDF Ready for Immediate Use!
 
@@ -49,10 +49,10 @@
 - **Embedded CSS** for consistent formatting
 - **Best for**: Web viewing, custom PDF generation via browser
 
-### **LaTeX-Compatible Markdown (Source)**
-- **Source for PDF generation** (used to create the current PDF)
-- **Unicode characters cleaned** for LaTeX compatibility
-- **Best for**: Regenerating PDF, academic formatting customization
+### **Markdown Source (Main Document)**
+- **Main source document** with all latest content
+- **LaTeX-compatible** for PDF generation
+- **Best for**: Editing, version control, regenerating formats
 
 ## Usage Recommendations:
 
@@ -68,35 +68,30 @@
 - **Professional styling** with embedded CSS
 - **Can generate custom PDF** via browser print function
 
-### **For Customization: Use LaTeX Source**
-- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md`
-- **Regenerate PDF** with custom LaTeX settings
-- **Modify formatting** or content as needed
-- **Academic publishing** with specific requirements
+### **For Editing/Customization: Use Markdown Source**
+- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK.md`
+- **Main source document** with all content
+- **Edit and regenerate** other formats as needed
+- **Version control friendly**
 
-## PDF Generation Options:
+## Format Generation:
 
-### **Option 1: Use Ready-Made PDF ⭐ (Recommended)**
-- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf`
-- **Status**: Ready for immediate use
-- **Quality**: Professional LaTeX formatting
-- **Size**: 261KB - optimized for sharing and printing
-
-### **Option 2: Generate Custom PDF from HTML**
-1. Open `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.html` in any web browser
-2. Press `Cmd+P` (Mac) or `Ctrl+P` (Windows/Linux)
-3. Select "Save as PDF" as the destination
-4. Choose settings:
-   - Paper size: A4 or Letter
-   - Margins: Normal
-   - Include headers/footers: Optional
-5. Save as custom PDF
-
-### **Option 3: Regenerate PDF from LaTeX Source**
+### **Regenerate HTML from Source:**
 ```bash
-# With proper LaTeX installation:
+pandoc LINGUISTIC_ANALYSIS_FRAMEWORK.md -o LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.html --standalone --toc --number-sections
+```
+
+### **Regenerate PDF from Source:**
+```bash
+# Clean Unicode characters first
+sed 's/[❌✅🎯📊🔍🚨🔧⚖️🎭✓]/*/g' LINGUISTIC_ANALYSIS_FRAMEWORK.md | sed 's/[🤔💡📈🎉🚀🆕]/*/g' | sed 's/→/->/g' | sed 's/"/"/g' | sed 's/"/"/g' | sed "s/'/'/g" | sed "s/'/'/g" > temp_clean.md
+
+# Generate PDF
 export PATH="/usr/local/texlive/2025basic/bin/universal-darwin:$PATH"
-pandoc LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md -o LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf --pdf-engine=pdflatex --toc --number-sections
+pandoc temp_clean.md -o LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf --pdf-engine=pdflatex --toc --number-sections
+
+# Clean up
+rm temp_clean.md
 ```
 
 ## Key Content Highlights:
@@ -164,16 +159,8 @@ pandoc LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md -o LINGUISTIC_ANALYSIS_FRAM
 - **Sociolinguistic correlations** (age, education effects)
 - **Co-occurrence pattern analysis** with linguistic feature correlations
 
-## PDF Features:
-- **Professional LaTeX typography** with academic formatting
-- **Table of contents** with clickable links and page numbers
-- **Numbered sections** for easy reference
-- **Optimized for printing** and digital viewing
-- **High-quality rendering** of tables, code blocks, and examples
-- **Consistent formatting** throughout the document
-
-## Streamlined Collection Benefits:
-- **Essential formats only** - PDF, HTML, LaTeX source
-- **No redundancy** - each format serves a specific purpose
-- **Easy maintenance** - fewer files to keep synchronized
-- **Clear usage guidance** - obvious choice for each use case
+## Clean File Structure Benefits:
+- **Single source document** (`LINGUISTIC_ANALYSIS_FRAMEWORK.md`)
+- **No duplicate or outdated files**
+- **Clear format hierarchy** (Source → HTML → PDF)
+- **Easy maintenance** and version control
