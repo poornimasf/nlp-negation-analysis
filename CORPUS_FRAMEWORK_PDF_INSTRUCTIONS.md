@@ -1,16 +1,16 @@
 # Format Guide for Corpus-Driven Framework
 
-## Available Formats (Clean Collection):
+## Available Formats (Consistent Naming):
 
 ### **Core Formats:**
-1. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf** - **✅ READY-TO-USE PDF (261KB)**
-2. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.html** - Professional HTML with embedded styling
-3. **LINGUISTIC_ANALYSIS_FRAMEWORK.md** - Main source document (LaTeX-compatible)
+1. **LINGUISTIC_ANALYSIS_FRAMEWORK.pdf** - **✅ READY-TO-USE PDF (261KB)**
+2. **LINGUISTIC_ANALYSIS_FRAMEWORK.html** - Professional HTML with embedded styling
+3. **LINGUISTIC_ANALYSIS_FRAMEWORK.md** - Main source document
 
 ## ✅ PDF Ready for Immediate Use!
 
 **The PDF has been generated and is ready for immediate use:**
-- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf`
+- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK.pdf`
 - **Size**: 261KB
 - **Quality**: Professional LaTeX formatting
 - **Features**: Table of contents, numbered sections, academic styling
@@ -57,13 +57,13 @@
 ## Usage Recommendations:
 
 ### **For Most Users: Use the PDF ⭐**
-- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf`
+- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK.pdf`
 - **Ready to use** for all purposes
 - **Professional quality** with academic formatting
 - **No conversion needed**
 
 ### **For Web Viewing: Use HTML**
-- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.html`
+- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK.html`
 - **Open in any web browser**
 - **Professional styling** with embedded CSS
 - **Can generate custom PDF** via browser print function
@@ -78,7 +78,21 @@
 
 ### **Regenerate HTML from Source:**
 ```bash
-pandoc LINGUISTIC_ANALYSIS_FRAMEWORK.md -o LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.html --standalone --toc --number-sections
+pandoc LINGUISTIC_ANALYSIS_FRAMEWORK.md -o LINGUISTIC_ANALYSIS_FRAMEWORK.html --standalone --toc --number-sections --css=<(echo "
+body {
+    font-family: 'Times New Roman', serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+    line-height: 1.6;
+    color: #333;
+    background: white;
+}
+h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
+h2 { color: #34495e; border-bottom: 2px solid #bdc3c7; padding-bottom: 5px; }
+code { background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px; }
+pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; }
+")
 ```
 
 ### **Regenerate PDF from Source:**
@@ -88,7 +102,7 @@ sed 's/[❌✅🎯📊🔍🚨🔧⚖️🎭✓]/*/g' LINGUISTIC_ANALYSIS_FRAMEW
 
 # Generate PDF
 export PATH="/usr/local/texlive/2025basic/bin/universal-darwin:$PATH"
-pandoc temp_clean.md -o LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf --pdf-engine=pdflatex --toc --number-sections
+pandoc temp_clean.md -o LINGUISTIC_ANALYSIS_FRAMEWORK.pdf --pdf-engine=pdflatex --toc --number-sections
 
 # Clean up
 rm temp_clean.md
@@ -159,8 +173,9 @@ rm temp_clean.md
 - **Sociolinguistic correlations** (age, education effects)
 - **Co-occurrence pattern analysis** with linguistic feature correlations
 
-## Clean File Structure Benefits:
-- **Single source document** (`LINGUISTIC_ANALYSIS_FRAMEWORK.md`)
-- **No duplicate or outdated files**
-- **Clear format hierarchy** (Source → HTML → PDF)
-- **Easy maintenance** and version control
+## Consistent File Structure:
+- **LINGUISTIC_ANALYSIS_FRAMEWORK.md** - Main source document
+- **LINGUISTIC_ANALYSIS_FRAMEWORK.html** - Generated HTML format
+- **LINGUISTIC_ANALYSIS_FRAMEWORK.pdf** - Generated PDF format
+- **Clean naming convention** - Same base name, different extensions
+- **Easy maintenance** - Clear relationship between formats
