@@ -1,17 +1,13 @@
-# Complete Format Guide for Restructured Corpus-Driven Framework
+# Streamlined Format Guide for Corpus-Driven Framework
 
-## All Available Formats (Latest Major Restructure):
+## Available Formats (Essential Collection):
 
-### **Primary Formats:**
-1. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.html** - Professional HTML with embedded styling
-2. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf** - **✅ READY-TO-USE PDF (261KB)**
-3. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.rtf** - Rich Text Format for word processors
-4. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.docx** - Microsoft Word format
-5. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.odt** - OpenDocument Text (LibreOffice)
-6. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.epub** - Digital book format for e-readers
-7. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md** - LaTeX-compatible markdown
+### **Core Formats:**
+1. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf** - **✅ READY-TO-USE PDF (261KB)**
+2. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.html** - Professional HTML with embedded styling
+3. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md** - LaTeX-compatible markdown source
 
-## ✅ PDF Now Available!
+## ✅ PDF Ready for Immediate Use!
 
 **The PDF has been generated and is ready for immediate use:**
 - **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf`
@@ -19,7 +15,7 @@
 - **Quality**: Professional LaTeX formatting
 - **Features**: Table of contents, numbered sections, academic styling
 
-## Latest Major Restructuring Includes:
+## Document Content Highlights:
 
 ### **✅ Logical Document Flow:**
 - **Section 3: Corpus Findings First** - What the data revealed before explaining approach
@@ -38,47 +34,47 @@
 - **Validation examples** demonstrating model effectiveness
 - **Alternative approaches considered** and why they were rejected
 
-## Format-Specific Usage:
+## Format Usage:
 
-### **PDF Format (Ready to Use) ⭐**
+### **PDF Format (Primary) ⭐**
 - **Professional LaTeX formatting** with academic styling
 - **Table of contents** with numbered sections and page numbers
 - **High-quality typography** optimized for printing and digital viewing
 - **Immediate use** - no conversion needed
+- **Best for**: Sharing, printing, presentations, academic submission
 
-### **HTML Format (Alternative PDF Source)**
-- **Best for custom PDF conversion** via browser print
-- Professional styling with Times New Roman typography
-- Print-optimized layout with proper page breaks
-- Embedded CSS for consistent formatting
+### **HTML Format (Web/Custom PDF)**
+- **Professional styling** with Times New Roman typography
+- **Print-optimized layout** with proper page breaks
+- **Embedded CSS** for consistent formatting
+- **Best for**: Web viewing, custom PDF generation via browser
 
-### **DOCX Format (Microsoft Word)**
-- **Native Word format** with full editing capabilities
-- Table of contents with numbered sections
-- Compatible with Microsoft Office suite
-- Easy to convert to PDF via Word's export function
+### **LaTeX-Compatible Markdown (Source)**
+- **Source for PDF generation** (used to create the current PDF)
+- **Unicode characters cleaned** for LaTeX compatibility
+- **Best for**: Regenerating PDF, academic formatting customization
 
-### **RTF Format (Universal)**
-- **Cross-platform compatibility** (Word, LibreOffice, Pages)
-- Preserves formatting across different applications
-- Good fallback option for older software
+## Usage Recommendations:
 
-### **ODT Format (LibreOffice)**
-- **Open standard format** for LibreOffice Writer
-- Full formatting preservation in open-source software
-- Alternative to proprietary formats
+### **For Most Users: Use the PDF ⭐**
+- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf`
+- **Ready to use** for all purposes
+- **Professional quality** with academic formatting
+- **No conversion needed**
 
-### **EPUB Format (Digital Reading)**
-- **E-reader compatible** (Kindle, Apple Books, etc.)
-- Reflowable text for different screen sizes
-- Ideal for digital distribution and reading
+### **For Web Viewing: Use HTML**
+- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.html`
+- **Open in any web browser**
+- **Professional styling** with embedded CSS
+- **Can generate custom PDF** via browser print function
 
-### **LaTeX-Compatible Markdown**
-- **Source for PDF generation** (already used to create the PDF)
-- Unicode characters cleaned for LaTeX compatibility
-- Professional academic formatting options
+### **For Customization: Use LaTeX Source**
+- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md`
+- **Regenerate PDF** with custom LaTeX settings
+- **Modify formatting** or content as needed
+- **Academic publishing** with specific requirements
 
-## PDF Usage Options:
+## PDF Generation Options:
 
 ### **Option 1: Use Ready-Made PDF ⭐ (Recommended)**
 - **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf`
@@ -96,19 +92,7 @@
    - Include headers/footers: Optional
 5. Save as custom PDF
 
-### **Option 3: Microsoft Word PDF Export**
-1. Open `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.docx` in Microsoft Word
-2. Go to File → Export → Create PDF/XPS
-3. Choose quality settings and save location
-4. Click "Publish" to generate PDF
-
-### **Option 4: LibreOffice PDF Export**
-1. Open `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.odt` in LibreOffice Writer
-2. Go to File → Export as PDF
-3. Choose PDF options and quality settings
-4. Click "Export" to generate PDF
-
-### **Option 5: Regenerate PDF from LaTeX**
+### **Option 3: Regenerate PDF from LaTeX Source**
 ```bash
 # With proper LaTeX installation:
 export PATH="/usr/local/texlive/2025basic/bin/universal-darwin:$PATH"
@@ -169,7 +153,7 @@ pandoc LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md -o LINGUISTIC_ANALYSIS_FRAM
 - **Duration vs urgency contexts** → Duration wins (92% vs 74%)
 - **Technical vs formal register** → Technical wins (88% vs 60%)
 
-## Document Features (All Formats):
+## Document Features:
 - **Logical flow:** Corpus findings → Model justification → Implementation
 - **Real corpus examples** from 1000+ sentence analysis
 - **Hierarchical model justification** with corpus conflict resolution
@@ -187,3 +171,9 @@ pandoc LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md -o LINGUISTIC_ANALYSIS_FRAM
 - **Optimized for printing** and digital viewing
 - **High-quality rendering** of tables, code blocks, and examples
 - **Consistent formatting** throughout the document
+
+## Streamlined Collection Benefits:
+- **Essential formats only** - PDF, HTML, LaTeX source
+- **No redundancy** - each format serves a specific purpose
+- **Easy maintenance** - fewer files to keep synchronized
+- **Clear usage guidance** - obvious choice for each use case
