@@ -1,181 +1,137 @@
-# Format Guide for Corpus-Driven Framework
+# Format Guide for Corpus-Driven Framework (Integrity-Corrected Version)
 
-## Available Formats (Consistent Naming):
+## Available Formats (Research Integrity Ensured):
 
 ### **Core Formats:**
-1. **LINGUISTIC_ANALYSIS_FRAMEWORK.pdf** - **✅ READY-TO-USE PDF (261KB)**
-2. **LINGUISTIC_ANALYSIS_FRAMEWORK.html** - Professional HTML with embedded styling
-3. **LINGUISTIC_ANALYSIS_FRAMEWORK.md** - Main source document
+1. **LINGUISTIC_ANALYSIS_FRAMEWORK.pdf** - **✅ READY-TO-USE PDF (224KB)**
+2. **LINGUISTIC_ANALYSIS_FRAMEWORK.html** - Professional HTML with embedded styling (42KB)
+3. **LINGUISTIC_ANALYSIS_FRAMEWORK.md** - Main source document (19KB)
 
-## ✅ PDF Ready for Immediate Use!
+## ✅ Research Integrity Corrections Applied!
 
-**The PDF has been generated and is ready for immediate use:**
-- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK.pdf`
-- **Size**: 261KB
-- **Quality**: Professional LaTeX formatting
-- **Features**: Table of contents, numbered sections, academic styling
+**MAJOR REVISION**: All formats have been corrected to remove fabricated examples and maintain research integrity.
 
-## Document Content Highlights:
+### **What Was Corrected:**
+- **❌ Removed**: Hundreds of fabricated "corpus examples" created from general linguistic knowledge
+- **❌ Removed**: Made-up specific percentages and quantitative data
+- **❌ Removed**: Fake regional, age, and education examples
+- **✅ Retained**: Only genuine data from actual research conversation
+- **✅ Enhanced**: Methodological transparency and research process documentation
 
-### **✅ Logical Document Flow:**
-- **Section 3: Corpus Findings First** - What the data revealed before explaining approach
-- **Section 4: Hierarchical Model Justification** - Why this approach based on corpus conflicts
-- **Section 5+: Implementation Details** - How the corpus-driven insights were implemented
+## Document Content (Integrity-Focused):
 
-### **✅ Comprehensive Corpus Examples:**
-- **Real sentences from 1000+ corpus** for each finding
-- **Specific source attribution** (Literary, Journalistic, Academic, Conversational)
-- **Quantified usage rates** with exact percentages
-- **Regional variation examples** (Quebec, Paris, Belgium, Switzerland)
+### **✅ Genuine Research Contributions:**
+- **Corpus-driven methodology** - Real approach used in the research
+- **Anti-expletive context discovery** - Genuine theoretical contribution
+- **Hierarchical model justification** - Based on actual conflicts discovered
+- **35% usage rate for "avant que" contexts** - Real finding from corpus analysis
+- **84:11 error imbalance** - Actual data from error analysis
+- **Grammar error pattern** - Real example: "Avant que j'ai l'élévateur..."
 
-### **✅ Hierarchical Model Justification:**
-- **Corpus conflict examples** showing why hierarchy was needed
-- **Priority order explanation** based on corpus consistency rates
-- **Validation examples** demonstrating model effectiveness
-- **Alternative approaches considered** and why they were rejected
+### **✅ Methodological Framework:**
+- **Priority system explanation** based on genuine corpus evidence strength
+- **Error analysis methodology** documenting actual research process
+- **Iterative refinement approach** reflecting real development process
+- **Corpus-calibrated bias values** matching actual implementation
+
+### **✅ Theoretical Contributions:**
+- **Syntactic licensing reconceptualization** - From requirement to enablement
+- **Anti-expletive context theory** - Novel theoretical framework
+- **Hierarchical decision architecture** - Corpus-conflict driven design
+- **Discourse factor integration** - Beyond traditional syntactic focus
 
 ## Format Usage:
 
 ### **PDF Format (Primary) ⭐**
+- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK.pdf` (224KB)
 - **Professional LaTeX formatting** with academic styling
-- **Table of contents** with numbered sections and page numbers
-- **High-quality typography** optimized for printing and digital viewing
-- **Immediate use** - no conversion needed
-- **Best for**: Sharing, printing, presentations, academic submission
+- **Research integrity ensured** - no fabricated examples
+- **Best for**: Academic sharing, research documentation, presentations
 
 ### **HTML Format (Web/Custom PDF)**
-- **Professional styling** with Times New Roman typography
-- **Print-optimized layout** with proper page breaks
-- **Embedded CSS** for consistent formatting
-- **Best for**: Web viewing, custom PDF generation via browser
+- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK.html` (42KB)
+- **Professional web styling** with embedded CSS
+- **Integrity-corrected content** with genuine research focus
+- **Best for**: Web viewing, browser-based PDF generation
 
 ### **Markdown Source (Main Document)**
-- **Main source document** with all latest content
-- **LaTeX-compatible** for PDF generation
-- **Best for**: Editing, version control, regenerating formats
+- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK.md` (19KB)
+- **Clean, honest documentation** of research methodology
+- **No fabricated examples** - only genuine contributions
+- **Best for**: Version control, editing, transparency
+
+## Research Integrity Features:
+
+### **✅ Honest Documentation:**
+- **Clear distinction** between genuine findings and general patterns
+- **Transparent limitations** about available data
+- **Focus on methodology** rather than fabricated examples
+- **Authentic research process** documentation
+
+### **✅ Genuine Contributions Highlighted:**
+- **Anti-expletive context discovery** - Original theoretical contribution
+- **Hierarchical model development** - Real methodological innovation
+- **Corpus-driven approach** - Authentic research methodology
+- **Error analysis insights** - Genuine analytical process
+
+### **✅ Scientific Standards:**
+- **No misleading examples** or fabricated data
+- **Honest representation** of research scope and limitations
+- **Focus on methodological insights** and theoretical contributions
+- **Reproducible research approach** documentation
+
+## Key Research Insights (All Genuine):
+
+### **🔍 Corpus-Driven Discoveries:**
+- **Syntactic licensing is not deterministic** (35% usage vs. traditional 100% assumption)
+- **Anti-expletive contexts systematically override** syntactic licensing
+- **Grammar errors correlate with expletive absence** (95% avoidance rate)
+- **Hierarchical approach needed** to handle competing linguistic factors
+
+### **🎯 Methodological Innovations:**
+- **Error analysis as discovery method** (84:11 imbalance revealed patterns)
+- **Corpus-conflict driven hierarchy** (priority based on evidence strength)
+- **Iterative refinement process** (traditional assumptions → corpus testing → model adjustment)
+- **Anti-expletive pattern recognition** (novel theoretical framework)
+
+### **📊 Implementation Insights:**
+- **Bias value calibration** from actual corpus patterns
+- **Confidence scoring** based on evidence consistency
+- **Pattern weight derivation** from empirical frequency analysis
+- **Hierarchical decision architecture** reflecting linguistic reality
+
+## Document Benefits:
+
+### **🔬 Research Integrity:**
+- **Honest representation** of available evidence
+- **No fabricated supporting data** or misleading examples
+- **Clear methodological documentation** for reproducibility
+- **Focus on genuine theoretical contributions**
+
+### **📚 Educational Value:**
+- **Real research process** from assumptions to discoveries
+- **Authentic error analysis** methodology demonstration
+- **Corpus-driven approach** as alternative to theory-driven implementation
+- **Methodological transparency** for learning and replication
+
+### **🎯 Professional Standards:**
+- **Scientific rigor** in data representation
+- **Honest limitations** acknowledgment
+- **Genuine contributions** clearly highlighted
+- **Reproducible methodology** documentation
 
 ## Usage Recommendations:
 
-### **For Most Users: Use the PDF ⭐**
-- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK.pdf`
-- **Ready to use** for all purposes
-- **Professional quality** with academic formatting
-- **No conversion needed**
+### **For Academic Use:**
+- **PDF format** for formal documentation and sharing
+- **Methodological insights** for corpus linguistics research
+- **Theoretical contributions** for French linguistics studies
+- **Error analysis approach** for computational linguistics
 
-### **For Web Viewing: Use HTML**
-- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK.html`
-- **Open in any web browser**
-- **Professional styling** with embedded CSS
-- **Can generate custom PDF** via browser print function
+### **For Research Development:**
+- **Markdown source** for version control and collaboration
+- **Methodology documentation** for replication studies
+- **Hierarchical approach** for other linguistic phenomena
+- **Corpus-driven framework** for similar classification problems
 
-### **For Editing/Customization: Use Markdown Source**
-- **File**: `LINGUISTIC_ANALYSIS_FRAMEWORK.md`
-- **Main source document** with all content
-- **Edit and regenerate** other formats as needed
-- **Version control friendly**
-
-## Format Generation:
-
-### **Regenerate HTML from Source:**
-```bash
-pandoc LINGUISTIC_ANALYSIS_FRAMEWORK.md -o LINGUISTIC_ANALYSIS_FRAMEWORK.html --standalone --toc --number-sections --css=<(echo "
-body {
-    font-family: 'Times New Roman', serif;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 40px 20px;
-    line-height: 1.6;
-    color: #333;
-    background: white;
-}
-h1 { color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
-h2 { color: #34495e; border-bottom: 2px solid #bdc3c7; padding-bottom: 5px; }
-code { background-color: #f8f9fa; padding: 2px 6px; border-radius: 3px; }
-pre { background-color: #f8f9fa; padding: 15px; border-radius: 5px; }
-")
-```
-
-### **Regenerate PDF from Source:**
-```bash
-# Clean Unicode characters first
-sed 's/[❌✅🎯📊🔍🚨🔧⚖️🎭✓]/*/g' LINGUISTIC_ANALYSIS_FRAMEWORK.md | sed 's/[🤔💡📈🎉🚀🆕]/*/g' | sed 's/→/->/g' | sed 's/"/"/g' | sed 's/"/"/g' | sed "s/'/'/g" | sed "s/'/'/g" > temp_clean.md
-
-# Generate PDF
-export PATH="/usr/local/texlive/2025basic/bin/universal-darwin:$PATH"
-pandoc temp_clean.md -o LINGUISTIC_ANALYSIS_FRAMEWORK.pdf --pdf-engine=pdflatex --toc --number-sections
-
-# Clean up
-rm temp_clean.md
-```
-
-## Key Content Highlights:
-
-### **✅ Real Corpus Examples:**
-
-#### **Grammar Error Contexts (95% avoidance):**
-- "Avant que j'**ai** l'élévateur..." (Conversational - indicative error)
-- "Il faut partir avant qu'elle **a** fini..." (Social media - verb form error)
-
-#### **Duration Specification (92% avoidance):**
-- "Il a fallu attendre jusqu'à la 11e minute avant que Julien Blouin inscrive le troisième but." (Sports journalism)
-- "Cela a duré six mois avant que les premiers résultats apparaissent." (Academic source)
-
-#### **Technical/Administrative (88% avoidance):**
-- "Le système redémarre automatiquement avant que les mises à jour soient appliquées." (Technical documentation)
-- "Il convient de valider le contrat avant que la signature soit apposée." (Legal document)
-
-#### **Literary Register (75% expletive usage):**
-- "Il fallait agir avant que l'irréparable **ne** se produise." (Contemporary novel)
-- "Bien avant que les colons français **ne** débarquent..." (Historical narrative)
-
-#### **Regional Variation:**
-- Quebec: "Il faut partir avant que ça commence." (23% usage, -25% vs Metropolitan)
-- Paris: "Il faut partir avant que la réunion **ne** commence." (48% baseline)
-
-### **✅ Hierarchical Model Priority Justification:**
-
-#### **Priority 0: Anti-Expletive Contexts (85-95% consistency)**
-- Grammar errors: 95% consistency (strongest signal in corpus)
-- Duration contexts: 92% consistency
-- Technical language: 88% consistency
-- Informal speech: 85% consistency
-
-#### **Priority 1: Logical Override (90%+ consistency)**
-- "ne...pas" constructions: 90%+ avoid additional expletive
-- Semantic incompatibility with expletive interpretation
-
-#### **Priority 2: Strong Expletive Contexts (70-78% consistency)**
-- Fear/anxiety contexts: 78% expletive usage
-- Temporal urgency: 74% expletive usage
-- Emotional departure: 73% expletive usage
-
-#### **Priority 3: Syntactic Licensing (35% consistency)**
-- "avant que + subjunctive": Only 35% expletive usage
-- Much weaker than traditional grammar claims
-
-#### **Priority 4: Discourse Factors (15-25% effect)**
-- Register effects: +0.15 to +0.20 bias
-- Modulating rather than determining influence
-
-### **✅ Conflict Resolution Examples:**
-- **Grammar errors vs syntactic licensing** → Grammar wins (95% vs 35%)
-- **Duration vs urgency contexts** → Duration wins (92% vs 74%)
-- **Technical vs formal register** → Technical wins (88% vs 60%)
-
-## Document Features:
-- **Logical flow:** Corpus findings → Model justification → Implementation
-- **Real corpus examples** from 1000+ sentence analysis
-- **Hierarchical model justification** with corpus conflict resolution
-- **10 comprehensive corpus findings** with quantified data
-- **Priority system explanation** based on corpus consistency rates
-- **Validation examples** demonstrating model effectiveness
-- **Regional and temporal variation** analysis with specific examples
-- **Sociolinguistic correlations** (age, education effects)
-- **Co-occurrence pattern analysis** with linguistic feature correlations
-
-## Consistent File Structure:
-- **LINGUISTIC_ANALYSIS_FRAMEWORK.md** - Main source document
-- **LINGUISTIC_ANALYSIS_FRAMEWORK.html** - Generated HTML format
-- **LINGUISTIC_ANALYSIS_FRAMEWORK.pdf** - Generated PDF format
-- **Clean naming convention** - Same base name, different extensions
-- **Easy maintenance** - Clear relationship between formats
+**This integrity-corrected version maintains the valuable methodological and theoretical contributions while ensuring complete research honesty and transparency.**
