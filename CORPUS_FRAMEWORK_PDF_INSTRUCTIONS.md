@@ -1,10 +1,14 @@
-# PDF Generation Instructions for Restructured Corpus-Driven Framework
+# Complete Format Guide for Restructured Corpus-Driven Framework
 
-## Updated Files Available (Latest Major Restructure):
+## All Available Formats (Latest Major Restructure):
 
+### **Primary Formats:**
 1. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.html** - Professional HTML with embedded styling
 2. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.rtf** - Rich Text Format for word processors
-3. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md** - LaTeX-compatible markdown
+3. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.docx** - Microsoft Word format
+4. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.odt** - OpenDocument Text (LibreOffice)
+5. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.epub** - Digital book format for e-readers
+6. **LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md** - LaTeX-compatible markdown
 
 ## Latest Major Restructuring Includes:
 
@@ -25,7 +29,79 @@
 - **Validation examples** demonstrating model effectiveness
 - **Alternative approaches considered** and why they were rejected
 
-### **✅ Key Corpus Examples Included:**
+## Format-Specific Usage:
+
+### **HTML Format (Recommended for PDF)**
+- **Best for PDF conversion** via browser print
+- Professional styling with Times New Roman typography
+- Print-optimized layout with proper page breaks
+- Embedded CSS for consistent formatting
+
+### **DOCX Format (Microsoft Word)**
+- **Native Word format** with full editing capabilities
+- Table of contents with numbered sections
+- Compatible with Microsoft Office suite
+- Easy to convert to PDF via Word's export function
+
+### **RTF Format (Universal)**
+- **Cross-platform compatibility** (Word, LibreOffice, Pages)
+- Preserves formatting across different applications
+- Good fallback option for older software
+
+### **ODT Format (LibreOffice)**
+- **Open standard format** for LibreOffice Writer
+- Full formatting preservation in open-source software
+- Alternative to proprietary formats
+
+### **EPUB Format (Digital Reading)**
+- **E-reader compatible** (Kindle, Apple Books, etc.)
+- Reflowable text for different screen sizes
+- Ideal for digital distribution and reading
+
+### **LaTeX-Compatible Markdown**
+- **Command-line PDF generation** with pandoc
+- Unicode characters removed for LaTeX compatibility
+- Professional academic formatting options
+
+## PDF Generation Options:
+
+### **Option 1: Browser (HTML) - Recommended**
+1. Open `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.html` in any web browser
+2. Press `Cmd+P` (Mac) or `Ctrl+P` (Windows/Linux)
+3. Select "Save as PDF" as the destination
+4. Choose settings:
+   - Paper size: A4 or Letter
+   - Margins: Normal
+   - Include headers/footers: Optional
+5. Save as `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf`
+
+### **Option 2: Microsoft Word (DOCX)**
+1. Open `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.docx` in Microsoft Word
+2. Go to File → Export → Create PDF/XPS
+3. Choose quality settings and save location
+4. Click "Publish" to generate PDF
+
+### **Option 3: LibreOffice (ODT)**
+1. Open `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.odt` in LibreOffice Writer
+2. Go to File → Export as PDF
+3. Choose PDF options and quality settings
+4. Click "Export" to generate PDF
+
+### **Option 4: Command Line (LaTeX)**
+```bash
+# With proper LaTeX installation:
+export PATH="/usr/local/texlive/2025basic/bin/universal-darwin:$PATH"
+pandoc LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md -o LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf --pdf-engine=pdflatex --toc --number-sections
+```
+
+### **Option 5: RTF via Word Processor**
+1. Open `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.rtf` in any word processor
+2. Use the application's PDF export function
+3. Maintains formatting across different applications
+
+## Key Content Highlights:
+
+### **✅ Real Corpus Examples:**
 
 #### **Grammar Error Contexts (95% avoidance):**
 - "Avant que j'**ai** l'élévateur..." (Conversational - indicative error)
@@ -77,30 +153,7 @@
 - **Duration vs urgency contexts** → Duration wins (92% vs 74%)
 - **Technical vs formal register** → Technical wins (88% vs 60%)
 
-## To Generate PDF:
-
-### Option 1: Using Browser (Recommended)
-1. Open `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.html` in any web browser
-2. Press `Cmd+P` (Mac) or `Ctrl+P` (Windows/Linux)
-3. Select "Save as PDF" as the destination
-4. Choose settings:
-   - Paper size: A4 or Letter
-   - Margins: Normal
-   - Include headers/footers: Optional
-5. Save as `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf`
-
-### Option 2: Using Command Line (if LaTeX available)
-```bash
-# With proper LaTeX installation:
-export PATH="/usr/local/texlive/2025basic/bin/universal-darwin:$PATH"
-pandoc LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md -o LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.pdf --pdf-engine=pdflatex --toc --number-sections
-```
-
-### Option 3: Using Word Processor
-1. Open `LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS.rtf` in Microsoft Word or LibreOffice
-2. Export/Save As PDF
-
-## Document Content Highlights:
+## Document Features:
 - **Logical flow:** Corpus findings → Model justification → Implementation
 - **Real corpus examples** from 1000+ sentence analysis
 - **Hierarchical model justification** with corpus conflict resolution
@@ -111,10 +164,10 @@ pandoc LINGUISTIC_ANALYSIS_FRAMEWORK_CORPUS_CLEAN.md -o LINGUISTIC_ANALYSIS_FRAM
 - **Sociolinguistic correlations** (age, education effects)
 - **Co-occurrence pattern analysis** with linguistic feature correlations
 
-## Styling Features:
-- Professional academic formatting with Times New Roman typography
+## Styling Features (All Formats):
+- Professional academic formatting
 - Structured table of contents with numbered sections
-- Print-optimized layout for high-quality PDF conversion
 - Comprehensive data tables and quantified results
 - Code blocks for hierarchical model architecture
 - Blockquotes for corpus examples and validation cases
+- Print-optimized layouts for high-quality output
