@@ -99,7 +99,7 @@ Our corpus analysis was designed to answer:
 **Grammar Error Contexts (95% avoidance rate):**
 
 **Genuine corpus example from our analysis:**
-> "Avant que j'**ai** l'élévateur, j'utilisais un miroir pour regarder à travers le plancher grillagé." (Conversational source - indicative error)
+> "Avant que j'**ai** l'élévateur..." (grammar error with indicative instead of subjunctive)
 
 **Key insight:** Speakers who lack subjunctive competence also lack expletive "ne" competence. When speakers make grammatical errors with subjunctive constructions, they systematically avoid expletive "ne" usage.
 
@@ -149,7 +149,7 @@ Our corpus analysis was designed to answer:
 
 **Conflict Example 1: Grammar Errors vs. Syntactic Licensing**
 ```
-Corpus sentence: "Avant que j'ai l'élévateur..." (grammar error)
+Corpus sentence: "Avant que j'ai..." (grammar error with indicative)
 - Syntactic licensing: "avant que" → should predict Expletive
 - Grammar error context: 95% avoidance rate → should predict No Expletive
 - Corpus reality: No expletive used (grammar error wins)
@@ -231,7 +231,7 @@ def classify_expletive(sentence, semantic_analysis):
 **Corpus finding:** When speakers make grammatical errors with subjunctive constructions, they avoid expletive "ne" 95% of the time.
 
 **Genuine example from our corpus:**
-> "Avant que j'**ai** l'élévateur, j'utilisais un miroir pour regarder à travers le plancher grillagé." (Conversational source - indicative error)
+> "Avant que j'**ai** l'élévateur..." (grammar error with indicative instead of subjunctive)
 
 **Linguistic insight:** Speakers who lack subjunctive competence also lack expletive "ne" competence.
 
