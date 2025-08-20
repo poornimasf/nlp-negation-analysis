@@ -2,10 +2,11 @@
 
 ## Current System Status (v2.11.0 - August 20, 2025)
 
-- **Version**: 2.11.0
+- **Version**: 2.11.0 (Reverted to Stable State)
 - **Last Updated**: August 20, 2025
 - **Status**: ✅ Active and Enhanced with Corpus-Driven PeurQueAnalyzer
 - **URL**: https://main.d1gx30ivteuneq.amplifyapp.com/
+- **Deployment**: Reverted to stable commit 5cd29be2 for reliable operation
 
 ### 🆕 **NEW FEATURE: Corpus-Enhanced PeurQueAnalyzer Integration**
 
