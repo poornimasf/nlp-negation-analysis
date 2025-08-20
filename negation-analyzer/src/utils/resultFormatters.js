@@ -301,12 +301,12 @@ export const formatRuleBasedResult = (analysis) => {
     // Use prediction if available (enhanced analysis), otherwise type
     const finalClassification = prediction || type;
     
-    // NEW: Check for PeurQueAnalyzer results with detailed breakdown
-    if (corpusEnhanced && evidence && evidence.details && Array.isArray(evidence.details)) {
+    // NEW: Check for PeurQueAnalyzer results with detailed breakdown (specific to peur que)
+    if (corpusEnhanced && evidence && evidence.trigger === 'peur que' && evidence.details && Array.isArray(evidence.details)) {
         return formatPeurQueDetailedAnalysis(analysis);
     }
     
-    // NEW: Check if we should use the enhanced linguistic format
+    // NEW: Check if we should use the enhanced linguistic format (for avant que and other enhanced analysis)
     if (enhanced && semanticAnalysis) {
         return formatEnhancedLinguisticAnalysis(analysis);
     }
