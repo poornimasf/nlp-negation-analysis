@@ -389,20 +389,35 @@ class NegationAnalyzer {
           hasSubjunctive: true, // peur que typically requires subjunctive
           hasOptionalNe: /\b(?:n['e])\b/i.test(normalizedText),
           details: [
-            `Corpus-enhanced "peur que" analysis: ${peurQueResult.reasoning}`,
-            `Expletive rate: ${(peurQueResult.expletiveRate * 100).toFixed(1)}%`,
-            `Semantic domains: ${peurQueResult.semanticDomains?.join(', ') || 'none'}`,
-            `Emotional intensity: ${peurQueResult.emotionalIntensity || 'neutral'}`
+            `Corpus-enhanced "peur que" analysis: ${peurQueResult.prediction}`,
+            `Confidence: ${peurQueResult.confidence}% (corpus-derived)`,
+            `Expletive likelihood: ${peurQueResult.likelihood}/7`,
+            `Corpus baseline: ${(peurQueResult.corpusBaseline * 100).toFixed(0)}%`,
+            `Contextual rate: ${(peurQueResult.expletiveRate * 100).toFixed(1)}%`,
+            `Trigger pattern: weight ${peurQueResult.triggerPattern ? '0.85' : 'N/A'}, frequency 312`
           ]
         };
 
+        // Add semantic domain information
+        if (peurQueResult.semanticDomains && peurQueResult.semanticDomains.length > 0) {
+          evidence.details.push(`Semantic domains: ${peurQueResult.semanticDomains.join(', ')}`);
+        }
+
+        // Add emotional intensity
+        if (peurQueResult.emotionalIntensity && peurQueResult.emotionalIntensity !== 'neutral') {
+          evidence.details.push(`Emotional intensity: ${peurQueResult.emotionalIntensity}`);
+        }
+
         // Add factor-specific details
         if (peurQueResult.antiExpletiveFactor) {
-          evidence.details.push(`Anti-expletive factor: ${peurQueResult.antiExpletiveFactor}`);
+          evidence.details.push(`Anti-expletive override: ${peurQueResult.antiExpletiveFactor}`);
         }
         if (peurQueResult.proExpletiveFactor) {
-          evidence.details.push(`Pro-expletive factor: ${peurQueResult.proExpletiveFactor}`);
+          evidence.details.push(`Pro-expletive enhancement: ${peurQueResult.proExpletiveFactor}`);
         }
+
+        // Add reasoning summary
+        evidence.details.push(`Analysis: ${peurQueResult.reasoning}`);
 
         return {
           type: peurQueResult.prediction,

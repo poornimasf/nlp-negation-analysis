@@ -204,7 +204,9 @@ export class PeurQueAnalyzer {
           semanticDomains: [],
           emotionalIntensity: 'override',
           antiExpletiveFactor: antiExpletiveMatch.description,
-          triggerPattern: triggerMatch.pattern.source
+          triggerPattern: triggerMatch.pattern.source,
+          corpusBaseline: this.BASELINE_EXPLETIVE_RATE,
+          expletiveRate: antiExpletiveMatch.expletiveRate // Add this field
         };
       }
 
@@ -226,12 +228,25 @@ export class PeurQueAnalyzer {
 
       // Step 7: Calculate base confidence from trigger pattern
       let confidence = triggerMatch.weight * 100;
+      let expletiveRate = this.BASELINE_EXPLETIVE_RATE; // Start with baseline
 
       // Step 8: Apply pro-expletive boost (if any)
-      confidence += proExpletiveBoost;
+      if (proExpletiveMatch) {
+        confidence += proExpletiveMatch.weight * 100;
+        expletiveRate = proExpletiveMatch.expletiveRate;
+      }
 
       // Step 9: Apply semantic domain adjustments
       confidence += semanticAnalysis.adjustment;
+      
+      // Update expletive rate based on semantic analysis if no pro-expletive override
+      if (!proExpletiveMatch && semanticAnalysis.domains.length > 0) {
+        const domain = semanticAnalysis.domains[0]; // Use first detected domain
+        const domainConfig = this.semanticDomains[domain];
+        if (domainConfig) {
+          expletiveRate = domainConfig.expletiveRate;
+        }
+      }
 
       // Step 10: Apply emotional intensity effects
       confidence *= emotionalAnalysis.multiplier;
@@ -269,7 +284,8 @@ export class PeurQueAnalyzer {
         triggerPattern: triggerMatch.pattern.source,
         discourseMarkers: discourseAnalysis.markers,
         proExpletiveFactor: proExpletiveMatch?.description || null,
-        corpusBaseline: this.BASELINE_EXPLETIVE_RATE
+        corpusBaseline: this.BASELINE_EXPLETIVE_RATE,
+        expletiveRate: expletiveRate // Ensure this is always set
       };
 
     } catch (error) {
