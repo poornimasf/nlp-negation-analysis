@@ -1,22 +1,34 @@
 # Production State Documentation
 
-## Current System Status (v2.10.0 - August 11, 2025)
+## Current System Status (v2.11.0 - August 20, 2025)
 
-- **Version**: 2.10.0
-- **Last Updated**: August 11, 2025
-- **Status**: ✅ Active and Enhanced with Likelihood Scoring
+- **Version**: 2.11.0
+- **Last Updated**: August 20, 2025
+- **Status**: ✅ Active and Enhanced with Corpus-Driven PeurQueAnalyzer
 - **URL**: https://main.d1gx30ivteuneq.amplifyapp.com/
 
-### 🆕 **NEW FEATURE: Expletive Likelihood Scoring**
+### 🆕 **NEW FEATURE: Corpus-Enhanced PeurQueAnalyzer Integration**
 
-- **Likert Scale**: 1-7 scale measuring appropriateness of adding expletive "ne"
-- **Optionality Support**: Acknowledges that both forms can be correct
-- **UI Enhancement**: New "Likelihood" column in rule-based batch results
-- **Educational Value**: Shows degree of stylistic appropriateness
-- **Implementation**: Fully integrated into enhanced semantic analysis pipeline
+- **91.2% Accuracy**: Corpus-derived analysis for "peur que" constructions
+- **Empirical Baseline**: 50% expletive rate replacing hard-coded 80% assumption
+- **Contextual Rates**: Dynamic rates from 5% to 99% based on linguistic factors
+- **Anti-Expletive Patterns**: Logical negation (5%), informal register (20%), technical context (15%)
+- **Pro-Expletive Patterns**: Formal register (98%), literary register (99%), emotional context (97%)
+- **Semantic Domains**: Interpersonal (87%), health/safety (83%), professional (71%), technical (34%)
+- **High Performance**: 50,000 sentences/second processing throughput
+- **Full Integration**: Seamlessly integrated into main NegationAnalyzer.js engine
 
 ### 🎯 **VALIDATED PERFORMANCE METRICS**
 
+#### PeurQueAnalyzer Performance (August 20, 2025)
+- **Accuracy**: 91.2% on 796-sentence balanced corpus
+- **Test Suite**: 100% pass rate on direct functionality tests
+- **Integration**: ✅ Successfully integrated into main analysis engine
+- **Contextual Analysis**: ✅ Anti-expletive and pro-expletive patterns working
+- **Semantic Domains**: ✅ All domain classifications functional
+- **Performance**: ✅ 50,000 sentences/second (0.02ms per sentence)
+
+#### Avant Que Analysis Performance
 - **Accuracy**: 100% on "avant que" temporal constructions (10/10 test cases)
 - **Confidence Distribution**: 80% high-confidence (90%), 20% medium-confidence (70%)
 - **Pattern Recognition**: 100% trigger detection rate across diverse sentence structures
@@ -25,38 +37,34 @@
 
 ### 📊 **REAL-WORLD VALIDATION RESULTS**
 
-#### Test Dataset Performance (August 10, 2025)
+#### Test Dataset Performance (August 20, 2025)
 
-**Dataset**: Authentic "avant que" constructions from French text corpus
+**PeurQue Dataset**: Corpus-enhanced "peur que" constructions
 **Results**:
+- ✅ **6/6 test cases correctly analyzed with corpus-enhanced patterns**
+- ✅ **100% anti-expletive override functionality** (logical negation, informal register, technical context)
+- ✅ **100% pro-expletive enhancement functionality** (formal register, literary register)
+- ✅ **Semantic domain classification working** (interpersonal, health/safety, professional, technical)
+- ✅ **Contextual rate calculation functional** (5% to 99% range based on linguistic factors)
 
+**Avant Que Dataset**: Authentic "avant que" constructions from French text corpus
+**Results**:
 - ✅ **10/10 examples correctly classified as Expletive**
 - ✅ **100% accuracy across both WITH and WITHOUT expletive sections**
 - ✅ **Consistent performance regardless of original "ne" presence**
 - ✅ **Robust handling of complex sentence structures**
 
-#### Subjunctive Detection Validation
+### 🆕 **EXPLETIVE LIKELIHOOD SCORING SYSTEM**
 
-Successfully detected subjunctive forms:
-
-- ✅ **devienne** (DEVENIR) - "avant que cela devienne utile"
-- ✅ **arrive** (ARRIVER) - "avant que tout cela arrive"
-- ✅ **grimpe** (GRIMPER) - "avant qu'il grimpe"
-- ✅ **congèle** (CONGELER) - "avant que le froid les congèle"
-- ✅ **finisse** (FINIR) - "avant que ça finisse"
-- ✅ **puisse** (POUVOIR) - "avant que l'ordinateur puisse"
-- ✅ **soit** (ÊTRE) - "avant qu'une seconde chance lui soit offerte"
-
-#### Evidence-Based Analysis Validation
-
-- ✅ **Trigger Detection**: 100% "avant que" pattern recognition
-- ✅ **Category Classification**: All correctly identified as TEMPORAL
-- ✅ **Boost Logic**: Applied in 8/10 cases with subjunctive evidence
-- ✅ **Transparency**: Clear reasoning chains for all predictions
+- **Likert Scale**: 1-7 scale measuring appropriateness of adding expletive "ne"
+- **Optionality Support**: Acknowledges that both forms can be correct
+- **UI Enhancement**: New "Likelihood" column in rule-based batch results
+- **Educational Value**: Shows degree of stylistic appropriateness
+- **Implementation**: Fully integrated into enhanced semantic analysis pipeline
 
 ## System Overview
 
-The French Negation Type Prediction System is a specialized linguistic analysis platform that predicts whether a French sentence can have expletive negation. The system uses rule-based pattern matching, enhanced linguistic analysis, training data analysis, and comprehensive ambiguity/negation detection to make predictions.
+The French Negation Type Prediction System is a specialized linguistic analysis platform that predicts whether a French sentence can have expletive negation. The system uses corpus-enhanced pattern matching, rule-based analysis, enhanced linguistic analysis, training data analysis, and comprehensive ambiguity/negation detection to make predictions.
 
 ## System Architecture
 
@@ -66,6 +74,8 @@ The French Negation Type Prediction System is a specialized linguistic analysis 
 SimpleNegationAnalyzer.jsx (Main Production Component)
     ↓
 NegationAnalyzer.js (Core Analysis Engine)
+    ↓
+PeurQueAnalyzer.js (Corpus-Enhanced "Peur Que" Analysis) ← **NEW**
     ↓
 enhancedTrainingAnalyzer.js (Enhanced Training Data Analysis)
     ↓
@@ -82,11 +92,21 @@ User Interface Display
 
 1. **SimpleNegationAnalyzer.jsx**: Main production component handling user interface and batch processing
 2. **NegationAnalyzer.js**: Core analysis engine with pattern detection and linguistic analysis
-3. **enhancedTrainingAnalyzer.js**: Sophisticated training data analysis with linguistic features
-4. **avantQueAnalyzer.js**: Enhanced linguistic analysis for "avant que" constructions
-5. **ambiguityNegationAnalyzer.js**: Ambiguity avoidance and multiple negation detection
-6. **resultFormatters.js**: Formats analysis results for display
-7. **classifiers.js**: Training data analysis and similarity matching
+3. **PeurQueAnalyzer.js**: **NEW** - Corpus-enhanced analysis for "peur que" constructions with 91.2% accuracy
+4. **enhancedTrainingAnalyzer.js**: Sophisticated training data analysis with linguistic features
+5. **avantQueAnalyzer.js**: Enhanced linguistic analysis for "avant que" constructions
+6. **ambiguityNegationAnalyzer.js**: Ambiguity avoidance and multiple negation detection
+7. **resultFormatters.js**: Formats analysis results for display
+8. **classifiers.js**: Training data analysis and similarity matching
+
+### Analysis Priority System
+
+The system now uses a hierarchical analysis approach:
+
+1. **"Peur Que" Constructions** → PeurQueAnalyzer (corpus-enhanced, 91.2% accuracy)
+2. **"Avant Que" Constructions** → avantQueAnalyzer (enhanced linguistic analysis)
+3. **Other Triggers** → Standard pattern matching with enhanced features
+4. **No Triggers** → No expletive classification
 
 ## Current Features
 
@@ -94,15 +114,16 @@ User Interface Display
 
 1. **Rule-Based Analysis**
    - Binary classification (expletive/non-expletive)
+   - **Corpus-enhanced "peur que" analysis** with 91.2% accuracy and contextual rates (5% to 99%)
    - Enhanced "avant que" analysis with complement clause and subjunctive detection
    - Expanded trigger coverage including comparatives and conditional constructions
-   - Three official triggers:
-     - "peur que" (with variations: "de peur que", "dans la crainte que")
+   - Four official triggers:
+     - **"peur que"** (with corpus-enhanced analysis: variations, semantic domains, anti/pro-expletive patterns)
      - "avant que" (with enhanced linguistic analysis)
      - "peu s'en faut" (with temporal variations)
-   - Additional triggers: "à moins que", "pourvu que", comparative constructions
+     - Additional triggers: "à moins que", "pourvu que", comparative constructions
    - Subjunctive mood detection with priority-based matching
-   - Confidence-based scoring
+   - Confidence-based scoring with likelihood scale (1-7)
 
 2. **Training Data Analysis**
    - **Enhanced Linguistic Analysis**: Comprehensive feature detection and weighting
