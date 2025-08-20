@@ -295,11 +295,16 @@ function getConfidenceDescription(confidence) {
 }
 
 export const formatRuleBasedResult = (analysis) => {
-    const { type, confidence, evidence, enhancedAvantQue, enhanced, semanticAnalysis, reasoning, correctionApplied, prediction } = analysis;
+    const { type, confidence, evidence, enhancedAvantQue, enhanced, semanticAnalysis, reasoning, correctionApplied, prediction, peurQueAnalysis, corpusEnhanced } = analysis;
     const confidencePercent = Math.round(confidence * 100);
     
     // Use prediction if available (enhanced analysis), otherwise type
     const finalClassification = prediction || type;
+    
+    // NEW: Check for PeurQueAnalyzer results with detailed breakdown
+    if (corpusEnhanced && evidence && evidence.details && Array.isArray(evidence.details)) {
+        return formatPeurQueDetailedAnalysis(analysis);
+    }
     
     // NEW: Check if we should use the enhanced linguistic format
     if (enhanced && semanticAnalysis) {
@@ -340,6 +345,35 @@ export const formatRuleBasedResult = (analysis) => {
     
     return result;
 };
+
+/**
+ * Format PeurQueAnalyzer results with detailed syntactic/semantic/discourse breakdown
+ */
+function formatPeurQueDetailedAnalysis(analysis) {
+    const { prediction, confidence, evidence, peurQueAnalysis } = analysis;
+    const confidencePercent = Math.round(confidence * 100);
+    
+    let result = 'CORPUS-ENHANCED PEUR QUE ANALYSIS\n';
+    result += '================================\n\n';
+    
+    result += `Classification: ${prediction}\n`;
+    result += `Confidence: ${confidencePercent}%\n`;
+    if (peurQueAnalysis && peurQueAnalysis.likelihood) {
+        result += `Likelihood Scale: ${peurQueAnalysis.likelihood}/7\n`;
+    }
+    result += '\n';
+    
+    // Display the detailed breakdown from evidence.details
+    if (evidence && evidence.details && Array.isArray(evidence.details)) {
+        evidence.details.forEach(detail => {
+            if (detail.trim()) {
+                result += detail + '\n';
+            }
+        });
+    }
+    
+    return result;
+}
 
 /**
  * NEW: Enhanced linguistic analysis format for academic/research audience
