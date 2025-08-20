@@ -1,6 +1,7 @@
 import { normalizeText } from './textProcessing';
 import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS, CONFIDENCE_LEVELS } from './patterns';
 import { enhanceAvantQueAnalysis } from './avantQueAnalyzer';
+import { PeurQueAnalyzer } from './peurQueAnalyzer';
 import { analyzeLogicalNegationContext } from './logicalNegationDetector';
 import { analyzeTextEnhanced } from './ruleBasedAnalyzer';
 import { analyzeWithCorpusInsights } from './enhancedTrainingAnalyzer';
@@ -10,6 +11,35 @@ class NegationAnalyzer {
     this.TRIGGER_PATTERNS = TRIGGER_PATTERNS;
     this.SUBJUNCTIVE_PATTERNS = SUBJUNCTIVE_PATTERNS;
     this.CONFIDENCE_LEVELS = CONFIDENCE_LEVELS;
+  }
+
+  // Check for "peur que" constructions
+  detectPeurQue(text) {
+    const peurQuePatterns = [
+      /j'ai peur qu[e']/i,
+      /j'avais peur qu[e']/i,
+      /tu as peur qu[e']/i,
+      /as-tu peur qu[e']/i,
+      /il a peur qu[e']/i,
+      /elle a peur qu[e']/i,
+      /nous avons peur qu[e']/i,
+      /vous avez peur qu[e']/i,
+      /ils ont peur qu[e']/i,
+      /elles ont peur qu[e']/i,
+      /de peur qu[e']/i,
+      /dans la crainte qu[e']/i
+    ];
+
+    for (const pattern of peurQuePatterns) {
+      if (pattern.test(text)) {
+        return {
+          found: true,
+          pattern: pattern.source,
+          trigger: 'peur que'
+        };
+      }
+    }
+    return { found: false };
   }
 
   // Extract trigger with subcategory
@@ -93,11 +123,42 @@ class NegationAnalyzer {
   /**
    * Corpus-enhanced negation analysis - addresses overcorrection problem
    * Uses semantic hierarchy: Logical > Expletive > Syntactic
+   * NOW INCLUDES: PeurQueAnalyzer integration for "peur que" constructions
    */
   async analyzeNegationEnhanced(text, analysisMode = 'RULE_BASED', trainingData = null) {
     console.log('🧠 CORPUS-ENHANCED ANALYSIS:', { text: text.substring(0, 50), mode: analysisMode });
     
     try {
+      // Check for "peur que" constructions first (highest priority)
+      const peurQueDetection = this.detectPeurQue(text);
+      if (peurQueDetection.found) {
+        console.log('🎯 Using corpus-enhanced PeurQueAnalyzer for "peur que" construction');
+        
+        const peurQueResult = PeurQueAnalyzer.analyze(text);
+        
+        // Convert to enhanced analysis format
+        const result = {
+          prediction: peurQueResult.prediction,
+          confidence: peurQueResult.confidence / 100, // Convert to decimal
+          likelihood: peurQueResult.likelihood,
+          mode: 'PEUR_QUE_CORPUS_ENHANCED',
+          evidence: this.buildPeurQueEvidence(peurQueResult, text),
+          peurQueAnalysis: peurQueResult,
+          corpusEnhanced: true,
+          analysisVersion: '2.1.0',
+          correctionApplied: peurQueResult.antiExpletiveFactor ? 'anti-expletive-override' : 
+                           peurQueResult.proExpletiveFactor ? 'pro-expletive-boost' : 'none'
+        };
+        
+        console.log('✅ PEUR QUE CORPUS-ENHANCED ANALYSIS COMPLETE:', {
+          prediction: result.prediction,
+          confidence: result.confidence,
+          expletiveRate: peurQueResult.expletiveRate
+        });
+        
+        return result;
+      }
+      
       let result;
       
       if (analysisMode === 'RULE_BASED') {
@@ -127,7 +188,7 @@ class NegationAnalyzer {
       
       // Add corpus-specific metadata
       result.corpusEnhanced = true;
-      result.analysisVersion = '2.0.0';
+      result.analysisVersion = '2.1.0';
       result.overcorrectionAddressed = true;
       
       console.log('✅ CORPUS-ENHANCED ANALYSIS COMPLETE:', {
@@ -144,6 +205,61 @@ class NegationAnalyzer {
       // Fallback to original analysis
       return await this.analyzeNegation(text);
     }
+  }
+  
+  /**
+   * Build evidence for PeurQueAnalyzer results
+   */
+  buildPeurQueEvidence(peurQueResult, text) {
+    const evidence = {
+      trigger: 'peur que',
+      category: 'EMOTIONAL',
+      subcategory: 'fear_expression',
+      hasSubjunctive: true,
+      hasOptionalNe: /\b(?:n['e])\b/i.test(text),
+      details: []
+    };
+    
+    // Add corpus-enhanced analysis details
+    evidence.details.push(`Corpus-enhanced "peur que" analysis`);
+    evidence.details.push(`Prediction: ${peurQueResult.prediction} (${peurQueResult.confidence}% confidence)`);
+    evidence.details.push(`Expletive likelihood: ${peurQueResult.likelihood}/7`);
+    evidence.details.push(`Corpus baseline: ${(peurQueResult.corpusBaseline * 100).toFixed(0)}%`);
+    
+    // Add contextual rate information
+    if (peurQueResult.expletiveRate !== peurQueResult.corpusBaseline) {
+      evidence.details.push(`Contextual rate: ${(peurQueResult.expletiveRate * 100).toFixed(1)}%`);
+    }
+    
+    // Add semantic domain information
+    if (peurQueResult.semanticDomains && peurQueResult.semanticDomains.length > 0) {
+      evidence.details.push(`Semantic domains: ${peurQueResult.semanticDomains.join(', ')}`);
+    }
+    
+    // Add emotional intensity
+    if (peurQueResult.emotionalIntensity && peurQueResult.emotionalIntensity !== 'neutral') {
+      evidence.details.push(`Emotional intensity: ${peurQueResult.emotionalIntensity}`);
+    }
+    
+    // Add factor-specific overrides
+    if (peurQueResult.antiExpletiveFactor) {
+      evidence.details.push(`🚫 Anti-expletive override: ${peurQueResult.antiExpletiveFactor}`);
+    }
+    
+    if (peurQueResult.proExpletiveFactor) {
+      evidence.details.push(`✨ Pro-expletive enhancement: ${peurQueResult.proExpletiveFactor}`);
+    }
+    
+    // Add discourse markers if present
+    if (peurQueResult.discourseMarkers && peurQueResult.discourseMarkers.length > 0) {
+      const markers = peurQueResult.discourseMarkers.map(m => m.type).join(', ');
+      evidence.details.push(`Discourse markers: ${markers}`);
+    }
+    
+    // Add reasoning
+    evidence.details.push(`Reasoning: ${peurQueResult.reasoning}`);
+    
+    return evidence;
   }
   
   /**
@@ -252,12 +368,60 @@ class NegationAnalyzer {
   }
 
   /**
-   * Original analysis method - PRESERVED for backward compatibility
+   * Original analysis method - ENHANCED with PeurQueAnalyzer integration
    */
   async analyzeNegation(text) {
     const normalizedText = normalizeText(text);
     
-    // Find trigger with subcategory
+    // Check for "peur que" constructions first (corpus-enhanced analysis)
+    const peurQueDetection = this.detectPeurQue(normalizedText);
+    if (peurQueDetection.found) {
+      console.log('🎯 Detected "peur que" construction - using corpus-enhanced analyzer');
+      
+      try {
+        const peurQueResult = PeurQueAnalyzer.analyze(text);
+        
+        // Convert PeurQueAnalyzer result to NegationAnalyzer format
+        const evidence = {
+          trigger: peurQueDetection.trigger,
+          category: 'EMOTIONAL',
+          subcategory: 'fear_expression',
+          hasSubjunctive: true, // peur que typically requires subjunctive
+          hasOptionalNe: /\b(?:n['e])\b/i.test(normalizedText),
+          details: [
+            `Corpus-enhanced "peur que" analysis: ${peurQueResult.reasoning}`,
+            `Expletive rate: ${(peurQueResult.expletiveRate * 100).toFixed(1)}%`,
+            `Semantic domains: ${peurQueResult.semanticDomains?.join(', ') || 'none'}`,
+            `Emotional intensity: ${peurQueResult.emotionalIntensity || 'neutral'}`
+          ]
+        };
+
+        // Add factor-specific details
+        if (peurQueResult.antiExpletiveFactor) {
+          evidence.details.push(`Anti-expletive factor: ${peurQueResult.antiExpletiveFactor}`);
+        }
+        if (peurQueResult.proExpletiveFactor) {
+          evidence.details.push(`Pro-expletive factor: ${peurQueResult.proExpletiveFactor}`);
+        }
+
+        return {
+          type: peurQueResult.prediction,
+          classification: peurQueResult.prediction,
+          confidence: peurQueResult.confidence / 100, // Convert percentage to decimal
+          likelihood: peurQueResult.likelihood, // 1-7 scale
+          evidence,
+          peurQueAnalysis: peurQueResult, // Include full analysis
+          corpusEnhanced: true,
+          analysisVersion: '2.1.0'
+        };
+        
+      } catch (error) {
+        console.error('❌ PeurQueAnalyzer failed, falling back to standard analysis:', error);
+        // Continue with standard analysis below
+      }
+    }
+    
+    // Find trigger with subcategory (standard analysis)
     const foundTrigger = this.extractTrigger(normalizedText);
     
     // Check for subjunctive
