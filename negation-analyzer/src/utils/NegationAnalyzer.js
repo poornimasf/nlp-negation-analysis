@@ -127,6 +127,7 @@ class NegationAnalyzer {
    */
   async analyzeNegationEnhanced(text, analysisMode = 'RULE_BASED', trainingData = null, mode = 'sentence') {
     console.log('🧠 CORPUS-ENHANCED ANALYSIS:', { text: text.substring(0, 50), mode: analysisMode, analysisType: mode });
+    console.log('🔍 ANALYZER ROUTING DEBUG:', { text: text.substring(0, 30), analysisMode, hasTrainingData: !!trainingData });
     
     try {
       // Check for "peur que" constructions first (highest priority)
@@ -162,7 +163,7 @@ class NegationAnalyzer {
       let result;
       
       if (analysisMode === 'RULE_BASED') {
-        console.log('🔧 Using enhanced rule-based analysis...');
+        console.log('🔧 TAKING RULE_BASED PATH: Using enhanced rule-based analysis...');
         // Use enhanced rule-based analysis with corpus insights and mode
         result = analyzeTextEnhanced(text, mode);
         console.log('📊 Enhanced analysis result:', result);
@@ -172,7 +173,7 @@ class NegationAnalyzer {
         result.evidence = this.buildEnhancedEvidence(result, text);
         
       } else if (analysisMode === 'TRAINING_DATA' && trainingData) {
-        console.log('🔧 Using enhanced training data analysis...');
+        console.log('🔧 TAKING TRAINING_DATA PATH: Using enhanced training data analysis...');
         // Use corpus-enhanced training data analysis
         result = analyzeWithCorpusInsights(text, trainingData);
         
@@ -182,7 +183,7 @@ class NegationAnalyzer {
         
       } else {
         // Fallback to original analysis
-        console.log('⚠️  Falling back to original analysis - mode:', analysisMode, 'trainingData:', !!trainingData);
+        console.log('⚠️ TAKING FALLBACK PATH: mode:', analysisMode, 'trainingData:', !!trainingData);
         return await this.analyzeNegation(text);
       }
       
