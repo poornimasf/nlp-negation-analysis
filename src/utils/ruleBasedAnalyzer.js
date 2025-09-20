@@ -183,18 +183,15 @@ const analyzeComplementClause = (text) => {
  * Addresses the critical overcorrection problem identified in corpus analysis
  */
 export const analyzeTextEnhanced = (text, mode = 'sentence') => {
-    console.log('🔬 EMPIRICAL ANALYSIS 2025: Starting analysis with September 2025 corpus findings');
-    console.log('🔍 DEBUG: Input text:', text);
-    console.log('🔍 DEBUG: Mode:', mode);
+    console.log('🔬 EMPIRICAL ANALYSIS 2025:', { text: text.substring(0, 30) + '...', mode });
     
     const semantic = new EnhancedSemanticAnalyzer();
     
     // Phase 1: Logical negation check (unchanged - still highest priority)
     const logicalContext = semantic.analyzeSemanticContext(text);
-    console.log('🔍 DEBUG: Logical context:', logicalContext);
     
     if (logicalContext.hasLogicalNegation && logicalContext.confidence > 0.7) {
-        console.log('🚫 LOGICAL OVERRIDE: Returning No Expletive due to logical negation');
+        console.log('🚫 LOGICAL OVERRIDE: No Expletive');
         return {
             type: 'No Expletive',
             prediction: 'No Expletive',
@@ -206,39 +203,27 @@ export const analyzeTextEnhanced = (text, mode = 'sentence') => {
         };
     }
     
-    // Phase 2: Register Analysis (NEW - Primary empirical predictor)
+    // Phase 2-6: Analysis phases
     const registerAnalysis = analyzeRegister(text);
-    console.log('📊 REGISTER ANALYSIS:', registerAnalysis);
-    
-    // Phase 3: Trigger Detection with empirical rates
     const triggerAnalysis = analyzeTriggers(text);
-    console.log('🎯 TRIGGER ANALYSIS:', triggerAnalysis);
-    
-    // Phase 4: Subjunctive Paradox Check (NEW - empirical finding)
     const subjunctiveAnalysis = analyzeSubjunctiveParadox(text);
-    console.log('⚠️ SUBJUNCTIVE PARADOX:', subjunctiveAnalysis);
-    
-    // Phase 5: Semantic Field Analysis
     const semanticField = analyzeSemanticField(text, triggerAnalysis.trigger);
-    console.log('🧠 SEMANTIC FIELD:', semanticField);
-    
-    // Phase 6: Mode-specific discourse analysis
     const discourseAnalysis = mode === 'paragraph' ? analyzeParagraphDiscourse(text) : { boost: 0, factors: [] };
-    console.log('📝 DISCOURSE ANALYSIS:', discourseAnalysis);
     
     // Phase 7: Empirical Decision Logic
     const result = calculateEmpiricalDecision({
-        text,
-        mode,
-        register: registerAnalysis,
-        trigger: triggerAnalysis,
-        subjunctive: subjunctiveAnalysis,
-        semantic: semanticField,
-        discourse: discourseAnalysis,
-        logical: logicalContext
+        text, mode, register: registerAnalysis, trigger: triggerAnalysis,
+        subjunctive: subjunctiveAnalysis, semantic: semanticField,
+        discourse: discourseAnalysis, logical: logicalContext
     });
     
-    console.log('🎯 FINAL EMPIRICAL RESULT:', result);
+    console.log('🎯 RESULT:', { 
+        prediction: result.prediction, 
+        probability: `${(result.probability * 100).toFixed(1)}%`,
+        trigger: triggerAnalysis.found ? triggerAnalysis.trigger.name : 'none',
+        register: registerAnalysis.type
+    });
+    
     return result;
 };
 
@@ -770,21 +755,17 @@ export const analyzeText = (text) => {
 function calculateEmpiricalDecision(analysis) {
     const { text, mode, register, trigger, subjunctive, semantic, discourse, logical } = analysis;
     
-    console.log('🔍 DECISION DEBUG: Starting empirical decision calculation');
-    console.log('🔍 DECISION DEBUG: Input analysis:', {
-        triggerFound: trigger.found,
-        triggerName: trigger.trigger?.name,
-        registerType: register.type,
-        hasSubjunctive: subjunctive.hasSubjunctive
-    });
-    
     // Start with baseline or trigger-specific rate
     let expletiveProbability = trigger.found ? trigger.baselineRate : 0.1;
     let confidence = 0.5;
     let reasoning = [];
     let hierarchySteps = [];
     
-    console.log('🔍 DECISION DEBUG: Initial probability:', expletiveProbability);
+    console.log('📊 DECISION:', { 
+        initial: `${(expletiveProbability * 100).toFixed(1)}%`,
+        trigger: trigger.found ? trigger.trigger.name : 'none',
+        register: register.type 
+    });
     
     // Priority 1: Register Analysis (Primary predictor - 2.43x correlation)
     if (register.type !== 'neutral') {
@@ -792,7 +773,6 @@ function calculateEmpiricalDecision(analysis) {
         confidence = Math.max(confidence, register.confidence);
         reasoning.push(`Register: ${register.type} (${register.empiricalBasis})`);
         hierarchySteps.push(`Priority 1 (Register): ${register.type} → ${register.expletiveModifier > 0 ? '+' : ''}${(register.expletiveModifier * 100).toFixed(1)}%`);
-        console.log('🔍 DECISION DEBUG: After register adjustment:', expletiveProbability);
     }
     
     // Priority 2: Trigger-Specific Context
@@ -806,7 +786,6 @@ function calculateEmpiricalDecision(analysis) {
             confidence = 0.9;
             reasoning.push('Special case: sen_faut_que + literary → 74.4% empirical rate');
             hierarchySteps.push('Priority 2a (Special): sen_faut_que + literary → 74.4%');
-            console.log('🔍 DECISION DEBUG: Special case applied:', expletiveProbability);
         }
     }
     
@@ -815,7 +794,6 @@ function calculateEmpiricalDecision(analysis) {
         expletiveProbability += subjunctive.modifier;
         reasoning.push(`Subjunctive: ${subjunctive.empiricalBasis}`);
         hierarchySteps.push(`Priority 3 (Subjunctive): Present → ${(subjunctive.modifier * 100).toFixed(1)}% (paradox effect)`);
-        console.log('🔍 DECISION DEBUG: After subjunctive adjustment:', expletiveProbability);
     }
     
     // Priority 4: Semantic Field Effects
@@ -823,7 +801,6 @@ function calculateEmpiricalDecision(analysis) {
         expletiveProbability += semantic.modifier;
         reasoning.push(`Semantic: ${semantic.empiricalBasis}`);
         hierarchySteps.push(`Priority 4 (Semantic): ${semantic.field} → ${semantic.modifier > 0 ? '+' : ''}${(semantic.modifier * 100).toFixed(1)}%`);
-        console.log('🔍 DECISION DEBUG: After semantic adjustment:', expletiveProbability);
     }
     
     // Priority 5: Discourse Analysis (Paragraph mode only)
@@ -831,18 +808,14 @@ function calculateEmpiricalDecision(analysis) {
         expletiveProbability += discourse.boost;
         reasoning.push(`Discourse: ${discourse.empiricalBasis} (+${(discourse.boost * 100).toFixed(1)}%)`);
         hierarchySteps.push(`Priority 5 (Discourse): ${discourse.factors.join(', ')} → +${(discourse.boost * 100).toFixed(1)}%`);
-        console.log('🔍 DECISION DEBUG: After discourse adjustment:', expletiveProbability);
     }
     
     // Clamp probability to [0, 1]
     expletiveProbability = Math.max(0, Math.min(1, expletiveProbability));
-    console.log('🔍 DECISION DEBUG: Final clamped probability:', expletiveProbability);
     
     // Determine final prediction
     const prediction = expletiveProbability > 0.5 ? 'Expletive' : 'No Expletive';
     const finalConfidence = Math.max(0.6, Math.abs(expletiveProbability - 0.5) * 2);
-    
-    console.log('🔍 DECISION DEBUG: Final prediction:', prediction, 'Confidence:', finalConfidence);
     
     // Build detailed evidence with hierarchical steps
     const evidence = [

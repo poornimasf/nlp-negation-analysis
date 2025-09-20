@@ -130,20 +130,10 @@ export const BatchAnalysis = ({
                   <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
                     Dual-Mode Classifier
                   </th>
-                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
-                    Surface Form
-                  </th>
                 </tr>
               </thead>
               <tbody>
                 {batchResults.map((result, index) => {
-                  // Debug logging for surface form
-                  console.log(`🎨 UI Row ${index + 1}:`, {
-                    text: result.text?.substring(0, 30) + '...',
-                    hasSurfaceForm: !!result.surfaceForm,
-                    surfaceForm: result.surfaceForm,
-                    surfaceFormType: typeof result.surfaceForm
-                  });
 
                   // Extract classification from analysis based on mode
                   let prediction;
@@ -247,35 +237,6 @@ export const BatchAnalysis = ({
                             fontSize: '0.9em'
                           }}>
                             Analysis unavailable
-                          </span>
-                        )}
-                      </td>
-                      <td style={{ padding: '12px', maxWidth: '250px' }}>
-                        {result.surfaceForm && result.surfaceForm !== result.text ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <span style={{
-                              fontWeight: '500',
-                              color: '#2563eb',
-                              fontStyle: 'italic',
-                              fontSize: '0.95em'
-                            }}>
-                              {result.surfaceForm}
-                            </span>
-                            <span style={{
-                              fontSize: '0.75rem',
-                              color: '#6b7280',
-                              fontStyle: 'normal'
-                            }}>
-                              Predicted with expletive "ne"
-                            </span>
-                          </div>
-                        ) : (
-                          <span style={{
-                            color: '#9ca3af',
-                            fontStyle: 'italic',
-                            fontSize: '0.9em'
-                          }}>
-                            No change suggested
                           </span>
                         )}
                       </td>
