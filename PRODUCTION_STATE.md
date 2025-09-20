@@ -1,12 +1,42 @@
 # Production State Documentation
 
-## Current System Status (v2.11.0 - August 20, 2025)
+## Current System Status (v2.12.0 - September 20, 2025)
 
-- **Version**: 2.11.0 (Reverted to Stable State)
-- **Last Updated**: August 20, 2025
-- **Status**: ✅ Active and Enhanced with Corpus-Driven PeurQueAnalyzer
+- **Version**: 2.12.0 (Dual-Mode Classifier Integration)
+- **Last Updated**: September 20, 2025
+- **Status**: ✅ Active with Integrated Dual-Mode Classifier in Batch Analysis
 - **URL**: https://main.d1gx30ivteuneq.amplifyapp.com/
-- **Deployment**: Reverted to stable commit 5cd29be2 for reliable operation
+- **UI Configuration**: **Batch Analysis Only** - Single interface optimized for multi-sentence analysis
+
+### 🆕 **NEW FEATURE: Dual-Mode Classifier Integration (September 2025)**
+
+- **Integrated into Batch Analysis**: Dual-mode classifier results appear as additional column in batch results table
+- **Empirical Features**: Trigger strengths (74.4% sen_faut_que, 66.7% peur_que, etc.), register correlations (2.53x literary, 1.77x formal)
+- **Auto-Mode Detection**: Sentence mode (<200 chars) vs paragraph mode (>200 chars) automatically detected
+- **Feature Analysis**: Displays trigger type, register correlation, semantic field classification for each sentence
+- **Color-Coded Results**: Red for EXPLETIVE predictions, green for NON-EXPLETIVE predictions
+- **Confidence Scoring**: Percentage confidence based on empirical corpus findings
+- **Minimal Training Data**: Uses 3-example baseline for dual-mode analysis activation
+
+### 🎯 **CURRENT UI CONFIGURATION**
+
+#### Single Interface Design
+- **Primary Interface**: Batch Analysis mode only
+- **Analysis Modes**: Traditional mode selector hidden - system uses Rule-Based analysis by default
+- **User Experience**: Streamlined single-purpose interface for analyzing multiple French sentences
+- **Results Display**: Enhanced table with dual-mode classifier column alongside traditional analysis
+
+#### Batch Analysis Features
+- **Multi-sentence Input**: Analyze multiple sentences simultaneously (one per line)
+- **Real-time Processing**: Progress indicator with sentence-by-sentence analysis
+- **Enhanced Results Table**: 
+  - Original Sentence (with trigger highlighting)
+  - Traditional Analysis (rule-based classification)
+  - Prediction (traditional classification)
+  - **NEW**: Dual-Mode Classifier (empirical analysis with features)
+  - Surface Form (predicted "ne" placement)
+- **Export Functionality**: Download results as XLSX with all analysis data
+- **Error Handling**: Graceful handling of problematic sentences with detailed error reporting
 
 ### 🆕 **NEW FEATURE: Corpus-Enhanced PeurQueAnalyzer Integration**
 
@@ -69,16 +99,20 @@ The French Negation Type Prediction System is a specialized linguistic analysis 
 
 ## System Architecture
 
-### Component Flow
+### Component Flow (Batch Analysis Configuration)
 
 ```
-SimpleNegationAnalyzer.jsx (Main Production Component)
+SimpleNegationAnalyzer.jsx (Batch Analysis Interface)
+    ↓
+BatchAnalysis.jsx (Primary User Interface)
     ↓
 NegationAnalyzer.js (Core Analysis Engine)
     ↓
-PeurQueAnalyzer.js (Corpus-Enhanced "Peur Que" Analysis) ← **NEW**
+enhancedTrainingAnalyzer.js (Dual-Mode Classifier Integration) ← **NEW**
     ↓
-enhancedTrainingAnalyzer.js (Enhanced Training Data Analysis)
+IntegratedDualModeClassifier (Empirical Feature Analysis) ← **NEW**
+    ↓
+PeurQueAnalyzer.js (Corpus-Enhanced "Peur Que" Analysis)
     ↓
 avantQueAnalyzer.js (Enhanced Avant Que Analysis)
     ↓
@@ -86,66 +120,83 @@ ambiguityNegationAnalyzer.js (Ambiguity & Multiple Negation Detection)
     ↓
 resultFormatters.js (Output Formatting)
     ↓
-User Interface Display
+Batch Results Table Display (Enhanced with Dual-Mode Column)
 ```
 
 ### Key Components
 
-1. **SimpleNegationAnalyzer.jsx**: Main production component handling user interface and batch processing
-2. **NegationAnalyzer.js**: Core analysis engine with pattern detection and linguistic analysis
-3. **PeurQueAnalyzer.js**: **NEW** - Corpus-enhanced analysis for "peur que" constructions with 91.2% accuracy
-4. **enhancedTrainingAnalyzer.js**: Sophisticated training data analysis with linguistic features
-5. **avantQueAnalyzer.js**: Enhanced linguistic analysis for "avant que" constructions
-6. **ambiguityNegationAnalyzer.js**: Ambiguity avoidance and multiple negation detection
-7. **resultFormatters.js**: Formats analysis results for display
-8. **classifiers.js**: Training data analysis and similarity matching
+1. **BatchAnalysis.jsx**: Primary user interface - streamlined batch processing interface
+2. **SimpleNegationAnalyzer.jsx**: Container component managing batch analysis state and processing
+3. **NegationAnalyzer.js**: Core analysis engine with pattern detection and linguistic analysis
+4. **enhancedTrainingAnalyzer.js**: **NEW** - Integrated dual-mode classifier with empirical features
+5. **IntegratedDualModeClassifier**: **NEW** - Corpus-derived feature analysis (trigger strengths, register correlations)
+6. **PeurQueAnalyzer.js**: Corpus-enhanced analysis for "peur que" constructions with 91.2% accuracy
+7. **avantQueAnalyzer.js**: Enhanced linguistic analysis for "avant que" constructions
+8. **ambiguityNegationAnalyzer.js**: Ambiguity avoidance and multiple negation detection
+9. **resultFormatters.js**: Formats analysis results for batch display
 
 ### Analysis Priority System
 
-The system now uses a hierarchical analysis approach:
+The system uses a streamlined analysis approach optimized for batch processing:
 
-1. **"Peur Que" Constructions** → PeurQueAnalyzer (corpus-enhanced, 91.2% accuracy)
-2. **"Avant Que" Constructions** → avantQueAnalyzer (enhanced linguistic analysis)
-3. **Other Triggers** → Standard pattern matching with enhanced features
-4. **No Triggers** → No expletive classification
+1. **Rule-Based Analysis** → Primary analysis method (enhanced with corpus insights)
+2. **Dual-Mode Classifier** → Empirical analysis with feature extraction (integrated)
+3. **"Peur Que" Constructions** → PeurQueAnalyzer (corpus-enhanced, 91.2% accuracy)
+4. **"Avant Que" Constructions** → avantQueAnalyzer (enhanced linguistic analysis)
+5. **Other Triggers** → Standard pattern matching with enhanced features
+6. **No Triggers** → No expletive classification
 
 ## Current Features
 
-### Analysis Modes
+### Primary Interface: Batch Analysis
 
-1. **Rule-Based Analysis**
-   - Binary classification (expletive/non-expletive)
+1. **Streamlined Batch Processing**
+   - **Single Interface Design**: Optimized for analyzing multiple French sentences
+   - **Multi-sentence Input**: Process multiple sentences simultaneously (one per line)
+   - **Real-time Progress**: Visual progress indicator with sentence-by-sentence processing
+   - **Enhanced Results Table**: Comprehensive analysis results with dual-mode classifier integration
+
+2. **Dual-Mode Classifier Integration** (**NEW**)
+   - **Empirical Feature Analysis**: Trigger strengths, register correlations, semantic field classification
+   - **Auto-Mode Detection**: Sentence mode (<200 chars) vs paragraph mode (>200 chars)
+   - **Corpus-Derived Insights**: Based on 5,000 balanced training examples across 5 trigger types
+   - **Feature Display**: 
+     - Trigger type with expletive rate (e.g., peur_que: 66.7%)
+     - Register correlation (e.g., formal: 1.77x, literary: 2.53x)
+     - Semantic field classification (emotional, temporal, logical, neutral)
+   - **Color-Coded Predictions**: Visual distinction between EXPLETIVE and NON-EXPLETIVE predictions
+   - **Confidence Scoring**: Percentage confidence based on empirical findings
+
+3. **Enhanced Linguistic Analysis**
    - **Corpus-enhanced "peur que" analysis** with 91.2% accuracy and contextual rates (5% to 99%)
-   - Enhanced "avant que" analysis with complement clause and subjunctive detection
-   - Expanded trigger coverage including comparatives and conditional constructions
-   - Four official triggers:
+   - **Enhanced "avant que" analysis** with complement clause and subjunctive detection
+   - **Expanded trigger coverage** including comparatives and conditional constructions
+   - **Four official triggers**:
      - **"peur que"** (with corpus-enhanced analysis: variations, semantic domains, anti/pro-expletive patterns)
      - "avant que" (with enhanced linguistic analysis)
      - "peu s'en faut" (with temporal variations)
      - Additional triggers: "à moins que", "pourvu que", comparative constructions
-   - Subjunctive mood detection with priority-based matching
-   - Confidence-based scoring with likelihood scale (1-7)
+   - **Subjunctive mood detection** with priority-based matching
+   - **Confidence-based scoring** with likelihood scale (1-7)
 
-2. **Training Data Analysis**
-   - **Enhanced Linguistic Analysis**: Comprehensive feature detection and weighting
+4. **Advanced Analysis Features**
    - **Ambiguity Avoidance**: Detects contexts where expletive "ne" clarifies meaning
    - **Multiple Negation Detection**: Distinguishes expletive "ne" from logical negation
    - **Register/Genre Analysis**: Automatic detection of literary, formal, colloquial registers
    - **Vowel Context Analysis**: Proper "n'" vs "ne" surface form selection
-   - Example-based learning with sophisticated similarity matching
-   - Pattern matching with expanded trigger coverage
-   - User-provided examples with detailed linguistic analysis
-   - Transparent decision making with best match display
-   - Weighted voting from multiple similar examples with linguistic feature bonuses
+   - **Surface Form Generation**: Predicts complete sentence with appropriate "ne" placement
 
-3. **SVM Analysis**
-   - Support Vector Machine classification
-   - Statistical analysis with confidence scoring
-   - Training data integration
+### Results Display and Export
 
-4. **Hybrid Analysis**
-   - CroissantLLM integration for context-aware analysis
-   - Combined rule-based and AI-powered analysis
+- **Enhanced Results Table**: 
+  - Original sentence with trigger highlighting
+  - Traditional rule-based analysis
+  - Prediction classification
+  - **NEW**: Dual-mode classifier analysis with empirical features
+  - Surface form prediction with "ne" placement
+- **Export Functionality**: Download comprehensive results as XLSX format
+- **Error Handling**: Graceful processing of problematic sentences with detailed error reporting
+- **Real-time Feedback**: Progress tracking and status updates during batch processing
 
 ### Enhanced Ambiguity and Negation Analysis
 
