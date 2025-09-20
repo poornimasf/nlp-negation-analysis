@@ -109,6 +109,41 @@ const SimpleNegationAnalyzer = () => {
     setUploadError(null);
   };
 
+  // Calculate discourse boost for paragraph mode based on comprehensive training data
+  const calculateDiscourseBoost = (sentence, trainingData) => {
+    let boost = 0;
+    
+    // Cross-trigger pattern analysis
+    const triggerCounts = {};
+    trainingData.forEach(example => {
+      if (example.trigger) {
+        triggerCounts[example.trigger] = (triggerCounts[example.trigger] || 0) + 1;
+      }
+    });
+    
+    // Discourse coherence boost based on training data diversity
+    const triggerTypes = Object.keys(triggerCounts).length;
+    if (triggerTypes >= 4) {
+      boost += 0.05; // Multi-trigger discourse analysis
+    }
+    
+    // Register consistency boost
+    const formalMarkers = /\b(il\s+convient|par\s+conséquent|monsieur|madame|veuillez)\b/gi;
+    const literaryMarkers = /\b(fallut|eût|fût|naguère|jadis|désormais)\b/gi;
+    
+    if (formalMarkers.test(sentence) || literaryMarkers.test(sentence)) {
+      boost += 0.08; // Formal/literary register favors expletive
+    }
+    
+    // Sentence complexity boost (paragraph-level feature)
+    const complexityMarkers = sentence.split(/[,;:]/).length;
+    if (complexityMarkers > 2) {
+      boost += 0.03; // Complex syntax favors expletive
+    }
+    
+    return Math.min(0.15, boost); // Cap at 15% boost
+  };
+
   // Batch analysis handler
   const handleBatchAnalyze = async () => {
     if (!batchInput.trim()) {
@@ -140,21 +175,68 @@ const SimpleNegationAnalyzer = () => {
           let dualModeAnalysis = null;
           try {
             const { analyzeWithEnhancedFeatures } = await import('../utils/enhancedTrainingAnalyzer');
-            // Create minimal training data for dual-mode analysis
-            const minimalTrainingData = [
-              { text: "j'ai peur qu'il vienne", hasExpletive: true, trigger: "peur_que" },
-              { text: "avant qu'il parte", hasExpletive: true, trigger: "avant_que" },
-              { text: "utiliser avant de partir", hasExpletive: false, trigger: "avant_de" }
-            ];
-            const enhancedResult = analyzeWithEnhancedFeatures(sentence, minimalTrainingData);
+            
+            let trainingDataToUse;
+            if (analysisMode === 'PARAGRAPH_MODE') {
+              // Use comprehensive training data for paragraph mode
+              try {
+                // Load all available training data for discourse analysis
+                const [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData] = await Promise.all([
+                  fetch('/training_data/peur_que_paragraph.json').then(r => r.json()).catch(() => null),
+                  fetch('/training_data/avant_que_paragraph.json').then(r => r.json()).catch(() => null),
+                  fetch('/training_data/avant_de_paragraph.json').then(r => r.json()).catch(() => null),
+                  fetch('/training_data/sen_faut_que_paragraph.json').then(r => r.json()).catch(() => null),
+                  fetch('/training_data/moins_plus_paragraph.json').then(r => r.json()).catch(() => null)
+                ]);
+                
+                // Combine all training data for comprehensive discourse analysis
+                trainingDataToUse = [];
+                [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData].forEach(data => {
+                  if (data && data.examples) {
+                    trainingDataToUse.push(...data.examples.slice(0, 100)); // Use 100 examples from each trigger
+                  }
+                });
+                
+                console.log(`📚 PARAGRAPH MODE: Using ${trainingDataToUse.length} training examples for discourse analysis`);
+              } catch (error) {
+                console.warn('Failed to load comprehensive training data, using fallback:', error);
+                trainingDataToUse = [
+                  { text: "j'ai peur qu'il vienne", hasExpletive: true, trigger: "peur_que" },
+                  { text: "avant qu'il parte", hasExpletive: true, trigger: "avant_que" },
+                  { text: "utiliser avant de partir", hasExpletive: false, trigger: "avant_de" }
+                ];
+              }
+            } else {
+              // Sentence mode uses minimal training data for focused analysis
+              trainingDataToUse = [
+                { text: "j'ai peur qu'il vienne", hasExpletive: true, trigger: "peur_que" },
+                { text: "avant qu'il partie", hasExpletive: true, trigger: "avant_que" },
+                { text: "utiliser avant de partir", hasExpletive: false, trigger: "avant_de" }
+              ];
+              console.log(`📝 SENTENCE MODE: Using ${trainingDataToUse.length} focused examples`);
+            }
+            
+            const enhancedResult = analyzeWithEnhancedFeatures(sentence, trainingDataToUse);
             dualModeAnalysis = enhancedResult.dualModeAnalysis;
             
-            // Override mode based on user selection
+            // Override mode based on user selection and enhance with discourse factors
             if (dualModeAnalysis) {
               if (analysisMode === 'SENTENCE_MODE') {
                 dualModeAnalysis.mode = 'sentence';
               } else if (analysisMode === 'PARAGRAPH_MODE') {
                 dualModeAnalysis.mode = 'paragraph';
+                
+                // Enhance with discourse factors for paragraph mode
+                if (trainingDataToUse.length > 10) {
+                  // Apply discourse-level adjustments based on comprehensive training data
+                  const discourseBoost = calculateDiscourseBoost(sentence, trainingDataToUse);
+                  dualModeAnalysis.confidence = Math.min(0.95, dualModeAnalysis.confidence + discourseBoost);
+                  dualModeAnalysis.discourseFactors = {
+                    trainingExamples: trainingDataToUse.length,
+                    discourseBoost: discourseBoost,
+                    crossTriggerAnalysis: true
+                  };
+                }
               }
             }
           } catch (error) {

@@ -229,6 +229,13 @@ export const BatchAnalysis = ({
                                   ({result.dualModeAnalysis.features.register_score.toFixed(2)}x)
                                   <br />
                                   <strong>Semantic:</strong> {result.dualModeAnalysis.features.semantic_field}
+                                  {result.dualModeAnalysis.discourseFactors && (
+                                    <>
+                                      <br />
+                                      <strong>Discourse:</strong> {result.dualModeAnalysis.discourseFactors.trainingExamples} examples, 
+                                      +{(result.dualModeAnalysis.discourseFactors.discourseBoost * 100).toFixed(1)}% boost
+                                    </>
+                                  )}
                                 </div>
                               )}
                             </div>
