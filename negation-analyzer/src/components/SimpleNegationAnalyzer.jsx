@@ -166,14 +166,23 @@ const SimpleNegationAnalyzer = () => {
             if (analysisMode === 'PARAGRAPH_MODE') {
               // Use comprehensive paragraph training data for discourse analysis
               try {
+                console.log('🔍 PARAGRAPH MODE: Loading training data...');
                 // Load all available paragraph training data for discourse analysis
                 const [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData] = await Promise.all([
-                  fetch('/training_data/peur_que_paragraph.json').then(r => r.json()).catch(() => null),
-                  fetch('/training_data/avant_que_paragraph.json').then(r => r.json()).catch(() => null),
-                  fetch('/training_data/avant_de_paragraph.json').then(r => r.json()).catch(() => null),
-                  fetch('/training_data/sen_faut_que_paragraph.json').then(r => r.json()).catch(() => null),
-                  fetch('/training_data/moins_plus_paragraph.json').then(r => r.json()).catch(() => null)
+                  fetch('/training_data/peur_que_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load peur_que_paragraph.json:', e); return null; }),
+                  fetch('/training_data/avant_que_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load avant_que_paragraph.json:', e); return null; }),
+                  fetch('/training_data/avant_de_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load avant_de_paragraph.json:', e); return null; }),
+                  fetch('/training_data/sen_faut_que_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load sen_faut_que_paragraph.json:', e); return null; }),
+                  fetch('/training_data/moins_plus_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load moins_plus_paragraph.json:', e); return null; })
                 ]);
+                
+                console.log('🔍 PARAGRAPH MODE: Loaded data:', {
+                  peurQue: peurQueData?.examples?.length || 0,
+                  avantQue: avantQueData?.examples?.length || 0,
+                  avantDe: avantDeData?.examples?.length || 0,
+                  senFaut: senFautData?.examples?.length || 0,
+                  moinsPlus: moinsPlusData?.examples?.length || 0
+                });
                 
                 // Combine all paragraph training data for comprehensive discourse analysis
                 trainingDataToUse = [];
@@ -195,14 +204,23 @@ const SimpleNegationAnalyzer = () => {
             } else {
               // Sentence mode uses sentence-specific training data
               try {
+                console.log('🔍 SENTENCE MODE: Loading training data...');
                 // Load all available sentence training data
                 const [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData] = await Promise.all([
-                  fetch('/training_data/peur_que_sentence.json').then(r => r.json()).catch(() => null),
-                  fetch('/training_data/avant_que_sentence.json').then(r => r.json()).catch(() => null),
-                  fetch('/training_data/avant_de_sentence.json').then(r => r.json()).catch(() => null),
-                  fetch('/training_data/sen_faut_que_sentence.json').then(r => r.json()).catch(() => null),
-                  fetch('/training_data/moins_plus_sentence.json').then(r => r.json()).catch(() => null)
+                  fetch('/training_data/peur_que_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load peur_que_sentence.json:', e); return null; }),
+                  fetch('/training_data/avant_que_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load avant_que_sentence.json:', e); return null; }),
+                  fetch('/training_data/avant_de_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load avant_de_sentence.json:', e); return null; }),
+                  fetch('/training_data/sen_faut_que_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load sen_faut_que_sentence.json:', e); return null; }),
+                  fetch('/training_data/moins_plus_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load moins_plus_sentence.json:', e); return null; })
                 ]);
+                
+                console.log('🔍 SENTENCE MODE: Loaded data:', {
+                  peurQue: peurQueData?.examples?.length || 0,
+                  avantQue: avantQueData?.examples?.length || 0,
+                  avantDe: avantDeData?.examples?.length || 0,
+                  senFaut: senFautData?.examples?.length || 0,
+                  moinsPlus: moinsPlusData?.examples?.length || 0
+                });
                 
                 // Combine all sentence training data
                 trainingDataToUse = [];
@@ -228,21 +246,46 @@ const SimpleNegationAnalyzer = () => {
             
             // Override mode based on user selection and enhance with discourse factors
             if (dualModeAnalysis) {
+              console.log('🔍 DUAL-MODE: Initial analysis:', {
+                hasExpletive: dualModeAnalysis.hasExpletive,
+                confidence: dualModeAnalysis.confidence,
+                mode: analysisMode
+              });
+              
               if (analysisMode === 'SENTENCE_MODE') {
                 dualModeAnalysis.mode = 'sentence';
+                console.log('📝 SENTENCE MODE: Set mode to sentence');
               } else if (analysisMode === 'PARAGRAPH_MODE') {
                 dualModeAnalysis.mode = 'paragraph';
+                console.log('📚 PARAGRAPH MODE: Set mode to paragraph');
                 
                 // Enhance with discourse factors for paragraph mode
+                console.log('🔍 PARAGRAPH MODE: Checking discourse boost threshold:', {
+                  trainingDataLength: trainingDataToUse.length,
+                  threshold: 1000,
+                  willApplyBoost: trainingDataToUse.length > 1000
+                });
+                
                 if (trainingDataToUse.length > 1000) { // Updated threshold for full dataset
                   // Apply discourse-level adjustments based on comprehensive training data
                   const discourseBoost = calculateDiscourseBoost(sentence, trainingDataToUse);
+                  const originalConfidence = dualModeAnalysis.confidence;
                   dualModeAnalysis.confidence = Math.min(0.95, dualModeAnalysis.confidence + discourseBoost);
+                  
+                  console.log('📚 PARAGRAPH MODE: Applied discourse boost:', {
+                    originalConfidence: originalConfidence,
+                    discourseBoost: discourseBoost,
+                    newConfidence: dualModeAnalysis.confidence,
+                    sentence: sentence.substring(0, 50) + '...'
+                  });
+                  
                   dualModeAnalysis.discourseFactors = {
                     trainingExamples: trainingDataToUse.length,
                     discourseBoost: discourseBoost,
                     registerConsistency: true
                   };
+                } else {
+                  console.log('📚 PARAGRAPH MODE: No discourse boost applied - insufficient training data');
                 }
               }
             }
