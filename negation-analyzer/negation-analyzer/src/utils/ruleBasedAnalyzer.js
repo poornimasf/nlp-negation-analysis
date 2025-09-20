@@ -847,6 +847,20 @@ function calculateEmpiricalDecision(analysis) {
         hierarchyLevel: `${hierarchySteps.length} priority levels applied`,
         evidence: evidence,
         probability: expletiveProbability,
-        mode: mode
+        mode: mode,
+        // Add dual-mode compatibility
+        dualModeAnalysis: {
+            hasExpletive: prediction === 'Expletive',
+            confidence: finalConfidence,
+            mode: mode,
+            reasoning: `Empirical analysis: ${reasoning.join(' | ')}`,
+            features: {
+                trigger_type: trigger.found ? trigger.trigger.name : 'unknown',
+                trigger_strength: expletiveProbability,
+                register: register.type,
+                register_score: register.confidence,
+                semantic_field: semantic.field || 'neutral'
+            }
+        }
     };
 }
