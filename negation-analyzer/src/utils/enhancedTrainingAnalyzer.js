@@ -13,7 +13,180 @@ import { extractTriggerClause, analyzeMultipleNegationInClause } from './clauseB
 import { enhanceAvantQueAnalysisWithClause } from './enhancedAvantQueAnalyzer';
 import { createSurfaceForm } from './surfaceFormGenerator';
 import { analyzeSemanticContext, shouldOverrideToLogicalNegation } from './semanticContextAnalyzer';
-import DualModeClassifier from './dualModeClassifier';
+
+/**
+ * Dual-Mode Classifier - Integrated into Enhanced Training Analyzer
+ */
+class IntegratedDualModeClassifier {
+  constructor() {
+    // Empirically derived trigger strengths from corpus analysis
+    this.triggerStrengths = {
+      'sen_faut_que': 0.744, // 74.4% expletive rate
+      'peur_que': 0.667,     // 66.7% expletive rate
+      'avant_que': 0.421,    // 42.1% expletive rate
+      'avant_de': 0.429,     // 42.9% expletive rate
+      'moins_plus': 0.200    // 20.0% expletive rate
+    };
+  }
+
+  // Extract empirical features from text
+  extractEmpiricalFeatures(text) {
+    const features = {};
+    
+    // Trigger analysis
+    features.trigger_type = this.detectTrigger(text);
+    features.trigger_strength = this.triggerStrengths[features.trigger_type] || 0.5;
+    
+    // Register detection (empirically validated)
+    features.register = this.detectRegister(text);
+    features.register_score = this.calculateRegisterScore(text);
+    
+    // Semantic analysis
+    features.semantic_field = this.classifySemanticField(text);
+    features.emotional_context = /\b(peur|crainte?|redoute?|anxiét|inquiét)\b/gi.test(text);
+    features.temporal_context = /\b(avant|après|pendant|temps|moment|tôt|tard)\b/gi.test(text);
+    
+    // Subjunctive detection
+    features.subjunctive_present = /\b(soit|soient|ait|aient|fasse|fassent|vienne|viennent|puisse|puissent)\b/gi.test(text);
+    
+    return features;
+  }
+
+  // Detect trigger type
+  detectTrigger(text) {
+    const triggers = {
+      'avant_que': /avant\s+qu[e']/gi,
+      'peur_que': /(peur|crainte?|redoute?)\s+qu[e']/gi,
+      'sen_faut_que': /(peu\s+)?s'en\s+(faut|fallut|est\s+fallu)/gi,
+      'moins_plus': /(plus|moins)\s+.*\s+qu[e']/gi,
+      'avant_de': /avant\s+de?\b/gi
+    };
+    
+    for (const [trigger, pattern] of Object.entries(triggers)) {
+      if (pattern.test(text)) {
+        return trigger;
+      }
+    }
+    return 'unknown';
+  }
+
+  // Register detection (empirically validated patterns)
+  detectRegister(text) {
+    const registerPatterns = {
+      literary: /\b(fallut|eût|fût|submergeât|contempla|irréparable|naguère|jadis|désormais)\b/gi,
+      formal: /\b(il\s+convient\s+de|par\s+conséquent|en\s+conséquence|ainsi|donc|monsieur|madame)\b/gi,
+      technical: /\b(système|processus|données|paramètres|installation|configuration|procédure)\b/gi,
+      conversational: /\b(bon|allez|dépêche|faut\s+qu'on|ça|ouais|nan|ben|alors)\b/gi
+    };
+    
+    const scores = {};
+    for (const [register, pattern] of Object.entries(registerPatterns)) {
+      scores[register] = (text.match(pattern) || []).length;
+    }
+    
+    const maxRegister = Object.entries(scores).reduce((a, b) => 
+      scores[a[0]] > scores[b[0]] ? a : b
+    );
+    
+    return maxRegister[1] > 0 ? maxRegister[0] : 'neutral';
+  }
+
+  // Calculate register correlation score
+  calculateRegisterScore(text) {
+    const register = this.detectRegister(text);
+    // Empirically derived correlations from corpus analysis
+    const registerCorrelations = {
+      literary: 2.53,      // 2.53x correlation with expletive
+      formal: 1.77,        // 1.77x correlation
+      conversational: 1.24, // 1.24x correlation
+      technical: 0.67,     // 0.67x correlation (favors non-expletive)
+      neutral: 1.0
+    };
+    
+    return registerCorrelations[register] || 1.0;
+  }
+
+  // Classify semantic field
+  classifySemanticField(text) {
+    if (/\b(peur|crainte?|redoute?|anxiét|inquiét|effrai|joie|bonheur|colère|rage)\b/gi.test(text)) {
+      return 'emotional';
+    }
+    if (/\b(avant|après|pendant|durant|temps|moment|tôt|tard)\b/gi.test(text)) {
+      return 'temporal';
+    }
+    if (/\b(plus|moins|autant|parce\s+que|car|donc|si|condition)\b/gi.test(text)) {
+      return 'logical';
+    }
+    return 'neutral';
+  }
+
+  // Generate empirical analysis
+  analyzeWithEmpiricalFeatures(text) {
+    const features = this.extractEmpiricalFeatures(text);
+    
+    // Simple empirical scoring based on corpus findings
+    let expletiveScore = 0.5; // baseline
+    
+    // Apply trigger strength
+    expletiveScore += (features.trigger_strength - 0.5) * 0.4;
+    
+    // Apply register correlation
+    if (features.register_score > 1.5) {
+      expletiveScore += 0.2; // formal/literary favor expletive
+    } else if (features.register_score < 0.8) {
+      expletiveScore -= 0.2; // technical disfavors expletive
+    }
+    
+    // Apply semantic field effects
+    if (features.emotional_context) {
+      expletiveScore += 0.1;
+    }
+    
+    // Subjunctive paradox (corpus finding: subjunctive doesn't predict expletive)
+    if (features.subjunctive_present) {
+      expletiveScore -= 0.05; // slight negative correlation
+    }
+    
+    // Clamp to [0,1]
+    expletiveScore = Math.max(0, Math.min(1, expletiveScore));
+    
+    const hasExpletive = expletiveScore > 0.5;
+    const confidence = hasExpletive ? expletiveScore : 1 - expletiveScore;
+    
+    // Generate reasoning
+    const reasons = [];
+    if (features.trigger_strength > 0.6) {
+      reasons.push(`Strong trigger (${features.trigger_type}: ${(features.trigger_strength * 100).toFixed(1)}% expletive rate)`);
+    } else if (features.trigger_strength < 0.4) {
+      reasons.push(`Weak trigger (${features.trigger_type}: ${(features.trigger_strength * 100).toFixed(1)}% expletive rate)`);
+    }
+    
+    if (features.register_score > 1.5) {
+      reasons.push(`${features.register} register favors expletive (${features.register_score.toFixed(2)}x correlation)`);
+    } else if (features.register_score < 0.8) {
+      reasons.push(`${features.register} register disfavors expletive (${features.register_score.toFixed(2)}x correlation)`);
+    }
+    
+    if (features.semantic_field !== 'neutral') {
+      reasons.push(`${features.semantic_field} semantic context`);
+    }
+    
+    if (features.subjunctive_present) {
+      reasons.push(`Subjunctive detected (corpus shows slight negative correlation)`);
+    }
+    
+    const prediction = hasExpletive ? 'EXPLETIVE' : 'NON-EXPLETIVE';
+    const reasoning = `${prediction} (${(expletiveScore * 100).toFixed(1)}%): ${reasons.join(', ')}`;
+    
+    return {
+      hasExpletive,
+      confidence,
+      features,
+      reasoning,
+      mode: text.length > 200 ? 'paragraph' : 'sentence'
+    };
+  }
+}
 
 /**
  * Enhanced training data analyzer with dual-mode classifier integration
@@ -1265,11 +1438,11 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     surfaceForm: surfaceForm
   });
 
-  // NEW: Dual-mode classifier analysis
+  // NEW: Integrated dual-mode classifier analysis
   let dualModeAnalysis = null;
   try {
-    const dualModeClassifier = new DualModeClassifier();
-    dualModeAnalysis = dualModeClassifier.classify(text);
+    const dualModeClassifier = new IntegratedDualModeClassifier();
+    dualModeAnalysis = dualModeClassifier.analyzeWithEmpiricalFeatures(text);
   } catch (error) {
     console.warn('Dual-mode classifier error:', error);
   }
