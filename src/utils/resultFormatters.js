@@ -714,6 +714,34 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
     const confidencePercent = Math.round((trainingAnalysis.confidence || 0) * 100);
     result += `Confidence: ${confidencePercent}%\n\n`;
     
+    // NEW: Dual-mode classifier results
+    if (trainingAnalysis?.dualModeAnalysis) {
+        result += 'Dual-Mode Classifier Analysis\n';
+        result += '----------------------------\n';
+        const dualMode = trainingAnalysis.dualModeAnalysis;
+        result += `Mode: ${dualMode.mode.charAt(0).toUpperCase() + dualMode.mode.slice(1)}\n`;
+        result += `Prediction: ${dualMode.hasExpletive ? 'EXPLETIVE' : 'NON-EXPLETIVE'}\n`;
+        result += `Confidence: ${(dualMode.confidence * 100).toFixed(1)}%\n`;
+        result += `Reasoning: ${dualMode.reasoning}\n\n`;
+        
+        // Feature analysis
+        if (dualMode.features) {
+            result += 'Feature Analysis:\n';
+            const features = dualMode.features;
+            result += `• Trigger: ${features.trigger_type} (${(features.trigger_strength * 100).toFixed(1)}% expletive rate)\n`;
+            result += `• Register: ${features.register} (${features.register_score.toFixed(2)}x correlation)\n`;
+            result += `• Semantic Field: ${features.semantic_field}\n`;
+            result += `• Subjunctive: ${features.subjunctive_present ? 'Yes' : 'No'}${features.subjunctive_type !== 'none' ? ` (${features.subjunctive_type})` : ''}\n`;
+            
+            if (dualMode.mode === 'paragraph') {
+                result += `• Coherence Markers: ${features.coherence_markers}\n`;
+                result += `• Discourse Complexity: ${features.discourse_complexity}\n`;
+                result += `• Context Depth: ${features.context_depth}\n`;
+            }
+            result += '\n';
+        }
+    }
+    
     // Enhanced linguistic analysis if available
     if (trainingAnalysis?.enhancedAnalysis) {
         const enhanced = trainingAnalysis.enhancedAnalysis;

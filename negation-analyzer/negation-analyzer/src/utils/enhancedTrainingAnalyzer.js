@@ -1,17 +1,151 @@
 /**
  * Enhanced training data analyzer with sophisticated linguistic features
- * Integrates avant que analysis, subjunctive detection, and register analysis
+ * Integrates dual-mode classifier, avant que analysis, subjunctive detection, and register analysis
  */
 
 import { normalizeText } from './textProcessing';
-import { TRIGGER_PATTERNS, SUBJUNCTIVE_PATTERNS } from './patterns';
+import { TRIGGER_PATTERNS } from './patterns';
 import { analyzeAmbiguityAndNegation } from './ambiguityNegationAnalyzer';
 import { analyzeLogicalNegationContext } from './logicalNegationDetector';
+import { EnhancedSemanticAnalyzer } from './enhancedSemanticAnalyzer.js';
 import { detectSubjunctive } from './unifiedSubjunctiveDetector';
 import { extractTriggerClause, analyzeMultipleNegationInClause } from './clauseBoundaryAnalyzer';
 import { enhanceAvantQueAnalysisWithClause } from './enhancedAvantQueAnalyzer';
 import { createSurfaceForm } from './surfaceFormGenerator';
 import { analyzeSemanticContext, shouldOverrideToLogicalNegation } from './semanticContextAnalyzer';
+import DualModeClassifier from './dualModeClassifier';
+
+/**
+ * Enhanced training data analyzer with dual-mode classifier integration
+ */
+
+/**
+ * Evidence-based scoring system to manage boost complexity
+ * Phase 1: Class definition only - not yet integrated into main logic
+ * This will eventually replace the complex boost system with predictable evidence accumulation
+ */
+class EvidenceAccumulator {
+  constructor() {
+    this.evidence = {
+      forExpletive: [],
+      forNoExpletive: [],
+      neutral: []
+    };
+  }
+  
+  /**
+   * Add evidence for or against expletive classification
+   * @param {string} type - 'forExpletive', 'forNoExpletive', or 'neutral'
+   * @param {string} source - Source of evidence (e.g., 'precision_patterns', 'linguistic_rules')
+   * @param {number} confidence - Confidence level [0,1]
+   * @param {string} reasoning - Human-readable explanation
+   * @param {number} weight - Importance weight (default 1.0)
+   * @param {object} details - Additional details for debugging
+   */
+  addEvidence(type, source, confidence, reasoning, weight = 1.0, details = {}) {
+    if (!['forExpletive', 'forNoExpletive', 'neutral'].includes(type)) {
+      console.warn(`Invalid evidence type: ${type}`);
+      return;
+    }
+    
+    const evidence = {
+      source,
+      confidence: Math.max(0, Math.min(1, confidence)), // Clamp to [0,1]
+      reasoning,
+      weight: Math.max(0, weight), // Ensure positive weight
+      details,
+      timestamp: Date.now()
+    };
+    
+    this.evidence[type].push(evidence);
+    console.log(`📝 Evidence added: ${type} from ${source} (confidence: ${confidence.toFixed(2)}, weight: ${weight.toFixed(1)})`);
+  }
+  
+  /**
+   * Calculate weighted sum for an evidence array
+   * Uses sophisticated weighting that considers both confidence and source reliability
+   */
+  calculateWeightedSum(evidenceArray) {
+    if (evidenceArray.length === 0) return 0;
+    
+    let totalScore = 0;
+    let totalWeight = 0;
+    
+    for (const evidence of evidenceArray) {
+      // Effective weight combines source weight with evidence confidence
+      const effectiveWeight = evidence.weight * evidence.confidence;
+      totalScore += effectiveWeight;
+      totalWeight += evidence.weight;
+    }
+    
+    // Normalize by total weight to prevent accumulation bias
+    return totalWeight > 0 ? totalScore : 0;
+  }
+  
+  /**
+   * Calculate final scores using evidence-based approach
+   * Returns scores that can be compared to current boost system results
+   */
+  calculateFinalScores() {
+    const expletiveScore = this.calculateWeightedSum(this.evidence.forExpletive);
+    const noExpletiveScore = this.calculateWeightedSum(this.evidence.forNoExpletive);
+    
+    console.log('🧮 Evidence-based scoring calculation:', {
+      expletiveEvidence: this.evidence.forExpletive.length,
+      noExpletiveEvidence: this.evidence.forNoExpletive.length,
+      expletiveScore: expletiveScore.toFixed(2),
+      noExpletiveScore: noExpletiveScore.toFixed(2)
+    });
+    
+    return {
+      adjustedExpletive: expletiveScore,
+      adjustedNonExpletive: noExpletiveScore,
+      evidenceBreakdown: this.evidence
+    };
+  }
+  
+  /**
+   * Get summary of evidence for debugging and transparency
+   */
+  getEvidenceSummary() {
+    return {
+      totalEvidence: this.evidence.forExpletive.length + this.evidence.forNoExpletive.length + this.evidence.neutral.length,
+      forExpletive: this.evidence.forExpletive.length,
+      forNoExpletive: this.evidence.forNoExpletive.length,
+      sources: [...new Set([
+        ...this.evidence.forExpletive.map(e => e.source),
+        ...this.evidence.forNoExpletive.map(e => e.source),
+        ...this.evidence.neutral.map(e => e.source)
+      ])]
+    };
+  }
+  
+  /**
+   * Compare evidence-based results with boost system results
+   * Useful for gradual migration and validation
+   */
+  compareWithBoostSystem(boostSystemResults) {
+    const evidenceResults = this.calculateFinalScores();
+    
+    const comparison = {
+      evidenceBased: {
+        expletive: evidenceResults.adjustedExpletive,
+        noExpletive: evidenceResults.adjustedNonExpletive,
+        winner: evidenceResults.adjustedExpletive > evidenceResults.adjustedNonExpletive ? 'Expletive' : 'No Expletive'
+      },
+      boostSystem: {
+        expletive: boostSystemResults.adjustedExpletive,
+        noExpletive: boostSystemResults.adjustedNonExpletive,
+        winner: boostSystemResults.adjustedExpletive > boostSystemResults.adjustedNonExpletive ? 'Expletive' : 'No Expletive'
+      },
+      agreement: (evidenceResults.adjustedExpletive > evidenceResults.adjustedNonExpletive) === 
+                 (boostSystemResults.adjustedExpletive > boostSystemResults.adjustedNonExpletive)
+    };
+    
+    console.log('🔄 Evidence vs Boost System Comparison:', comparison);
+    return comparison;
+  }
+}
 
 // Enhanced trigger patterns with additional constructions
 const ENHANCED_TRIGGER_PATTERNS = {
@@ -125,31 +259,6 @@ function extractEnhancedTrigger(text) {
   }
   
   return null;
-}
-
-/**
- * Detect subjunctive mood in text
- */
-function detectSubjunctiveMood(text) {
-  const normalizedText = normalizeText(text.toLowerCase());
-  let bestMatch = null;
-  let highestPriority = 0;
-  
-  for (const [type, pattern] of Object.entries(SUBJUNCTIVE_PATTERNS)) {
-    const match = normalizedText.match(pattern.pattern);
-    if (match && pattern.priority >= highestPriority) {
-      bestMatch = {
-        type,
-        verb: match[0],
-        priority: pattern.priority,
-        position: match.index,
-        confidence: pattern.priority === 3 ? 0.95 : pattern.priority === 2 ? 0.85 : 0.70
-      };
-      highestPriority = pattern.priority;
-    }
-  }
-  
-  return bestMatch;
 }
 
 /**
@@ -296,66 +405,221 @@ export function calculateEnhancedSimilarity(text1, text2) {
 }
 
 /**
- * Enhanced training data analysis with linguistic features
+ * Corpus-driven enhanced training data analysis
+ * Addresses overcorrection problem using semantic hierarchy: Logical > Expletive > Syntactic
  */
-export function analyzeWithEnhancedFeatures(text, trainingData) {
-  console.log('🚨 NUCLEAR BYPASS: Starting analysis for:', text.substring(0, 100));
+export function analyzeWithCorpusInsights(text, trainingData) {
+  console.log('🧠 CORPUS-DRIVEN ANALYSIS: Starting enhanced analysis for:', text.substring(0, 100));
   
-  // NUCLEAR OPTION: Check for "avant que" at the very beginning
-  if (text.toLowerCase().includes('avant que')) {
-    console.log('🚨 NUCLEAR BYPASS: avant que detected, checking for logical negation patterns');
+  const semanticAnalyzer = new EnhancedSemanticAnalyzer();
+  
+  // Step 1: Traditional enhanced analysis
+  const traditionalAnalysis = analyzeWithEnhancedFeatures(text, trainingData);
+  
+  // Step 2: Corpus-driven semantic analysis
+  const semanticAnalysis = semanticAnalyzer.analyzeSemantics(text);
+  
+  // Step 3: Apply corpus insights to training data analysis
+  const corpusEnhancedAnalysis = applyCorpusInsights(traditionalAnalysis, semanticAnalysis, text, trainingData);
+  
+  console.log('🎯 CORPUS ANALYSIS COMPLETE:', {
+    originalPrediction: traditionalAnalysis.prediction,
+    corpusPrediction: corpusEnhancedAnalysis.prediction,
+    correctionApplied: corpusEnhancedAnalysis.correctionApplied || 'none'
+  });
+  
+  return corpusEnhancedAnalysis;
+}
+
+/**
+ * Apply corpus insights to training data analysis
+ */
+function applyCorpusInsights(traditional, semantic, text, trainingData) {
+  const result = {
+    ...traditional,  // Preserve all existing analysis
+    corpusEnhanced: true,
+    semanticAnalysis: semantic,
+    originalPrediction: traditional.prediction,
+    originalConfidence: traditional.confidence,
+    originalReasoning: traditional.reasoning
+  };
+  
+  // CRITICAL: Apply corpus-driven hierarchy
+  
+  // PRIORITY 1: Strong logical indicators override everything (addresses 3/10 problem)
+  if (semantic.logicalAnalysis.overridesExpletive) {
+    result.prediction = 'No Expletive';
+    result.confidence = Math.max(0.90, semantic.classification.confidence);
+    result.reasoning = `CORPUS OVERRIDE - LOGICAL: ${semantic.reasoning}`;
+    result.correctionApplied = 'corpus_logical_override';
+    result.boostApplied = false; // No boost needed - logical evidence is decisive
     
-    const normalizedText = text.toLowerCase();
-    const logicalPatterns = [
-      // Action verbs
-      'arrive', 'parte', 'vienne', 'finisse', 'commence', 'disparaisse', 'réunisse', 
-      'intensifie', 'résonne', 'renomme', 'réalise', 'atteigne', 'devienne', 'provoque', 
-      'entraîne', 'empare', 'emparent', 'distingue', 'remette', 'tire', 'tirent',
-      
-      // States
-      'opérationnel', 'ouvert', 'ouverte', 'ouvertes', 'terminé', 'fini', 'résolu', 
-      'réglé', 'corrigé', 'modifié', 'changé', 'prêt', 'convaincu', 'défleuri', 
-      'tracé', 'tracée', 'transféré', 'envoyé', 'informé', 'chargé', 'ajusté', 
-      'remplacé', 'perceptible', 'perceptibles', 'grand', 'grande', 'fait', 'faite', 
-      'pris', 'prise', 'usage', 'possession',
-      
-      // Process words
-      'cessation', 'disparition', 'guerre', 'combat', 'bataille', 'conflit',
-      'service', 'organisation', 'groupe', 'gouvernement', 'administration',
-      'temps', 'moment', 'instant', 'période', 'durée', 'délai', 'heure', 'jour',
-      'histoire', 'récit', 'conte', 'roman', 'livre', 'film', 'personnage',
-      'machine', 'système', 'processus', 'formulaire', 'dossier', 'tribunal',
-      
-      // Common logical indicators
-      'si ', 'au cas où', 'dans le cas où', 'supposons que', 'à condition que',
-      'pourvu que', 'en admettant que', 'à supposer que'
-    ];
+    console.log('⚡ LOGICAL OVERRIDE APPLIED:', {
+      logicalStrength: semantic.logicalAnalysis.level,
+      indicators: semantic.logicalAnalysis.indicators.map(i => i.indicator)
+    });
     
-    let foundPattern = null;
-    for (const pattern of logicalPatterns) {
-      if (normalizedText.includes(pattern)) {
-        foundPattern = pattern;
-        break;
+    return result;
+  }
+  
+  // PRIORITY 2: Handle semantic conflicts using corpus hierarchy
+  if (semantic.conflictAnalysis.hasConflict) {
+    const resolution = semantic.conflictAnalysis.resolution;
+    
+    if (resolution.winner === 'logical') {
+      result.prediction = 'No Expletive';
+      result.confidence = Math.max(0.85, resolution.confidence);
+      result.reasoning = `CORPUS CONFLICT RESOLUTION: ${resolution.reasoning}`;
+      result.correctionApplied = 'corpus_conflict_logical';
+      result.boostApplied = false;
+      
+    } else if (resolution.winner === 'expletive') {
+      result.prediction = 'Expletive';
+      result.confidence = Math.max(0.80, resolution.confidence);
+      result.reasoning = `CORPUS CONFLICT RESOLUTION: ${resolution.reasoning}`;
+      result.correctionApplied = 'corpus_conflict_expletive';
+      // Keep boost if it was applied in traditional analysis
+      
+    } else {
+      // Ambiguous - use traditional but reduce confidence
+      result.confidence = Math.min(result.confidence, 0.65);
+      result.reasoning = `CORPUS AMBIGUOUS: ${semantic.reasoning} | TRAINING: ${traditional.reasoning}`;
+      result.correctionApplied = 'corpus_ambiguous';
+    }
+    
+    console.log('🔄 CONFLICT RESOLUTION APPLIED:', {
+      conflictTypes: semantic.conflictAnalysis.conflictTypes,
+      winner: resolution.winner,
+      confidence: resolution.confidence
+    });
+    
+    return result;
+  }
+  
+  // PRIORITY 3: Strong semantic bias overrides training data bias
+  if (Math.abs(semantic.semanticBias) > 0.4) {
+    if (semantic.semanticBias < -0.4) {
+      // Strong logical bias
+      result.prediction = 'No Expletive';
+      result.confidence = Math.abs(semantic.semanticBias);
+      result.reasoning = `CORPUS SEMANTIC BIAS - LOGICAL: ${semantic.reasoning}`;
+      result.correctionApplied = 'corpus_semantic_logical';
+      result.boostApplied = false;
+      
+    } else {
+      // Strong expletive bias
+      result.prediction = 'Expletive';
+      result.confidence = semantic.semanticBias;
+      result.reasoning = `CORPUS SEMANTIC BIAS - EXPLETIVE: ${semantic.reasoning}`;
+      result.correctionApplied = 'corpus_semantic_expletive';
+      // Enhance boost if it was applied
+      if (result.boostApplied) {
+        result.confidence = Math.min(0.95, result.confidence + 0.1);
       }
     }
     
-    if (foundPattern) {
-      console.log('🚨 NUCLEAR BYPASS: Logical pattern found:', foundPattern);
-      console.log('🚨 NUCLEAR BYPASS: Forcing No Expletive classification');
+    console.log('📊 SEMANTIC BIAS APPLIED:', {
+      bias: semantic.semanticBias,
+      direction: semantic.semanticBias < 0 ? 'logical' : 'expletive'
+    });
+    
+    return result;
+  }
+  
+  // PRIORITY 4: Overcorrection detection and adjustment
+  if (semantic.syntacticAnalysis.hasLicensing && !semantic.expletiveAnalysis.favorsExpletive) {
+    // Potential overcorrection case - reduce confidence in expletive prediction
+    if (result.prediction === 'Expletive') {
+      result.confidence = Math.min(result.confidence, 0.70);
+      result.reasoning = `OVERCORRECTION WARNING: ${semantic.reasoning} | TRAINING: ${traditional.reasoning}`;
+      result.correctionApplied = 'corpus_overcorrection_adjustment';
       
-      return {
-        classification: 'No Expletive',
-        confidence: 0.85,
-        reasoning: `Nuclear bypass: avant que + logical pattern (${foundPattern})`,
-        evidence: [`Nuclear bypass detected pattern: ${foundPattern}`],
-        nuclearBypassApplied: true,
-        bypassPattern: foundPattern,
-        originalText: text.substring(0, 100)
-      };
+      console.log('⚠️  OVERCORRECTION ADJUSTMENT:', {
+        syntacticLicensing: true,
+        expletiveContext: false,
+        adjustedConfidence: result.confidence
+      });
     }
   }
+  
+  // PRIORITY 5: Enhance traditional analysis with semantic context
+  if (!result.correctionApplied) {
+    result.reasoning = `CORPUS ENHANCED: ${semantic.reasoning} | TRAINING: ${traditional.reasoning}`;
+    result.correctionApplied = 'corpus_enhancement';
+    
+    // Adjust confidence based on semantic certainty
+    if (semantic.classification.certainty === 'low') {
+      result.confidence = Math.min(result.confidence, 0.75);
+    } else if (semantic.classification.certainty === 'high') {
+      result.confidence = Math.min(0.95, result.confidence + 0.05);
+    }
+  }
+  
+  // Add corpus insights
+  result.corpusInsights = generateTrainingCorpusInsights(traditional, semantic, text, trainingData);
+  
+  return result;
+}
 
-  console.log('🔍 NUCLEAR BYPASS: No bypass triggered, continuing with normal analysis');
+/**
+ * Generate corpus insights specific to training data analysis
+ */
+function generateTrainingCorpusInsights(traditional, semantic, text, trainingData) {
+  const insights = [];
+  
+  // Training data vs corpus conflict
+  if (traditional.prediction !== semantic.classification.prediction) {
+    insights.push({
+      type: 'training_corpus_conflict',
+      message: `Training data suggests ${traditional.prediction}, corpus analysis suggests ${semantic.classification.prediction}`,
+      severity: 'high',
+      resolution: semantic.conflictAnalysis.resolution?.reasoning || 'Corpus analysis takes precedence'
+    });
+  }
+  
+  // Boost vs semantic analysis conflict
+  if (traditional.boostApplied && semantic.logicalAnalysis.overridesExpletive) {
+    insights.push({
+      type: 'boost_logical_conflict',
+      message: 'Training data boost applied but strong logical indicators detected',
+      severity: 'critical',
+      recommendation: 'Logical indicators should override training data bias'
+    });
+  }
+  
+  // Overcorrection in training data
+  if (semantic.syntacticAnalysis.hasLicensing && traditional.prediction === 'Expletive' && !semantic.expletiveAnalysis.favorsExpletive) {
+    insights.push({
+      type: 'training_overcorrection',
+      message: 'Training data may exhibit overcorrection - syntactic licensing without expletive context',
+      severity: 'medium',
+      recommendation: 'Consider semantic context over pure syntactic patterns'
+    });
+  }
+  
+  // Semantic strength vs training confidence mismatch
+  if (semantic.classification.certainty === 'high' && traditional.confidence < 0.7) {
+    insights.push({
+      type: 'semantic_training_mismatch',
+      message: 'High semantic certainty but low training confidence - possible training data gap',
+      severity: 'medium',
+      recommendation: 'Semantic analysis provides stronger evidence'
+    });
+  }
+  
+  return insights;
+}
+
+/**
+ * Import the enhanced semantic analyzer
+ */
+
+/**
+ * Original enhanced training data analysis - PRESERVED for backward compatibility
+ * Enhanced training data analysis with linguistic features
+ */
+export function analyzeWithEnhancedFeatures(text, trainingData) {
+  console.log('🔍 ENHANCED ANALYSIS: Starting comprehensive analysis for:', text.substring(0, 100));
   
   console.log('🔍 ENHANCED ANALYSIS STARTING for:', text.substring(0, 50) + '...');
   
@@ -377,207 +641,6 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     console.log('📝 Extracted clause:', clauseInfo.clause);
     console.log('📝 Using full text instead:', triggerClause.substring(0, 100) + '...');
     console.log('🔧 Clause info:', clauseInfo);
-  }
-  
-  // CRITICAL: Massively expanded bypass for logical negation patterns
-  if (inputTrigger && inputTrigger.trigger.includes('avant')) {
-    const normalizedText = text.toLowerCase();
-    
-    // Check for completion/achievement contexts that should be logical negation
-    const logicalNegationIndicators = [
-      // Completion states
-      'opérationnel', 'opérationnelle', 'opérationnels', 'opérationnelles',
-      'ouvert', 'ouverte', 'ouvertes', 'ouverts',
-      'terminé', 'terminée', 'terminés', 'terminées',
-      'fini', 'finie', 'finis', 'finies',
-      'résolu', 'résolue', 'résolus', 'résolues',
-      'réglé', 'réglée', 'réglés', 'réglées',
-      'corrigé', 'corrigée', 'corrigés', 'corrigées',
-      'modifié', 'modifiée', 'modifiés', 'modifiées',
-      'changé', 'changée', 'changés', 'changées',
-      'prêt', 'prête', 'prêts', 'prêtes',
-      'convaincu', 'convaincue', 'convaincus', 'convaincues',
-      'défleuri', 'défleurie', 'défleuris', 'défleuries',
-      'tracée', 'tracé', 'tracés', 'tracées',
-      'transféré', 'transférée', 'transférés', 'transférées',
-      'envoyé', 'envoyée', 'envoyés', 'envoyées',
-      'informé', 'informée', 'informés', 'informées',
-      'chargé', 'chargée', 'chargés', 'chargées',
-      'ajusté', 'ajustée', 'ajustés', 'ajustées',
-      'remplacé', 'remplacée', 'remplacés', 'remplacées',
-      
-      // Action completion verbs
-      'arrive', 'arrivent', 'arrivé', 'arrivée', 'arrivés', 'arrivées',
-      'parte', 'partent', 'parti', 'partie', 'partis', 'parties',
-      'vienne', 'viennent', 'venu', 'venue', 'venus', 'venues',
-      'finisse', 'finissent', 'fini', 'finie', 'finis', 'finies',
-      'commence', 'commencent', 'commencé', 'commencée', 'commencés', 'commencées',
-      'disparaisse', 'disparaissent', 'disparu', 'disparue', 'disparus', 'disparues',
-      'réunisse', 'réunissent', 'réuni', 'réunie', 'réunis', 'réunies',
-      'intensifie', 'intensifient', 'intensifié', 'intensifiée', 'intensifiés', 'intensifiées',
-      'résonne', 'résonnent', 'résonné', 'résonnée', 'résonnés', 'résonnées',
-      'renomme', 'renomment', 'renommé', 'renommée', 'renommés', 'renommées',
-      'réalise', 'réalisent', 'réalisé', 'réalisée', 'réalisés', 'réalisées',
-      'atteigne', 'atteignent', 'atteint', 'atteinte', 'atteints', 'atteintes',
-      'devienne', 'deviennent', 'devenu', 'devenue', 'devenus', 'devenues',
-      'provoque', 'provoquent', 'provoqué', 'provoquée', 'provoqués', 'provoquées',
-      'entraîne', 'entraînent', 'entraîné', 'entraînée', 'entraînés', 'entraînées',
-      'cessation', 'cessations',
-      
-      // States and conditions
-      'perceptible', 'perceptibles',
-      'grand', 'grande', 'grands', 'grandes',
-      'assez grand', 'assez grande',
-      'chargé', 'chargée', 'chargés', 'chargées',
-      'fait', 'faite', 'faits', 'faites',
-      'pris', 'prise', 'prises',
-      'usage', 'usages',
-      'possession',
-      
-      // Temporal/process indicators
-      'cessation', 'cessations',
-      'disparition', 'disparitions',
-      'guerre', 'guerres',
-      'combat', 'combats',
-      'bataille', 'batailles',
-      'conflit', 'conflits'
-    ];
-    
-    // Check for conditional contexts
-    const conditionalIndicators = [
-      'si ', 'au cas où', 'dans le cas où', 'supposons que', 'à condition que',
-      'pourvu que', 'en admettant que', 'à supposer que'
-    ];
-    
-    // Check for administrative/process contexts
-    const processIndicators = [
-      'formulaire', 'dossier', 'tribunal', 'validation', 'restriction',
-      'frontière', 'frontières', 'machine', 'système', 'processus',
-      'service', 'organisation', 'groupe', 'équipe', 'gouvernement',
-      'administration', 'autorité', 'autorités', 'commission', 'comité',
-      'programme', 'projet', 'plan', 'construction', 'développement',
-      'recherche', 'étude', 'analyse', 'examen', 'évaluation',
-      'traitement', 'gestion', 'contrôle', 'surveillance', 'supervision'
-    ];
-    
-    // Check for temporal/sequential contexts (often logical negation)
-    const temporalIndicators = [
-      'temps', 'moment', 'instant', 'période', 'durée', 'délai',
-      'heure', 'jour', 'semaine', 'mois', 'année', 'décennie',
-      'longtemps', 'bientôt', 'rapidement', 'lentement',
-      'finalement', 'enfin', 'ensuite', 'puis', 'alors',
-      'maintenant', 'actuellement', 'désormais', 'dorénavant'
-    ];
-    
-    // Check for narrative/story contexts (often logical negation in sequences)
-    const narrativeIndicators = [
-      'histoire', 'récit', 'conte', 'roman', 'livre', 'film',
-      'personnage', 'héros', 'protagoniste', 'acteur', 'auteur',
-      'chapitre', 'page', 'scène', 'épisode', 'partie',
-      'aventure', 'voyage', 'mission', 'quête', 'objectif'
-    ];
-    
-    let hasLogicalContext = false;
-    let evidence = [];
-    let contextStrength = 0;
-    
-    // Check for completion indicators
-    for (const indicator of logicalNegationIndicators) {
-      if (normalizedText.includes(indicator)) {
-        hasLogicalContext = true;
-        evidence.push(`Completion context: ${indicator}`);
-        contextStrength += 2;
-        break;
-      }
-    }
-    
-    // Check for conditional indicators
-    for (const indicator of conditionalIndicators) {
-      if (normalizedText.includes(indicator)) {
-        hasLogicalContext = true;
-        evidence.push(`Conditional context: ${indicator}`);
-        contextStrength += 3;
-        break;
-      }
-    }
-    
-    // Check for process indicators
-    for (const indicator of processIndicators) {
-      if (normalizedText.includes(indicator)) {
-        hasLogicalContext = true;
-        evidence.push(`Process context: ${indicator}`);
-        contextStrength += 1;
-        break;
-      }
-    }
-    
-    // Check for temporal indicators
-    for (const indicator of temporalIndicators) {
-      if (normalizedText.includes(indicator)) {
-        hasLogicalContext = true;
-        evidence.push(`Temporal context: ${indicator}`);
-        contextStrength += 1;
-        break;
-      }
-    }
-    
-    // Check for narrative indicators
-    for (const indicator of narrativeIndicators) {
-      if (normalizedText.includes(indicator)) {
-        hasLogicalContext = true;
-        evidence.push(`Narrative context: ${indicator}`);
-        contextStrength += 1;
-        break;
-      }
-    }
-    
-    // Special case: if no specific indicators but has common logical negation verbs
-    if (!hasLogicalContext) {
-      const commonLogicalVerbs = [
-        's\'emparent', 'emparent', 'empare',
-        'se réunisse', 'réunisse',
-        'se distingue', 'distingue',
-        'se remette', 'remette',
-        'tire', 'tirent',
-        'aient', 'soit', 'soient', 'puisse', 'puissent'
-      ];
-      
-      for (const verb of commonLogicalVerbs) {
-        if (normalizedText.includes(verb)) {
-          hasLogicalContext = true;
-          evidence.push(`Logical negation verb: ${verb}`);
-          contextStrength += 1;
-          break;
-        }
-      }
-    }
-    
-    // Apply bypass if we have any logical context
-    if (hasLogicalContext) {
-      console.log('🚨 MASSIVELY EXPANDED BYPASS: avant que + logical context detected');
-      console.log('🚨 Evidence:', evidence);
-      console.log('🚨 Context strength:', contextStrength);
-      
-      const logicalNegationAnalysis = analyzeLogicalNegationContext(text, inputTrigger);
-      console.log('🔍 Logical negation analysis (massive bypass):', logicalNegationAnalysis);
-      
-      // Very permissive threshold since we have contextual evidence
-      if (logicalNegationAnalysis.isLogicalNegation || evidence.length > 0) {
-        console.log('🚫 LOGICAL NEGATION OVERRIDE (massive bypass): Logical context detected');
-        
-        const confidence = Math.min(0.95, 0.70 + (contextStrength * 0.05) + (evidence.length * 0.03));
-        
-        return {
-          classification: 'No Expletive',
-          confidence: confidence,
-          reasoning: 'Logical negation context detected (massive expanded bypass)',
-          evidence: [...evidence, ...logicalNegationAnalysis.evidence],
-          logicalNegationOverride: true,
-          massiveBypassApplied: true,
-          contextStrength: contextStrength
-        };
-      }
-    }
   }
 
   // Analyze subjunctive within the specific clause
@@ -626,19 +689,26 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
       };
     })
     .filter(example => {
-      // More sophisticated filtering
+      // FIXED: More permissive filtering to prevent "0 similar examples"
       const hasMatchingTrigger = example.trigger1?.category === inputTrigger?.category;
-      const hasReasonableSimilarity = example.similarity > 0.25;
+      const hasReasonableSimilarity = example.similarity > 0.15; // Lowered threshold
       const hasLinguisticMatch = example.features.triggerMatch || 
                                 example.features.subjunctiveMatch || 
                                 example.features.registerMatch;
       
-      return hasMatchingTrigger && (hasReasonableSimilarity || hasLinguisticMatch);
+      // Allow examples with matching trigger OR reasonable similarity OR linguistic match
+      return hasMatchingTrigger || hasReasonableSimilarity || hasLinguisticMatch;
     })
     .sort((a, b) => b.similarity - a.similarity)
-    .slice(0, 8); // Increased to 8 for better analysis
+    .slice(0, 10); // Increased to 10 for better analysis
   
   console.log('📊 Enhanced examples found:', enhancedExamples.length);
+  console.log('📊 Example similarities:', enhancedExamples.map(e => ({ 
+    text: e.text.substring(0, 50), 
+    similarity: e.similarity.toFixed(3),
+    triggerMatch: e.features?.triggerMatch,
+    subjunctiveMatch: e.features?.subjunctiveMatch
+  })));
   
   // Enhanced weighted voting
   const enhancedVotes = enhancedExamples.reduce((acc, example) => {
@@ -666,8 +736,36 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   let adjustedExpletive = enhancedVotes.expletive;
   let adjustedNonExpletive = enhancedVotes.nonExpletive;
   
-  // CRITICAL: Apply avant que analysis boost FIRST (strongest evidence)
-  // Force deployment - ensure adaptive boost overrides training data bias
+  // NEW: Enhanced logical negation detection as boost system
+  // PHASE 3 READY: Evidence-based scoring can replace this boost system
+  const logicalNegationAnalysis = analyzeLogicalNegationContext(text, inputTrigger);
+  console.log('🔍 Logical negation analysis:', logicalNegationAnalysis);
+  console.log('🎯 PHASE 3 READY: Evidence-based scoring available to replace boost conflicts');
+  
+  // Apply logical negation enhancement FIRST (before other boosts)
+  if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.7) {
+    const logicalBoost = 3.0 * logicalNegationAnalysis.confidence; // Scale boost by confidence
+    adjustedNonExpletive += logicalBoost;
+    console.log('🚫 LOGICAL NEGATION ENHANCEMENT: Strong logical context detected:', {
+      confidence: logicalNegationAnalysis.confidence,
+      evidence: logicalNegationAnalysis.evidence,
+      boostAmount: logicalBoost,
+      newNonExpletive: adjustedNonExpletive,
+      phase3Note: 'This boost can be replaced with evidence-based scoring'
+    });
+  } else if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.5) {
+    const logicalBoost = 1.5 * logicalNegationAnalysis.confidence; // Moderate boost
+    adjustedNonExpletive += logicalBoost;
+    console.log('🔍 LOGICAL NEGATION ENHANCEMENT: Moderate logical context detected:', {
+      confidence: logicalNegationAnalysis.confidence,
+      evidence: logicalNegationAnalysis.evidence,
+      boostAmount: logicalBoost,
+      newNonExpletive: adjustedNonExpletive,
+      phase3Note: 'This boost can be replaced with evidence-based scoring'
+    });
+  }
+  
+  // CRITICAL: Apply avant que analysis boost AFTER logical negation check
   console.log('🔍 Checking avant que boost conditions:', {
     hasAvantQueAnalysis: !!avantQueAnalysis,
     isAvantQue: avantQueAnalysis?.isAvantQue,
@@ -676,23 +774,10 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     subjunctiveMood: avantQueAnalysis?.subjunctiveMood?.hasSubjunctive
   });
   
-  // CRITICAL: Check for logical negation context BEFORE applying avant que boost
-  const logicalNegationAnalysis = analyzeLogicalNegationContext(text, inputTrigger);
-  console.log('🔍 Logical negation analysis:', logicalNegationAnalysis);
-  
   if (avantQueAnalysis && avantQueAnalysis.bothConditionsMet) {
-    // Check if this is actually a logical negation context
-    if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.6) {
-      // REVERSE: This is logical negation, not expletive
-      const beforePenalty = adjustedExpletive;
-      adjustedNonExpletive += 4.0; // Strong boost to logical negation
-      
-      console.log('🚫 LOGICAL NEGATION OVERRIDE: Avant que context detected as logical negation:', {
-        beforePenalty,
-        afterPenalty: adjustedNonExpletive,
-        evidence: logicalNegationAnalysis.evidence,
-        confidence: logicalNegationAnalysis.confidence
-      });
+    // Check if logical negation already applied a strong boost
+    if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.7) {
+      console.log('🔍 AVANT QUE BOOST SKIPPED: Logical negation already applied strong boost');
     } else {
       // DECISIVE BOOST: Ensure linguistic rules always win when both conditions are met
       const beforeBoost = adjustedExpletive;
@@ -762,6 +847,187 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     console.log('⚪ No negation adjustment (negationType: ' + ambiguityNegationAnalysis.negation.negationType + ')');
   }
   
+  // PHASE 2: Evidence collection alongside boost system (for comparison and debugging)
+  console.log('🔍 PHASE 2: Collecting evidence alongside boost system...');
+  
+  // Create evidence accumulator to run in parallel with boost system
+  const evidenceAccumulator = new EvidenceAccumulator();
+  
+  // ENHANCED SUBJUNCTIVE DEBUGGING: Show what was detected
+  console.log('🎯 SUBJUNCTIVE DETECTION ANALYSIS:', {
+    text: text.substring(0, 100) + (text.length > 100 ? '...' : ''),
+    avantQueAnalysis: {
+      isAvantQue: avantQueAnalysis?.isAvantQue,
+      bothConditionsMet: avantQueAnalysis?.bothConditionsMet,
+      subjunctiveMood: {
+        hasSubjunctive: avantQueAnalysis?.subjunctiveMood?.hasSubjunctive,
+        detectedVerb: avantQueAnalysis?.subjunctiveMood?.verb,
+        verbType: avantQueAnalysis?.subjunctiveMood?.type,
+        confidence: avantQueAnalysis?.subjunctiveMood?.confidence
+      },
+      complementClause: {
+        isComplementClause: avantQueAnalysis?.complementClause?.isComplementClause,
+        hasSubjectAfterQue: avantQueAnalysis?.complementClause?.hasSubjectAfterQue,
+        text: avantQueAnalysis?.complementClause?.text
+      }
+    },
+    unifiedSubjunctive: inputSubjunctive ? {
+      hasSubjunctive: inputSubjunctive.hasSubjunctive,
+      detectedForms: inputSubjunctive.detectedForms,
+      confidence: inputSubjunctive.confidence
+    } : null
+  });
+  
+  // Evidence 1: Record training data similarity (baseline)
+  if (enhancedVotes.expletive > 0) {
+    evidenceAccumulator.addEvidence(
+      'forExpletive',
+      'training_similarity',
+      Math.min(enhancedVotes.expletive / 10, 1.0),
+      `Training data similarity suggests expletive (${enhancedVotes.expletive.toFixed(1)} votes)`,
+      1.0,
+      { votes: enhancedVotes.expletive, examples: enhancedExamples.length }
+    );
+  }
+  
+  if (enhancedVotes.nonExpletive > 0) {
+    evidenceAccumulator.addEvidence(
+      'forNoExpletive',
+      'training_similarity',
+      Math.min(enhancedVotes.nonExpletive / 10, 1.0),
+      `Training data similarity suggests no expletive (${enhancedVotes.nonExpletive.toFixed(1)} votes)`,
+      1.0,
+      { votes: enhancedVotes.nonExpletive, examples: enhancedExamples.length }
+    );
+  }
+  
+  // Evidence 2: Record logical negation analysis (precision enhancement)
+  if (logicalNegationAnalysis.isLogicalNegation && logicalNegationAnalysis.confidence > 0.5) {
+    const evidenceType = logicalNegationAnalysis.isLogicalNegation ? 'forNoExpletive' : 'forExpletive';
+    const weight = logicalNegationAnalysis.confidence > 0.7 ? 2.0 : 1.5;
+    
+    evidenceAccumulator.addEvidence(
+      evidenceType,
+      'precision_patterns',
+      logicalNegationAnalysis.confidence,
+      logicalNegationAnalysis.reasoning,
+      weight,
+      { 
+        evidence: logicalNegationAnalysis.evidence,
+        scores: logicalNegationAnalysis.scores,
+        boostApplied: logicalNegationAnalysis.confidence > 0.7 ? 
+          3.0 * logicalNegationAnalysis.confidence : 
+          (logicalNegationAnalysis.confidence > 0.5 ? 1.5 * logicalNegationAnalysis.confidence : 0)
+      }
+    );
+  }
+  
+  // Evidence 3: Record avant que analysis (traditional linguistic rules)
+  if (avantQueAnalysis && avantQueAnalysis.bothConditionsMet) {
+    evidenceAccumulator.addEvidence(
+      'forExpletive',
+      'linguistic_rules',
+      0.85,
+      'Traditional avant que + subjunctive pattern detected',
+      1.8,
+      {
+        trigger: avantQueAnalysis.isAvantQue,
+        subjunctive: avantQueAnalysis.subjunctiveMood?.hasSubjunctive,
+        detectedVerb: avantQueAnalysis.subjunctiveMood?.verb,
+        complementClause: avantQueAnalysis.complementClause?.isComplementClause,
+        boostApplied: 'Decisive boost calculation applied'
+      }
+    );
+  } else if (avantQueAnalysis && avantQueAnalysis.isAvantQue && !avantQueAnalysis.bothConditionsMet) {
+    evidenceAccumulator.addEvidence(
+      'forNoExpletive',
+      'linguistic_rules',
+      0.80,
+      'Avant que trigger present but subjunctive conditions not met',
+      1.5,
+      {
+        trigger: avantQueAnalysis.isAvantQue,
+        subjunctive: avantQueAnalysis.subjunctiveMood?.hasSubjunctive,
+        detectedVerb: avantQueAnalysis.subjunctiveMood?.verb,
+        reason: 'Missing required subjunctive for expletive',
+        penaltyApplied: 'Strong penalty calculation applied'
+      }
+    );
+  }
+  
+  // Evidence 4: Record ambiguity analysis
+  if (ambiguityNegationAnalysis.ambiguity.clarificationNeeded) {
+    evidenceAccumulator.addEvidence(
+      'forExpletive',
+      'ambiguity_analysis',
+      0.60,
+      'Ambiguity detected - clarification needed suggests expletive context',
+      0.8,
+      { clarificationNeeded: true, boostApplied: 0.3 }
+    );
+  } else if (ambiguityNegationAnalysis.ambiguity.hasAmbiguity) {
+    evidenceAccumulator.addEvidence(
+      'forExpletive',
+      'ambiguity_analysis',
+      0.55,
+      'Some ambiguity detected',
+      0.5,
+      { hasAmbiguity: true, boostApplied: 0.1 }
+    );
+  }
+  
+  // Evidence 5: Record negation type analysis
+  if (ambiguityNegationAnalysis.negation.negationType === 'LOGICAL_NEGATION') {
+    evidenceAccumulator.addEvidence(
+      'forNoExpletive',
+      'negation_analysis',
+      0.75,
+      'Logical negation context detected',
+      1.2,
+      { negationType: 'LOGICAL_NEGATION', boostApplied: 0.5 }
+    );
+  } else if (ambiguityNegationAnalysis.negation.negationType === 'EXPLETIVE_NEGATION') {
+    evidenceAccumulator.addEvidence(
+      'forExpletive',
+      'negation_analysis',
+      0.70,
+      'Expletive negation context detected',
+      1.1,
+      { negationType: 'EXPLETIVE_NEGATION', boostApplied: 0.4 }
+    );
+  }
+  
+  // Calculate evidence-based scores (for comparison only - not used in final result)
+  const evidenceResults = evidenceAccumulator.calculateFinalScores();
+  
+  // Compare boost system vs evidence system results
+  const comparison = evidenceAccumulator.compareWithBoostSystem({
+    adjustedExpletive,
+    adjustedNonExpletive
+  });
+  
+  console.log('📊 PHASE 2 BOOST vs EVIDENCE COMPARISON:', {
+    input: text.substring(0, 50) + '...',
+    boostSystem: {
+      expletive: adjustedExpletive.toFixed(2),
+      noExpletive: adjustedNonExpletive.toFixed(2),
+      winner: adjustedExpletive > adjustedNonExpletive ? 'Expletive' : 'No Expletive',
+      confidence: ((adjustedExpletive + adjustedNonExpletive) > 0 ? 
+        Math.max(adjustedExpletive, adjustedNonExpletive) / (adjustedExpletive + adjustedNonExpletive) : 0.5).toFixed(2)
+    },
+    evidenceSystem: {
+      expletive: evidenceResults.adjustedExpletive.toFixed(2),
+      noExpletive: evidenceResults.adjustedNonExpletive.toFixed(2),
+      winner: evidenceResults.adjustedExpletive > evidenceResults.adjustedNonExpletive ? 'Expletive' : 'No Expletive',
+      confidence: ((evidenceResults.adjustedExpletive + evidenceResults.adjustedNonExpletive) > 0 ? 
+        Math.max(evidenceResults.adjustedExpletive, evidenceResults.adjustedNonExpletive) / 
+        (evidenceResults.adjustedExpletive + evidenceResults.adjustedNonExpletive) : 0.5).toFixed(2)
+    },
+    agreement: comparison.agreement,
+    evidenceSources: evidenceAccumulator.getEvidenceSummary().sources
+  });
+  
+  // CRITICAL: Continue with existing boost system logic (no changes to final results)
   const shouldHaveNe = adjustedExpletive > adjustedNonExpletive;
   const confidence = (adjustedExpletive + adjustedNonExpletive) > 0 ? 
     Math.max(adjustedExpletive, adjustedNonExpletive) / (adjustedExpletive + adjustedNonExpletive) :
@@ -998,12 +1264,22 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     actualExpletiveLikelihood: actualExpletiveLikelihood,
     surfaceForm: surfaceForm
   });
+
+  // NEW: Dual-mode classifier analysis
+  let dualModeAnalysis = null;
+  try {
+    const dualModeClassifier = new DualModeClassifier();
+    dualModeAnalysis = dualModeClassifier.classify(text);
+  } catch (error) {
+    console.warn('Dual-mode classifier error:', error);
+  }
   
   return {
     classification: finalShouldHaveNe, // Use recalculated value after semantic boost
     confidence: finalConfidence, // Use recalculated confidence
     matches: enhancedExamples,
     surfaceForm: surfaceForm, // NEW: Add surface form prediction
+    dualModeAnalysis: dualModeAnalysis, // NEW: Add dual-mode classifier results
     linguisticAnalysis: {
       trigger: inputTrigger,
       subjunctive: inputSubjunctive,
@@ -1026,7 +1302,8 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
           `Enhanced voting: ${Math.round(finalActualExpletiveLikelihood * 100)}% expletive likelihood`, // Use recalculated value
           avantQueAnalysis?.bothConditionsMet ? 'Avant que boost applied (+3.0)' : 
           (avantQueAnalysis?.isAvantQue && !avantQueAnalysis?.bothConditionsMet) ? 'Avant que penalty applied (-3.0)' : null,
-          semanticContextInfo?.validationApplied ? `Semantic boost applied (+${semanticContextInfo.validationApplied ? '3.0' : '0'})` : null
+          semanticContextInfo?.validationApplied ? `Semantic boost applied (+${semanticContextInfo.validationApplied ? '3.0' : '0'})` : null,
+          dualModeAnalysis ? `Dual-mode classifier (${dualModeAnalysis.mode}): ${dualModeAnalysis.hasExpletive ? 'EXPLETIVE' : 'NON-EXPLETIVE'} (${(dualModeAnalysis.confidence * 100).toFixed(1)}%)` : null
         ].filter(Boolean)
       },
       clauseInfo: clauseInfo // Add clause boundary information

@@ -1,7 +1,6 @@
 /**
  * Enhanced training data analyzer with sophisticated linguistic features
- * Integrates avant que analysis, subjunctive detection, and register analysis
- * Phase 1: Evidence-based scoring system added (not yet integrated)
+ * Integrates dual-mode classifier, avant que analysis, subjunctive detection, and register analysis
  */
 
 import { normalizeText } from './textProcessing';
@@ -14,6 +13,11 @@ import { extractTriggerClause, analyzeMultipleNegationInClause } from './clauseB
 import { enhanceAvantQueAnalysisWithClause } from './enhancedAvantQueAnalyzer';
 import { createSurfaceForm } from './surfaceFormGenerator';
 import { analyzeSemanticContext, shouldOverrideToLogicalNegation } from './semanticContextAnalyzer';
+import DualModeClassifier from './dualModeClassifier';
+
+/**
+ * Enhanced training data analyzer with dual-mode classifier integration
+ */
 
 /**
  * Evidence-based scoring system to manage boost complexity
@@ -1260,12 +1264,22 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
     actualExpletiveLikelihood: actualExpletiveLikelihood,
     surfaceForm: surfaceForm
   });
+
+  // NEW: Dual-mode classifier analysis
+  let dualModeAnalysis = null;
+  try {
+    const dualModeClassifier = new DualModeClassifier();
+    dualModeAnalysis = dualModeClassifier.classify(text);
+  } catch (error) {
+    console.warn('Dual-mode classifier error:', error);
+  }
   
   return {
     classification: finalShouldHaveNe, // Use recalculated value after semantic boost
     confidence: finalConfidence, // Use recalculated confidence
     matches: enhancedExamples,
     surfaceForm: surfaceForm, // NEW: Add surface form prediction
+    dualModeAnalysis: dualModeAnalysis, // NEW: Add dual-mode classifier results
     linguisticAnalysis: {
       trigger: inputTrigger,
       subjunctive: inputSubjunctive,
@@ -1288,7 +1302,8 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
           `Enhanced voting: ${Math.round(finalActualExpletiveLikelihood * 100)}% expletive likelihood`, // Use recalculated value
           avantQueAnalysis?.bothConditionsMet ? 'Avant que boost applied (+3.0)' : 
           (avantQueAnalysis?.isAvantQue && !avantQueAnalysis?.bothConditionsMet) ? 'Avant que penalty applied (-3.0)' : null,
-          semanticContextInfo?.validationApplied ? `Semantic boost applied (+${semanticContextInfo.validationApplied ? '3.0' : '0'})` : null
+          semanticContextInfo?.validationApplied ? `Semantic boost applied (+${semanticContextInfo.validationApplied ? '3.0' : '0'})` : null,
+          dualModeAnalysis ? `Dual-mode classifier (${dualModeAnalysis.mode}): ${dualModeAnalysis.hasExpletive ? 'EXPLETIVE' : 'NON-EXPLETIVE'} (${(dualModeAnalysis.confidence * 100).toFixed(1)}%)` : null
         ].filter(Boolean)
       },
       clauseInfo: clauseInfo // Add clause boundary information

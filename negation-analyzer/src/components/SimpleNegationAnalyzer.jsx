@@ -211,17 +211,19 @@ const SimpleNegationAnalyzer = () => {
               
               if (useTrainingEnhancement && trainingData.examples.length > 0) {
                 console.log('🔍 Using enhanced training analysis');
-                // Use enhanced training analyzer that includes surface form generation
+                // Use enhanced training analyzer that includes surface form generation and dual-mode classifier
                 const { analyzeWithEnhancedFeatures } = await import('../utils/enhancedTrainingAnalyzer');
                 trainingAnalysis = analyzeWithEnhancedFeatures(sentence, trainingData.examples);
                 
                 console.log('🎯 Full enhanced training analysis result:', trainingAnalysis);
                 console.log('🎯 Surface form in enhanced result:', trainingAnalysis.surfaceForm);
+                console.log('🎯 Dual-mode analysis:', trainingAnalysis.dualModeAnalysis);
                 
                 // Create properly formatted analysis object
                 const analysisObj = {
                     classification: trainingAnalysis.classification ? 'Expletive' : 'No Expletive',
                     confidence: trainingAnalysis.confidence,
+                    dualModeAnalysis: trainingAnalysis.dualModeAnalysis, // NEW: Add dual-mode results
                     analysis: {
                         trigger: trainingAnalysis.analysis?.trigger ? {
                             trigger: trainingAnalysis.analysis.trigger.trigger,
@@ -244,8 +246,12 @@ const SimpleNegationAnalyzer = () => {
                     },
                     details: [
                         trainingAnalysis.message,
-                        ...(trainingAnalysis.context?.details || [])
-                    ]
+                        ...(trainingAnalysis.context?.details || []),
+                        // Add dual-mode classifier details
+                        trainingAnalysis.dualModeAnalysis ? 
+                          `Dual-Mode Classifier (${trainingAnalysis.dualModeAnalysis.mode}): ${trainingAnalysis.dualModeAnalysis.reasoning}` : 
+                          null
+                    ].filter(Boolean)
                 };
                 
                 // Only show training data analysis

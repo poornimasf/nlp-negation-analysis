@@ -295,13 +295,18 @@ function getConfidenceDescription(confidence) {
 }
 
 export const formatRuleBasedResult = (analysis) => {
-    const { type, confidence, evidence, enhancedAvantQue, enhanced, semanticAnalysis, reasoning, correctionApplied, prediction } = analysis;
+    const { type, confidence, evidence, enhancedAvantQue, enhanced, semanticAnalysis, reasoning, correctionApplied, prediction, peurQueAnalysis, corpusEnhanced } = analysis;
     const confidencePercent = Math.round(confidence * 100);
     
     // Use prediction if available (enhanced analysis), otherwise type
     const finalClassification = prediction || type;
     
-    // NEW: Check if we should use the enhanced linguistic format
+    // NEW: Check for PeurQueAnalyzer results with detailed breakdown (specific to peur que)
+    if (corpusEnhanced && evidence && evidence.trigger === 'peur que' && evidence.details && Array.isArray(evidence.details)) {
+        return formatPeurQueDetailedAnalysis(analysis);
+    }
+    
+    // NEW: Check if we should use the enhanced linguistic format (for avant que and other enhanced analysis)
     if (enhanced && semanticAnalysis) {
         return formatEnhancedLinguisticAnalysis(analysis);
     }
@@ -340,6 +345,35 @@ export const formatRuleBasedResult = (analysis) => {
     
     return result;
 };
+
+/**
+ * Format PeurQueAnalyzer results with detailed syntactic/semantic/discourse breakdown
+ */
+function formatPeurQueDetailedAnalysis(analysis) {
+    const { prediction, confidence, evidence, peurQueAnalysis } = analysis;
+    const confidencePercent = Math.round(confidence * 100);
+    
+    let result = 'CORPUS-ENHANCED PEUR QUE ANALYSIS\n';
+    result += '================================\n\n';
+    
+    result += `Classification: ${prediction}\n`;
+    result += `Confidence: ${confidencePercent}%\n`;
+    if (peurQueAnalysis && peurQueAnalysis.likelihood) {
+        result += `Likelihood Scale: ${peurQueAnalysis.likelihood}/7\n`;
+    }
+    result += '\n';
+    
+    // Display the detailed breakdown from evidence.details
+    if (evidence && evidence.details && Array.isArray(evidence.details)) {
+        evidence.details.forEach(detail => {
+            if (detail.trim()) {
+                result += detail + '\n';
+            }
+        });
+    }
+    
+    return result;
+}
 
 /**
  * NEW: Enhanced linguistic analysis format for academic/research audience
@@ -679,6 +713,34 @@ export const formatTrainingResult = (analysis, trainingAnalysis) => {
     result += `Classification: ${classification}\n`;
     const confidencePercent = Math.round((trainingAnalysis.confidence || 0) * 100);
     result += `Confidence: ${confidencePercent}%\n\n`;
+    
+    // NEW: Dual-mode classifier results
+    if (trainingAnalysis?.dualModeAnalysis) {
+        result += 'Dual-Mode Classifier Analysis\n';
+        result += '----------------------------\n';
+        const dualMode = trainingAnalysis.dualModeAnalysis;
+        result += `Mode: ${dualMode.mode.charAt(0).toUpperCase() + dualMode.mode.slice(1)}\n`;
+        result += `Prediction: ${dualMode.hasExpletive ? 'EXPLETIVE' : 'NON-EXPLETIVE'}\n`;
+        result += `Confidence: ${(dualMode.confidence * 100).toFixed(1)}%\n`;
+        result += `Reasoning: ${dualMode.reasoning}\n\n`;
+        
+        // Feature analysis
+        if (dualMode.features) {
+            result += 'Feature Analysis:\n';
+            const features = dualMode.features;
+            result += `• Trigger: ${features.trigger_type} (${(features.trigger_strength * 100).toFixed(1)}% expletive rate)\n`;
+            result += `• Register: ${features.register} (${features.register_score.toFixed(2)}x correlation)\n`;
+            result += `• Semantic Field: ${features.semantic_field}\n`;
+            result += `• Subjunctive: ${features.subjunctive_present ? 'Yes' : 'No'}${features.subjunctive_type !== 'none' ? ` (${features.subjunctive_type})` : ''}\n`;
+            
+            if (dualMode.mode === 'paragraph') {
+                result += `• Coherence Markers: ${features.coherence_markers}\n`;
+                result += `• Discourse Complexity: ${features.discourse_complexity}\n`;
+                result += `• Context Depth: ${features.context_depth}\n`;
+            }
+            result += '\n';
+        }
+    }
     
     // Enhanced linguistic analysis if available
     if (trainingAnalysis?.enhancedAnalysis) {
