@@ -1,0 +1,45 @@
+{
+  "mode": "sentence",
+  "model": {
+    "weights": [
+      -7.331740941392632,
+      -47.08709577738834,
+      -69.13394733215658,
+      -10.408078404733818,
+      -0.3931207702241055,
+      -2.4194807628417463,
+      16.005877735200567,
+      11.78842989856767,
+      -12.3054520602887,
+      -18.513210891074483,
+      31.164914538226206,
+      14.859452938792176,
+      64.92760999468871,
+      -6.560418736003351,
+      1.877388653420294
+    ],
+    "bias": -54.50978725742528
+  },
+  "featureNames": [
+    "trigger_type",
+    "trigger_strength",
+    "subjunctive_present",
+    "subjunctive_type",
+    "sentence_length",
+    "word_count",
+    "clause_complexity",
+    "emotional_context",
+    "temporal_context",
+    "logical_context",
+    "semantic_field",
+    "register",
+    "register_score",
+    "discourse_markers",
+    "speaker_stance"
+  ],
+  "trainingStats": {
+    "accuracy": 0.52125,
+    "totalExamples": 4000,
+    "correctPredictions": 2085
+  }
+}
