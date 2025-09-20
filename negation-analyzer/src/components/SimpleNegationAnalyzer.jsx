@@ -245,6 +245,25 @@ const SimpleNegationAnalyzer = () => {
             console.log(`🔍 DUAL-MODE: Processing sentence ${index + 1}:`, sentence.substring(0, 50) + '...');
             const enhancedResult = analyzeWithEnhancedFeatures(sentence, trainingDataToUse);
             dualModeAnalysis = enhancedResult.dualModeAnalysis;
+            
+            // Safety check for malformed dual-mode analysis
+            if (!dualModeAnalysis || dualModeAnalysis.hasExpletive === undefined || dualModeAnalysis.confidence === undefined) {
+              console.warn(`⚠️ DUAL-MODE: Malformed analysis for sentence ${index + 1}, creating fallback:`, dualModeAnalysis);
+              dualModeAnalysis = {
+                hasExpletive: false,
+                confidence: 0.5,
+                mode: analysisMode === 'PARAGRAPH_MODE' ? 'paragraph' : 'sentence',
+                reasoning: 'No clear trigger detected - defaulting to no expletive',
+                features: {
+                  trigger_type: 'unknown',
+                  trigger_strength: 0.5,
+                  register: 'neutral',
+                  register_score: 1.0,
+                  semantic_field: 'neutral'
+                }
+              };
+            }
+            
             console.log(`✅ DUAL-MODE: Analysis complete for sentence ${index + 1}:`, {
               hasExpletive: dualModeAnalysis?.hasExpletive,
               confidence: dualModeAnalysis?.confidence,
