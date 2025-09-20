@@ -113,20 +113,6 @@ const SimpleNegationAnalyzer = () => {
   const calculateDiscourseBoost = (sentence, trainingData) => {
     let boost = 0;
     
-    // Cross-trigger pattern analysis
-    const triggerCounts = {};
-    trainingData.forEach(example => {
-      if (example.trigger) {
-        triggerCounts[example.trigger] = (triggerCounts[example.trigger] || 0) + 1;
-      }
-    });
-    
-    // Discourse coherence boost based on training data diversity
-    const triggerTypes = Object.keys(triggerCounts).length;
-    if (triggerTypes >= 4) {
-      boost += 0.05; // Multi-trigger discourse analysis
-    }
-    
     // Register consistency boost
     const formalMarkers = /\b(il\s+convient|par\s+conséquent|monsieur|madame|veuillez)\b/gi;
     const literaryMarkers = /\b(fallut|eût|fût|naguère|jadis|désormais)\b/gi;
@@ -141,7 +127,7 @@ const SimpleNegationAnalyzer = () => {
       boost += 0.03; // Complex syntax favors expletive
     }
     
-    return Math.min(0.15, boost); // Cap at 15% boost
+    return Math.min(0.11, boost); // Cap at 11% boost (8% + 3%)
   };
 
   // Batch analysis handler
@@ -255,7 +241,7 @@ const SimpleNegationAnalyzer = () => {
                   dualModeAnalysis.discourseFactors = {
                     trainingExamples: trainingDataToUse.length,
                     discourseBoost: discourseBoost,
-                    crossTriggerAnalysis: true
+                    registerConsistency: true
                   };
                 }
               }

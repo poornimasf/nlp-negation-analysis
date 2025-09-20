@@ -69,11 +69,11 @@ export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
           description: 'Enhanced analysis for longer texts using comprehensive paragraph training data with discourse-level features.',
           features: [
             'Full paragraph training dataset (2,500 examples: 500 per trigger)',
-            'Paragraph-level discourse analysis with cross-sentence context',
-            'Enhanced register detection in longer texts',
-            'Discourse coherence analysis with up to +15% confidence boost',
-            'Cross-trigger pattern analysis for improved accuracy',
-            'Complex syntax and register consistency analysis'
+            'Paragraph-level discourse analysis with enhanced context',
+            'Register consistency analysis (formal/literary markers)',
+            'Sentence complexity analysis for discourse coherence',
+            'Enhanced confidence scoring with up to +11% discourse boost',
+            'Optimized for longer texts and complex linguistic contexts'
           ]
         };
       default:
