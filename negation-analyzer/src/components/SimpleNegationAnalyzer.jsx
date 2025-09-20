@@ -553,6 +553,14 @@ const SimpleNegationAnalyzer = () => {
                                       analysis.prediction === 'No Expletive' || analysis.type === 'No Expletive' ? 'No Expletive' : 
                                       'Unknown';
 
+          console.log('🔧 CLASSIFICATION DEBUG:', {
+            sentence: sentence.substring(0, 30) + '...',
+            analysisType: analysis.type,
+            analysisPrediction: analysis.prediction,
+            displayClassification: displayClassification,
+            mode: analysis.mode
+          });
+
           console.log('Final Classification:', displayClassification);
 
           console.log(`📊 RESULTS: Adding sentence ${index + 1} to results:`, {
