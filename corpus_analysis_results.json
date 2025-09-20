@@ -1,0 +1,111 @@
+{
+  "timestamp": "2025-08-20T02:50:28.938Z",
+  "corpusSize": 35,
+  "basicStats": {
+    "withExpletive": 20,
+    "withoutExpletive": 15,
+    "expletiveRate": 0.5714285714285714
+  },
+  "patterns": {
+    "semantic": {
+      "safety": 3,
+      "interpersonal": 5,
+      "general": 21,
+      "medical": 5,
+      "technical": 1
+    },
+    "register": {
+      "neutral": 18,
+      "formal": 3,
+      "informal": 14
+    },
+    "subjectType": {
+      "determiner_noun": 12,
+      "proper_noun": 2,
+      "pronoun": 14,
+      "other": 7
+    },
+    "subjunctive": {
+      "with": 13,
+      "without": 22
+    },
+    "expletiveByDomain": {
+      "safety": {
+        "with": 1,
+        "without": 2,
+        "total": 3
+      },
+      "interpersonal": {
+        "with": 4,
+        "without": 1,
+        "total": 5
+      },
+      "general": {
+        "with": 12,
+        "without": 9,
+        "total": 21
+      },
+      "medical": {
+        "with": 2,
+        "without": 3,
+        "total": 5
+      },
+      "technical": {
+        "with": 1,
+        "without": 0,
+        "total": 1
+      }
+    },
+    "expletiveByRegister": {
+      "neutral": {
+        "with": 10,
+        "without": 8,
+        "total": 18
+      },
+      "formal": {
+        "with": 3,
+        "without": 0,
+        "total": 3
+      },
+      "informal": {
+        "with": 7,
+        "without": 7,
+        "total": 14
+      }
+    },
+    "expletiveBySubject": {
+      "determiner_noun": {
+        "with": 7,
+        "without": 5,
+        "total": 12
+      },
+      "proper_noun": {
+        "with": 1,
+        "without": 1,
+        "total": 2
+      },
+      "pronoun": {
+        "with": 8,
+        "without": 6,
+        "total": 14
+      },
+      "other": {
+        "with": 4,
+        "without": 3,
+        "total": 7
+      }
+    },
+    "expletiveBySubjunctive": {
+      "with": 20,
+      "without": 15
+    }
+  },
+  "enhancementRules": [
+    "Replace hard-coded 0.8 expletive rate with context-specific rates",
+    "Implement semantic domain detection in ruleBasedAnalyzer.js",
+    "Add register analysis for formal vs informal contexts",
+    "Create weighted scoring system combining multiple factors",
+    "Add confidence intervals based on pattern support"
+  ],
+  "integrationReady": true
+}
