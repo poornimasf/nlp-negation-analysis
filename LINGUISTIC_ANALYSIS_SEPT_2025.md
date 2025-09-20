@@ -264,6 +264,22 @@ Contrary to traditional assumptions, subjunctive presence does not predict exple
 - **Text length**: 4-5x longer providing richer discourse context
 - **Sentence complexity**: 7-10 sentences vs 1-2 in sentence mode
 
+**Coherence Markers Explained:**
+Discourse connectors that link ideas and show logical relationships:
+- **Sentence mode average**: ~0.3 markers per example
+- **Paragraph mode average**: ~1.8 markers per example
+- **Examples**: "cependant" (however), "par conséquent" (consequently), "néanmoins" (nevertheless), "ainsi" (thus), "en effet" (indeed)
+
+**Context Depth Explained:**
+Markers that provide background information, causation, and elaboration:
+- **Sentence mode average**: ~0.05 markers per example  
+- **Paragraph mode average**: ~0.35 markers per example
+- **Examples**: "parce que" (because), "c'est-à-dire" (that is to say), "par exemple" (for example), "étant donné" (given that)
+
+**Practical Difference:**
+- **Sentence mode**: "J'ai peur qu'il vienne" (isolated statement)
+- **Paragraph mode**: "Étant donné la situation, j'ai peur qu'il vienne. Cependant, nous devons considérer les conséquences. Par conséquent, il faut agir avec prudence." (rich contextual reasoning)
+
 #### Expletive vs Non-Expletive Discourse Patterns:
 
 **Sentence Mode Discourse-Expletive Correlation:**
