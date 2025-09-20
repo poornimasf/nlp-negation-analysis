@@ -246,7 +246,8 @@ const SimpleNegationAnalyzer = () => {
             console.log(`🔍 DUAL-MODE: Full sentence text:`, sentence);
             const enhancedResult = analyzeWithEnhancedFeatures(sentence, trainingDataToUse);
             console.log(`🔍 DUAL-MODE: Raw enhanced result:`, enhancedResult);
-            dualModeAnalysis = enhancedResult.dualModeAnalysis;
+            // The enhancedResult IS the dual-mode analysis, not a container
+            dualModeAnalysis = enhancedResult.dualModeAnalysis || enhancedResult;
             console.log(`🔍 DUAL-MODE: Extracted dualModeAnalysis:`, dualModeAnalysis);
             
             // Safety check for malformed dual-mode analysis
