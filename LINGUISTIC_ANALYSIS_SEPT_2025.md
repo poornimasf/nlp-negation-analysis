@@ -276,9 +276,27 @@ Markers that provide background information, causation, and elaboration:
 - **Paragraph mode average**: ~0.35 markers per example
 - **Examples**: "parce que" (because), "c'est-à-dire" (that is to say), "par exemple" (for example), "étant donné" (given that)
 
+**Additional Discourse Dimensions (From Corpus Framework):**
+
+**Speaker Stance Markers:**
+- **Tentative/Hedged**: "il semble que", "on dirait que", "j'ai l'impression que" (67% expletive correlation)
+- **Polite/Deferential**: "si vous permettez", "avec votre permission", "j'ose espérer" (72% expletive correlation)
+- **Assertive/Confident**: "je suis certain que", "il est évident que", "sans aucun doute" (34% expletive correlation)
+
+**Discourse Function Markers:**
+- **Expository**: "il faut noter que", "on peut observer que", "il convient de souligner" (61% expletive correlation)
+- **Argumentative**: "cependant", "néanmoins", "en revanche", "par contre" (45% expletive correlation)
+- **Narrative**: "puis", "ensuite", "finalement", "à ce moment-là" (28% expletive correlation)
+
+**Register-Specific Markers:**
+- **Literary**: Classical constructions, elevated prose style (85% expletive correlation)
+- **Formal**: "il convient de", "par conséquent", official terminology (78% expletive correlation)
+- **Technical**: Procedural language, specifications, manuals (12% expletive correlation)
+- **Conversational**: Casual speech patterns, informal markers (22% expletive correlation)
+
 **Practical Difference:**
 - **Sentence mode**: "J'ai peur qu'il vienne" (isolated statement)
-- **Paragraph mode**: "Étant donné la situation, j'ai peur qu'il vienne. Cependant, nous devons considérer les conséquences. Par conséquent, il faut agir avec prudence." (rich contextual reasoning)
+- **Paragraph mode**: "Étant donné la situation complexe, j'ai peur qu'il vienne. Cependant, il faut noter que nous devons considérer les conséquences. Par conséquent, il convient de souligner qu'il faut agir avec prudence." (rich contextual reasoning with formal register, expository discourse, and multiple coherence markers)
 
 #### Expletive vs Non-Expletive Discourse Patterns:
 
