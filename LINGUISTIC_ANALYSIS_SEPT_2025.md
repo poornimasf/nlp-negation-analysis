@@ -228,11 +228,11 @@ Contrary to traditional assumptions, subjunctive presence does not predict exple
 #### Table 7: Representative Examples by Linguistic Pattern
 | Pattern | Example | Trigger | Analysis |
 |---------|---------|---------|----------|
-| High Expletive Probability | "j'ai peur qu'elles **ne** dénotent une mauvaise compréhension" | peur_que | Formal + Emotional + Subjunctive |
-| Medium Expletive Probability | "avant qu'**il ne** soit trop tard" | avant_que | Temporal + Urgency + Subjunctive |
-| Low Expletive Probability | "avant que le tournage soit stoppé" | avant_que | Neutral + Factual + No emotion |
-| Literary High Probability | "peu s'en fallut qu'elle **ne** submergeât" | sen_faut_que | Literary + Formal + Complex |
-| Conversational Low Probability | "avant que je demenage j'habitait enface" | avant_que | Informal + Simple + Grammatical errors |
+| High Expletive Probability | "j'ai peur qu'elle **ne** devienne à son tour une utopie désincarnée" | peur_que | Formal + Emotional + Intellectual |
+| Medium Expletive Probability | "bien plus fanatiques qu'**elle ne** voulait l'admettre" | moins_plus | Literary + Comparative + Subjunctive |
+| Low Expletive Probability | "ne s'arrêtera jamais avant que nous l'ayons atteint" | avant_que | Neutral + Factual + No emotion |
+| Literary High Probability | "beaucoup plus strict que ce **n'**était le cas jusqu'à présent" | moins_plus | Literary + Formal + Complex |
+| Technical Low Probability | "utiliser intval() avant de le stocker dans la base de données" | avant_de | Technical + Procedural + Instructions |
 
 ## 4. Sentence vs Paragraph Mode Discourse Analysis - EMPIRICAL
 
@@ -308,22 +308,22 @@ Markers that provide background information, causation, and elaboration:
 | **Technical Register** | 0.8% | 1.2% | 0.67x | Favors Non-Exp |
 
 **Practical Difference:**
-- **Sentence mode**: "J'ai peur qu'il vienne" (isolated statement)
-- **Paragraph mode**: "Étant donné la situation complexe, j'ai peur qu'il vienne. Cependant, il faut noter que nous devons considérer les conséquences. Par conséquent, il convient de souligner qu'il faut agir avec prudence." (rich contextual reasoning with formal register, expository discourse, and multiple coherence markers)
+- **Sentence mode**: "j'ai peur qu'elle ne devienne à son tour une utopie désincarnée" (peur_que - isolated statement)
+- **Paragraph mode**: "Les peurs ne m'ont pas quitté, mais j'ai une force nouvelle. Avant que le moindre son ne sorte de ma bouche, Guillermo se met à souffler une mélopée inhabituellement rapide qui a pour effet immédiat de me projeter dans le voyage." (avant_que - rich contextual reasoning with emotional register and narrative discourse)
 
 **Authentic Corpus Examples of Discourse Markers:**
 
 **Literary Register + Expletive (2.53x correlation):**
-> "Au dehors flottait la femelle, couvant ses oeufs, et presque aussi grosse que le nid ; en s'envolant, peu s'en fallut qu'**elle ne** submergeât notre navire par le vent de ses ailes"
+> "bien plus fanatiques qu'**elle ne** voulait l'admettre" (moins_plus)
 
 **Assertive Stance + Expletive (2.00x correlation):**
-> "Les peurs ne m'ont pas quitté, mais j'ai une force nouvelle. Avant que le moindre son **ne** sorte de ma bouche"
+> "Les peurs ne m'ont pas quitté, mais j'ai une force nouvelle. Avant que le moindre son **ne** sorte de ma bouche" (avant_que)
 
 **Formal Register + Expletive (1.77x correlation):**
-> "D.B. : L'idée d'une politisation marrane des identités est séduisante, mais en ces temps guerriers, j'ai peur qu'**elle ne** devienne à son tour une utopie désincarnée"
+> "j'ai peur qu'**elle ne** devienne à son tour une utopie désincarnée" (peur_que)
 
 **Technical Register + Non-Expletive (0.67x correlation):**
-> "Notons que tous les contenus sont modérés avant d'être rendus publics. Pour naviguer dans le site, l'internaute peut utiliser la barre de menu"
+> "utiliser intval() avant de le stocker dans la base de données" (avant_de)
 
 #### Expletive vs Non-Expletive Discourse Patterns:
 
@@ -360,14 +360,14 @@ Markers that provide background information, causation, and elaboration:
 #### High Discourse Complexity Examples:
 
 **Paragraph Expletive (peur_que) - Complex Evaluative Discourse:**
-> "comprendre et me taire en plus je suis loin d'être rancunière mais je trouvais cela injuste... je me demande maintenant si elle a été jalouse que je lui prenne sa fille... et puis dans un sens je me dit c'est vrai qu'elle commençait a acheter beaucoup de chose... j'ai peur que je **ne** l'empêche d'y être... je me dit que cela peut être une hypothèse mais qui reste tirer par les cheveux... j'ai peur se la perdre mon amie..."
+> "D.B. : L'idée d'une politisation marrane des identités est séduisante, mais en ces temps guerriers, j'ai peur qu'**elle ne** devienne à son tour une utopie désincarnée." (peur_que)
 
-**Analysis**: Complex evaluative discourse with uncertainty markers, hedging, and emotional elaboration spanning multiple clauses.
+**Analysis**: Formal evaluative discourse with intellectual argumentation and conditional reasoning.
 
-**Paragraph Expletive (sen_faut_que) - Literary Formal Discourse:**
-> "Il lui dit qu'il ne se sentait pas capable d'en décider : mais que s'il s'en fallait rapporter aux pensées de quelques saintes âmes, qui sont plus croyables en ces choses que les savants du monde... peu s'en fallait qu'ils **ne** s'en moquassent ; puisque S. Paul disait assez clairement..."
+**Paragraph Expletive (sen_faut_que) - Technical Formal Discourse:**
+> "il s'en est fallu de peu qu'elle provoque des fuites de gaz incontrôlées et des explosions" (sen_faut_que)
 
-**Analysis**: Formal literary discourse with complex argumentation, religious references, and sophisticated syntactic structures.
+**Analysis**: Technical discourse with procedural language and risk assessment terminology.
 
 ### 4.4 Empirical Discourse Insights
 
