@@ -128,6 +128,9 @@ export const BatchAnalysis = ({
                     Prediction
                   </th>
                   <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
+                    Dual-Mode Classifier
+                  </th>
+                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
                     Surface Form
                   </th>
                 </tr>
@@ -183,6 +186,62 @@ export const BatchAnalysis = ({
                         }}>
                           {prediction}
                         </span>
+                      </td>
+                      <td style={{ padding: '12px', maxWidth: '300px' }}>
+                        {result.dualModeAnalysis ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{
+                                fontWeight: '500',
+                                color: result.dualModeAnalysis.hasExpletive ? '#dc3545' : '#28a745',
+                                fontSize: '0.9em'
+                              }}>
+                                {result.dualModeAnalysis.hasExpletive ? 'EXPLETIVE' : 'NON-EXPLETIVE'}
+                              </span>
+                              <span style={{
+                                fontSize: '0.8em',
+                                color: '#6c757d',
+                                backgroundColor: '#f8f9fa',
+                                padding: '2px 6px',
+                                borderRadius: '3px'
+                              }}>
+                                {(result.dualModeAnalysis.confidence * 100).toFixed(1)}%
+                              </span>
+                              <span style={{
+                                fontSize: '0.75em',
+                                color: '#6c757d',
+                                fontStyle: 'italic'
+                              }}>
+                                ({result.dualModeAnalysis.mode})
+                              </span>
+                            </div>
+                            <div style={{
+                              fontSize: '0.8em',
+                              color: '#495057',
+                              lineHeight: '1.3'
+                            }}>
+                              {result.dualModeAnalysis.features && (
+                                <div>
+                                  <strong>Trigger:</strong> {result.dualModeAnalysis.features.trigger_type} 
+                                  ({(result.dualModeAnalysis.features.trigger_strength * 100).toFixed(1)}%)
+                                  <br />
+                                  <strong>Register:</strong> {result.dualModeAnalysis.features.register} 
+                                  ({result.dualModeAnalysis.features.register_score.toFixed(2)}x)
+                                  <br />
+                                  <strong>Semantic:</strong> {result.dualModeAnalysis.features.semantic_field}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <span style={{
+                            color: '#9ca3af',
+                            fontStyle: 'italic',
+                            fontSize: '0.9em'
+                          }}>
+                            Analysis unavailable
+                          </span>
+                        )}
                       </td>
                       <td style={{ padding: '12px', maxWidth: '250px' }}>
                         {result.surfaceForm && result.surfaceForm !== result.text ? (

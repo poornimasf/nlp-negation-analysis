@@ -135,6 +135,23 @@ const SimpleNegationAnalyzer = () => {
           }
 
           const analysis = await analyzer.analyzeNegationEnhanced(sentence, 'RULE_BASED');
+          
+          // NEW: Add dual-mode classifier analysis for all sentences
+          let dualModeAnalysis = null;
+          try {
+            const { analyzeWithEnhancedFeatures } = await import('../utils/enhancedTrainingAnalyzer');
+            // Create minimal training data for dual-mode analysis
+            const minimalTrainingData = [
+              { text: "j'ai peur qu'il vienne", hasExpletive: true, trigger: "peur_que" },
+              { text: "avant qu'il parte", hasExpletive: true, trigger: "avant_que" },
+              { text: "utiliser avant de partir", hasExpletive: false, trigger: "avant_de" }
+            ];
+            const enhancedResult = analyzeWithEnhancedFeatures(sentence, minimalTrainingData);
+            dualModeAnalysis = enhancedResult.dualModeAnalysis;
+          } catch (error) {
+            console.warn('Dual-mode classifier error:', error);
+          }
+          
           let formattedResult;
           let classification;
           let proposedSentence = null;
@@ -374,7 +391,8 @@ const SimpleNegationAnalyzer = () => {
             label: formattedResult,
             classification: displayClassification,
             proposedSentence,
-            surfaceForm: trainingAnalysis?.surfaceForm || null // NEW: Add surface form from analysis
+            surfaceForm: trainingAnalysis?.surfaceForm || null, // NEW: Add surface form from analysis
+            dualModeAnalysis: dualModeAnalysis // NEW: Add dual-mode classifier results
           });
 
           setBatchResults([...results]);
