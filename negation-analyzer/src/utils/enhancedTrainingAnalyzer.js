@@ -1448,10 +1448,14 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   // NEW: Integrated dual-mode classifier analysis
   let dualModeAnalysis = null;
   try {
+    console.log('🔍 DUAL-MODE CLASSIFIER: Creating classifier for:', text.substring(0, 30) + '...');
     const dualModeClassifier = new IntegratedDualModeClassifier();
+    console.log('🔍 DUAL-MODE CLASSIFIER: Calling analyzeWithEmpiricalFeatures...');
     dualModeAnalysis = dualModeClassifier.analyzeWithEmpiricalFeatures(text);
+    console.log('🔍 DUAL-MODE CLASSIFIER: Result:', dualModeAnalysis);
   } catch (error) {
-    console.warn('Dual-mode classifier error:', error);
+    console.warn('❌ DUAL-MODE CLASSIFIER ERROR:', error);
+    console.warn('❌ ERROR STACK:', error.stack);
   }
   
   return {
