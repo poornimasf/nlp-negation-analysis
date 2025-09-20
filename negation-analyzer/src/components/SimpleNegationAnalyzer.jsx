@@ -242,8 +242,14 @@ const SimpleNegationAnalyzer = () => {
           // NEW: Add dual-mode classifier analysis using pre-loaded training data
           let dualModeAnalysis = null;
           try {
+            console.log(`🔍 DUAL-MODE: Processing sentence ${index + 1}:`, sentence.substring(0, 50) + '...');
             const enhancedResult = analyzeWithEnhancedFeatures(sentence, trainingDataToUse);
             dualModeAnalysis = enhancedResult.dualModeAnalysis;
+            console.log(`✅ DUAL-MODE: Analysis complete for sentence ${index + 1}:`, {
+              hasExpletive: dualModeAnalysis?.hasExpletive,
+              confidence: dualModeAnalysis?.confidence,
+              features: dualModeAnalysis?.features?.trigger_type
+            });
             
             // Override mode based on user selection and enhance with discourse factors
             if (dualModeAnalysis) {
@@ -291,7 +297,8 @@ const SimpleNegationAnalyzer = () => {
               }
             }
           } catch (error) {
-            console.warn('Dual-mode classifier error:', error);
+            console.warn(`❌ DUAL-MODE: Error for sentence ${index + 1}:`, error);
+            console.warn(`❌ DUAL-MODE: Sentence text:`, sentence);
           }
           
           let formattedResult;
@@ -525,6 +532,16 @@ const SimpleNegationAnalyzer = () => {
                                       'Unknown';
 
           console.log('Final Classification:', displayClassification);
+
+          console.log(`📊 RESULTS: Adding sentence ${index + 1} to results:`, {
+            sentence: sentence.substring(0, 30) + '...',
+            hasDualMode: !!dualModeAnalysis,
+            dualModeDetails: dualModeAnalysis ? {
+              hasExpletive: dualModeAnalysis.hasExpletive,
+              confidence: dualModeAnalysis.confidence,
+              mode: dualModeAnalysis.mode
+            } : null
+          });
 
           results.push({
             id: index + 1,
