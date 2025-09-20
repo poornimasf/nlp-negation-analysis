@@ -500,6 +500,12 @@ function detectDiscourseContext(text) {
  * Enhanced similarity calculation with linguistic features
  */
 export function calculateEnhancedSimilarity(text1, text2) {
+  // Safety checks for undefined text
+  if (!text1 || !text2) {
+    console.warn('calculateEnhancedSimilarity: undefined text', { text1: !!text1, text2: !!text2 });
+    return 0;
+  }
+  
   const norm1 = normalizeText(text1.toLowerCase());
   const norm2 = normalizeText(text2.toLowerCase());
   
@@ -853,6 +859,7 @@ export function analyzeWithEnhancedFeatures(text, trainingData) {
   
   // Find similar examples with enhanced similarity
   const enhancedExamples = trainingData
+    .filter(example => example && example.text && typeof example.text === 'string') // Filter out invalid examples
     .map(example => {
       const enhancedSim = calculateEnhancedSimilarity(text, example.text);
       return {
