@@ -122,6 +122,7 @@ class IntegratedDualModeClassifier {
 
   // Generate empirical analysis
   analyzeWithEmpiricalFeatures(text) {
+    console.log('🚀 DEPLOYMENT TEST: New empirical analyzer is running!', text.substring(0, 20));
     const features = this.extractEmpiricalFeatures(text);
     
     // September 2025 empirical scoring (5,000 examples)
