@@ -237,7 +237,7 @@ const SimpleNegationAnalyzer = () => {
             await new Promise(resolve => setTimeout(resolve, 1000));
           }
 
-          const analysis = await analyzer.analyzeNegationEnhanced(sentence, 'RULE_BASED');
+          const analysis = await analyzer.analyzeNegationEnhanced(sentence, 'RULE_BASED', null, analysisMode.toLowerCase().replace('_mode', ''));
           
           // NEW: Add dual-mode classifier analysis using pre-loaded training data
           let dualModeAnalysis = null;

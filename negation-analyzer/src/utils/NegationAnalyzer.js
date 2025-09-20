@@ -125,8 +125,8 @@ class NegationAnalyzer {
    * Uses semantic hierarchy: Logical > Expletive > Syntactic
    * NOW INCLUDES: PeurQueAnalyzer integration for "peur que" constructions
    */
-  async analyzeNegationEnhanced(text, analysisMode = 'RULE_BASED', trainingData = null) {
-    console.log('🧠 CORPUS-ENHANCED ANALYSIS:', { text: text.substring(0, 50), mode: analysisMode });
+  async analyzeNegationEnhanced(text, analysisMode = 'RULE_BASED', trainingData = null, mode = 'sentence') {
+    console.log('🧠 CORPUS-ENHANCED ANALYSIS:', { text: text.substring(0, 50), mode: analysisMode, analysisType: mode });
     
     try {
       // Check for "peur que" constructions first (highest priority)
@@ -163,8 +163,8 @@ class NegationAnalyzer {
       
       if (analysisMode === 'RULE_BASED') {
         console.log('🔧 Using enhanced rule-based analysis...');
-        // Use enhanced rule-based analysis with corpus insights
-        result = analyzeTextEnhanced(text);
+        // Use enhanced rule-based analysis with corpus insights and mode
+        result = analyzeTextEnhanced(text, mode);
         console.log('📊 Enhanced analysis result:', result);
         
         // Add standard fields for compatibility

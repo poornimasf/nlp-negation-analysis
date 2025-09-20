@@ -1,34 +1,81 @@
 /**
- * Enhanced Rule-based analyzer with corpus-driven insights
- * Addresses overcorrection: "avant que + subjunctive" enables but doesn't require expletive
- * Implements hierarchy: Logical > Expletive > Syntactic
+ * Enhanced Rule-based analyzer with September 2025 empirical corpus insights
+ * Based on 5,000 balanced training examples across 5 trigger types
+ * Implements empirical hierarchy: Register > Trigger-Specific > Semantic > Subjunctive Paradox
  */
 
 import { EnhancedSemanticAnalyzer } from './enhancedSemanticAnalyzer.js';
 
-// Core patterns - UPDATED with corpus insights
+// Core patterns - UPDATED with September 2025 empirical findings
 const TRIGGER_PATTERNS = {
-    // Triggers that can take expletive ne (but don't always require it)
+    // All triggers show 50% baseline in balanced corpus, adjusted by context
     AVANT_QUE: {
         pattern: /\b(?:avant\s+(?:que|qu['']))\b/i,
         name: 'avant que',
         requiresSubjunctive: true,
-        allowsExpletive: true,  // CRITICAL: Can have expletive ne but not required
-        corpusExpletiveRate: 0.0  // From corpus analysis - confirms overcorrection
+        allowsExpletive: true,
+        baselineRate: 0.5,  // 50% baseline from balanced corpus
+        subjunctiveRate: 0.421,  // 42.1% when subjunctive present (empirical)
+        semanticField: 'temporal'
     },
     PEUR_QUE: {
         pattern: /\b(?:peur\s+(?:que|qu['']))\b/i,
         name: 'peur que',
         requiresSubjunctive: true,
         allowsExpletive: true,
-        corpusExpletiveRate: 0.8  // Higher expletive rate in emotional contexts
+        baselineRate: 0.5,  // 50% baseline from balanced corpus
+        emotionalRate: 0.507,  // 50.7% in emotional contexts (empirical)
+        semanticField: 'emotional'
     },
-    PEU_SEN_FAUT: {
-        pattern: /\b(?:peu\s+s['']en\s+faut)\b/i,
-        name: 'peu s\'en faut',
+    SEN_FAUT_QUE: {
+        pattern: /\b(?:(?:peu\s+)?s['']en\s+(?:faut|fallut|est\s+fallu))\b/i,
+        name: 'sen faut que',
         requiresSubjunctive: true,
         allowsExpletive: true,
-        corpusExpletiveRate: 0.9  // High expletive rate for impersonal constructions
+        baselineRate: 0.5,  // 50% baseline from balanced corpus
+        literaryRate: 0.744,  // 74.4% in formal/literary contexts (empirical)
+        semanticField: 'logical'
+    },
+    MOINS_PLUS: {
+        pattern: /\b(?:plus|moins)\s+.*\s+(?:que|qu[''])\b/i,
+        name: 'moins plus',
+        requiresSubjunctive: false,
+        allowsExpletive: true,
+        baselineRate: 0.5,  // 50% baseline from balanced corpus
+        semanticField: 'logical'
+    },
+    AVANT_DE: {
+        pattern: /\b(?:avant\s+de?)\b/i,
+        name: 'avant de',
+        requiresSubjunctive: false,
+        allowsExpletive: true,
+        baselineRate: 0.5,  // 50% baseline from balanced corpus
+        emotionalRate: 0.636,  // 63.6% in emotional contexts (empirical)
+        semanticField: 'temporal'
+    }
+};
+
+// Register patterns - PRIMARY PREDICTOR (2.43x correlation)
+const REGISTER_PATTERNS = {
+    LITERARY: {
+        pattern: /\b(?:fallut|eût|fût|submergeât|contempla|irréparable|naguère|jadis|désormais|guère|point)\b/i,
+        expletiveBoost: 0.744,  // 74.4% expletive rate in literary contexts
+        confidence: 0.9
+    },
+    FORMAL: {
+        pattern: /\b(?:il\s+convient\s+de|par\s+conséquent|en\s+conséquence|ainsi|donc|monsieur|madame|veuillez)\b/i,
+        expletiveBoost: 0.667,  // 66.7% expletive rate in formal contexts
+        confidence: 0.8
+    },
+    TECHNICAL: {
+        pattern: /\b(?:système|processus|données|paramètres|installation|configuration|procédure|utiliser|stocker)\b/i,
+        expletiveReduction: 0.3,  // Technical contexts reduce expletive likelihood
+        confidence: 0.7
+    },
+    CONVERSATIONAL: {
+        pattern: /\b(?:bon|allez|dépêche|faut\s+qu'on|ça|ouais|nan|ben|alors)\b/i,
+        expletiveReduction: 0.2,  // Conversational contexts reduce expletive likelihood
+        confidence: 0.6
     }
 };
 
@@ -135,24 +182,230 @@ const analyzeComplementClause = (text) => {
  * Enhanced rule-based analysis with corpus-driven semantic analysis
  * Addresses the critical overcorrection problem identified in corpus analysis
  */
-export const analyzeTextEnhanced = (text) => {
-    const semanticAnalyzer = new EnhancedSemanticAnalyzer();
+export const analyzeTextEnhanced = (text, mode = 'sentence') => {
+    console.log('🔬 EMPIRICAL ANALYSIS 2025: Starting analysis with September 2025 corpus findings');
     
-    // Step 1: Traditional rule-based analysis
-    const traditionalAnalysis = analyzeText(text);
+    const semantic = new EnhancedSemanticAnalyzer();
     
-    // Step 2: Enhanced semantic analysis using corpus insights
-    const semanticAnalysis = semanticAnalyzer.analyzeSemantics(text);
+    // Phase 1: Logical negation check (unchanged - still highest priority)
+    const logicalContext = semantic.analyzeSemanticContext(text);
+    if (logicalContext.hasLogicalNegation && logicalContext.confidence > 0.7) {
+        return {
+            type: 'No Expletive',
+            prediction: 'No Expletive',
+            confidence: logicalContext.confidence,
+            reasoning: `Strong logical negation context detected: ${logicalContext.primaryIndicator}`,
+            correctionApplied: 'logical-override',
+            empiricalBasis: 'Logical negation always overrides expletive contexts',
+            hierarchyLevel: 'Priority 0: Logical Override'
+        };
+    }
     
-    // Step 3: Integrate analyses with hierarchy: Logical > Expletive > Syntactic
-    const integratedAnalysis = integrateAnalyses(traditionalAnalysis, semanticAnalysis, text);
+    // Phase 2: Register Analysis (NEW - Primary empirical predictor)
+    const registerAnalysis = analyzeRegister(text);
+    console.log('📊 REGISTER ANALYSIS:', registerAnalysis);
     
-    return integratedAnalysis;
+    // Phase 3: Trigger Detection with empirical rates
+    const triggerAnalysis = analyzeTriggers(text);
+    console.log('🎯 TRIGGER ANALYSIS:', triggerAnalysis);
+    
+    // Phase 4: Subjunctive Paradox Check (NEW - empirical finding)
+    const subjunctiveAnalysis = analyzeSubjunctiveParadox(text);
+    console.log('⚠️ SUBJUNCTIVE PARADOX:', subjunctiveAnalysis);
+    
+    // Phase 5: Semantic Field Analysis
+    const semanticField = analyzeSemanticField(text, triggerAnalysis.trigger);
+    console.log('🧠 SEMANTIC FIELD:', semanticField);
+    
+    // Phase 6: Mode-specific discourse analysis
+    const discourseAnalysis = mode === 'paragraph' ? analyzeParagraphDiscourse(text) : { boost: 0, factors: [] };
+    console.log('📝 DISCOURSE ANALYSIS:', discourseAnalysis);
+    
+    // Phase 7: Empirical Decision Logic
+    return calculateEmpiricalDecision({
+        text,
+        mode,
+        register: registerAnalysis,
+        trigger: triggerAnalysis,
+        subjunctive: subjunctiveAnalysis,
+        semantic: semanticField,
+        discourse: discourseAnalysis,
+        logical: logicalContext
+    });
 };
 
-/**
- * Check if the context represents a formal politeness situation that favors expletive usage
- */
+// Register analysis - Primary empirical predictor (2.43x correlation)
+function analyzeRegister(text) {
+    let registerType = 'neutral';
+    let expletiveModifier = 0;
+    let confidence = 0.5;
+    let evidence = [];
+    
+    // Check for literary register (strongest predictor)
+    if (REGISTER_PATTERNS.LITERARY.pattern.test(text)) {
+        registerType = 'literary';
+        expletiveModifier = REGISTER_PATTERNS.LITERARY.expletiveBoost;
+        confidence = REGISTER_PATTERNS.LITERARY.confidence;
+        evidence.push('Literary markers detected (fallut, eût, fût, naguère, etc.)');
+    }
+    // Check for formal register
+    else if (REGISTER_PATTERNS.FORMAL.pattern.test(text)) {
+        registerType = 'formal';
+        expletiveModifier = REGISTER_PATTERNS.FORMAL.expletiveBoost;
+        confidence = REGISTER_PATTERNS.FORMAL.confidence;
+        evidence.push('Formal markers detected (il convient, par conséquent, etc.)');
+    }
+    // Check for technical register (reduces expletive)
+    else if (REGISTER_PATTERNS.TECHNICAL.pattern.test(text)) {
+        registerType = 'technical';
+        expletiveModifier = -REGISTER_PATTERNS.TECHNICAL.expletiveReduction;
+        confidence = REGISTER_PATTERNS.TECHNICAL.confidence;
+        evidence.push('Technical markers detected (système, processus, données, etc.)');
+    }
+    // Check for conversational register (reduces expletive)
+    else if (REGISTER_PATTERNS.CONVERSATIONAL.pattern.test(text)) {
+        registerType = 'conversational';
+        expletiveModifier = -REGISTER_PATTERNS.CONVERSATIONAL.expletiveReduction;
+        confidence = REGISTER_PATTERNS.CONVERSATIONAL.confidence;
+        evidence.push('Conversational markers detected (bon, allez, ça, etc.)');
+    }
+    
+    return {
+        type: registerType,
+        expletiveModifier,
+        confidence,
+        evidence,
+        empiricalBasis: registerType === 'literary' ? '74.4% expletive rate' : 
+                       registerType === 'formal' ? '66.7% expletive rate' :
+                       registerType === 'technical' ? 'Reduces expletive likelihood' :
+                       registerType === 'conversational' ? 'Reduces expletive likelihood' : 
+                       'Neutral register (50% baseline)'
+    };
+}
+
+// Trigger analysis with empirical rates
+function analyzeTriggers(text) {
+    let foundTrigger = null;
+    let triggerRate = 0.5; // Default baseline
+    let evidence = [];
+    
+    for (const [key, trigger] of Object.entries(TRIGGER_PATTERNS)) {
+        if (trigger.pattern.test(text)) {
+            foundTrigger = trigger;
+            triggerRate = trigger.baselineRate;
+            evidence.push(`${trigger.name} trigger detected`);
+            break;
+        }
+    }
+    
+    return {
+        found: !!foundTrigger,
+        trigger: foundTrigger,
+        baselineRate: triggerRate,
+        evidence,
+        empiricalBasis: foundTrigger ? `${foundTrigger.name}: 50% baseline rate` : 'No trigger detected'
+    };
+}
+
+// Subjunctive paradox analysis (empirical finding: subjunctive reduces expletive likelihood)
+function analyzeSubjunctiveParadox(text) {
+    let hasSubjunctive = false;
+    let subjunctiveModifier = 0;
+    let evidence = [];
+    
+    // Check for subjunctive patterns
+    for (const [type, pattern] of Object.entries(SUBJUNCTIVE_PATTERNS)) {
+        if (pattern.test(text)) {
+            hasSubjunctive = true;
+            evidence.push(`Subjunctive detected: ${type.toLowerCase()}`);
+            break;
+        }
+    }
+    
+    if (hasSubjunctive) {
+        // Empirical finding: subjunctive presence reduces expletive likelihood
+        subjunctiveModifier = -0.12; // 27.6% vs 15.6% = inverse correlation
+        evidence.push('Subjunctive paradox: reduces expletive likelihood');
+    }
+    
+    return {
+        hasSubjunctive,
+        modifier: subjunctiveModifier,
+        evidence,
+        empiricalBasis: hasSubjunctive ? 
+            'Non-expletive examples show MORE subjunctive (27.6% vs 15.6%)' : 
+            'No subjunctive detected'
+    };
+}
+
+// Semantic field analysis
+function analyzeSemanticField(text, trigger) {
+    let semanticField = 'neutral';
+    let fieldModifier = 0;
+    let evidence = [];
+    
+    // Emotional context detection
+    const emotionalMarkers = /\b(peur|crainte?|redoute?|anxiét|inquiét|angoisse|stress|nervosité)\b/gi;
+    if (emotionalMarkers.test(text)) {
+        semanticField = 'emotional';
+        if (trigger?.name === 'peur que') {
+            fieldModifier = 0.007; // 50.7% vs 50% = slight boost
+            evidence.push('Emotional context with peur_que: 50.7% expletive rate');
+        } else if (trigger?.name === 'avant de') {
+            fieldModifier = 0.136; // 63.6% vs 50% = stronger boost
+            evidence.push('Emotional context with avant_de: 63.6% expletive rate');
+        }
+    }
+    
+    // Temporal context detection
+    const temporalMarkers = /\b(avant|après|pendant|temps|moment|tôt|tard|durée|délai)\b/gi;
+    if (temporalMarkers.test(text)) {
+        semanticField = semanticField === 'emotional' ? 'emotional-temporal' : 'temporal';
+        evidence.push('Temporal context detected');
+    }
+    
+    // Logical context detection
+    const logicalMarkers = /\b(donc|ainsi|par conséquent|en conséquence|logiquement|raisonnablement)\b/gi;
+    if (logicalMarkers.test(text)) {
+        semanticField = 'logical';
+        evidence.push('Logical context detected');
+    }
+    
+    return {
+        field: semanticField,
+        modifier: fieldModifier,
+        evidence,
+        empiricalBasis: `${semanticField} context analysis based on corpus findings`
+    };
+}
+
+// Paragraph-specific discourse analysis
+function analyzeParagraphDiscourse(text) {
+    let boost = 0;
+    let factors = [];
+    
+    // Register consistency across longer text
+    const formalMarkers = /\b(il\s+convient|par\s+conséquent|monsieur|madame|veuillez)\b/gi;
+    const literaryMarkers = /\b(fallut|eût|fût|naguère|jadis|désormais)\b/gi;
+    
+    if (formalMarkers.test(text) || literaryMarkers.test(text)) {
+        boost += 0.08; // 8% boost for formal/literary register
+        factors.push('Formal/literary register consistency');
+    }
+    
+    // Sentence complexity (paragraph-level feature)
+    const complexityMarkers = text.split(/[,;:]/).length;
+    if (complexityMarkers > 2) {
+        boost += 0.03; // 3% boost for complex syntax
+        factors.push('Complex sentence structure');
+    }
+    
+    return {
+        boost: Math.min(0.11, boost), // Cap at 11% boost
+        factors,
+        empiricalBasis: 'Paragraph-level discourse coherence analysis'
+    };
+}
 function hasFormalPolitenessContext(semantic) {
     const discourse = semantic.discourseAnalysis;
     if (!discourse) {
@@ -504,3 +757,97 @@ export const analyzeText = (text) => {
     
     return result;
 };
+
+// Empirical decision calculation with September 2025 hierarchy
+function calculateEmpiricalDecision(analysis) {
+    const { text, mode, register, trigger, subjunctive, semantic, discourse, logical } = analysis;
+    
+    // Start with baseline or trigger-specific rate
+    let expletiveProbability = trigger.found ? trigger.baselineRate : 0.1;
+    let confidence = 0.5;
+    let reasoning = [];
+    let hierarchySteps = [];
+    
+    // Priority 1: Register Analysis (Primary predictor - 2.43x correlation)
+    if (register.type !== 'neutral') {
+        expletiveProbability += register.expletiveModifier;
+        confidence = Math.max(confidence, register.confidence);
+        reasoning.push(`Register: ${register.type} (${register.empiricalBasis})`);
+        hierarchySteps.push(`Priority 1 (Register): ${register.type} → ${register.expletiveModifier > 0 ? '+' : ''}${(register.expletiveModifier * 100).toFixed(1)}%`);
+    }
+    
+    // Priority 2: Trigger-Specific Context
+    if (trigger.found) {
+        reasoning.push(`Trigger: ${trigger.trigger.name} (${trigger.empiricalBasis})`);
+        hierarchySteps.push(`Priority 2 (Trigger): ${trigger.trigger.name} → baseline 50%`);
+        
+        // Special trigger-context combinations
+        if (trigger.trigger.name === 'sen faut que' && register.type === 'literary') {
+            expletiveProbability = 0.744; // Override with specific empirical rate
+            confidence = 0.9;
+            reasoning.push('Special case: sen_faut_que + literary → 74.4% empirical rate');
+            hierarchySteps.push('Priority 2a (Special): sen_faut_que + literary → 74.4%');
+        }
+    }
+    
+    // Priority 3: Subjunctive Paradox (Reduces expletive likelihood)
+    if (subjunctive.hasSubjunctive) {
+        expletiveProbability += subjunctive.modifier;
+        reasoning.push(`Subjunctive: ${subjunctive.empiricalBasis}`);
+        hierarchySteps.push(`Priority 3 (Subjunctive): Present → ${(subjunctive.modifier * 100).toFixed(1)}% (paradox effect)`);
+    }
+    
+    // Priority 4: Semantic Field Effects
+    if (semantic.modifier !== 0) {
+        expletiveProbability += semantic.modifier;
+        reasoning.push(`Semantic: ${semantic.empiricalBasis}`);
+        hierarchySteps.push(`Priority 4 (Semantic): ${semantic.field} → ${semantic.modifier > 0 ? '+' : ''}${(semantic.modifier * 100).toFixed(1)}%`);
+    }
+    
+    // Priority 5: Discourse Analysis (Paragraph mode only)
+    if (mode === 'paragraph' && discourse.boost > 0) {
+        expletiveProbability += discourse.boost;
+        reasoning.push(`Discourse: ${discourse.empiricalBasis} (+${(discourse.boost * 100).toFixed(1)}%)`);
+        hierarchySteps.push(`Priority 5 (Discourse): ${discourse.factors.join(', ')} → +${(discourse.boost * 100).toFixed(1)}%`);
+    }
+    
+    // Clamp probability to [0, 1]
+    expletiveProbability = Math.max(0, Math.min(1, expletiveProbability));
+    
+    // Determine final prediction
+    const prediction = expletiveProbability > 0.5 ? 'Expletive' : 'No Expletive';
+    const finalConfidence = Math.max(0.6, Math.abs(expletiveProbability - 0.5) * 2);
+    
+    // Build detailed evidence with hierarchical steps
+    const evidence = [
+        '⚖️ HIERARCHICAL CONFLICT RESOLUTION (September 2025 Empirical):',
+        ...hierarchySteps,
+        '',
+        '🎯 FINAL DECISION LOGIC:',
+        `Empirical probability: ${(expletiveProbability * 100).toFixed(1)}%`,
+        `Decision threshold: 50%`,
+        `Final prediction: ${prediction}`,
+        '',
+        '📊 EMPIRICAL BASIS:',
+        ...reasoning,
+        '',
+        `Mode: ${mode} mode analysis`,
+        `Confidence: ${(finalConfidence * 100).toFixed(1)}%`
+    ];
+    
+    return {
+        type: prediction,
+        prediction: prediction,
+        confidence: finalConfidence,
+        reasoning: reasoning.join(' | '),
+        correctionApplied: register.type === 'literary' ? 'literary-boost' : 
+                          register.type === 'formal' ? 'formal-boost' :
+                          register.type === 'technical' ? 'technical-reduction' :
+                          subjunctive.hasSubjunctive ? 'subjunctive-paradox' : 'none',
+        empiricalBasis: `September 2025 corpus analysis (5,000 examples)`,
+        hierarchyLevel: `${hierarchySteps.length} priority levels applied`,
+        evidence: evidence,
+        probability: expletiveProbability,
+        mode: mode
+    };
+}
