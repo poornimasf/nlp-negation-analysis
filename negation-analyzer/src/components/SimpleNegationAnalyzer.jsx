@@ -548,9 +548,9 @@ const SimpleNegationAnalyzer = () => {
           console.log('Raw Analysis:', analysis);
           console.log('Formatted Result:', formattedResult);
 
-          // Determine classification based on mode and analysis
-          const displayClassification = analysis.type === 'Expletive' ? 'Expletive' : 
-                                      analysis.type === 'No Expletive' ? 'No Expletive' : 
+          // Determine classification based on mode and analysis (handle both old and new formats)
+          const displayClassification = analysis.prediction || analysis.type === 'Expletive' ? 'Expletive' : 
+                                      analysis.prediction === 'No Expletive' || analysis.type === 'No Expletive' ? 'No Expletive' : 
                                       'Unknown';
 
           console.log('Final Classification:', displayClassification);
