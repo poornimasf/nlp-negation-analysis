@@ -276,27 +276,54 @@ Markers that provide background information, causation, and elaboration:
 - **Paragraph mode average**: ~0.35 markers per example
 - **Examples**: "parce que" (because), "c'est-à-dire" (that is to say), "par exemple" (for example), "étant donné" (given that)
 
-**Additional Discourse Dimensions (From Corpus Framework):**
+**Additional Discourse Dimensions (From Actual Corpus Analysis):**
 
-**Speaker Stance Markers:**
-- **Tentative/Hedged**: "il semble que", "on dirait que", "j'ai l'impression que" (67% expletive correlation)
-- **Polite/Deferential**: "si vous permettez", "avec votre permission", "j'ose espérer" (72% expletive correlation)
-- **Assertive/Confident**: "je suis certain que", "il est évident que", "sans aucun doute" (34% expletive correlation)
+**Speaker Stance Markers (Empirically Measured):**
+- **Tentative/Hedged**: "il semble que", "probablement", "apparemment" (0.86x correlation - slightly favors non-expletive)
+- **Polite/Deferential**: "s'il vous plaît", "veuillez", "je vous prie" (0.00x correlation - rare in corpus)
+- **Assertive/Confident**: "certainement", "évidemment", "sans aucun doute" (2.00x correlation - **strongly favors expletive**)
 
-**Discourse Function Markers:**
-- **Expository**: "il faut noter que", "on peut observer que", "il convient de souligner" (61% expletive correlation)
-- **Argumentative**: "cependant", "néanmoins", "en revanche", "par contre" (45% expletive correlation)
-- **Narrative**: "puis", "ensuite", "finalement", "à ce moment-là" (28% expletive correlation)
+**Discourse Function Markers (Corpus-Validated):**
+- **Expository**: "il faut noter que", "notons que" (1.00x correlation - neutral)
+- **Argumentative**: "cependant", "mais", "pourtant", "néanmoins" (0.97x correlation - neutral, 26% usage rate)
+- **Narrative**: "puis", "ensuite", "alors", "enfin" (0.93x correlation - slightly favors non-expletive)
 
-**Register-Specific Markers:**
-- **Literary**: Classical constructions, elevated prose style (85% expletive correlation)
-- **Formal**: "il convient de", "par conséquent", official terminology (78% expletive correlation)
-- **Technical**: Procedural language, specifications, manuals (12% expletive correlation)
-- **Conversational**: Casual speech patterns, informal markers (22% expletive correlation)
+**Register-Specific Markers (Empirically Confirmed):**
+- **Literary**: Classical constructions, elevated prose (2.53x correlation - **strongest predictor**: 15.2% vs 6.0%)
+- **Formal**: "il convient de", "par conséquent", official terminology (1.77x correlation - **strong predictor**: 9.2% vs 5.2%)
+- **Technical**: Procedural language, specifications (0.67x correlation - favors non-expletive: 0.8% vs 1.2%)
+- **Conversational**: Casual speech patterns (1.24x correlation - moderate expletive preference: 10.4% vs 8.4%)
+
+#### Table 9: Empirical Discourse Marker Correlations (500 Examples Analyzed)
+| Discourse Marker Category | Expletive Rate | Non-Expletive Rate | Correlation | Strength |
+|---------------------------|----------------|--------------------|-----------|---------| 
+| **Literary Register** | 15.2% | 6.0% | 2.53x | **Strongest** |
+| **Assertive Stance** | 1.6% | 0.8% | 2.00x | **Strong** |
+| **Formal Register** | 9.2% | 5.2% | 1.77x | **Strong** |
+| **Conversational Register** | 10.4% | 8.4% | 1.24x | Moderate |
+| **Expository Function** | 0.4% | 0.4% | 1.00x | Neutral |
+| **Argumentative Function** | 26.0% | 26.8% | 0.97x | Neutral |
+| **Narrative Function** | 16.0% | 17.2% | 0.93x | Slight Non-Exp |
+| **Tentative Stance** | 2.4% | 2.8% | 0.86x | Slight Non-Exp |
+| **Technical Register** | 0.8% | 1.2% | 0.67x | Favors Non-Exp |
 
 **Practical Difference:**
 - **Sentence mode**: "J'ai peur qu'il vienne" (isolated statement)
 - **Paragraph mode**: "Étant donné la situation complexe, j'ai peur qu'il vienne. Cependant, il faut noter que nous devons considérer les conséquences. Par conséquent, il convient de souligner qu'il faut agir avec prudence." (rich contextual reasoning with formal register, expository discourse, and multiple coherence markers)
+
+**Authentic Corpus Examples of Discourse Markers:**
+
+**Literary Register + Expletive (2.53x correlation):**
+> "Au dehors flottait la femelle, couvant ses oeufs, et presque aussi grosse que le nid ; en s'envolant, peu s'en fallut qu'**elle ne** submergeât notre navire par le vent de ses ailes"
+
+**Assertive Stance + Expletive (2.00x correlation):**
+> "Les peurs ne m'ont pas quitté, mais j'ai une force nouvelle. Avant que le moindre son **ne** sorte de ma bouche"
+
+**Formal Register + Expletive (1.77x correlation):**
+> "D.B. : L'idée d'une politisation marrane des identités est séduisante, mais en ces temps guerriers, j'ai peur qu'**elle ne** devienne à son tour une utopie désincarnée"
+
+**Technical Register + Non-Expletive (0.67x correlation):**
+> "Notons que tous les contenus sont modérés avant d'être rendus publics. Pour naviguer dans le site, l'internaute peut utiliser la barre de menu"
 
 #### Expletive vs Non-Expletive Discourse Patterns:
 
