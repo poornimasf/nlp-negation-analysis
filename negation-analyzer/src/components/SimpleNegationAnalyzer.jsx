@@ -178,9 +178,9 @@ const SimpleNegationAnalyzer = () => {
             
             let trainingDataToUse;
             if (analysisMode === 'PARAGRAPH_MODE') {
-              // Use comprehensive training data for paragraph mode
+              // Use comprehensive paragraph training data for discourse analysis
               try {
-                // Load all available training data for discourse analysis
+                // Load all available paragraph training data for discourse analysis
                 const [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData] = await Promise.all([
                   fetch('/training_data/peur_que_paragraph.json').then(r => r.json()).catch(() => null),
                   fetch('/training_data/avant_que_paragraph.json').then(r => r.json()).catch(() => null),
@@ -189,17 +189,17 @@ const SimpleNegationAnalyzer = () => {
                   fetch('/training_data/moins_plus_paragraph.json').then(r => r.json()).catch(() => null)
                 ]);
                 
-                // Combine all training data for comprehensive discourse analysis
+                // Combine all paragraph training data for comprehensive discourse analysis
                 trainingDataToUse = [];
                 [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData].forEach(data => {
                   if (data && data.examples) {
-                    trainingDataToUse.push(...data.examples.slice(0, 100)); // Use 100 examples from each trigger
+                    trainingDataToUse.push(...data.examples); // Use ALL examples from each trigger (500 each)
                   }
                 });
                 
-                console.log(`📚 PARAGRAPH MODE: Using ${trainingDataToUse.length} training examples for discourse analysis`);
+                console.log(`📚 PARAGRAPH MODE: Using ${trainingDataToUse.length} paragraph training examples for discourse analysis`);
               } catch (error) {
-                console.warn('Failed to load comprehensive training data, using fallback:', error);
+                console.warn('Failed to load paragraph training data, using fallback:', error);
                 trainingDataToUse = [
                   { text: "j'ai peur qu'il vienne", hasExpletive: true, trigger: "peur_que" },
                   { text: "avant qu'il parte", hasExpletive: true, trigger: "avant_que" },
@@ -207,13 +207,34 @@ const SimpleNegationAnalyzer = () => {
                 ];
               }
             } else {
-              // Sentence mode uses minimal training data for focused analysis
-              trainingDataToUse = [
-                { text: "j'ai peur qu'il vienne", hasExpletive: true, trigger: "peur_que" },
-                { text: "avant qu'il partie", hasExpletive: true, trigger: "avant_que" },
-                { text: "utiliser avant de partir", hasExpletive: false, trigger: "avant_de" }
-              ];
-              console.log(`📝 SENTENCE MODE: Using ${trainingDataToUse.length} focused examples`);
+              // Sentence mode uses sentence-specific training data
+              try {
+                // Load all available sentence training data
+                const [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData] = await Promise.all([
+                  fetch('/training_data/peur_que_sentence.json').then(r => r.json()).catch(() => null),
+                  fetch('/training_data/avant_que_sentence.json').then(r => r.json()).catch(() => null),
+                  fetch('/training_data/avant_de_sentence.json').then(r => r.json()).catch(() => null),
+                  fetch('/training_data/sen_faut_que_sentence.json').then(r => r.json()).catch(() => null),
+                  fetch('/training_data/moins_plus_sentence.json').then(r => r.json()).catch(() => null)
+                ]);
+                
+                // Combine all sentence training data
+                trainingDataToUse = [];
+                [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData].forEach(data => {
+                  if (data && data.examples) {
+                    trainingDataToUse.push(...data.examples); // Use ALL examples from each trigger (500 each)
+                  }
+                });
+                
+                console.log(`📝 SENTENCE MODE: Using ${trainingDataToUse.length} sentence training examples`);
+              } catch (error) {
+                console.warn('Failed to load sentence training data, using fallback:', error);
+                trainingDataToUse = [
+                  { text: "j'ai peur qu'il vienne", hasExpletive: true, trigger: "peur_que" },
+                  { text: "avant qu'il partie", hasExpletive: true, trigger: "avant_que" },
+                  { text: "utiliser avant de partir", hasExpletive: false, trigger: "avant_de" }
+                ];
+              }
             }
             
             const enhancedResult = analyzeWithEnhancedFeatures(sentence, trainingDataToUse);
@@ -227,7 +248,7 @@ const SimpleNegationAnalyzer = () => {
                 dualModeAnalysis.mode = 'paragraph';
                 
                 // Enhance with discourse factors for paragraph mode
-                if (trainingDataToUse.length > 10) {
+                if (trainingDataToUse.length > 1000) { // Updated threshold for full dataset
                   // Apply discourse-level adjustments based on comprehensive training data
                   const discourseBoost = calculateDiscourseBoost(sentence, trainingDataToUse);
                   dualModeAnalysis.confidence = Math.min(0.95, dualModeAnalysis.confidence + discourseBoost);

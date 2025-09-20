@@ -53,25 +53,27 @@ export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
       case 'SENTENCE_MODE':
         return {
           title: 'Sentence Mode (Dual-Mode Classifier)',
-          description: 'Optimized for analyzing individual sentences with empirical feature analysis.',
+          description: 'Optimized for analyzing individual sentences using comprehensive sentence-specific training data.',
           features: [
+            'Full sentence training dataset (2,500 examples: 500 per trigger)',
             'Empirical trigger strength analysis (peur_que: 66.7%, avant_que: 42.1%)',
             'Register correlation detection (literary: 2.53x, formal: 1.77x)',
             'Semantic field classification (emotional, temporal, logical)',
-            'Sentence-level context analysis (<200 characters)',
+            'Sentence-level context analysis optimized for short texts',
             'Color-coded predictions with confidence scoring'
           ]
         };
       case 'PARAGRAPH_MODE':
         return {
           title: 'Paragraph Mode (Dual-Mode Classifier)',
-          description: 'Enhanced analysis for longer texts with discourse-level features.',
+          description: 'Enhanced analysis for longer texts using comprehensive paragraph training data with discourse-level features.',
           features: [
-            'Paragraph-level discourse analysis (>200 characters)',
-            'Cross-sentence context consideration',
+            'Full paragraph training dataset (2,500 examples: 500 per trigger)',
+            'Paragraph-level discourse analysis with cross-sentence context',
             'Enhanced register detection in longer texts',
-            'Discourse coherence analysis',
-            'Improved accuracy for complex linguistic contexts'
+            'Discourse coherence analysis with up to +15% confidence boost',
+            'Cross-trigger pattern analysis for improved accuracy',
+            'Complex syntax and register consistency analysis'
           ]
         };
       default:
