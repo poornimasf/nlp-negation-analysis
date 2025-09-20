@@ -168,13 +168,85 @@ Contrary to traditional assumptions, subjunctive presence does not predict exple
 - Low subjunctive usage (5%)
 - Comparative constructions with minimal expletive correlation
 
-### 3.3 Empirical Linguistic Hierarchy
+### 2.4 Comprehensive Linguistic Analysis Tables
+
+#### Table 1: Syntactic Analysis by Trigger Type
+| Trigger | Sample Size | Subjunctive Usage | Complex Sentences | Multi-Clause | Subjunctive→Expletive Rate |
+|---------|-------------|-------------------|-------------------|--------------|---------------------------|
+| avant_que | 100 (50/50) | 38/100 (38.0%) | 88/100 (88.0%) | 100/100 (100%) | 16/38 (42.1%) |
+| sen_faut_que | 100 (50/50) | 30/100 (30.0%) | 86/100 (86.0%) | 100/100 (100%) | 7/30 (23.3%) |
+| peur_que | 100 (50/50) | 28/100 (28.0%) | 82/100 (82.0%) | 100/100 (100%) | 12/28 (42.9%) |
+| avant_de | 100 (50/50) | 7/100 (7.0%) | 87/100 (87.0%) | 58/100 (58.0%) | 3/7 (42.9%) |
+| moins_plus | 100 (50/50) | 5/100 (5.0%) | 87/100 (87.0%) | 100/100 (100%) | 1/5 (20.0%) |
+
+#### Table 2: Semantic Field Distribution by Trigger Type
+| Trigger | Emotional Context | Temporal Context | Logical Context | Emotional→Expletive Rate |
+|---------|-------------------|------------------|-----------------|-------------------------|
+| peur_que | 67/100 (67.0%) | 2/100 (2.0%) | 15/100 (15.0%) | 34/67 (50.7%) |
+| avant_de | 11/100 (11.0%) | 58/100 (58.0%) | 6/100 (6.0%) | 7/11 (63.6%) |
+| avant_que | 15/100 (15.0%) | 53/100 (53.0%) | 12/100 (12.0%) | 7/15 (46.7%) |
+| sen_faut_que | 4/100 (4.0%) | 16/100 (16.0%) | 22/100 (22.0%) | 2/4 (50.0%) |
+| moins_plus | 5/100 (5.0%) | 12/100 (12.0%) | 58/100 (58.0%) | 2/5 (40.0%) |
+
+#### Table 3: Register Distribution by Trigger Type
+| Trigger | Formal | Literary | Informal | Technical | Formal/Literary→Expletive Rate |
+|---------|--------|----------|----------|-----------|-------------------------------|
+| sen_faut_que | 3/100 (3.0%) | 40/100 (40.0%) | 2/100 (2.0%) | 1/100 (1.0%) | 32/43 (74.4%) |
+| peur_que | 3/100 (3.0%) | 0/100 (0.0%) | 4/100 (4.0%) | 0/100 (0.0%) | 2/3 (66.7%) |
+| avant_que | 0/100 (0.0%) | 1/100 (1.0%) | 3/100 (3.0%) | 1/100 (1.0%) | 0/1 (0.0%) |
+| moins_plus | 1/100 (1.0%) | 0/100 (0.0%) | 2/100 (2.0%) | 1/100 (1.0%) | 0/1 (0.0%) |
+| avant_de | 0/100 (0.0%) | 0/100 (0.0%) | 4/100 (4.0%) | 1/100 (1.0%) | 0/0 (N/A) |
+
+#### Table 4: Cross-Trigger Expletive vs Non-Expletive Comparison
+| Linguistic Feature | Expletive Examples (n=250) | Non-Expletive Examples (n=250) | Correlation Ratio |
+|-------------------|----------------------------|--------------------------------|-------------------|
+| With Subjunctive | 39/250 (15.6%) | 69/250 (27.6%) | 0.57x (Inverse) |
+| Emotional Context | 52/250 (20.8%) | 50/250 (20.0%) | 1.04x (Neutral) |
+| Formal/Literary Register | 34/250 (13.6%) | 14/250 (5.6%) | 2.43x (Strong) |
+| Complex Sentences | 213/250 (85.2%) | 216/250 (86.4%) | 0.99x (Neutral) |
+| Multi-Clause | 229/250 (91.6%) | 229/250 (91.6%) | 1.00x (Neutral) |
+
+#### Table 5: Trigger-Specific Expletive Prediction Strength
+| Trigger | Primary Semantic Field | Dominant Register | Strongest Predictor | Prediction Accuracy* |
+|---------|------------------------|-------------------|--------------------|--------------------|
+| sen_faut_que | Logical (22%) | Literary (40%) | Register (74.4%) | High |
+| peur_que | Emotional (67%) | Neutral (93%) | Emotional+Formal (66.7%) | Medium |
+| avant_que | Temporal (53%) | Neutral (95%) | Subjunctive (42.1%) | Medium |
+| avant_de | Temporal (58%) | Neutral (95%) | Emotional (63.6%) | Medium |
+| moins_plus | Logical (58%) | Neutral (96%) | Low correlation | Low |
+
+*Based on strongest linguistic feature correlation with expletive usage
+
+#### Table 6: Linguistic Feature Hierarchy (Predictive Power)
+| Rank | Linguistic Dimension | Best Correlation | Trigger Context | Empirical Evidence |
+|------|---------------------|------------------|-----------------|-------------------|
+| 1 | Register (Formal/Literary) | 2.43x | sen_faut_que (74.4%) | Strong predictor |
+| 2 | Trigger Type | Variable | sen_faut > peur > avant | Moderate predictor |
+| 3 | Semantic Field (Emotional) | 1.04x | peur_que contexts | Weak predictor |
+| 4 | Syntactic (Subjunctive) | 0.57x (Inverse) | All triggers | Counter-predictor |
+
+#### Table 7: Representative Examples by Linguistic Pattern
+| Pattern | Example | Trigger | Analysis |
+|---------|---------|---------|----------|
+| High Expletive Probability | "j'ai peur qu'elles **ne** dénotent une mauvaise compréhension" | peur_que | Formal + Emotional + Subjunctive |
+| Medium Expletive Probability | "avant qu'**il ne** soit trop tard" | avant_que | Temporal + Urgency + Subjunctive |
+| Low Expletive Probability | "avant que le tournage soit stoppé" | avant_que | Neutral + Factual + No emotion |
+| Literary High Probability | "peu s'en fallut qu'elle **ne** submergeât" | sen_faut_que | Literary + Formal + Complex |
+| Conversational Low Probability | "avant que je demenage j'habitait enface" | avant_que | Informal + Simple + Grammatical errors |
+
+### 3.4 Empirical Linguistic Hierarchy
 
 **Predictive Power Ranking (Data-Driven):**
-1. **Register** (2.4x correlation): Formal/literary contexts strongly favor expletive
-2. **Trigger type**: sen_faut_que > peur_que > avant_que in expletive tendency
-3. **Semantic field**: Moderate correlation with emotional contexts
-4. **Syntactic complexity**: Weak correlation (subjunctive paradox observed)
+1. **Register** (2.43x correlation): Formal/literary contexts strongly favor expletive
+2. **Trigger type**: sen_faut_que > peur_que > avant_que in expletive tendency  
+3. **Semantic field**: Moderate correlation with emotional contexts (1.04x)
+4. **Syntactic complexity**: Inverse correlation (subjunctive paradox: 0.57x)
+
+**Key Empirical Insights:**
+- **Register dominance**: Formal/literary register is 2.43x more likely to use expletive
+- **Subjunctive paradox**: Non-expletive examples show MORE subjunctive usage
+- **Trigger hierarchy**: sen_faut_que (74.4%) > peur_que (66.7%) > others (0-42%)
+- **Semantic neutrality**: Emotional contexts show minimal expletive preference
 
 ## 3. Sentence Mode Training Foundation
 
