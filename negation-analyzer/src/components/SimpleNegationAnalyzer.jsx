@@ -146,6 +146,88 @@ const SimpleNegationAnalyzer = () => {
     try {
       const analyzer = new NegationAnalyzer();
       
+      // Load training data once for all sentences (not per sentence)
+      let trainingDataToUse = null;
+      const { analyzeWithEnhancedFeatures } = await import('../utils/enhancedTrainingAnalyzer');
+      
+      if (analysisMode === 'PARAGRAPH_MODE') {
+        // Use comprehensive paragraph training data for discourse analysis
+        try {
+          console.log('🔍 PARAGRAPH MODE: Loading training data once for batch...');
+          // Load all available paragraph training data for discourse analysis
+          const [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData] = await Promise.all([
+            fetch('/training_data/peur_que_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load peur_que_paragraph.json:', e); return null; }),
+            fetch('/training_data/avant_que_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load avant_que_paragraph.json:', e); return null; }),
+            fetch('/training_data/avant_de_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load avant_de_paragraph.json:', e); return null; }),
+            fetch('/training_data/sen_faut_que_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load sen_faut_que_paragraph.json:', e); return null; }),
+            fetch('/training_data/moins_plus_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load moins_plus_paragraph.json:', e); return null; })
+          ]);
+          
+          console.log('🔍 PARAGRAPH MODE: Loaded data:', {
+            peurQue: peurQueData?.examples?.length || 0,
+            avantQue: avantQueData?.examples?.length || 0,
+            avantDe: avantDeData?.examples?.length || 0,
+            senFaut: senFautData?.examples?.length || 0,
+            moinsPlus: moinsPlusData?.examples?.length || 0
+          });
+          
+          // Combine all paragraph training data for comprehensive discourse analysis
+          trainingDataToUse = [];
+          [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData].forEach(data => {
+            if (data && data.examples) {
+              trainingDataToUse.push(...data.examples); // Use ALL examples from each trigger (500 each)
+            }
+          });
+          
+          console.log(`📚 PARAGRAPH MODE: Using ${trainingDataToUse.length} paragraph training examples for discourse analysis`);
+        } catch (error) {
+          console.warn('Failed to load paragraph training data, using fallback:', error);
+          trainingDataToUse = [
+            { text: "j'ai peur qu'il vienne", hasExpletive: true, trigger: "peur_que" },
+            { text: "avant qu'il parte", hasExpletive: true, trigger: "avant_que" },
+            { text: "utiliser avant de partir", hasExpletive: false, trigger: "avant_de" }
+          ];
+        }
+      } else {
+        // Sentence mode uses sentence-specific training data
+        try {
+          console.log('🔍 SENTENCE MODE: Loading training data once for batch...');
+          // Load all available sentence training data
+          const [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData] = await Promise.all([
+            fetch('/training_data/peur_que_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load peur_que_sentence.json:', e); return null; }),
+            fetch('/training_data/avant_que_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load avant_que_sentence.json:', e); return null; }),
+            fetch('/training_data/avant_de_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load avant_de_sentence.json:', e); return null; }),
+            fetch('/training_data/sen_faut_que_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load sen_faut_que_sentence.json:', e); return null; }),
+            fetch('/training_data/moins_plus_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load moins_plus_sentence.json:', e); return null; })
+          ]);
+          
+          console.log('🔍 SENTENCE MODE: Loaded data:', {
+            peurQue: peurQueData?.examples?.length || 0,
+            avantQue: avantQueData?.examples?.length || 0,
+            avantDe: avantDeData?.examples?.length || 0,
+            senFaut: senFautData?.examples?.length || 0,
+            moinsPlus: moinsPlusData?.examples?.length || 0
+          });
+          
+          // Combine all sentence training data
+          trainingDataToUse = [];
+          [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData].forEach(data => {
+            if (data && data.examples) {
+              trainingDataToUse.push(...data.examples); // Use ALL examples from each trigger (500 each)
+            }
+          });
+          
+          console.log(`📝 SENTENCE MODE: Using ${trainingDataToUse.length} sentence training examples`);
+        } catch (error) {
+          console.warn('Failed to load sentence training data, using fallback:', error);
+          trainingDataToUse = [
+            { text: "j'ai peur qu'il vienne", hasExpletive: true, trigger: "peur_que" },
+            { text: "avant qu'il partie", hasExpletive: true, trigger: "avant_que" },
+            { text: "utiliser avant de partir", hasExpletive: false, trigger: "avant_de" }
+          ];
+        }
+      }
+      
       for (let index = 0; index < sentences.length; index++) {
         setBatchProgress({ current: index + 1, total: sentences.length });
         const sentence = sentences[index].trim();
@@ -157,90 +239,9 @@ const SimpleNegationAnalyzer = () => {
 
           const analysis = await analyzer.analyzeNegationEnhanced(sentence, 'RULE_BASED');
           
-          // NEW: Add dual-mode classifier analysis based on selected mode
+          // NEW: Add dual-mode classifier analysis using pre-loaded training data
           let dualModeAnalysis = null;
           try {
-            const { analyzeWithEnhancedFeatures } = await import('../utils/enhancedTrainingAnalyzer');
-            
-            let trainingDataToUse;
-            if (analysisMode === 'PARAGRAPH_MODE') {
-              // Use comprehensive paragraph training data for discourse analysis
-              try {
-                console.log('🔍 PARAGRAPH MODE: Loading training data...');
-                // Load all available paragraph training data for discourse analysis
-                const [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData] = await Promise.all([
-                  fetch('/training_data/peur_que_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load peur_que_paragraph.json:', e); return null; }),
-                  fetch('/training_data/avant_que_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load avant_que_paragraph.json:', e); return null; }),
-                  fetch('/training_data/avant_de_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load avant_de_paragraph.json:', e); return null; }),
-                  fetch('/training_data/sen_faut_que_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load sen_faut_que_paragraph.json:', e); return null; }),
-                  fetch('/training_data/moins_plus_paragraph.json').then(r => r.json()).catch(e => { console.warn('Failed to load moins_plus_paragraph.json:', e); return null; })
-                ]);
-                
-                console.log('🔍 PARAGRAPH MODE: Loaded data:', {
-                  peurQue: peurQueData?.examples?.length || 0,
-                  avantQue: avantQueData?.examples?.length || 0,
-                  avantDe: avantDeData?.examples?.length || 0,
-                  senFaut: senFautData?.examples?.length || 0,
-                  moinsPlus: moinsPlusData?.examples?.length || 0
-                });
-                
-                // Combine all paragraph training data for comprehensive discourse analysis
-                trainingDataToUse = [];
-                [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData].forEach(data => {
-                  if (data && data.examples) {
-                    trainingDataToUse.push(...data.examples); // Use ALL examples from each trigger (500 each)
-                  }
-                });
-                
-                console.log(`📚 PARAGRAPH MODE: Using ${trainingDataToUse.length} paragraph training examples for discourse analysis`);
-              } catch (error) {
-                console.warn('Failed to load paragraph training data, using fallback:', error);
-                trainingDataToUse = [
-                  { text: "j'ai peur qu'il vienne", hasExpletive: true, trigger: "peur_que" },
-                  { text: "avant qu'il parte", hasExpletive: true, trigger: "avant_que" },
-                  { text: "utiliser avant de partir", hasExpletive: false, trigger: "avant_de" }
-                ];
-              }
-            } else {
-              // Sentence mode uses sentence-specific training data
-              try {
-                console.log('🔍 SENTENCE MODE: Loading training data...');
-                // Load all available sentence training data
-                const [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData] = await Promise.all([
-                  fetch('/training_data/peur_que_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load peur_que_sentence.json:', e); return null; }),
-                  fetch('/training_data/avant_que_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load avant_que_sentence.json:', e); return null; }),
-                  fetch('/training_data/avant_de_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load avant_de_sentence.json:', e); return null; }),
-                  fetch('/training_data/sen_faut_que_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load sen_faut_que_sentence.json:', e); return null; }),
-                  fetch('/training_data/moins_plus_sentence.json').then(r => r.json()).catch(e => { console.warn('Failed to load moins_plus_sentence.json:', e); return null; })
-                ]);
-                
-                console.log('🔍 SENTENCE MODE: Loaded data:', {
-                  peurQue: peurQueData?.examples?.length || 0,
-                  avantQue: avantQueData?.examples?.length || 0,
-                  avantDe: avantDeData?.examples?.length || 0,
-                  senFaut: senFautData?.examples?.length || 0,
-                  moinsPlus: moinsPlusData?.examples?.length || 0
-                });
-                
-                // Combine all sentence training data
-                trainingDataToUse = [];
-                [peurQueData, avantQueData, avantDeData, senFautData, moinsPlusData].forEach(data => {
-                  if (data && data.examples) {
-                    trainingDataToUse.push(...data.examples); // Use ALL examples from each trigger (500 each)
-                  }
-                });
-                
-                console.log(`📝 SENTENCE MODE: Using ${trainingDataToUse.length} sentence training examples`);
-              } catch (error) {
-                console.warn('Failed to load sentence training data, using fallback:', error);
-                trainingDataToUse = [
-                  { text: "j'ai peur qu'il vienne", hasExpletive: true, trigger: "peur_que" },
-                  { text: "avant qu'il partie", hasExpletive: true, trigger: "avant_que" },
-                  { text: "utiliser avant de partir", hasExpletive: false, trigger: "avant_de" }
-                ];
-              }
-            }
-            
             const enhancedResult = analyzeWithEnhancedFeatures(sentence, trainingDataToUse);
             dualModeAnalysis = enhancedResult.dualModeAnalysis;
             
