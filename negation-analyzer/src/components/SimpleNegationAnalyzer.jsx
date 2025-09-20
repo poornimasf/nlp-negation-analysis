@@ -243,8 +243,11 @@ const SimpleNegationAnalyzer = () => {
           let dualModeAnalysis = null;
           try {
             console.log(`🔍 DUAL-MODE: Processing sentence ${index + 1}:`, sentence.substring(0, 50) + '...');
+            console.log(`🔍 DUAL-MODE: Full sentence text:`, sentence);
             const enhancedResult = analyzeWithEnhancedFeatures(sentence, trainingDataToUse);
+            console.log(`🔍 DUAL-MODE: Raw enhanced result:`, enhancedResult);
             dualModeAnalysis = enhancedResult.dualModeAnalysis;
+            console.log(`🔍 DUAL-MODE: Extracted dualModeAnalysis:`, dualModeAnalysis);
             
             // Safety check for malformed dual-mode analysis
             if (!dualModeAnalysis || dualModeAnalysis.hasExpletive === undefined || dualModeAnalysis.confidence === undefined) {
