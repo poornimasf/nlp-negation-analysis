@@ -25,10 +25,8 @@ export const ModeSelector = ({ analysisMode, setAnalysisMode, setInfoBoxExpanded
         value={analysisMode}
         onChange={(e) => setAnalysisMode(e.target.value)}
       >
-        <option value="TRAINING_DATA">Training Data Analysis</option>
-        <option value="RULE_BASED">Rule-Based Analysis</option>
-        <option value="HYBRID">CroissantLLM Analysis</option>
-        <option value="SVM_ANALYSIS">SVM Analysis</option>
+        <option value="SENTENCE_MODE">Sentence Mode (Dual-Mode Classifier)</option>
+        <option value="PARAGRAPH_MODE">Paragraph Mode (Dual-Mode Classifier)</option>
       </select>
       <button 
         onClick={handleInfoClick}
@@ -52,55 +50,39 @@ export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
 
   const getModeInfo = () => {
     switch (mode) {
-      case 'TRAINING_DATA':
+      case 'SENTENCE_MODE':
         return {
-          title: 'Training Data Analysis Mode',
-          description: 'Uses example-based learning to identify expletive negation.',
+          title: 'Sentence Mode (Dual-Mode Classifier)',
+          description: 'Optimized for analyzing individual sentences with empirical feature analysis.',
           features: [
-            'Matches against known examples',
-            'Supports multiple trigger patterns',
-            'Provides NE placement suggestions based on examples',
-            'Considers subjunctive mood and clause boundaries'
+            'Empirical trigger strength analysis (peur_que: 66.7%, avant_que: 42.1%)',
+            'Register correlation detection (literary: 2.53x, formal: 1.77x)',
+            'Semantic field classification (emotional, temporal, logical)',
+            'Sentence-level context analysis (<200 characters)',
+            'Color-coded predictions with confidence scoring'
           ]
         };
-      case 'RULE_BASED':
+      case 'PARAGRAPH_MODE':
         return {
-          title: 'Rule-Based Analysis Mode',
-          description: 'Uses predefined linguistic rules to analyze negation.',
+          title: 'Paragraph Mode (Dual-Mode Classifier)',
+          description: 'Enhanced analysis for longer texts with discourse-level features.',
           features: [
-            'Pattern-based detection',
-            'Comprehensive trigger analysis',
-            'Context-aware classification',
-            'Grammatical structure analysis'
-          ]
-        };
-      case 'HYBRID':
-        return {
-          title: 'CroissantLLM Analysis Mode',
-          description: 'Uses CroissantLLM, a specialized language model trained on French expletive negation patterns.',
-          features: [
-            'Advanced linguistic pattern recognition',
-            'Context-aware expletive detection',
-            'Precise ne placement suggestions',
-            'Detailed confidence scoring'
-          ]
-        };
-      case 'SVM_ANALYSIS':
-        return {
-          title: 'SVM Analysis Mode',
-          description: 'Uses Support Vector Machine learning for classification.',
-          features: [
-            'Machine learning based classification',
-            'Feature extraction from examples',
-            'Statistical pattern recognition',
-            'Confidence scoring'
+            'Paragraph-level discourse analysis (>200 characters)',
+            'Cross-sentence context consideration',
+            'Enhanced register detection in longer texts',
+            'Discourse coherence analysis',
+            'Improved accuracy for complex linguistic contexts'
           ]
         };
       default:
         return {
-          title: 'Analysis Mode',
-          description: 'Select an analysis mode to begin.',
-          features: []
+          title: 'Dual-Mode Classifier',
+          description: 'Advanced empirical analysis based on corpus findings.',
+          features: [
+            'Corpus-derived trigger strengths and register correlations',
+            'Automatic sentence/paragraph mode detection',
+            'Empirical feature analysis with confidence scoring'
+          ]
         };
     }
   };
@@ -117,15 +99,17 @@ export const ModeInfoBox = ({ mode, isExpanded, setExpanded }) => {
           aria-label="Close information"
           type="button"
         >
-          ×
+          ✕
         </button>
       </div>
-      <p>{info.description}</p>
-      <ul>
-        {info.features.map((feature, index) => (
-          <li key={index}>{feature}</li>
-        ))}
-      </ul>
+      <div className="info-content">
+        <p>{info.description}</p>
+        <ul>
+          {info.features.map((feature, index) => (
+            <li key={index}>{feature}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 };

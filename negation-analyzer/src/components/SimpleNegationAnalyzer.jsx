@@ -16,7 +16,7 @@ const SimpleNegationAnalyzer = () => {
   const [batchResults, setBatchResults] = useState([]);
   const [batchLoading, setBatchLoading] = useState(false);
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
-  const [analysisMode, setAnalysisMode] = useState('TRAINING_DATA');
+  const [analysisMode, setAnalysisMode] = useState('SENTENCE_MODE');
   const [useTrainingEnhancement, setUseTrainingEnhancement] = useState(false);
   const [infoBoxExpanded, setInfoBoxExpanded] = useState(false);
   const [trainingData, setTrainingData] = useState({ examples: [] });
@@ -136,7 +136,7 @@ const SimpleNegationAnalyzer = () => {
 
           const analysis = await analyzer.analyzeNegationEnhanced(sentence, 'RULE_BASED');
           
-          // NEW: Add dual-mode classifier analysis for all sentences
+          // NEW: Add dual-mode classifier analysis based on selected mode
           let dualModeAnalysis = null;
           try {
             const { analyzeWithEnhancedFeatures } = await import('../utils/enhancedTrainingAnalyzer');
@@ -148,6 +148,15 @@ const SimpleNegationAnalyzer = () => {
             ];
             const enhancedResult = analyzeWithEnhancedFeatures(sentence, minimalTrainingData);
             dualModeAnalysis = enhancedResult.dualModeAnalysis;
+            
+            // Override mode based on user selection
+            if (dualModeAnalysis) {
+              if (analysisMode === 'SENTENCE_MODE') {
+                dualModeAnalysis.mode = 'sentence';
+              } else if (analysisMode === 'PARAGRAPH_MODE') {
+                dualModeAnalysis.mode = 'paragraph';
+              }
+            }
           } catch (error) {
             console.warn('Dual-mode classifier error:', error);
           }
@@ -464,17 +473,7 @@ const SimpleNegationAnalyzer = () => {
         />
       </div>
 
-      {/* Training Data Section */}
-      {(analysisMode === 'TRAINING_DATA' || analysisMode === 'SVM_ANALYSIS') && (
-        <div className="card">
-          <TrainingDataSection
-            trainingData={trainingData}
-            handleFileUpload={handleFileUpload}
-            clearTrainingData={clearTrainingData}
-            uploadError={uploadError}
-          />
-        </div>
-      )}
+      {/* Training Data Section - Hidden for sentence/paragraph modes */}
 
       <BatchAnalysis
         batchInput={batchInput}
