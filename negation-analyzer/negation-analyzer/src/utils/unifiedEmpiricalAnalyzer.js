@@ -721,8 +721,6 @@ class UnifiedEmpiricalAnalyzer {
     sections.push(`🔬 Unified September 2025 Empirical Analysis (${mode.toUpperCase()} MODE)`);
     sections.push('================================');
     sections.push('');
-    sections.push('Task: Classifying removed "ne" - was it expletive or logical negation?');
-    sections.push('');
     
     // Classification and confidence
     const prediction = probability > 0.5 ? 'Expletive' : 'No Expletive';
