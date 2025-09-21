@@ -207,19 +207,33 @@ class UnifiedEmpiricalAnalyzer {
    * Extract the clause containing the trigger to isolate analysis
    */
   extractTriggerClause(text, trigger) {
+    // More precise clause extraction - look for the trigger and capture surrounding clause
     const triggerPatterns = {
-      'avant_que': /([^.!?]*avant\s+qu[e'][^.!?]*)/i,
-      'peur_que': /([^.!?]*peur\s+qu[e'][^.!?]*)/i,
-      'moins_plus': /([^.!?]*(?:moins|plus)[^.!?]*qu[e'][^.!?]*)/i,
-      'sen_faut_que': /([^.!?]*s'en\s+(?:faut|fallut)[^.!?]*qu[e'][^.!?]*)/i,
-      'avant_de': /([^.!?]*avant\s+de[^.!?]*)/i
+      'avant_que': /((?:^|[,.;])[^,.;]*avant\s+qu[e'][^,.;]*(?:[,.;]|$))/i,
+      'peur_que': /((?:^|[,.;])[^,.;]*peur\s+qu[e'][^,.;]*(?:[,.;]|$))/i,
+      'moins_plus': /((?:^|[,.;])[^,.;]*(?:moins|plus)[^,.;]*qu[e'][^,.;]*(?:[,.;]|$))/i,
+      'sen_faut_que': /((?:^|[,.;])[^,.;]*s'en\s+(?:faut|fallut)[^,.;]*qu[e'][^,.;]*(?:[,.;]|$))/i,
+      'avant_de': /((?:^|[,.;])[^,.;]*avant\s+de[^,.;]*(?:[,.;]|$))/i
     };
     
     const pattern = triggerPatterns[trigger.name] || triggerPatterns[trigger];
     const match = text.match(pattern);
     
-    // Return the isolated clause or fallback to full text if extraction fails
-    return match ? match[1].trim() : text;
+    if (match) {
+      // Clean up the extracted clause
+      let clause = match[1].trim();
+      // Remove leading punctuation
+      clause = clause.replace(/^[,.;]\s*/, '');
+      // Remove trailing punctuation  
+      clause = clause.replace(/\s*[,.;]$/, '');
+      return clause;
+    }
+    
+    // Fallback: try to find just the trigger phrase and surrounding words
+    const simpleFallback = new RegExp(`\\b[^.!?]*${trigger.name.replace('_', '\\s+')}[^.!?]*`, 'i');
+    const fallbackMatch = text.match(simpleFallback);
+    
+    return fallbackMatch ? fallbackMatch[0].trim() : text;
   }
 
   /**
