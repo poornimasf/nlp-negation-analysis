@@ -127,9 +127,7 @@ export const BatchAnalysis = ({
                   <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
                     Prediction
                   </th>
-                  <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
-                    Dual-Mode Classifier
-                  </th>
+                  {/* Dual-Mode Classifier column removed - using unified approach */}
                 </tr>
               </thead>
               <tbody>
