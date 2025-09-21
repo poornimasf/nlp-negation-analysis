@@ -351,7 +351,7 @@ class UnifiedEmpiricalAnalyzer {
   }
 
   /**
-   * Build enhanced mode-specific reasoning explanation
+   * Build narrative-style linguistic reasoning explanation
    */
   buildValidatedReasoning(trigger, register, probability, mode, text, baseProbability) {
     const sections = [];
@@ -361,162 +361,218 @@ class UnifiedEmpiricalAnalyzer {
     sections.push('================================');
     sections.push('');
     
-    // Trigger Analysis
-    sections.push('🎯 TRIGGER ANALYSIS:');
-    sections.push(`✓ Detected: ${trigger.name} (baseline: ${(this.triggerRates[trigger.name] * 100).toFixed(1)}%)`);
-    if (!trigger.found) {
-      sections.push('✗ No clear trigger pattern found');
-    }
+    // Classification and confidence
+    const prediction = probability > 0.5 ? 'Expletive' : 'No Expletive';
+    const confidence = Math.abs(probability - 0.5) * 2;
+    sections.push(`Classification: ${prediction}`);
+    sections.push(`Confidence: ${(confidence * 100).toFixed(1)}%`);
     sections.push('');
     
-    // Syntactic Factors
-    sections.push('🔍 SYNTACTIC FACTORS:');
-    if (this.hasPastSubjunctive(text)) {
-      sections.push('✓ Past subjunctive: detected (83.3% → Expletive)');
+    // Detect all relevant factors
+    const detectedFactors = this.getDetectedFactors(text, trigger, register);
+    const conflicts = this.detectConflicts(detectedFactors);
+    
+    // Narrative analysis
+    sections.push('🎯 LINGUISTIC ANALYSIS:');
+    
+    if (detectedFactors.length === 0) {
+      sections.push(`Trigger "${trigger.name}" detected with neutral context`);
+      sections.push(`No strong predictive factors found → baseline ${(this.triggerRates[trigger.name] * 100).toFixed(1)}%`);
     } else {
-      sections.push('✗ Past subjunctive: not found (would be 83.3% → Expletive)');
+      sections.push('✅ DETECTED FACTORS:');
+      detectedFactors.forEach((factor, index) => {
+        sections.push(`${index + 1}. ${factor.description} → ${factor.effect}`);
+      });
+      
+      if (conflicts.length > 0) {
+        sections.push('');
+        sections.push('⚖️ COMPETING FORCES:');
+        conflicts.forEach(conflict => {
+          sections.push(`• ${conflict.description}`);
+        });
+        sections.push(`• Winner: ${conflicts[0].winner} → ${prediction}`);
+      }
+    }
+    
+    // Mode-specific effects (if paragraph mode)
+    if (mode === 'paragraph' && baseProbability !== probability) {
+      sections.push('');
+      sections.push('📚 DISCOURSE CONTEXT:');
+      const contextEffect = (probability - baseProbability) * 100;
+      if (Math.abs(contextEffect) > 1) {
+        sections.push(`Paragraph context ${contextEffect > 0 ? 'reinforces' : 'weakens'} sentence-level factors`);
+        sections.push(`Context effect: ${contextEffect > 0 ? '+' : ''}${contextEffect.toFixed(1)}% → ${prediction}`);
+      } else {
+        sections.push('No significant discourse-level effects detected');
+      }
+    }
+    
+    // Final reasoning
+    sections.push('');
+    sections.push('📊 DECISION RATIONALE:');
+    const reasoning = this.generateDecisionReasoning(detectedFactors, conflicts, probability, prediction);
+    sections.push(reasoning);
+    
+    return sections.join('\n');
+  }
+
+  /**
+   * Detect all relevant factors in the text
+   */
+  getDetectedFactors(text, trigger, register) {
+    const factors = [];
+    
+    // Register effects
+    if (register !== 'neutral') {
+      const rate = this.registerEffects[register] * 100;
+      factors.push({
+        type: 'register',
+        name: register,
+        description: `${register.charAt(0).toUpperCase() + register.slice(1)} register context`,
+        effect: `${rate.toFixed(1)}% expletive rate`,
+        strength: Math.abs(rate - 50),
+        direction: rate > 50 ? 'expletive' : 'anti-expletive'
+      });
+    }
+    
+    // Strong predictive factors
+    if (this.hasPastSubjunctive(text)) {
+      factors.push({
+        type: 'syntactic',
+        name: 'past_subjunctive',
+        description: 'Literary past subjunctive',
+        effect: 'Strong expletive predictor (83.3%)',
+        strength: 33.3,
+        direction: 'expletive'
+      });
     }
     
     if (this.hasLogicalNegation(text)) {
-      sections.push('✓ Logical negation: detected (overrides → No Expletive)');
-    } else {
-      sections.push('✗ Logical negation: not found (would override → No Expletive)');
+      factors.push({
+        type: 'override',
+        name: 'logical_negation',
+        description: 'Logical negation detected',
+        effect: 'Absolute override → No Expletive',
+        strength: 100,
+        direction: 'anti-expletive'
+      });
     }
     
-    if (/\b(vienne|parte|soit|ait|fasse)\b/i.test(text)) {
-      sections.push('✓ Present subjunctive: detected (slight reduction)');
-    }
-    sections.push('');
-    
-    // Semantic Factors
-    sections.push('📊 SEMANTIC FACTORS:');
+    // Trigger-specific factors
     if (trigger.name === 'peur_que') {
       if (this.hasUncertaintyMarkers(text)) {
-        sections.push('✓ Speaker uncertainty: detected (63.2% → Expletive)');
-      } else {
-        sections.push('✗ Speaker uncertainty: not found (would be 63.2% → Expletive)');
-      }
-      
-      if (this.hasEmphaticContext(text)) {
-        sections.push('✓ Emphatic context: detected (42.9%)');
-      } else {
-        sections.push('✗ Emphatic context: not found (would be 42.9%)');
+        factors.push({
+          type: 'semantic',
+          name: 'uncertainty',
+          description: 'Speaker uncertainty markers',
+          effect: 'Favors expletive (63.2%)',
+          strength: 13.2,
+          direction: 'expletive'
+        });
       }
       
       if (this.hasDistantTemporal(text)) {
-        sections.push('✓ Distant temporal: detected (23.1%)');
-      } else {
-        sections.push('✗ Distant temporal: not found (would be 23.1%)');
+        factors.push({
+          type: 'semantic',
+          name: 'distant_temporal',
+          description: 'Distant temporal context',
+          effect: 'Reduces expletive likelihood (23.1%)',
+          strength: 26.9,
+          direction: 'anti-expletive'
+        });
       }
     } else if (trigger.name === 'avant_que') {
       if (this.hasExplicitPrevention(text)) {
-        sections.push('✓ Explicit prevention: detected (80% → Expletive)');
-      } else {
-        sections.push('✗ Explicit prevention: not found (would be 80% → Expletive)');
-      }
-      
-      if (this.hasUrgencyMarkers(text)) {
-        sections.push('✓ Urgency markers: detected (66.1% → Expletive)');
-      } else {
-        sections.push('✗ Urgency markers: not found (would be 66.1% → Expletive)');
+        factors.push({
+          type: 'semantic',
+          name: 'prevention',
+          description: 'Explicit prevention context',
+          effect: 'Strong expletive predictor (80%)',
+          strength: 30,
+          direction: 'expletive'
+        });
       }
       
       if (this.hasAdministrativeContext(text)) {
-        sections.push('✓ Administrative context: detected (72% → Expletive)');
-      } else {
-        sections.push('✗ Administrative context: not found (would be 72% → Expletive)');
+        factors.push({
+          type: 'semantic',
+          name: 'administrative',
+          description: 'Administrative/bureaucratic context',
+          effect: 'Favors expletive (72%)',
+          strength: 22,
+          direction: 'expletive'
+        });
+      }
+      
+      if (this.hasMotionInfinitive(text) || /\b(prendre\s+l'avion|partir|voyager)\b/i.test(text)) {
+        factors.push({
+          type: 'semantic',
+          name: 'motion',
+          description: 'Motion/travel context',
+          effect: 'Strong anti-expletive (overrides other factors)',
+          strength: 40,
+          direction: 'anti-expletive'
+        });
       }
     } else if (trigger.name === 'avant_de') {
       if (this.hasMotionInfinitive(text) || this.hasActionInfinitive(text)) {
-        sections.push('✓ Motion/action infinitive: detected (0% → No Expletive)');
-      } else {
-        sections.push('✗ Motion/action infinitive: not found (would be 0% → No Expletive)');
+        factors.push({
+          type: 'syntactic',
+          name: 'infinitive',
+          description: 'Motion/action infinitive',
+          effect: 'Absolute anti-expletive (0%)',
+          strength: 50,
+          direction: 'anti-expletive'
+        });
       }
     }
-    sections.push('');
     
-    // Register Analysis
-    sections.push('🗣️ REGISTER ANALYSIS:');
-    sections.push(`Detected: ${register} ${register !== 'neutral' ? `(${(this.registerEffects[register] * 100).toFixed(1)}%)` : '(no adjustment)'}`);
-    if (register !== 'literary') {
-      sections.push('✗ Literary: not found (would be 77.3% → Expletive)');
-    }
-    if (register !== 'formal') {
-      sections.push('✗ Formal: not found (would be 65.8% → Expletive)');
-    }
-    if (register !== 'academic') {
-      sections.push('✗ Academic: not found (would be 30.2%)');
-    }
-    sections.push('');
+    return factors.sort((a, b) => b.strength - a.strength);
+  }
+
+  /**
+   * Detect conflicts between factors
+   */
+  detectConflicts(factors) {
+    const conflicts = [];
+    const expletiveFactors = factors.filter(f => f.direction === 'expletive');
+    const antiExpletiveFactors = factors.filter(f => f.direction === 'anti-expletive');
     
-    // Paragraph Mode Specific Sections
-    if (mode === 'paragraph') {
-      sections.push('📚 PARAGRAPH CONTEXT EFFECTS:');
-      let contextEffects = [];
+    if (expletiveFactors.length > 0 && antiExpletiveFactors.length > 0) {
+      const strongestExpletive = expletiveFactors[0];
+      const strongestAntiExpletive = antiExpletiveFactors[0];
       
-      if (trigger.name === 'peur_que') {
-        if (this.hasFutureContext(text)) {
-          contextEffects.push('✓ Future context: detected (+10.4% validated boost)');
-        } else {
-          contextEffects.push('✗ Future context: not found (would be +10.4%)');
-        }
-        
-        if (this.hasDistantTemporal(text)) {
-          contextEffects.push('✓ Temporal urgency: detected (+25.3%)');
-        } else {
-          contextEffects.push('✗ Temporal urgency: not found (would be +25.3%)');
-        }
-      } else if (trigger.name === 'avant_que') {
-        if (this.hasProcessFocus(text)) {
-          contextEffects.push('✓ Process focus: detected (+41.7% validated boost)');
-        } else {
-          contextEffects.push('✗ Process focus: not found (would be +41.7%)');
-        }
-        
-        if (this.hasAdministrativeContext(text)) {
-          contextEffects.push('✓ Administrative context: detected (+22% estimated boost)');
-        } else {
-          contextEffects.push('✗ Administrative context: not found (would be +22%)');
-        }
-      } else if (trigger.name === 'avant_de') {
-        if (this.hasRoutineContext(text)) {
-          contextEffects.push('✓ Routine context: detected (+26.6%)');
-        } else {
-          contextEffects.push('✗ Routine context: not found (would be +26.6%)');
-        }
-      }
-      
-      if (contextEffects.length === 0) {
-        contextEffects.push('✗ No significant context effects detected');
-      }
-      
-      sections.push(...contextEffects);
-      sections.push('');
-      
-      // Mode Comparison
-      sections.push('🔄 MODE COMPARISON:');
-      sections.push(`Sentence: ${(baseProbability * 100).toFixed(1)}% → ${baseProbability > 0.5 ? 'Expletive' : 'No Expletive'}`);
-      sections.push(`Paragraph: ${(probability * 100).toFixed(1)}% → ${probability > 0.5 ? 'Expletive' : 'No Expletive'}`);
-      const contextEffect = (probability - baseProbability) * 100;
-      sections.push(`Context effect: ${contextEffect >= 0 ? '+' : ''}${contextEffect.toFixed(1)}% ${contextEffect > 0 ? '(paragraph discourse boost)' : '(no significant boost)'}`);
-      sections.push('');
+      conflicts.push({
+        description: `${strongestExpletive.description} vs ${strongestAntiExpletive.description}`,
+        winner: strongestAntiExpletive.strength > strongestExpletive.strength ? 
+                strongestAntiExpletive.description : strongestExpletive.description,
+        winnerDirection: strongestAntiExpletive.strength > strongestExpletive.strength ? 
+                        'anti-expletive' : 'expletive'
+      });
     }
     
-    // Final Calculation
-    sections.push('📈 FINAL CALCULATION:');
-    if (mode === 'paragraph' && baseProbability) {
-      sections.push(`Sentence base: ${(baseProbability * 100).toFixed(1)}%`);
-      const contextBoost = (probability - baseProbability) * 100;
-      sections.push(`+ Context effects: ${contextBoost >= 0 ? '+' : ''}${contextBoost.toFixed(1)}%`);
-      sections.push(`= Final: ${(probability * 100).toFixed(1)}%`);
-    } else {
-      const baseline = this.triggerRates[trigger.name] * 100;
-      const adjustment = (probability * 100) - baseline;
-      sections.push(`${baseline.toFixed(1)}% (baseline) ${adjustment >= 0 ? '+' : ''}${adjustment.toFixed(1)}% (adjustments) = ${(probability * 100).toFixed(1)}%`);
+    return conflicts;
+  }
+
+  /**
+   * Generate decision reasoning narrative
+   */
+  generateDecisionReasoning(factors, conflicts, probability, prediction) {
+    if (factors.length === 0) {
+      return `Baseline trigger probability (${(probability * 100).toFixed(1)}%) → ${prediction}`;
     }
-    sections.push(`Result: ${(probability * 100).toFixed(1)}% ${probability > 0.5 ? '≥' : '<'} 50% → ${probability > 0.5 ? 'Expletive' : 'No Expletive'}`);
     
-    return sections.join('\n');
+    if (conflicts.length > 0) {
+      const conflict = conflicts[0];
+      return `Despite competing factors, ${conflict.winner.toLowerCase()} provides stronger evidence → ${prediction}`;
+    }
+    
+    const dominantFactor = factors[0];
+    if (dominantFactor.type === 'override') {
+      return `${dominantFactor.description} provides absolute determination → ${prediction}`;
+    }
+    
+    return `${dominantFactor.description} is the primary determining factor → ${prediction}`;
   }
 
   /**
