@@ -66,22 +66,122 @@ Real Example: "peu s'en fallut qu'elle ne fit la faute irréparable de se préci
 
 **Key Finding**: Paragraph context can dramatically alter sentence-level predictions through discourse coherence and register consistency.
 
-#### **Strongest Context Effects (>20% difference):**
+#### **Complete List of Validated Paragraph Context Effects:**
 
-##### **Temporal Urgency in peur_que: +25.3% context effect**
-- **Sentence only**: 23.1% expletive rate (distant fears)
-- **Paragraph context**: 48.4% expletive rate
-- **Implication**: Discourse context makes distant fears more expletive-prone
+### **🎯 For peur_que Trigger:**
 
-##### **Process Focus in avant_que: +41.7% context effect**
-- **Sentence only**: 0% expletive rate (process beginnings)
-- **Paragraph context**: 41.7% expletive rate
-- **Implication**: Paragraph context can override strong sentence-level anti-expletive patterns
+#### **Temporal Urgency: +25.3% context effect (STRONGEST)**
+```
+Pattern: /\b(un\s+jour|plus\s+tard|éventuellement|à\s+l'avenir)\b/i
+Corpus Finding: 48.4% paragraph vs 23.1% sentence
+Real Example: "J'ai peur qu'un jour il vienne" → strongest paragraph boost
+```
 
-##### **Routine Context in avant_de: +26.6% context effect**
-- **Sentence only**: 28.6% expletive rate (routine actions)
-- **Paragraph context**: 55.2% expletive rate
-- **Implication**: Discourse context increases expletive likelihood for habitual actions
+#### **Future Context: +10.4% context effect**
+```
+Pattern: /\b(va|aller|futur|demain|bientôt|prochainement)\b/i
+Corpus Finding: 47.1% paragraph vs 36.7% sentence
+Real Example: "J'ai peur qu'il vienne demain" → moderate paragraph boost
+```
+
+#### **Emotional Buildup: moderate boost (when detected)**
+```
+Pattern: /\b(inquiétude|anxiété|stress|tension|préoccupation|souci)\b.*\b(peur|crainte)\b/i
+Finding: Emotional context throughout paragraph increases expletive likelihood
+```
+
+### **🎯 For avant_que Trigger:**
+
+#### **Process Focus: +41.7% context effect (STRONGEST OVERALL)**
+```
+Pattern: /\b(commencer|débuter|entamer|entreprendre)\b/i
+Corpus Finding: 41.7% paragraph vs 0% sentence - can override anti-expletive patterns
+Real Example: "Il faut commencer avant qu'il arrive" → massive paragraph boost
+```
+
+#### **Temporal Sequencing: +10.7% context effect**
+```
+Pattern: /\b(d'abord|ensuite|puis|enfin|premièrement|deuxièmement)\b/i
+Corpus Finding: 49.2% paragraph vs 38.5% sentence
+Real Example: "D'abord nous partons, puis avant qu'il arrive..." → sequence boost
+```
+
+#### **Prevention Context Override: -14.6% context effect (REDUCES)**
+```
+Pattern: Explicit prevention verbs in paragraph context
+Corpus Finding: 65.4% paragraph vs 80% sentence - paragraph context can reduce sentence-level effects
+Finding: Discourse context can weaken strong sentence-level prevention patterns
+```
+
+### **🎯 For avant_de Trigger:**
+
+#### **Routine Context: +26.6% context effect**
+```
+Pattern: /\b(habitude|routine|coutume|tradition)\b/i
+Corpus Finding: 55.2% paragraph vs 28.6% sentence
+Real Example: "C'est notre habitude de manger avant de partir" → routine boost
+```
+
+#### **Motion Infinitive Override: +27.3% context effect**
+```
+Pattern: /avant\s+de\s+(partir|aller|venir|sortir|entrer)/i
+Corpus Finding: 27.3% paragraph vs 0% sentence - overrides strong anti-expletive bias
+Real Example: "Il faut se préparer avant de partir" → context overrides sentence-level pattern
+```
+
+#### **Immediate Sequence: -10.3% context effect (REDUCES)**
+```
+Pattern: /\b(tout\s+de\s+suite|immédiatement|directement)\b/i
+Corpus Finding: 46.0% paragraph vs 56.3% sentence
+Finding: Immediate action context reduces expletive likelihood
+```
+
+### **🎯 For sen_faut_que Trigger:**
+
+#### **Literary Context Reinforcement: significant boost (when detected)**
+```
+Pattern: Multiple literary markers throughout paragraph
+Corpus Finding: Literary context throughout paragraph reinforces 74.4% rate
+Real Example: Paragraph with "fallut", "eût", "naguère" → strong literary boost
+```
+
+#### **Formal Academic Reduction: reduces to 30.2% (when detected)**
+```
+Pattern: /\b(analyse|étude|recherche|processus|système)\b/i throughout paragraph
+Corpus Finding: Academic context significantly reduces expletive likelihood
+Finding: Technical writing avoids optional elements
+```
+
+### **🎯 For moins_plus Trigger:**
+
+#### **Explicit Comparison Context: -11.8% context effect (REDUCES)**
+```
+Pattern: /\b(comparer|comparaison|par\s+rapport|relativement)\b/i
+Corpus Finding: 54.8% paragraph vs 66.7% sentence
+Finding: Comparison context slightly reduces expletive likelihood
+```
+
+#### **Summary of All Context Effects:**
+
+##### **Strongest Boosts (>25%):**
+1. **Process Focus (avant_que)**: +41.7% - strongest effect overall
+2. **Motion Infinitive Override (avant_de)**: +27.3% - overrides sentence-level anti-expletive
+3. **Routine Context (avant_de)**: +26.6% - habitual actions favor expletive
+4. **Temporal Urgency (peur_que)**: +25.3% - distant fears become more expletive-prone
+
+##### **Moderate Boosts (10-25%):**
+5. **Temporal Sequencing (avant_que)**: +10.7% - sequence markers boost expletive
+6. **Future Context (peur_que)**: +10.4% - future-oriented fears get boost
+
+##### **Context Reductions (negative effects):**
+7. **Prevention Context Override (avant_que)**: -14.6% - weakens sentence-level prevention
+8. **Explicit Comparison (moins_plus)**: -11.8% - comparison context reduces expletive
+9. **Immediate Sequence (avant_de)**: -10.3% - immediate actions reduce expletive
+
+##### **Register-Level Effects:**
+- **Literary Throughout**: Reinforces high expletive rates (77.3%)
+- **Formal Throughout**: Moderate expletive boost (65.8%)
+- **Academic Throughout**: Reduces expletive likelihood (30.2%)
 
 ### 2.2 Register Consistency Effects
 
