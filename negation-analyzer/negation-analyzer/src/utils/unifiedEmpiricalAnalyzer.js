@@ -190,7 +190,7 @@ class UnifiedEmpiricalAnalyzer {
       /\b(?:pas|jamais|rien|personne|aucun|nulle?)\b/i,
       /\bplus\b(?!\s+de\b)/i, // "plus" but not "plus de" (more than)
       /\b(?:refuse|interdit|empêche|évite)\b/i,
-      /\b(?:impossible|trop\s+tard|inutile)\b/i,
+      /\b(?:impossible|inutile)\b/i, // Removed "trop tard" - it's temporal, not logical negation
       // Corpus-derived patterns for non-expletive cases
       /\ben trouve un autre\b/i, // search/finding context
       /\bil y ait\b/i, // neutral existence  
