@@ -249,9 +249,6 @@ class UnifiedEmpiricalAnalyzer {
     } else if (this.hasHistoricalContext(text)) {
       // Historical context should be treated as academic register
       probability = this.registerEffects['academic'] || probability; // 30.2%
-    } else if (this.hasWrittenDiscourse(text)) {
-      // Written discourse generally favors expletive (regardless of contemporary context)
-      probability = Math.max(probability, 0.60); // 60% - written French tends toward expletive
     }
     
     // Formal "ne" construction patterns (strongest predictor from corpus analysis)
@@ -701,13 +698,6 @@ class UnifiedEmpiricalAnalyzer {
       sections.push('✓ Academic/historical context: detected (reduces expletive 30.2%)');
     } else {
       sections.push('✗ Academic/historical context: not found (would reduce expletive 30.2%)');
-    }
-    
-    // Written discourse context (applies to all triggers)
-    if (this.hasWrittenDiscourse(text)) {
-      sections.push('✓ Written discourse: detected (favors expletive 60%)');
-    } else {
-      sections.push('✗ Written discourse: not found (would favor expletive 60%)');
     }
     
     // Formal "ne" construction patterns (corpus-derived)
