@@ -224,16 +224,16 @@ class UnifiedEmpiricalAnalyzer {
       } else if (trigger.name === 'avant_que') {
         if (this.hasExplicitPrevention(text)) {
           probability = factors.explicit_prevention; // 80%
+        } else if (this.hasMotionContext(text)) {
+          probability = Math.min(probability, factors.motion_context); // 20% - strong anti-expletive (prioritized)
         } else if (this.hasLegalContext(text)) {
           probability = Math.max(probability, factors.legal_context); // 75%
         } else if (this.hasAdministrativeContext(text)) {
           probability = Math.max(probability, factors.administrative_context); // 72%
         } else if (this.hasUrgencyMarkers(text)) {
           probability = Math.max(probability, factors.urgency_markers); // 66.1%
-        } else if (this.hasProfessionalContext(text)) {
-          probability = Math.max(probability, factors.professional_context); // 65%
-        } else if (this.hasMotionContext(text)) {
-          probability = Math.min(probability, factors.motion_context); // 20% - anti-expletive
+        } else if (this.hasProfessionalContext(text) && !this.hasTechnicalContext(text)) {
+          probability = Math.max(probability, factors.professional_context); // 65% (but not for technical contexts)
         }
       } else if (trigger.name === 'avant_de') {
         if (this.hasMotionInfinitive(text) || this.hasActionInfinitive(text)) {
@@ -375,7 +375,7 @@ class UnifiedEmpiricalAnalyzer {
 
   // Motion/travel context detection (works for all triggers)
   hasMotionContext(text) {
-    return /\b(prendre\s+l'avion|prennent\s+l'avion|partir|voyager|départ|voyage|aller|venir|sortir|entrer|se\s+rendre|se\s+déplacer|transport|avion|train|voiture)\b/i.test(text);
+    return /\b(prendre\s+l'avion|prennent\s+l'avion|partir|voyager|départ|voyage|aller|venir|sortir|entrer|se\s+rendre|se\s+déplacer|transport|avion|train|voiture|aillent|aille|ailles|allions|alliez|vienne|viennes|viennent|venions|veniez)\b/i.test(text);
   }
 
   // Temporal urgency context (expanded)
@@ -410,6 +410,11 @@ class UnifiedEmpiricalAnalyzer {
   // Historical context detection (should be treated as academic)
   hasHistoricalContext(text) {
     return /\b(fondé|village\s+d'|développa|autochtones|jargon\s+chinook|commerce\s+entre|employés\s+de\s+la|HBC|Astoria|Thompson|Astor)\b/i.test(text);
+  }
+
+  // Technical/operational context (reduces expletive likelihood)
+  hasTechnicalContext(text) {
+    return /\b(opérationnel|technique|système|processus|fonctionnel|installation|équipement|maintenance|configuration|paramétrage)\b/i.test(text);
   }
 
   // Literary vocabulary detection (expanded)
@@ -566,6 +571,12 @@ class UnifiedEmpiricalAnalyzer {
         sections.push('✓ Professional context: detected (favors expletive 65%)');
       } else {
         sections.push('✗ Professional context: not found (would favor expletive 65%)');
+      }
+      
+      if (this.hasTechnicalContext(text)) {
+        sections.push('✓ Technical/operational context: detected (reduces expletive 35%)');
+      } else {
+        sections.push('✗ Technical/operational context: not found (would reduce expletive 35%)');
       }
     } else if (trigger.name === 'avant_de') {
       if (this.hasRoutineContext(text)) {
