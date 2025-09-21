@@ -124,25 +124,10 @@ export const BatchAnalysis = ({
                   <th style={{ padding: '12px', textAlign: 'left', borderBottom: '2px solid #dee2e6' }}>
                     Analysis
                   </th>
-                  <th style={{ padding: '12px', textAlign: 'center', borderBottom: '2px solid #dee2e6' }}>
-                    Prediction
-                  </th>
-                  {/* Dual-Mode Classifier column removed - using unified approach */}
                 </tr>
               </thead>
               <tbody>
                 {batchResults.map((result, index) => {
-
-                  // Extract classification from analysis based on mode
-                  let prediction;
-                  if (analysisMode === 'HYBRID') { // CroissantLLM
-                    const llmMatch = result.label.match(/LLM Classification: (.*?)(?:\n|$)/);
-                    prediction = llmMatch ? llmMatch[1].trim() : 'Uncertain';
-                  } else {
-                    const predictionMatch = result.label.match(/^(Expletive|No Expletive)/);
-                    prediction = predictionMatch ? predictionMatch[1] : 'Uncertain';
-                  }
-                  
                   return (
                     <tr key={result.id} style={{
                       backgroundColor: index % 2 === 0 ? 'white' : '#f8f9fa',
@@ -160,83 +145,6 @@ export const BatchAnalysis = ({
                       </td>
                       <td style={{ padding: '12px' }}>
                         <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{result.label}</pre>
-                      </td>
-                      <td style={{ padding: '12px', textAlign: 'center' }}>
-                        <span style={{
-                          padding: '4px 8px',
-                          borderRadius: '4px',
-                          fontSize: '0.9em',
-                          backgroundColor: prediction.toLowerCase().includes('expletive') ? '#e3f2fd' : '#f5f5f5',
-                          color: prediction.toLowerCase().includes('expletive') ? '#1565c0' : '#757575',
-                          border: `1px solid ${
-                            prediction.toLowerCase().includes('expletive') ? '#bbdefb' : '#eeeeee'
-                          }`
-                        }}>
-                          {prediction}
-                        </span>
-                      </td>
-                      <td style={{ padding: '12px', maxWidth: '300px' }}>
-                        {result.dualModeAnalysis ? (
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span style={{
-                                fontWeight: '500',
-                                color: result.dualModeAnalysis.hasExpletive ? '#dc3545' : '#28a745',
-                                fontSize: '0.9em'
-                              }}>
-                                {result.dualModeAnalysis.hasExpletive ? 'EXPLETIVE' : 'NON-EXPLETIVE'}
-                              </span>
-                              <span style={{
-                                fontSize: '0.8em',
-                                color: '#6c757d',
-                                backgroundColor: '#f8f9fa',
-                                padding: '2px 6px',
-                                borderRadius: '3px'
-                              }}>
-                                {(result.dualModeAnalysis.confidence * 100).toFixed(1)}%
-                              </span>
-                              <span style={{
-                                fontSize: '0.75em',
-                                color: '#6c757d',
-                                fontStyle: 'italic'
-                              }}>
-                                ({result.dualModeAnalysis.mode})
-                              </span>
-                            </div>
-                            <div style={{
-                              fontSize: '0.8em',
-                              color: '#495057',
-                              lineHeight: '1.3'
-                            }}>
-                              {result.dualModeAnalysis.features && (
-                                <div>
-                                  <strong>Trigger:</strong> {result.dualModeAnalysis.features.trigger_type} 
-                                  ({(result.dualModeAnalysis.features.trigger_strength * 100).toFixed(1)}%)
-                                  <br />
-                                  <strong>Register:</strong> {result.dualModeAnalysis.features.register} 
-                                  ({result.dualModeAnalysis.features.register_score.toFixed(2)}x)
-                                  <br />
-                                  <strong>Semantic:</strong> {result.dualModeAnalysis.features.semantic_field}
-                                  {result.dualModeAnalysis.discourseFactors && (
-                                    <>
-                                      <br />
-                                      <strong>Discourse:</strong> {result.dualModeAnalysis.discourseFactors.trainingExamples} examples, 
-                                      +{(result.dualModeAnalysis.discourseFactors.discourseBoost * 100).toFixed(1)}% boost
-                                    </>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        ) : (
-                          <span style={{
-                            color: '#9ca3af',
-                            fontStyle: 'italic',
-                            fontSize: '0.9em'
-                          }}>
-                            Analysis unavailable
-                          </span>
-                        )}
                       </td>
                     </tr>
                   );
