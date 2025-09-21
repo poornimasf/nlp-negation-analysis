@@ -10,7 +10,7 @@ import { BatchAnalysis } from './BatchAnalysis';
  * Single analysis system, no dual-mode complexity
  */
 const SimpleNegationAnalyzer = () => {
-  const [analysisMode, setAnalysisMode] = useState('SENTENCE_MODE');
+  const [analysisMode, setAnalysisMode] = useState('PARAGRAPH_MODE');
   const [batchInput, setBatchInput] = useState('');
   const [batchResults, setBatchResults] = useState([]);
   const [batchLoading, setBatchLoading] = useState(false);
