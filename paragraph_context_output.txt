@@ -1,0 +1,200 @@
+🔬 PARAGRAPH CONTEXT ANALYSIS
+============================================================
+
+📊 ANALYZING PEUR_QUE PARAGRAPH CONTEXT
+==================================================
+Processing 1000 paragraph examples
+
+=== PARAGRAPH CONTEXT ANALYSIS: PEUR_QUE ===
+
+--- COHERENCE_MARKERS ---
+  high_coherence: 189/379 (49.9%)
+  temporal_coherence: 216/429 (50.3%)
+  causal_coherence: 114/254 (44.9%)
+
+--- REGISTER_CONSISTENCY ---
+  formal_throughout: 38/69 (55.1%)
+  literary_throughout: 17/22 (77.3%)
+  academic_throughout: 32/76 (42.1%)
+
+--- DISCOURSE_COMPLEXITY ---
+  multiple_clauses: 0/0 (0%)
+  embedded_structures: 263/533 (49.3%)
+  parenthetical: 133/293 (45.4%)
+
+--- CONTEXTUAL_BUILDUP ---
+  emotional_buildup: 9/19 (47.4%)
+  temporal_buildup: 4/7 (57.1%)
+  argumentative_buildup: 108/232 (46.6%)
+
+--- SENTENCE VS PARAGRAPH CONTEXT COMPARISON ---
+  📊 discourse.speaker_certainty.low:
+     Sentence only: 63.2% (n=19)
+     Paragraph context: 52.2% (n=90)
+     Context effect: -10.9%
+  📊 syntactic.verb_tense.future_context:
+     Sentence only: 36.7% (n=60)
+     Paragraph context: 47.1% (n=223)
+     Context effect: +10.4%
+  📊 semantic.fear_object.failure_outcomes:
+     Sentence only: 60.0% (n=5)
+     Paragraph context: 50.0% (n=22)
+     Context effect: -10.0%
+  📊 semantic.temporal_urgency.distant:
+     Sentence only: 23.1% (n=13)
+     Paragraph context: 48.4% (n=62)
+     Context effect: +25.3%
+
+📊 ANALYZING AVANT_QUE PARAGRAPH CONTEXT
+==================================================
+Processing 1000 paragraph examples
+
+=== PARAGRAPH CONTEXT ANALYSIS: AVANT_QUE ===
+
+--- COHERENCE_MARKERS ---
+  high_coherence: 169/351 (48.1%)
+  temporal_coherence: 368/723 (50.9%)
+  causal_coherence: 70/166 (42.2%)
+
+--- REGISTER_CONSISTENCY ---
+  formal_throughout: 34/62 (54.8%)
+  literary_throughout: 16/43 (37.2%)
+  academic_throughout: 50/107 (46.7%)
+
+--- DISCOURSE_COMPLEXITY ---
+  multiple_clauses: 0/0 (0%)
+  embedded_structures: 256/512 (50.0%)
+  parenthetical: 125/278 (45.0%)
+
+--- CONTEXTUAL_BUILDUP ---
+  emotional_buildup: 1/2 (50.0%)
+  temporal_buildup: 84/162 (51.9%)
+  argumentative_buildup: 88/173 (50.9%)
+
+--- SENTENCE VS PARAGRAPH CONTEXT COMPARISON ---
+  📊 discourse.temporal_sequencing.strict_sequence:
+     Sentence only: 38.5% (n=78)
+     Paragraph context: 49.2% (n=240)
+     Context effect: +10.7%
+  📊 discourse.prevention_context.explicit_prevention:
+     Sentence only: 80.0% (n=5)
+     Paragraph context: 65.4% (n=26)
+     Context effect: -14.6%
+  📊 semantic.completion_aspect.process_focus:
+     Sentence only: 0.0% (n=7)
+     Paragraph context: 41.7% (n=24)
+     Context effect: +41.7%
+
+📊 ANALYZING AVANT_DE PARAGRAPH CONTEXT
+==================================================
+Processing 1000 paragraph examples
+
+=== PARAGRAPH CONTEXT ANALYSIS: AVANT_DE ===
+
+--- COHERENCE_MARKERS ---
+  high_coherence: 197/364 (54.1%)
+  temporal_coherence: 366/721 (50.8%)
+  causal_coherence: 66/129 (51.2%)
+
+--- REGISTER_CONSISTENCY ---
+  formal_throughout: 41/68 (60.3%)
+  literary_throughout: 26/47 (55.3%)
+  academic_throughout: 33/79 (41.8%)
+
+--- DISCOURSE_COMPLEXITY ---
+  multiple_clauses: 0/0 (0%)
+  embedded_structures: 238/465 (51.2%)
+  parenthetical: 90/232 (38.8%)
+
+--- CONTEXTUAL_BUILDUP ---
+  emotional_buildup: 0/0 (0%)
+  temporal_buildup: 135/238 (56.7%)
+  argumentative_buildup: 9/14 (64.3%)
+
+--- SENTENCE VS PARAGRAPH CONTEXT COMPARISON ---
+  📊 discourse.preparation_context.implicit_prep:
+     Sentence only: 50.0% (n=16)
+     Paragraph context: 38.1% (n=42)
+     Context effect: -11.9%
+  📊 discourse.preparation_context.routine_context:
+     Sentence only: 28.6% (n=7)
+     Paragraph context: 55.2% (n=29)
+     Context effect: +26.6%
+  📊 syntactic.infinitive_type.motion_infinitive:
+     Sentence only: 0.0% (n=6)
+     Paragraph context: 27.3% (n=11)
+     Context effect: +27.3%
+  📊 semantic.temporal_relationship.immediate_sequence:
+     Sentence only: 56.3% (n=16)
+     Paragraph context: 46.0% (n=50)
+     Context effect: -10.3%
+
+📊 ANALYZING SEN_FAUT_QUE PARAGRAPH CONTEXT
+==================================================
+Processing 1000 paragraph examples
+
+=== PARAGRAPH CONTEXT ANALYSIS: SEN_FAUT_QUE ===
+
+--- COHERENCE_MARKERS ---
+  high_coherence: 205/392 (52.3%)
+  temporal_coherence: 231/452 (51.1%)
+  causal_coherence: 80/158 (50.6%)
+
+--- REGISTER_CONSISTENCY ---
+  formal_throughout: 75/114 (65.8%)
+  literary_throughout: 229/359 (63.8%)
+  academic_throughout: 16/53 (30.2%)
+
+--- DISCOURSE_COMPLEXITY ---
+  multiple_clauses: 0/0 (0%)
+  embedded_structures: 261/528 (49.4%)
+  parenthetical: 71/189 (37.6%)
+
+--- CONTEXTUAL_BUILDUP ---
+  emotional_buildup: 0/0 (0%)
+  temporal_buildup: 2/6 (33.3%)
+  argumentative_buildup: 2/5 (40.0%)
+
+--- SENTENCE VS PARAGRAPH CONTEXT COMPARISON ---
+
+📊 ANALYZING MOINS_PLUS PARAGRAPH CONTEXT
+==================================================
+Processing 1000 paragraph examples
+
+=== PARAGRAPH CONTEXT ANALYSIS: MOINS_PLUS ===
+
+--- COHERENCE_MARKERS ---
+  high_coherence: 191/384 (49.7%)
+  temporal_coherence: 191/397 (48.1%)
+  causal_coherence: 96/183 (52.5%)
+
+--- REGISTER_CONSISTENCY ---
+  formal_throughout: 43/75 (57.3%)
+  literary_throughout: 18/36 (50.0%)
+  academic_throughout: 55/105 (52.4%)
+
+--- DISCOURSE_COMPLEXITY ---
+  multiple_clauses: 0/0 (0%)
+  embedded_structures: 256/523 (48.9%)
+  parenthetical: 140/297 (47.1%)
+
+--- CONTEXTUAL_BUILDUP ---
+  emotional_buildup: 2/3 (66.7%)
+  temporal_buildup: 4/11 (36.4%)
+  argumentative_buildup: 2/5 (40.0%)
+
+--- SENTENCE VS PARAGRAPH CONTEXT COMPARISON ---
+  📊 discourse.comparison_context.explicit_comparison:
+     Sentence only: 66.7% (n=6)
+     Paragraph context: 54.8% (n=31)
+     Context effect: -11.8%
+
+
+=== CROSS-TRIGGER PARAGRAPH EFFECTS ===
+
+STRONGEST PARAGRAPH-LEVEL PREDICTORS:
+1. peur_que - register_consistency.literary_throughout: 77.3% (n=22)
+2. sen_faut_que - register_consistency.academic_throughout: 30.2% (n=53)
+3. sen_faut_que - register_consistency.formal_throughout: 65.8% (n=114)
+
+📊 Results saved to paragraph_context_results.json

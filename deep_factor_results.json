@@ -1,0 +1,793 @@
+{
+  "peur_que": {
+    "total": 2000,
+    "expletive": 1000,
+    "nonExpletive": 1000,
+    "factors": {
+      "discourse": {
+        "speaker_certainty": {
+          "high": {
+            "total": 3,
+            "expletive": 1,
+            "rate": 33.3,
+            "examples": [
+              "La Reine, cette fois, écrit très clairement à sa fille qu'elle doit surmonter sa...",
+              "Le staff de Nike était complètement paniqué, Jordan aussi, son entourage égaleme..."
+            ]
+          },
+          "medium": {
+            "total": 14,
+            "expletive": 6,
+            "rate": 42.9,
+            "examples": [
+              "Je pense qu'Apple a eu peur que le MacBook ne vienne canibaliser les ventes du P...",
+              "Laissant de côté sa vie privée, il a révélé l'une de ses grandes inquiétudes con..."
+            ]
+          },
+          "low": {
+            "total": 19,
+            "expletive": 12,
+            "rate": 63.2,
+            "examples": [
+              "Aussi j' ai peur que mon dossard ne devienne peu lisible. Mais peut-être avez-vo...",
+              "Même si tu ne semblais pas du genre timide, peut-être avais-tu peur qu'il ne réa..."
+            ]
+          }
+        },
+        "emotional_intensity": {
+          "high": {
+            "total": 11,
+            "expletive": 5,
+            "rate": 45.5,
+            "examples": [
+              "J' avais peur que tout ne tourne au cauchemar, puisque j' avais tellement l'habi...",
+              "J'espère que je pourrai encore le retirer pour faciliter le passage mais j' ai p..."
+            ]
+          },
+          "medium": {
+            "total": 628,
+            "expletive": 313,
+            "rate": 49.8,
+            "examples": [
+              "D.B. : L'idée d'une politisation marrane des identités est séduisante, mais en c...",
+              "Mais tous pensaient à la mort de leurs frères, qu'ils n'étaient pas meilleurs qu..."
+            ]
+          },
+          "low": {
+            "total": 0,
+            "expletive": 0,
+            "rate": 0,
+            "examples": []
+          }
+        },
+        "pragmatic_context": {
+          "polite": {
+            "total": 0,
+            "expletive": 0,
+            "rate": 0,
+            "examples": []
+          },
+          "emphatic": {
+            "total": 42,
+            "expletive": 18,
+            "rate": 42.9,
+            "examples": [
+              "- J' ai peur que tu n'ais attrapé un petit virus, j'ai eu Joshua au téléphone ap...",
+              "Ils se foutent de la gueule d'April trop fort! - Meredith qui est \"jalouse\" d'Ap..."
+            ]
+          },
+          "hedged": {
+            "total": 31,
+            "expletive": 14,
+            "rate": 45.2,
+            "examples": [
+              "Cependant, bien qu'il soit plaisant à jouer sur une courte durée, j' ai peur que...",
+              "Il marchait assez rapidement en fait, il avait peur qu'on ne l'appelle pour une ..."
+            ]
+          }
+        }
+      },
+      "syntactic": {
+        "verb_tense": {
+          "present_subj": {
+            "total": 241,
+            "expletive": 112,
+            "rate": 46.5,
+            "examples": [
+              "Je sais que plus on est sur ce genre de sujet, plus on risque de se perdre dans ...",
+              "- J' ai peur que tu n'ais attrapé un petit virus, j'ai eu Joshua au téléphone ap..."
+            ]
+          },
+          "past_subj": {
+            "total": 6,
+            "expletive": 5,
+            "rate": 83.3,
+            "examples": [
+              "Il lui répondit: J'ai eu peur qu'on ne me fît mourir à cause d' elle....",
+              "Voici des théologiens qui, tout en étant convaincus de la vérité de la religion ..."
+            ]
+          },
+          "future_context": {
+            "total": 60,
+            "expletive": 22,
+            "rate": 36.7,
+            "examples": [
+              "J' ai peur qu'il ne mette, dans le futur, la zizanie dans le couple déjà fragile...",
+              "J'ai fait exprès de garder le flou autour de cette idée de recensement, mais ce ..."
+            ]
+          }
+        },
+        "subject_complexity": {
+          "simple_pronoun": {
+            "total": 315,
+            "expletive": 166,
+            "rate": 52.7,
+            "examples": [
+              "D.B. : L'idée d'une politisation marrane des identités est séduisante, mais en c...",
+              "Il sort avec elle mais Rachel est jalouse et a peur qu'il ne l'abandonne, elle e..."
+            ]
+          },
+          "complex_noun": {
+            "total": 0,
+            "expletive": 0,
+            "rate": 0,
+            "examples": []
+          },
+          "relative_clause": {
+            "total": 0,
+            "expletive": 0,
+            "rate": 0,
+            "examples": []
+          }
+        },
+        "negation_scope": {
+          "clause_negation": {
+            "total": 345,
+            "expletive": 158,
+            "rate": 45.8,
+            "examples": [
+              "\"Je crois qu'ils m'aiment bien, ou alors ils ont peur que je ne dévore leurs âme...",
+              "Je sais que plus on est sur ce genre de sujet, plus on risque de se perdre dans ..."
+            ]
+          },
+          "lexical_negation": {
+            "total": 18,
+            "expletive": 8,
+            "rate": 44.4,
+            "examples": [
+              "comprendre et me taire en plus je suis loin d'être rancunière mais je trouvais c...",
+              "Dès lors la famille est très angoissée dès que se manifestent des comportements ..."
+            ]
+          },
+          "partial_negation": {
+            "total": 16,
+            "expletive": 9,
+            "rate": 56.3,
+            "examples": [
+              "Vous avez peur que je ne meure de joie ? mais ne crai-gnez-vous point aussi que ...",
+              "Je lui dis que j'aimais bien et que cela m'excitait énormément et que j'étais à ..."
+            ]
+          }
+        }
+      },
+      "semantic": {
+        "fear_object": {
+          "personal_harm": {
+            "total": 30,
+            "expletive": 17,
+            "rate": 56.7,
+            "examples": [
+              "Mais tous pensaient à la mort de leurs frères, qu'ils n'étaient pas meilleurs qu...",
+              "Je sais que plus on est sur ce genre de sujet, plus on risque de se perdre dans ..."
+            ]
+          },
+          "social_consequences": {
+            "total": 4,
+            "expletive": 3,
+            "rate": 75,
+            "examples": [
+              "J' ai peur que ça ne la dérange et j'ai un peu honte....",
+              "J' avais peur que la honte ne s'abatte sur la famille pour les trois prochaines ..."
+            ]
+          },
+          "failure_outcomes": {
+            "total": 5,
+            "expletive": 3,
+            "rate": 60,
+            "examples": [
+              "Il se peut qu'il vous dise, tout à fait inconsciemment, qu'il a peur que son mal...",
+              "Il est vrai que pendant ces premières minutes, j'ai eu peur que le film ne soit ..."
+            ]
+          }
+        },
+        "temporal_urgency": {
+          "immediate": {
+            "total": 31,
+            "expletive": 14,
+            "rate": 45.2,
+            "examples": [
+              "comprendre et me taire en plus je suis loin d'être rancunière mais je trouvais c...",
+              "La difficulté maintenant c'est de trouver la bonne couleur, comme je ne fais pas..."
+            ]
+          },
+          "near_future": {
+            "total": 3,
+            "expletive": 1,
+            "rate": 33.3,
+            "examples": [
+              "J'avais moi aussi eu peur que ce ne soit le dernier tome... donc je suis en plus...",
+              "Comme je suis un gros boulet, je pensais avoir commandé une Critter Nation doubl..."
+            ]
+          },
+          "distant": {
+            "total": 13,
+            "expletive": 3,
+            "rate": 23.1,
+            "examples": [
+              "maman est celle qui vous donne votre premier livre, vous ouvre vos premières pag...",
+              "Il faudra bien que j'me décide un jour Mon amour A me faire la malle Mais j' ai ..."
+            ]
+          }
+        },
+        "consequence_severity": {
+          "catastrophic": {
+            "total": 3,
+            "expletive": 2,
+            "rate": 66.7,
+            "examples": [
+              "J' avais peur que ça ne ruine ma carrière !\" Nolwenn Leroy et MC Solaar se sont ...",
+              "J'espère que je pourrai encore le retirer pour faciliter le passage mais j' ai p..."
+            ]
+          },
+          "serious": {
+            "total": 13,
+            "expletive": 6,
+            "rate": 46.2,
+            "examples": [
+              "La plupart du temps, la vendeuse avait peur que ce ne soit effectivement quelqu'...",
+              "S'en suit une petite pause avant qu'il ne reprenne, \"Concernant mes principes et..."
+            ]
+          },
+          "mild": {
+            "total": 26,
+            "expletive": 15,
+            "rate": 57.7,
+            "examples": [
+              "- J' ai peur que tu n'ais attrapé un petit virus, j'ai eu Joshua au téléphone ap...",
+              "Ce restaurant ne vous convient pas ?\", me dit Naoko en se retournant vers moi, t..."
+            ]
+          }
+        }
+      }
+    }
+  },
+  "avant_que": {
+    "total": 2000,
+    "expletive": 1000,
+    "nonExpletive": 1000,
+    "factors": {
+      "discourse": {
+        "temporal_sequencing": {
+          "strict_sequence": {
+            "total": 78,
+            "expletive": 30,
+            "rate": 38.5,
+            "examples": [
+              "J'étais au Brésil, je m'entraînais tous les jours avant que la saison ne soit st...",
+              "Le Double VPN, également appelé VPN en cascade ou multi-hop, fait partie des fon..."
+            ]
+          },
+          "causal_sequence": {
+            "total": 98,
+            "expletive": 48,
+            "rate": 49,
+            "examples": [
+              "J'étais au Brésil, je m'entraînais tous les jours avant que la saison ne soit st...",
+              "En fin de séjour, empruntez le circuit « L'Eau, la Pierre et le Bois » à Bernay ..."
+            ]
+          },
+          "conditional_sequence": {
+            "total": 96,
+            "expletive": 42,
+            "rate": 43.8,
+            "examples": [
+              "La Guémara enseigne que, si la lumière de 'Hanoucca s'éteint par accident avant ...",
+              ", ces Essais sur la rhétorique, le langage, le style parus chez José Corti en 20..."
+            ]
+          }
+        },
+        "prevention_context": {
+          "explicit_prevention": {
+            "total": 5,
+            "expletive": 4,
+            "rate": 80,
+            "examples": [
+              "Masa était-elle prête à mettre fin à ses jours pour empêcher son cauchemar de pe...",
+              "La meilleure façon de maîtriser les nausées et vomissements est de les prévenir ..."
+            ]
+          },
+          "implicit_prevention": {
+            "total": 3,
+            "expletive": 1,
+            "rate": 33.3,
+            "examples": [
+              "Tentez de trouver et de vous emparer de son trésor avant qu'il ne revienne. Mais...",
+              "Des reconstructions, avant que les plans approuvés soient devenus définitifs, ne..."
+            ]
+          },
+          "urgency_markers": {
+            "total": 56,
+            "expletive": 37,
+            "rate": 66.1,
+            "examples": [
+              "Et c'est au staff technique de secouer les joueurs avant qu'il ne soit trop tard...",
+              "Du fait qu'il allait bientôt partir et Blue avait encouragé son amie (encore) à ..."
+            ]
+          }
+        }
+      },
+      "syntactic": {
+        "subjunctive_type": {
+          "motion_verbs": {
+            "total": 89,
+            "expletive": 46,
+            "rate": 51.7,
+            "examples": [
+              "Les peurs ne m'ont pas quitté, mais j'ai une force nouvelle. Avant que le moindr...",
+              "Le conte mettant en scène -entre autres- Apostasie, occupe la moitié du roman, a..."
+            ]
+          },
+          "state_verbs": {
+            "total": 181,
+            "expletive": 94,
+            "rate": 51.9,
+            "examples": [
+              "Et c'est au staff technique de secouer les joueurs avant qu'il ne soit trop tard...",
+              "J'arretais le vibreur avant que cela ne devienne trop fort...."
+            ]
+          },
+          "action_verbs": {
+            "total": 43,
+            "expletive": 20,
+            "rate": 46.5,
+            "examples": [
+              "Tous les jours depuis 4mois je repense a ces putains de mots que j'ai dis a mon ...",
+              "En interne, Arnab Ghatak raconte : « Rob Rosiello et moi avons tout de suite com..."
+            ]
+          }
+        },
+        "clause_embedding": {
+          "simple_embedding": {
+            "total": 69,
+            "expletive": 36,
+            "rate": 52.2,
+            "examples": [
+              "Et c'est au staff technique de secouer les joueurs avant qu'il ne soit trop tard...",
+              "C'est une des explosions du Bâtiment 7 survenues bien avant qu'il ne tombe. Peu ..."
+            ]
+          },
+          "complex_embedding": {
+            "total": 90,
+            "expletive": 40,
+            "rate": 44.4,
+            "examples": [
+              "Mushin doit déjà avoir rencontré cette catégorie de \" gens usés \" ... avant qu'i...",
+              "Surtout ne pas montrer qu'elle savait bien que personne n'en avait parlé avant q..."
+            ]
+          },
+          "multiple_embedding": {
+            "total": 49,
+            "expletive": 22,
+            "rate": 44.9,
+            "examples": [
+              "- La construction de la Tour de Babel d'autre part. Avant qu'HaShem ne décide d'...",
+              "La surprise qui se lit généralement sur le visage de l'animal avant qu'il ne fui..."
+            ]
+          }
+        },
+        "temporal_markers": {
+          "specific_time": {
+            "total": 29,
+            "expletive": 15,
+            "rate": 51.7,
+            "examples": [
+              "Les soldes: A des prix defiant toute concurence ( 1 ou 2 comments sympas..), je ...",
+              "Voici une autre petite randonnée (8km), à faire dans la matinée avant que la cha..."
+            ]
+          },
+          "relative_time": {
+            "total": 83,
+            "expletive": 50,
+            "rate": 60.2,
+            "examples": [
+              "Et c'est au staff technique de secouer les joueurs avant qu'il ne soit trop tard...",
+              "L'île fait face à une épidémie pour l'instant localisée de dengue, que l'agence ..."
+            ]
+          },
+          "deadline_markers": {
+            "total": 26,
+            "expletive": 14,
+            "rate": 53.8,
+            "examples": [
+              "En fin de séjour, empruntez le circuit « L'Eau, la Pierre et le Bois » à Bernay ...",
+              "Masa était-elle prête à mettre fin à ses jours pour empêcher son cauchemar de pe..."
+            ]
+          }
+        }
+      },
+      "semantic": {
+        "prevention_vs_sequence": {
+          "pure_prevention": {
+            "total": 3,
+            "expletive": 3,
+            "rate": 100,
+            "examples": [
+              "Pour éviter qu'une chasse ne commence avant que l'entité ne puisse être invoquée...",
+              "S'il y a beaucoup d'escargot tu risque d'avoir un peu de casse chez eaux, sur le..."
+            ]
+          },
+          "pure_sequence": {
+            "total": 2,
+            "expletive": 1,
+            "rate": 50,
+            "examples": [
+              "Cette femme, protectrice de la Source à cette époque, confia à Jacob ses pouvoir...",
+              "Et ainsi, bien qu'ils doivent sentir en leur conscience le témoignage de leur vo..."
+            ]
+          },
+          "mixed_context": {
+            "total": 4,
+            "expletive": 3,
+            "rate": 75,
+            "examples": [
+              "Dans une entreprise qui produit des automobiles, par exemple, les machines, les ...",
+              "Retour sur un DVD Option sortie en 2001 sur l'optimisation de la Silvia et du SR..."
+            ]
+          }
+        },
+        "completion_aspect": {
+          "completion_focus": {
+            "total": 16,
+            "expletive": 11,
+            "rate": 68.8,
+            "examples": [
+              "Pas avant que je n'aille me changer en coulisse et vienne finir de voir le match...",
+              "Initialement, Uatu adhéra pleinement au vœu de stricte non-intervention de son p..."
+            ]
+          },
+          "process_focus": {
+            "total": 7,
+            "expletive": 0,
+            "rate": 0,
+            "examples": [
+              "Et quoiqu'il arrive, un membre de nos équipes ne pourra débuter l'intervention a...",
+              "de filles, le même chemin que lui, en s'engageant dans l'armée française. – Autr..."
+            ]
+          },
+          "state_change": {
+            "total": 10,
+            "expletive": 5,
+            "rate": 50,
+            "examples": [
+              "Pas avant que je n'aille me changer en coulisse et vienne finir de voir le match...",
+              "__Moi et Liam faisions à présent les boutiques , pour nous changer un peu les id..."
+            ]
+          }
+        }
+      }
+    }
+  },
+  "avant_de": {
+    "total": 2000,
+    "expletive": 1000,
+    "nonExpletive": 1000,
+    "factors": {
+      "discourse": {
+        "preparation_context": {
+          "explicit_prep": {
+            "total": 8,
+            "expletive": 3,
+            "rate": 37.5,
+            "examples": [
+              "De plus en tant que sniper je peux partir en avant de n'importe quel combat et p...",
+              "L'équipe est nouvelle donc il me reste encore pas mal de choses à préparer, mett..."
+            ]
+          },
+          "implicit_prep": {
+            "total": 16,
+            "expletive": 8,
+            "rate": 50,
+            "examples": [
+              "Si vous avez des besoins faites les moi connaître car je ne peux faire évoluer m...",
+              "Je regardais d'abord le gamin en grimaçant d'un air plus que mécontent avant de ..."
+            ]
+          },
+          "routine_context": {
+            "total": 7,
+            "expletive": 2,
+            "rate": 28.6,
+            "examples": [
+              "----* Ça n'a rien important souffla-t-il avant de ne la serrer de nouveaux dans ...",
+              "D'habitude, elle s'enfuyait avant de ne craquer. C'était la première fois qu'ell..."
+            ]
+          }
+        }
+      },
+      "syntactic": {
+        "infinitive_type": {
+          "motion_infinitive": {
+            "total": 6,
+            "expletive": 0,
+            "rate": 0,
+            "examples": [
+              "Rappelons l'importance de prendre la météo avant de sortir s'entraîner en montag...",
+              "Nous avons ensuite tendu un immense drap noir pour avoir un fond uni, avant de v..."
+            ]
+          },
+          "action_infinitive": {
+            "total": 7,
+            "expletive": 0,
+            "rate": 0,
+            "examples": [
+              "Malgré un premier acte où les Girondins offrirent une superbe résistance, Toulon...",
+              "C'est une étape importante avant de faire installer sa pompe à chaleur aérotherm..."
+            ]
+          },
+          "state_infinitive": {
+            "total": 0,
+            "expletive": 0,
+            "rate": 0,
+            "examples": []
+          }
+        }
+      },
+      "semantic": {
+        "temporal_relationship": {
+          "immediate_sequence": {
+            "total": 16,
+            "expletive": 9,
+            "rate": 56.3,
+            "examples": [
+              "La jeune femme n'avait pas immédiatement répondu, le devançant alors vers leur b...",
+              "la binoclarde venait de faire , elle n'avait rien dit l'entraînant simplement a ..."
+            ]
+          },
+          "planned_sequence": {
+            "total": 3,
+            "expletive": 2,
+            "rate": 66.7,
+            "examples": [
+              "Bella avait faim tout comme Alex ,alors pourquoi ne pas s'asseoir et manger un b...",
+              "Les précautions à prendre durant la procédure d'achat Avant de ne conclure défin..."
+            ]
+          },
+          "conditional_sequence": {
+            "total": 96,
+            "expletive": 51,
+            "rate": 53.1,
+            "examples": [
+              "Si vous avez des besoins faites les moi connaître car je ne peux faire évoluer m...",
+              "Mais sa surprise fut total quand en ouvrant a peine la porte, celle ci vola, man..."
+            ]
+          }
+        }
+      }
+    }
+  },
+  "sen_faut_que": {
+    "total": 2000,
+    "expletive": 1000,
+    "nonExpletive": 1000,
+    "factors": {
+      "discourse": {
+        "literary_register": {
+          "classical": {
+            "total": 325,
+            "expletive": 215,
+            "rate": 66.2,
+            "examples": [
+              "Au dehors flottait la femelle, couvant ses oeufs, et presque aussi grosse que le...",
+              "Peu s'en fallut que ces fables ne prissent à mes yeux une espèce de réalité...."
+            ]
+          },
+          "formal_academic": {
+            "total": 30,
+            "expletive": 20,
+            "rate": 66.7,
+            "examples": [
+              "Il lui dit qu'il ne se sentait pas capable d'en décider : mais que s'il s'en fal...",
+              "Pour Leclerc, quelque contrainte que j'imposasse à mes regards, il me devina, et..."
+            ]
+          },
+          "archaic_markers": {
+            "total": 15,
+            "expletive": 9,
+            "rate": 60,
+            "examples": [
+              "Il s'en est fallu de peu que ses braies ne s'en tombe en cendre. ^^ Ses rires et...",
+              "Le vieux avait dit qu'on pouvait toujours faire des estimations ; deux ou trois ..."
+            ]
+          }
+        },
+        "impersonal_construction": {
+          "pure_impersonal": {
+            "total": 0,
+            "expletive": 0,
+            "rate": 0,
+            "examples": []
+          },
+          "personal_context": {
+            "total": 2,
+            "expletive": 2,
+            "rate": 100,
+            "examples": [
+              "entre comme particule négative dans la composition d'un petit nombre de mots, co...",
+              "Peu s'en est fallu que je ne vinsse. Il a fini son travail ou peu s'en faut...."
+            ]
+          },
+          "narrative_context": {
+            "total": 2,
+            "expletive": 2,
+            "rate": 100,
+            "examples": [
+              "entre comme particule négative dans la composition d'un petit nombre de mots, co...",
+              "Peu s'en est fallu que je ne vinsse. Il a fini son travail ou peu s'en faut...."
+            ]
+          }
+        }
+      },
+      "syntactic": {
+        "quantifier_precision": {
+          "precise_quantity": {
+            "total": 1,
+            "expletive": 1,
+            "rate": 100,
+            "examples": [
+              "Peu s'en est fallu que je ne vinsse. Il a fini son travail ou peu s'en faut...."
+            ]
+          },
+          "vague_quantity": {
+            "total": 0,
+            "expletive": 0,
+            "rate": 0,
+            "examples": []
+          },
+          "comparative": {
+            "total": 0,
+            "expletive": 0,
+            "rate": 0,
+            "examples": []
+          }
+        }
+      },
+      "semantic": {
+        "proximity_semantics": {
+          "near_miss": {
+            "total": 12,
+            "expletive": 7,
+            "rate": 58.3,
+            "examples": [
+              "Au dehors flottait la femelle, couvant ses oeufs, et presque aussi grosse que le...",
+              "Madame de Cardoulas, elle-même veuve, ne pense qu'à l'engagement volontaire de s..."
+            ]
+          },
+          "threshold_crossing": {
+            "total": 13,
+            "expletive": 6,
+            "rate": 46.2,
+            "examples": [
+              "Mais quelle humiliation lorsque quelqu'un près de moi entendait une flûte au loi...",
+              "Je me trompe ; dans son livre, la Marine d'aujourd'hui, il raconte qu'en 1859, p..."
+            ]
+          },
+          "completion_degree": {
+            "total": 0,
+            "expletive": 0,
+            "rate": 0,
+            "examples": []
+          }
+        }
+      }
+    }
+  },
+  "moins_plus": {
+    "total": 2000,
+    "expletive": 1000,
+    "nonExpletive": 1000,
+    "factors": {
+      "discourse": {
+        "comparison_context": {
+          "explicit_comparison": {
+            "total": 6,
+            "expletive": 4,
+            "rate": 66.7,
+            "examples": [
+              "Vu que j'étais malade, m'arrêter a été relativement plus facile que je ne croyai...",
+              "[6] Le début du film a notamment pour effet de nous faire apparaître Laura pour ..."
+            ]
+          },
+          "evaluative": {
+            "total": 20,
+            "expletive": 12,
+            "rate": 60,
+            "examples": [
+              "VII: Les forces du corps et de l'esprit que je dois emploier pour me garantir de...",
+              "et les plus attachant ce sont de vieux défoncés de l'age de jean ! les lieux de ..."
+            ]
+          },
+          "quantitative": {
+            "total": 23,
+            "expletive": 12,
+            "rate": 52.2,
+            "examples": [
+              "Même si votre perception du client dépend de plusieurs facteurs (tels que votre ...",
+              "Quiconque a joué à un jeu d'action à la troisième personne au cours de la derniè..."
+            ]
+          }
+        }
+      },
+      "syntactic": {
+        "comparison_structure": {
+          "simple_comparison": {
+            "total": 296,
+            "expletive": 98,
+            "rate": 33.1,
+            "examples": [
+              "Cela signifie accroître la concurrence entre prolétaires, les opposer les uns au...",
+              "Les tours de guet sont bien plus nombreuses que je n'imaginais, une soixantaine ..."
+            ]
+          },
+          "complex_comparison": {
+            "total": 299,
+            "expletive": 100,
+            "rate": 33.4,
+            "examples": [
+              "Cela signifie accroître la concurrence entre prolétaires, les opposer les uns au...",
+              "Les tours de guet sont bien plus nombreuses que je n'imaginais, une soixantaine ..."
+            ]
+          },
+          "superlative": {
+            "total": 35,
+            "expletive": 18,
+            "rate": 51.4,
+            "examples": [
+              "Le climat méditerranéen et ses températures printanières et automnales douces, p...",
+              "et les plus attachant ce sont de vieux défoncés de l'age de jean ! les lieux de ..."
+            ]
+          }
+        }
+      },
+      "semantic": {
+        "comparison_domain": {
+          "physical_properties": {
+            "total": 131,
+            "expletive": 70,
+            "rate": 53.4,
+            "examples": [
+              "A mon sens, le droit de seigneuriage d'une Banque centrale est bien plus grand q...",
+              "Tu es sur d'avoir au moins bien commencé le rodage ? ( sans forcé sur la poignée..."
+            ]
+          },
+          "abstract_qualities": {
+            "total": 74,
+            "expletive": 31,
+            "rate": 41.9,
+            "examples": [
+              "Tu es sur d'avoir au moins bien commencé le rodage ? ( sans forcé sur la poignée...",
+              "Même si votre perception du client dépend de plusieurs facteurs (tels que votre ..."
+            ]
+          },
+          "temporal_aspects": {
+            "total": 28,
+            "expletive": 12,
+            "rate": 42.9,
+            "examples": [
+              "Mais suite à un plan de Fabien qui a dérapé, elle a réalisé à la fois l'absurdit...",
+              "Entre cette mijoteuse qui tourne toute seule mais cuit sans doute un peu plus ch..."
+            ]
+          }
+        }
+      }
+    }
+  }
+}

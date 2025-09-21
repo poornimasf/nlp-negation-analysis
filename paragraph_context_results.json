@@ -1,0 +1,1047 @@
+{
+  "peur_que": {
+    "total": 1000,
+    "expletive": 500,
+    "nonExpletive": 500,
+    "paragraph_factors": {
+      "coherence_markers": {
+        "high_coherence": {
+          "total": 379,
+          "expletive": 189,
+          "rate": 49.9,
+          "examples": [
+            {
+              "trigger": "D.B. : L'idée d'une politisation marrane des identités est séduisante, mais en c...",
+              "context": "Peut-être qu'en politique le marranisme conduit ainsi à une troisième voie entre les paniques identitaires et l'indifférenciation d'un cosmopolitisme ..."
+            },
+            {
+              "trigger": "\"Je crois qu'ils m'aiment bien, ou alors ils ont peur que je ne dévore leurs âme...",
+              "context": "Elle s'y connaissait en forêt hantée. Surtout après tout le temps qu'elle avait passé dans le bois des suicides, dans le cercle de la paresse. Même si..."
+            }
+          ]
+        },
+        "temporal_coherence": {
+          "total": 429,
+          "expletive": 216,
+          "rate": 50.3,
+          "examples": [
+            {
+              "trigger": "\"Je crois qu'ils m'aiment bien, ou alors ils ont peur que je ne dévore leurs âme...",
+              "context": "Elle s'y connaissait en forêt hantée. Surtout après tout le temps qu'elle avait passé dans le bois des suicides, dans le cercle de la paresse. Même si..."
+            },
+            {
+              "trigger": "Il sort avec elle mais Rachel est jalouse et a peur qu'il ne l'abandonne, elle e...",
+              "context": "Rachel a peur de ne pas réussir à s'occuper de son bébé et accepte la proposition de sa mère de venir vivre avec elle et Ross pendant quelques semaine..."
+            }
+          ]
+        },
+        "causal_coherence": {
+          "total": 254,
+          "expletive": 114,
+          "rate": 44.9,
+          "examples": [
+            {
+              "trigger": "Mais tous pensaient à la mort de leurs frères, qu'ils n'étaient pas meilleurs qu...",
+              "context": "A Campeche, Bartolomé de Las Casas et les Dominicains restés avec lui apprennent le naufrage. Ils décident de se rendre sur place. Las Casas s'embarqu..."
+            },
+            {
+              "trigger": "Je sais que plus on est sur ce genre de sujet, plus on risque de se perdre dans ...",
+              "context": "S'occuper d'un truc à la fois, c'est une bonne idée. Et merci du compliment, en soit il ne nous reste que quelques objets à traiter et on sera bons de..."
+            }
+          ]
+        }
+      },
+      "register_consistency": {
+        "formal_throughout": {
+          "total": 69,
+          "expletive": 38,
+          "rate": 55.1,
+          "examples": [
+            {
+              "trigger": "Orgon a peur que Tartuffe ne les utilise contre lui. Averti de ce qui vient de s...",
+              "context": "Orgon ordonne au traître de déguerpir. Tartuffe lui déclare qu'il est le maître des lieux maintenant qu'il lui a fait donation de ses biens. Sous le c..."
+            },
+            {
+              "trigger": "Les boutades de monsieur Taylor sont mal venues et j' ai peur qu'elles ne dénote...",
+              "context": "Bon... Mmmm, quel ton condescendant, paternaliste. Sans endosser tous les propos de la mairesse, je souligne justement qu'elle a été députée et que là..."
+            }
+          ]
+        },
+        "literary_throughout": {
+          "total": 22,
+          "expletive": 17,
+          "rate": 77.3,
+          "examples": [
+            {
+              "trigger": "Je pense qu'Apple a eu peur que le MacBook ne vienne canibaliser les ventes du P...",
+              "context": "3) Le monde du Freeware et du Shareware est désormais assez conséquent, de quoi trouver ce que tu cherches pour pas cher. A part MS Office (qu'il faut..."
+            },
+            {
+              "trigger": "Voici des théologiens qui, tout en étant convaincus de la vérité de la religion ...",
+              "context": "Voilà un terrible embarras, là où nous cherchons la certitude. Il est heureux que les prophéties nous apprennent à distinguer la vraie religion des fa..."
+            }
+          ]
+        },
+        "academic_throughout": {
+          "total": 76,
+          "expletive": 32,
+          "rate": 42.1,
+          "examples": [
+            {
+              "trigger": "J'ai souvent envie de la mettre face à ses contradictions, mais j' ai peur qu'el...",
+              "context": "Une question que se pose Sandra depuis que sa meilleure amie Céline a eu son premier enfant: \"Elle est devenue le contraire de ce qu'elle était aupara..."
+            },
+            {
+              "trigger": "Mais, il ne hurle plus à cinq heures et n' a plus peur que la Boboluche ne le pr...",
+              "context": "Il dévore bisseu-stèqueus et briocheus. On l'amène à la villa. Il hurle à l'idée de descendre les escaliers menant à la plage. Il se plaque, dos au mu..."
+            }
+          ]
+        }
+      },
+      "discourse_complexity": {
+        "multiple_clauses": {
+          "total": 0,
+          "expletive": 0,
+          "rate": 0,
+          "examples": []
+        },
+        "embedded_structures": {
+          "total": 533,
+          "expletive": 263,
+          "rate": 49.3,
+          "examples": [
+            {
+              "trigger": "D.B. : L'idée d'une politisation marrane des identités est séduisante, mais en c...",
+              "context": "Peut-être qu'en politique le marranisme conduit ainsi à une troisième voie entre les paniques identitaires et l'indifférenciation d'un cosmopolitisme ..."
+            },
+            {
+              "trigger": "Mais tous pensaient à la mort de leurs frères, qu'ils n'étaient pas meilleurs qu...",
+              "context": "A Campeche, Bartolomé de Las Casas et les Dominicains restés avec lui apprennent le naufrage. Ils décident de se rendre sur place. Las Casas s'embarqu..."
+            }
+          ]
+        },
+        "parenthetical": {
+          "total": 293,
+          "expletive": 133,
+          "rate": 45.4,
+          "examples": [
+            {
+              "trigger": "Mais tous pensaient à la mort de leurs frères, qu'ils n'étaient pas meilleurs qu...",
+              "context": "A Campeche, Bartolomé de Las Casas et les Dominicains restés avec lui apprennent le naufrage. Ils décident de se rendre sur place. Las Casas s'embarqu..."
+            },
+            {
+              "trigger": "Orgon a peur que Tartuffe ne les utilise contre lui. Averti de ce qui vient de s...",
+              "context": "Orgon ordonne au traître de déguerpir. Tartuffe lui déclare qu'il est le maître des lieux maintenant qu'il lui a fait donation de ses biens. Sous le c..."
+            }
+          ]
+        }
+      },
+      "contextual_buildup": {
+        "emotional_buildup": {
+          "total": 19,
+          "expletive": 9,
+          "rate": 47.4,
+          "examples": [
+            {
+              "trigger": "Sentir son gland contre les parois de la jeune femme procurais en lui des millio...",
+              "context": "L'homme se redressa derrière pour la prendre comme jamais il ne l'avais prise avant. Il bascule la tête en arrière, ferme les yeux et savoure ses mouv..."
+            },
+            {
+              "trigger": "J'espère que je pourrai encore le retirer pour faciliter le passage mais j' ai p...",
+              "context": "La partie sapinière est assez sèche à part quelques passages toujours un peu gras, autrement très roulant pour cette partie (avant le 1er ravito). Aut..."
+            }
+          ]
+        },
+        "temporal_buildup": {
+          "total": 7,
+          "expletive": 4,
+          "rate": 57.1,
+          "examples": [
+            {
+              "trigger": "Après réfléxion, avec la sacoches cavalières, j' ai peur que cela ne raye les ca...",
+              "context": "Faut leur dire de pas s'énerver comme ca hein... c'est mauvais pour leur tension ! J'ai regardé sur la carte en faite Mexy c'est super loin de Stras, ..."
+            },
+            {
+              "trigger": "J' ai peur que la femme ne revienne sur moi à nouveau et je tente de courir auss...",
+              "context": "Je reconnais les aboiements du chien qui avait salué notre passage à l'entrée de la forêt en bordure du village du départ (véridique ! Comme tout le r..."
+            }
+          ]
+        },
+        "argumentative_buildup": {
+          "total": 232,
+          "expletive": 108,
+          "rate": 46.6,
+          "examples": [
+            {
+              "trigger": "Mais tous pensaient à la mort de leurs frères, qu'ils n'étaient pas meilleurs qu...",
+              "context": "A Campeche, Bartolomé de Las Casas et les Dominicains restés avec lui apprennent le naufrage. Ils décident de se rendre sur place. Las Casas s'embarqu..."
+            },
+            {
+              "trigger": "Pour le coup j' ai peur que ça ne se rapproche trop des valeurs d' origines...",
+              "context": "Tu as vais un adaptateur ou tu joues du fer à souder à chaque fois ? Je confirme la réduction de bruit est vraiment significative, je dirai que ça div..."
+            }
+          ]
+        }
+      }
+    },
+    "sentence_vs_paragraph": {
+      "discourse": {
+        "speaker_certainty": {
+          "low": {
+            "sentence_rate": 63.1578947368421,
+            "paragraph_rate": 52.22222222222223,
+            "context_effect": -10.935672514619874,
+            "sentence_n": 19,
+            "paragraph_n": 90
+          }
+        }
+      },
+      "syntactic": {
+        "verb_tense": {
+          "future_context": {
+            "sentence_rate": 36.666666666666664,
+            "paragraph_rate": 47.08520179372198,
+            "context_effect": 10.418535127055314,
+            "sentence_n": 60,
+            "paragraph_n": 223
+          }
+        }
+      },
+      "semantic": {
+        "fear_object": {
+          "failure_outcomes": {
+            "sentence_rate": 60,
+            "paragraph_rate": 50,
+            "context_effect": -10,
+            "sentence_n": 5,
+            "paragraph_n": 22
+          }
+        },
+        "temporal_urgency": {
+          "distant": {
+            "sentence_rate": 23.076923076923077,
+            "paragraph_rate": 48.38709677419355,
+            "context_effect": 25.310173697270475,
+            "sentence_n": 13,
+            "paragraph_n": 62
+          }
+        }
+      }
+    }
+  },
+  "avant_que": {
+    "total": 1000,
+    "expletive": 500,
+    "nonExpletive": 500,
+    "paragraph_factors": {
+      "coherence_markers": {
+        "high_coherence": {
+          "total": 351,
+          "expletive": 169,
+          "rate": 48.1,
+          "examples": [
+            {
+              "trigger": "Tous les jours depuis 4mois je repense a ces putains de mots que j'ai dis a mon ...",
+              "context": "Maman : Merci mon Trésor. Allé au travail maintenant. Elle partie et referma la porte de ma chambre. Demain je n'irai pas en cours. Sava me servir a q..."
+            },
+            {
+              "trigger": "En interne, Arnab Ghatak raconte : « Rob Rosiello et moi avons tout de suite com...",
+              "context": "Mark Timney « nous a mis en concurrence, plusieurs membres du board ayant une relation de longue date avec Bain et une aversion prononcée de McKinsey ..."
+            }
+          ]
+        },
+        "temporal_coherence": {
+          "total": 723,
+          "expletive": 368,
+          "rate": 50.9,
+          "examples": [
+            {
+              "trigger": "Et c'est au staff technique de secouer les joueurs avant qu'il ne soit trop tard...",
+              "context": "Mais qu'a-t-on fait pendant la longue trêve du côté du Stade 15- Octobre ? Espzrons maintenant que ce jour «sans» ne sera qu'un mauvais souvenir pour ..."
+            },
+            {
+              "trigger": "Tous les jours depuis 4mois je repense a ces putains de mots que j'ai dis a mon ...",
+              "context": "Maman : Merci mon Trésor. Allé au travail maintenant. Elle partie et referma la porte de ma chambre. Demain je n'irai pas en cours. Sava me servir a q..."
+            }
+          ]
+        },
+        "causal_coherence": {
+          "total": 166,
+          "expletive": 70,
+          "rate": 42.2,
+          "examples": [
+            {
+              "trigger": "J'étais au Brésil, je m'entraînais tous les jours avant que la saison ne soit st...",
+              "context": "La concurrence est saine dans notre effectif. Il y a beaucoup de qualité au poste de latéral, c'est une bonne chose. Je crois simplement que le week-e..."
+            },
+            {
+              "trigger": "La Guémara enseigne que, si la lumière de 'Hanoucca s'éteint par accident avant ...",
+              "context": "Jouant sur toute la palette possible des productions et animations d'un think tank, cette Fabrique parraine également des thèses en gestion (deux par ..."
+            }
+          ]
+        }
+      },
+      "register_consistency": {
+        "formal_throughout": {
+          "total": 62,
+          "expletive": 34,
+          "rate": 54.8,
+          "examples": [
+            {
+              "trigger": "Cela devrait durer six mois avant qu'elle ne retrouve son trois-pièces totalemen...",
+              "context": "Toutes les visites de Carouge où j'entraîne mes hôtes étrangers passent obligatoirement par cette maison typiqu... Concierges et résidents placent leu..."
+            },
+            {
+              "trigger": "Depuis que nous avons vu que le trésor a reçu, pendant le 1er trimestre 800,000 ...",
+              "context": "M. Osy. - La véritable situation de la question est que la loi n'expire que le 1er juillet. Vous avez décidé que la loi serait respectée. Depuis que n..."
+            }
+          ]
+        },
+        "literary_throughout": {
+          "total": 43,
+          "expletive": 16,
+          "rate": 37.2,
+          "examples": [
+            {
+              "trigger": "Hinata se retrouvait seule, et avant qu'il ne s'en rende compte, il était descen...",
+              "context": "Après tout, Hinata elle-même n'était pas le reflet d'innocence qu'elle renvoyait. Il n'avait pas quitté l'immeuble des yeux, et n'avait pas vu arriver..."
+            },
+            {
+              "trigger": "Le haut prêtre avait renoncé tantôt à parler de l'oublié à Freya, mais c'était a...",
+              "context": "On craignait le silence ou le mépris d'Allan Cadmun, non celui de Freya. On tremblait simplement, de troubler davantage son esprit accablé. Des échos ..."
+            }
+          ]
+        },
+        "academic_throughout": {
+          "total": 107,
+          "expletive": 50,
+          "rate": 46.7,
+          "examples": [
+            {
+              "trigger": "Mushin doit déjà avoir rencontré cette catégorie de \" gens usés \" ... avant qu'i...",
+              "context": "Merci à Mushin pour son explication et ses éclaircissements sur ce sujet déjà abordé ...(voir archives ) . Beaucoup de japonais qui \" n'en peuvent plu..."
+            },
+            {
+              "trigger": "Pour être plus simple, ma lecture de Freud laisse en suspens cette question : Où...",
+              "context": "Mais il me paraît un mauvais mécanicien : Le terme de « résistance », essentiel à la psychanalyse, me fait rechercher un « travail moteur » qui soit o..."
+            }
+          ]
+        }
+      },
+      "discourse_complexity": {
+        "multiple_clauses": {
+          "total": 0,
+          "expletive": 0,
+          "rate": 0,
+          "examples": []
+        },
+        "embedded_structures": {
+          "total": 512,
+          "expletive": 256,
+          "rate": 50,
+          "examples": [
+            {
+              "trigger": "Tous les jours depuis 4mois je repense a ces putains de mots que j'ai dis a mon ...",
+              "context": "Maman : Merci mon Trésor. Allé au travail maintenant. Elle partie et referma la porte de ma chambre. Demain je n'irai pas en cours. Sava me servir a q..."
+            },
+            {
+              "trigger": "J'arretais le vibreur avant que cela ne devienne trop fort....",
+              "context": "La sensation augmentait, je m'en apercu en voyant mon prisonnier s'agiter; Heureusement que les cordes bien serrées limitaient fortement ses mouvement..."
+            }
+          ]
+        },
+        "parenthetical": {
+          "total": 278,
+          "expletive": 125,
+          "rate": 45,
+          "examples": [
+            {
+              "trigger": "Et c'est au staff technique de secouer les joueurs avant qu'il ne soit trop tard...",
+              "context": "Mais qu'a-t-on fait pendant la longue trêve du côté du Stade 15- Octobre ? Espzrons maintenant que ce jour «sans» ne sera qu'un mauvais souvenir pour ..."
+            },
+            {
+              "trigger": "La Guémara enseigne que, si la lumière de 'Hanoucca s'éteint par accident avant ...",
+              "context": "Jouant sur toute la palette possible des productions et animations d'un think tank, cette Fabrique parraine également des thèses en gestion (deux par ..."
+            }
+          ]
+        }
+      },
+      "contextual_buildup": {
+        "emotional_buildup": {
+          "total": 2,
+          "expletive": 1,
+          "rate": 50,
+          "examples": [
+            {
+              "trigger": "Elle n'est pas dupe, elle pense tout d'abord qu'il tente de gagner du temps avan...",
+              "context": "Un cœur qui bat par bonds irréguliers. Il fixe le ciel, voit la bête au-dessus de sa tête. Pourquoi est-ce qu'elle n'attaque pas encore? Qu'est-ce qui..."
+            },
+            {
+              "trigger": "Il faudrait peut-être faire quelque chose, avant que la peur s'installe en chacu...",
+              "context": "Il y a deux semaines, le frère d'une de mes amies s'est fait taxer sur la rue Laurier. La très chic rue Laurier. Ils lui ont foutu une raclée et piqué..."
+            }
+          ]
+        },
+        "temporal_buildup": {
+          "total": 162,
+          "expletive": 84,
+          "rate": 51.9,
+          "examples": [
+            {
+              "trigger": "J'arretais le vibreur avant que cela ne devienne trop fort....",
+              "context": "La sensation augmentait, je m'en apercu en voyant mon prisonnier s'agiter; Heureusement que les cordes bien serrées limitaient fortement ses mouvement..."
+            },
+            {
+              "trigger": "Les ultimes échanges au sabre eurent lieu sur les tentacules de la créature avan...",
+              "context": "Traversant les forêts fongiques, elle se rendit aux Abimes Ancestraux, ancien lieu sacré bordé par un Sarlacc où se déroulaient des sacrifices et y at..."
+            }
+          ]
+        },
+        "argumentative_buildup": {
+          "total": 173,
+          "expletive": 88,
+          "rate": 50.9,
+          "examples": [
+            {
+              "trigger": "J'arretais le vibreur avant que cela ne devienne trop fort....",
+              "context": "La sensation augmentait, je m'en apercu en voyant mon prisonnier s'agiter; Heureusement que les cordes bien serrées limitaient fortement ses mouvement..."
+            },
+            {
+              "trigger": "Les peurs ne m'ont pas quitté, mais j'ai une force nouvelle. Avant que le moindr...",
+              "context": "Ma peur s'est envolée. Non seulement je vais traverser le voyage avec lui, mais voilà qu'en plus je vais le démarrer pour les autres ! Soudain soutenu..."
+            }
+          ]
+        }
+      }
+    },
+    "sentence_vs_paragraph": {
+      "discourse": {
+        "temporal_sequencing": {
+          "strict_sequence": {
+            "sentence_rate": 38.46153846153847,
+            "paragraph_rate": 49.166666666666664,
+            "context_effect": 10.705128205128197,
+            "sentence_n": 78,
+            "paragraph_n": 240
+          }
+        },
+        "prevention_context": {
+          "explicit_prevention": {
+            "sentence_rate": 80,
+            "paragraph_rate": 65.38461538461539,
+            "context_effect": -14.615384615384613,
+            "sentence_n": 5,
+            "paragraph_n": 26
+          }
+        }
+      },
+      "semantic": {
+        "completion_aspect": {
+          "process_focus": {
+            "sentence_rate": 0,
+            "paragraph_rate": 41.66666666666667,
+            "context_effect": 41.66666666666667,
+            "sentence_n": 7,
+            "paragraph_n": 24
+          }
+        }
+      }
+    }
+  },
+  "avant_de": {
+    "total": 1000,
+    "expletive": 500,
+    "nonExpletive": 500,
+    "paragraph_factors": {
+      "coherence_markers": {
+        "high_coherence": {
+          "total": 364,
+          "expletive": 197,
+          "rate": 54.1,
+          "examples": [
+            {
+              "trigger": "Ça aurait n'importe qui d'autre, là par contre... Je souris avant de ne baisser ...",
+              "context": "J'étais heureux de le voir ainsi. Malgré tout, le voir galérer à envoyer un message en retour à ce dit Harry me faisait rire. Surtout avec le monde au..."
+            },
+            {
+              "trigger": "Réfléchissez bien et réfléchissez longtemps avant de ne prendre un employé en Es...",
+              "context": "Les usines de TMB en général et la technologie 3Wayste en particulier ne rentrent donc pas dans ces nouvelles prescriptions réglementaires. Ne nous la..."
+            }
+          ]
+        },
+        "temporal_coherence": {
+          "total": 721,
+          "expletive": 366,
+          "rate": 50.8,
+          "examples": [
+            {
+              "trigger": "Le goudron est parsemé de trous que nous évitons tant bien que mal jusqu'à San P...",
+              "context": "En route vers l'Ouest Dès le lendemain matin je prends la route vers l'Ouest avec mon nouveau collègue et le chauffeur de l'ONG pour laquelle je trava..."
+            },
+            {
+              "trigger": "Ça aurait n'importe qui d'autre, là par contre... Je souris avant de ne baisser ...",
+              "context": "J'étais heureux de le voir ainsi. Malgré tout, le voir galérer à envoyer un message en retour à ce dit Harry me faisait rire. Surtout avec le monde au..."
+            }
+          ]
+        },
+        "causal_coherence": {
+          "total": 129,
+          "expletive": 66,
+          "rate": 51.2,
+          "examples": [
+            {
+              "trigger": "Si vous avez des besoins faites les moi connaître car je ne peux faire évoluer m...",
+              "context": "Je pourrais me déplacer dans un rayon de 30 km autour de la commune de sonzay. Actuellement je cherche à observer les demandes potentiel afin de voir ..."
+            },
+            {
+              "trigger": "Réfléchissez bien et réfléchissez longtemps avant de ne prendre un employé en Es...",
+              "context": "Les usines de TMB en général et la technologie 3Wayste en particulier ne rentrent donc pas dans ces nouvelles prescriptions réglementaires. Ne nous la..."
+            }
+          ]
+        }
+      },
+      "register_consistency": {
+        "formal_throughout": {
+          "total": 68,
+          "expletive": 41,
+          "rate": 60.3,
+          "examples": [
+            {
+              "trigger": "Si vous ne pouvez pas avoir un petit stock de MICA, Météor, A2SM, oubliez vos en...",
+              "context": "Le Meteor, utilisé par 5 des plus grosses forces aériennes européennes, rattrape quand même un peu la chose. Ça pourraient cependant s'améliorer vers ..."
+            },
+            {
+              "trigger": "Ele sirota son thé, prit un doliprane pour gérer sa fièvre et chercha de quoi fu...",
+              "context": "Elle put remarquer l'activité dense de la résidence Koutula. Certains étudiants rentraient chez leurs parents pour le week-end, d'autres sortaient pou..."
+            }
+          ]
+        },
+        "literary_throughout": {
+          "total": 47,
+          "expletive": 26,
+          "rate": 55.3,
+          "examples": [
+            {
+              "trigger": "Tombant au sol, elle tente de me porter un coup avant de ne pus en être capable ...",
+              "context": "Lorsque nous enlevons le drap qui la protégeait du soleil, la créature hurle. Je n'attends pas plus longtemps pour frapper et abat ma lame d'un coup r..."
+            },
+            {
+              "trigger": "Passant la trappe, la lumière claire d'une salle terrifiée lui agressa la rétine...",
+              "context": "Donnant un coup de botte dans un morceau de tentacules qui gisait là, mort et inerte comme devrait l'être tout les tentacules d'Ephaëlya. Runar suivit..."
+            }
+          ]
+        },
+        "academic_throughout": {
+          "total": 79,
+          "expletive": 33,
+          "rate": 41.8,
+          "examples": [
+            {
+              "trigger": "On doit s'appliquer toutes les clefs sur soi-même, c'est-à-dire les trois clefs ...",
+              "context": "Les transformations sont nécessaires pour avoir l'expérience des états altérés de conscience. Un simple enthousiasme n'est pas assez et la curiosité e..."
+            },
+            {
+              "trigger": "Combien d'articles, de déclarations et d'appels au secours faudra-t-il encore li...",
+              "context": "Plus encore, nous sommes en droit de nous inquiéter encore davantage du bien-être et de la santé des équipes quand on considère que Treyarch s'est réc..."
+            }
+          ]
+        }
+      },
+      "discourse_complexity": {
+        "multiple_clauses": {
+          "total": 0,
+          "expletive": 0,
+          "rate": 0,
+          "examples": []
+        },
+        "embedded_structures": {
+          "total": 465,
+          "expletive": 238,
+          "rate": 51.2,
+          "examples": [
+            {
+              "trigger": "Ça aurait n'importe qui d'autre, là par contre... Je souris avant de ne baisser ...",
+              "context": "J'étais heureux de le voir ainsi. Malgré tout, le voir galérer à envoyer un message en retour à ce dit Harry me faisait rire. Surtout avec le monde au..."
+            },
+            {
+              "trigger": "Si vous avez des besoins faites les moi connaître car je ne peux faire évoluer m...",
+              "context": "Je pourrais me déplacer dans un rayon de 30 km autour de la commune de sonzay. Actuellement je cherche à observer les demandes potentiel afin de voir ..."
+            }
+          ]
+        },
+        "parenthetical": {
+          "total": 232,
+          "expletive": 90,
+          "rate": 38.8,
+          "examples": [
+            {
+              "trigger": "Le goudron est parsemé de trous que nous évitons tant bien que mal jusqu'à San P...",
+              "context": "En route vers l'Ouest Dès le lendemain matin je prends la route vers l'Ouest avec mon nouveau collègue et le chauffeur de l'ONG pour laquelle je trava..."
+            },
+            {
+              "trigger": "Réfléchissez bien et réfléchissez longtemps avant de ne prendre un employé en Es...",
+              "context": "Les usines de TMB en général et la technologie 3Wayste en particulier ne rentrent donc pas dans ces nouvelles prescriptions réglementaires. Ne nous la..."
+            }
+          ]
+        }
+      },
+      "contextual_buildup": {
+        "emotional_buildup": {
+          "total": 0,
+          "expletive": 0,
+          "rate": 0,
+          "examples": []
+        },
+        "temporal_buildup": {
+          "total": 238,
+          "expletive": 135,
+          "rate": 56.7,
+          "examples": [
+            {
+              "trigger": "affichant un léger sourire qu'elle ne connaissait que très bien vu qu'elle l'uti...",
+              "context": "affichant un léger sourire qu'elle ne connaissait que très bien vu qu'elle l'utilisait à chaque fois qu'elle voulait séduire, elle tourne la tête douc..."
+            },
+            {
+              "trigger": "------ Se garant devant sa maison , il soupire d'exaspération , en remarquant qu...",
+              "context": "------ Se garant devant sa maison , il soupire d'exaspération , en remarquant que la voiture de son frère et de son frère y étaient déjà garé suivi d'..."
+            }
+          ]
+        },
+        "argumentative_buildup": {
+          "total": 14,
+          "expletive": 9,
+          "rate": 64.3,
+          "examples": [
+            {
+              "trigger": "Combien d'articles, de déclarations et d'appels au secours faudra-t-il encore li...",
+              "context": "Plus encore, nous sommes en droit de nous inquiéter encore davantage du bien-être et de la santé des équipes quand on considère que Treyarch s'est réc..."
+            },
+            {
+              "trigger": "Tiens, la comparaison plaisait bien au Barman et il ne put réprimer un léger rir...",
+              "context": "Et puis il lui manquait quelques années encore pour pouvoir s'attaquer à une proie de choix comme Lyra ! Mais \"Mike\", le chien de garde de la jeune fe..."
+            }
+          ]
+        }
+      }
+    },
+    "sentence_vs_paragraph": {
+      "discourse": {
+        "preparation_context": {
+          "implicit_prep": {
+            "sentence_rate": 50,
+            "paragraph_rate": 38.095238095238095,
+            "context_effect": -11.904761904761905,
+            "sentence_n": 16,
+            "paragraph_n": 42
+          },
+          "routine_context": {
+            "sentence_rate": 28.57142857142857,
+            "paragraph_rate": 55.172413793103445,
+            "context_effect": 26.600985221674875,
+            "sentence_n": 7,
+            "paragraph_n": 29
+          }
+        }
+      },
+      "syntactic": {
+        "infinitive_type": {
+          "motion_infinitive": {
+            "sentence_rate": 0,
+            "paragraph_rate": 27.27272727272727,
+            "context_effect": 27.27272727272727,
+            "sentence_n": 6,
+            "paragraph_n": 11
+          }
+        }
+      },
+      "semantic": {
+        "temporal_relationship": {
+          "immediate_sequence": {
+            "sentence_rate": 56.25,
+            "paragraph_rate": 46,
+            "context_effect": -10.25,
+            "sentence_n": 16,
+            "paragraph_n": 50
+          }
+        }
+      }
+    }
+  },
+  "sen_faut_que": {
+    "total": 1000,
+    "expletive": 500,
+    "nonExpletive": 500,
+    "paragraph_factors": {
+      "coherence_markers": {
+        "high_coherence": {
+          "total": 392,
+          "expletive": 205,
+          "rate": 52.3,
+          "examples": [
+            {
+              "trigger": "Peu s'en est fallu que je n'aie éprouvé tous les malheurs au milieu du peuple et...",
+              "context": "Nous avons été instruits ! Ne soyons donc pas des insensés en méprisant ces instructions ! (Celles du Seigneur, bien entendu !) Comment ai-je pu (autr..."
+            },
+            {
+              "trigger": "Moi qui ne suis jamais malade en bateau il s'en est fallu de peu que je ne fasse...",
+              "context": "Nous avons profité qu'une partie des invités du mariage soient encore sur place pour organiser une \"sortie de groupe\" et nous sommes partis pour Bréha..."
+            }
+          ]
+        },
+        "temporal_coherence": {
+          "total": 452,
+          "expletive": 231,
+          "rate": 51.1,
+          "examples": [
+            {
+              "trigger": "Il s'en est fallu de peu que l'ordinateur ne fut noyé... Le chat m' a regardé av...",
+              "context": "Et cette purgation de la croyance en la finalité me semble beaucoup plus éprouvante que l'abandon du créationnisme. Entendant cela, j'ai bondi de ma c..."
+            },
+            {
+              "trigger": "Mais à la libération, les gens étaient tellement déchaînés qu'ils ont failli le ...",
+              "context": "Mais à la libération, les gens étaient tellement déchaînés qu'ils ont failli le lyncher... Ils l'ont consigné aux Anglais et il s'en est fallu de peu ..."
+            }
+          ]
+        },
+        "causal_coherence": {
+          "total": 158,
+          "expletive": 80,
+          "rate": 50.6,
+          "examples": [
+            {
+              "trigger": "Si même le Seigneur n'était à mon secours, il s'en faudrait de peu que je ne fus...",
+              "context": "On peut se rendre compte du mal qu'il fait alors par la désolation et le dénuement qui, y règnent maintenant. Hélas! il n'y a laissé debout ni le mur ..."
+            },
+            {
+              "trigger": "Il lui dit qu'il ne se sentait pas capable d'en décider : mais que s'il s'en fal...",
+              "context": "Il lui dit qu'il ne se sentait pas capable d'en décider : mais que s'il s'en fallait rapporter aux pensées de quelques saintes âmes, qui sont plus cro..."
+            }
+          ]
+        }
+      },
+      "register_consistency": {
+        "formal_throughout": {
+          "total": 114,
+          "expletive": 75,
+          "rate": 65.8,
+          "examples": [
+            {
+              "trigger": "Il lui dit qu'il ne se sentait pas capable d'en décider : mais que s'il s'en fal...",
+              "context": "Il lui dit qu'il ne se sentait pas capable d'en décider : mais que s'il s'en fallait rapporter aux pensées de quelques saintes âmes, qui sont plus cro..."
+            },
+            {
+              "trigger": "Il s'en fallut de peu que le flagrant délit ne fût manqué. Par hasard, Mauricett...",
+              "context": "Je conte mal cette histoire si vous ne comprenez pas le fou rire qui m'empêcha de répondre à la dernière phrase. Lili seule ne riait pas. Elle était m..."
+            }
+          ]
+        },
+        "literary_throughout": {
+          "total": 359,
+          "expletive": 229,
+          "rate": 63.8,
+          "examples": [
+            {
+              "trigger": "Au dehors flottait la femelle, couvant ses oeufs, et presque aussi grosse que le...",
+              "context": "Vers le milieu de la nuit, par un temps calme, nous allons nous heurter, sans nous en apercevoir, contre un énorme nid d'alcyon, qui avait au moins so..."
+            },
+            {
+              "trigger": "Peu s'en fallut que ces fables ne prissent à mes yeux une espèce de réalité....",
+              "context": "Les sauvages de la Floride racontent qu'au milieu d'un lac est une île où vivent les plus belles femmes du monde. Les Muscogulges en ont tenté maintes..."
+            }
+          ]
+        },
+        "academic_throughout": {
+          "total": 53,
+          "expletive": 16,
+          "rate": 30.2,
+          "examples": [
+            {
+              "trigger": "En arrivant en Amérique, les émigrants apprirent la nouvelle du renversement du ...",
+              "context": "La querelle persista, et le prolétariat adhéra en masse aux sections icariennes. Cabet ne tarda pas à songer à passer de la théorie à la pratique; des..."
+            },
+            {
+              "trigger": "Mais, si aujourd'hui le processus enclenché est en passe d'aboutir à des solutio...",
+              "context": "Tous ces éléments, et le fait qu'en l'absence de réglementation communautaire, le marché postal européen eût pu, à terme, se trouver placé sous la seu..."
+            }
+          ]
+        }
+      },
+      "discourse_complexity": {
+        "multiple_clauses": {
+          "total": 0,
+          "expletive": 0,
+          "rate": 0,
+          "examples": []
+        },
+        "embedded_structures": {
+          "total": 528,
+          "expletive": 261,
+          "rate": 49.4,
+          "examples": [
+            {
+              "trigger": "Au dehors flottait la femelle, couvant ses oeufs, et presque aussi grosse que le...",
+              "context": "Vers le milieu de la nuit, par un temps calme, nous allons nous heurter, sans nous en apercevoir, contre un énorme nid d'alcyon, qui avait au moins so..."
+            },
+            {
+              "trigger": "Il s'en est fallu de peu que l'ordinateur ne fut noyé... Le chat m' a regardé av...",
+              "context": "Et cette purgation de la croyance en la finalité me semble beaucoup plus éprouvante que l'abandon du créationnisme. Entendant cela, j'ai bondi de ma c..."
+            }
+          ]
+        },
+        "parenthetical": {
+          "total": 189,
+          "expletive": 71,
+          "rate": 37.6,
+          "examples": [
+            {
+              "trigger": "Peu s'en est fallu que je n'aie éprouvé tous les malheurs au milieu du peuple et...",
+              "context": "Nous avons été instruits ! Ne soyons donc pas des insensés en méprisant ces instructions ! (Celles du Seigneur, bien entendu !) Comment ai-je pu (autr..."
+            },
+            {
+              "trigger": "Mais quelle humiliation lorsque quelqu'un près de moi entendait une flûte au loi...",
+              "context": "Mais quelle humiliation lorsque quelqu'un près de moi entendait une flûte au loin et que je n'entendais rien, ou lorsque quelqu'un entendait le berger..."
+            }
+          ]
+        }
+      },
+      "contextual_buildup": {
+        "emotional_buildup": {
+          "total": 0,
+          "expletive": 0,
+          "rate": 0,
+          "examples": []
+        },
+        "temporal_buildup": {
+          "total": 6,
+          "expletive": 2,
+          "rate": 33.3,
+          "examples": [
+            {
+              "trigger": "– Il s'en est fallu de peu que cette vision funeste ne se réalise, Sariss. Vos t...",
+              "context": "Apparaître aux côtés de Claria lors de la cérémonie de couronnement, qui serait retransmise par HNE dans toute la Galaxie, montrerait sans l'ombre d'u..."
+            },
+            {
+              "trigger": "Scipion, qui les suivait en les exhortant, fut blessé; et peu s'en fallut qu'il ...",
+              "context": "Ils s'enfuient de toutes parts vers les camps. Les uns périrent sous les coups des cavaliers qui atteignirent vite ces malheureux à pied, les autres, ..."
+            }
+          ]
+        },
+        "argumentative_buildup": {
+          "total": 5,
+          "expletive": 2,
+          "rate": 40,
+          "examples": [
+            {
+              "trigger": "Témoin Alexandre, qui eut tant de regret d'avoir tué son ami Clitus, que peu s'e...",
+              "context": "Peut-il être utile à l'homme d'être hors de son bon sens? Un mouvement, que la raison désavoue, peut-il venir de la nature? Mais d'ailleurs, si la col..."
+            },
+            {
+              "trigger": "Peu s'en fallut qu'elle ne fût retenue prisonnière en Espagne....",
+              "context": "Parquoy, monseigneur, suis contrainte d'attendre encores samedy, mais je vous envoye quelqu'un qui bien au long vous contera ce que demain et tous ces..."
+            }
+          ]
+        }
+      }
+    },
+    "sentence_vs_paragraph": {}
+  },
+  "moins_plus": {
+    "total": 1000,
+    "expletive": 500,
+    "nonExpletive": 500,
+    "paragraph_factors": {
+      "coherence_markers": {
+        "high_coherence": {
+          "total": 384,
+          "expletive": 191,
+          "rate": 49.7,
+          "examples": [
+            {
+              "trigger": "Cela signifie accroître la concurrence entre prolétaires, les opposer les uns au...",
+              "context": "Sa politique sociale ne s'écartera pas beaucoup de celle inaugurée par Draghi et ses prédécesseurs : les prolétaires, en tant que salariés, devront se..."
+            },
+            {
+              "trigger": "Cela signifierait que de l'eau liquide a existé sous une forme stable à la surfa...",
+              "context": "Pouvoir répondre à la question de savoir si de l'eau liquide a existé sur Mars était l'une des priorités de la mission d'Opportunity comme de beaucoup..."
+            }
+          ]
+        },
+        "temporal_coherence": {
+          "total": 397,
+          "expletive": 191,
+          "rate": 48.1,
+          "examples": [
+            {
+              "trigger": "La figure de l'Empereur paraissait alors plus jeune qu'il n'était, d'environ 40 ...",
+              "context": "Il arrivera en Angleterre le 4 juillet. · La consternation régnait à Longwood, car le masque n'était toujours pas réalisé, alors que la dégradation de..."
+            },
+            {
+              "trigger": "Tout ce qui est électrique n'a sans doute jamais été récupéré. » C'était une sor...",
+              "context": "Il les avait même retrouvés. Quelle belle histoire qui se finissait bien ! J'avais quand même l'impression qu'on l'avait enroulé dans du papier-bulle ..."
+            }
+          ]
+        },
+        "causal_coherence": {
+          "total": 183,
+          "expletive": 96,
+          "rate": 52.5,
+          "examples": [
+            {
+              "trigger": "Il en fait des personnages plus grands qu'ils ne sont. Ils font pitié même quand...",
+              "context": "Stéphane Denis est un romancier qui promène sa curiosité de journaliste dans le monde de la politique, de la finance, du spectacle, de l'histoire et u..."
+            },
+            {
+              "trigger": "Sous ses airs discrets, Jacques est bien plus présent que cela ne peut paraître....",
+              "context": "Bonjour la team Before, avec le temps nous avons l'impression que l'établissement développe sa famille. Et comme dans toutes les familles chacun à son..."
+            }
+          ]
+        }
+      },
+      "register_consistency": {
+        "formal_throughout": {
+          "total": 75,
+          "expletive": 43,
+          "rate": 57.3,
+          "examples": [
+            {
+              "trigger": "Il en fait des personnages plus grands qu'ils ne sont. Ils font pitié même quand...",
+              "context": "Stéphane Denis est un romancier qui promène sa curiosité de journaliste dans le monde de la politique, de la finance, du spectacle, de l'histoire et u..."
+            },
+            {
+              "trigger": "Il relie Hegel à Joachim de Flore, dont les visions apocalyptiques de celui-ci s...",
+              "context": "Il relie Hegel à Joachim de Flore, dont les visions apocalyptiques de celui-ci seraient reprises par celui-là dans l'idée d'une fin de l'Histoire. « C..."
+            }
+          ]
+        },
+        "literary_throughout": {
+          "total": 36,
+          "expletive": 18,
+          "rate": 50,
+          "examples": [
+            {
+              "trigger": "Cette nouvelle modalité de travail, à distance, constitue un bouleversement beau...",
+              "context": "Sans dommage aucun pour les hommes de Schällibaum, toujours invaincus dans leur stade de Tourbillon cette saison. Une enceinte qui ne convient guère a..."
+            },
+            {
+              "trigger": "Tharkûn n'y alla pas par quatre chemins cette fois, il se dressa face à elle et ...",
+              "context": "Seulement comment s'empêcher de rêver? Elle commença par essayer de résister au sommeil, ce qu'elle fit pendant une partie de la nuit, mais n'y tenant..."
+            }
+          ]
+        },
+        "academic_throughout": {
+          "total": 105,
+          "expletive": 55,
+          "rate": 52.4,
+          "examples": [
+            {
+              "trigger": "Et le spectacle est plus fréquent qu'on ne pense: des corps individuels ou colle...",
+              "context": "Si j'ai fait ces remarques, c'est que ladite mortification, que j'ai étudiée dans une recherche récente, m'a semblé n'être pas loin de ce qu'on connaî..."
+            },
+            {
+              "trigger": "A mon sens, le droit de seigneuriage d'une Banque centrale est bien plus grand q...",
+              "context": "\"Comme les espèces ne rapportent aucun intérêt, et comme sa rentabilité sur le seigneuriage égale au différentiel entre ce qu'elle touche sur cette ob..."
+            }
+          ]
+        }
+      },
+      "discourse_complexity": {
+        "multiple_clauses": {
+          "total": 0,
+          "expletive": 0,
+          "rate": 0,
+          "examples": []
+        },
+        "embedded_structures": {
+          "total": 523,
+          "expletive": 256,
+          "rate": 48.9,
+          "examples": [
+            {
+              "trigger": "Cela signifie accroître la concurrence entre prolétaires, les opposer les uns au...",
+              "context": "Sa politique sociale ne s'écartera pas beaucoup de celle inaugurée par Draghi et ses prédécesseurs : les prolétaires, en tant que salariés, devront se..."
+            },
+            {
+              "trigger": "Les tours de guet sont bien plus nombreuses que je n'imaginais, une soixantaine ...",
+              "context": "Personne. Silence. Meme pas de guichet pour payer de ticket d'entree tiens. Vers l'est, Simatai, section fermée pour travaux en 2019. Je pars donc ver..."
+            }
+          ]
+        },
+        "parenthetical": {
+          "total": 297,
+          "expletive": 140,
+          "rate": 47.1,
+          "examples": [
+            {
+              "trigger": "Cela signifierait que de l'eau liquide a existé sous une forme stable à la surfa...",
+              "context": "Pouvoir répondre à la question de savoir si de l'eau liquide a existé sur Mars était l'une des priorités de la mission d'Opportunity comme de beaucoup..."
+            },
+            {
+              "trigger": "A mon sens, le droit de seigneuriage d'une Banque centrale est bien plus grand q...",
+              "context": "\"Comme les espèces ne rapportent aucun intérêt, et comme sa rentabilité sur le seigneuriage égale au différentiel entre ce qu'elle touche sur cette ob..."
+            }
+          ]
+        }
+      },
+      "contextual_buildup": {
+        "emotional_buildup": {
+          "total": 3,
+          "expletive": 2,
+          "rate": 66.7,
+          "examples": [
+            {
+              "trigger": "Un volume surtout axé sur le déroulement de la fête du lycée et de la pièce de t...",
+              "context": "Une rencontre peu banale ,mais qui montre que la force des sentiments peut franchir beaucoup d'obstacles! Toutes sortes de sentiments pour le lecteur ..."
+            },
+            {
+              "trigger": "Il s'agit souvent de gros chiens et l'enfant étant de petite taille, l'animal es...",
+              "context": "Il s'agit donc d'une phobie importante qui concerne les hommes, les femmes et, aussi les enfants. Sources éventuelles de la cynophobie L'une des sourc..."
+            }
+          ]
+        },
+        "temporal_buildup": {
+          "total": 11,
+          "expletive": 4,
+          "rate": 36.4,
+          "examples": [
+            {
+              "trigger": "Ce film n'est pas que du Jackass, un gag post adolescent pour adulte débile et o...",
+              "context": "Rappelons quand même qu'après la vague de Palestiniens, les Syriens se tapent les Irakiens, et on sait ce que cela peut générer comme déstabilisation ..."
+            },
+            {
+              "trigger": "Dans tous ces cas, le client sait très bien qu'il paye bien plus cher qu'il ne d...",
+              "context": "Cette fable illustre ce que l'on appelle les modèles économiques de prise d'otage. Ces modèles économiques consistent à profiter de la dépendance du c..."
+            }
+          ]
+        },
+        "argumentative_buildup": {
+          "total": 5,
+          "expletive": 2,
+          "rate": 40,
+          "examples": [
+            {
+              "trigger": "– Ne te fais pas plus bête que tu n'es. Des yeux comme ça valent une fortune... ...",
+              "context": "– Sal... salope... – Tsss... attends, je me rapproche. Moi, je te félicite. Tu as été parfait. Pour tout. – Ce qui va t'arriver ? Eh bien, tu as fini ..."
+            },
+            {
+              "trigger": "A l'époque, Pete était encore gringalet et son jeu était moins explosif qu'il ne...",
+              "context": "Et surtout, un type qui arrivait aussi souvent à aligner Lendl que je ne pouvais pas saquer bénéficiait d'une super-cote de popularité. Becker, c'étai..."
+            }
+          ]
+        }
+      }
+    },
+    "sentence_vs_paragraph": {
+      "discourse": {
+        "comparison_context": {
+          "explicit_comparison": {
+            "sentence_rate": 66.66666666666666,
+            "paragraph_rate": 54.83870967741935,
+            "context_effect": -11.827956989247305,
+            "sentence_n": 6,
+            "paragraph_n": 31
+          }
+        }
+      }
+    }
+  }
+}
