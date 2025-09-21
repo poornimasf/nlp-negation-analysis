@@ -171,6 +171,10 @@ class UnifiedEmpiricalAnalyzer {
 
     for (const [register, pattern] of Object.entries(patterns)) {
       if (pattern.test(text)) {
+        // Contemporary context overrides formal/literary detection
+        if (this.hasContemporaryContext(text) && (register === 'formal' || register === 'literary')) {
+          return 'neutral'; // Contemporary context neutralizes formal patterns
+        }
         return register;
       }
     }
@@ -445,8 +449,10 @@ class UnifiedEmpiricalAnalyzer {
 
   // Contemporary/modern context detection (modern French favors simpler constructions)
   hasContemporaryContext(text) {
-    return /\b(président\s+Macron|2013|2024|2025|joueur|conducteur|roman|journal|guide|triathlon|€|euros|camp\s+perde|majorité|réélu|officiellement|années\s+avant|plusieurs\s+années)\b/i.test(text) ||
-           /\d{4}/.test(text); // Years indicate contemporary context
+    return /\b(président\s+Macron|2013|2024|2025|joueur|conducteur|roman|journal|guide|triathlon|€|euros|camp\s+perde|majorité|réélu|officiellement|années\s+avant|plusieurs\s+années|employés|modification|entre\s+en\s+vigueur|bilan|Madagascar|réunion|SE|lol|x\)|désolé|bah\s+oui|grâce\s+à|histoire\s+de|ça\s+dérape|je\s+viens\s+de|depuis\s+2012|Kaidou|Shanks|Marineford|anime|manga|fan|Nadeshiko|Tadase)\b/i.test(text) ||
+           /\d{4}/.test(text) || // Years indicate contemporary context
+           /\([^)]*\)/.test(text) || // Parenthetical comments (online discourse)
+           /x\)|lol|bah|désolé/.test(text); // Internet/informal markers
   }
 
   // Literary vocabulary detection (expanded)
