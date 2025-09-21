@@ -207,7 +207,28 @@ class UnifiedEmpiricalAnalyzer {
    * Extract the clause containing the trigger to isolate analysis
    */
   extractTriggerClause(text, trigger) {
-    // More precise clause extraction - look for the trigger and capture surrounding clause
+    // First try: Look for the trigger and extract just the subordinate clause
+    const triggerExtractionPatterns = {
+      'avant_que': /\bavant\s+que?\s+([^.!?]*?)(?:\s*\.|$)/i,
+      'peur_que': /\bpeur\s+que?\s+([^.!?]*?)(?:\s*\.|$)/i,
+      'moins_plus': /\b(?:moins|plus).*?que?\s+([^.!?]*?)(?:\s*\.|$)/i,
+      'sen_faut_que': /\bs'en\s+(?:faut|fallut).*?que?\s+([^.!?]*?)(?:\s*\.|$)/i,
+      'avant_de': /\bavant\s+de\s+([^.!?]*?)(?:\s*\.|$)/i
+    };
+    
+    // Try to extract just the subordinate clause after the trigger
+    const extractPattern = triggerExtractionPatterns[trigger.name] || triggerExtractionPatterns[trigger];
+    if (extractPattern) {
+      const match = text.match(extractPattern);
+      if (match && match[1]) {
+        const subordinateClause = match[1].trim();
+        // Return the trigger phrase + subordinate clause
+        const triggerPhrase = text.match(new RegExp(`\\b(?:avant\\s+que?|peur\\s+que?|(?:moins|plus).*?que?|s'en\\s+(?:faut|fallut).*?que?|avant\\s+de)`, 'i'));
+        return triggerPhrase ? `${triggerPhrase[0]} ${subordinateClause}` : subordinateClause;
+      }
+    }
+    
+    // Fallback: More precise clause extraction with punctuation boundaries
     const triggerPatterns = {
       'avant_que': /((?:^|[,.;])[^,.;]*avant\s+qu[e'][^,.;]*(?:[,.;]|$))/i,
       'peur_que': /((?:^|[,.;])[^,.;]*peur\s+qu[e'][^,.;]*(?:[,.;]|$))/i,
@@ -229,11 +250,15 @@ class UnifiedEmpiricalAnalyzer {
       return clause;
     }
     
-    // Fallback: try to find just the trigger phrase and surrounding words
-    const simpleFallback = new RegExp(`\\b[^.!?]*${trigger.name.replace('_', '\\s+')}[^.!?]*`, 'i');
-    const fallbackMatch = text.match(simpleFallback);
+    // Final fallback: Return just a small window around the trigger
+    const triggerIndex = text.toLowerCase().indexOf(trigger.name.replace('_', ' '));
+    if (triggerIndex !== -1) {
+      const start = Math.max(0, triggerIndex - 20);
+      const end = Math.min(text.length, triggerIndex + 50);
+      return text.substring(start, end).trim();
+    }
     
-    return fallbackMatch ? fallbackMatch[0].trim() : text;
+    return text;
   }
 
   /**
