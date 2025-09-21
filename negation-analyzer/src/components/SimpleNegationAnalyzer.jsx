@@ -250,8 +250,12 @@ const SimpleNegationAnalyzer = () => {
             dualModeAnalysis = enhancedResult.dualModeAnalysis || enhancedResult;
             console.log(`🔍 DUAL-MODE: Extracted dualModeAnalysis:`, dualModeAnalysis);
             
-            // Safety check for malformed dual-mode analysis
-            if (!dualModeAnalysis || dualModeAnalysis.hasExpletive === undefined || dualModeAnalysis.confidence === undefined) {
+            // Safety check for malformed dual-mode analysis - handle both formats
+            const hasValidData = dualModeAnalysis && 
+              (dualModeAnalysis.hasExpletive !== undefined || dualModeAnalysis.classification !== undefined) &&
+              dualModeAnalysis.confidence !== undefined;
+              
+            if (!hasValidData) {
               console.warn(`⚠️ DUAL-MODE: Malformed analysis for sentence ${index + 1}, creating fallback:`, dualModeAnalysis);
               dualModeAnalysis = {
                 hasExpletive: false,
@@ -266,6 +270,11 @@ const SimpleNegationAnalyzer = () => {
                   semantic_field: 'neutral'
                 }
               };
+            } else {
+              // Normalize format: convert classification to hasExpletive if needed
+              if (dualModeAnalysis.hasExpletive === undefined && dualModeAnalysis.classification !== undefined) {
+                dualModeAnalysis.hasExpletive = dualModeAnalysis.classification;
+              }
             }
             
             console.log(`✅ DUAL-MODE: Analysis complete for sentence ${index + 1}:`, {
