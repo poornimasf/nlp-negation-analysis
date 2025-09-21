@@ -325,7 +325,8 @@ class UnifiedEmpiricalAnalyzer {
   }
 
   hasExplicitPrevention(text) {
-    return /\b(empêcher|éviter|prévenir|interdire|bloquer)\b/i.test(text);
+    return /\b(empêcher|éviter|prévenir|interdire|bloquer|stopper|arrêter)\b/i.test(text) ||
+           /\b(explose|disparaisse|disparaissent|empire|se\s+vende|nous\s+dépasse|touche\s+l'adversaire|soit\s+connus|se\s+reproduise|se\s+penche|trop\s+tard)\b/i.test(text);
   }
 
   hasUrgencyMarkers(text) {
