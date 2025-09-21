@@ -470,6 +470,143 @@ class UnifiedEmpiricalAnalyzer {
   }
 
   /**
+   * Add syntactic factors to analysis sections
+   */
+  addSyntacticFactors(sections, text, trigger) {
+    if (this.hasPastSubjunctive(text)) {
+      sections.push('✓ Past subjunctive: detected (strongest expletive predictor 83.3%)');
+    } else {
+      sections.push('✗ Past subjunctive: not found (would strongly favor expletive 83.3%)');
+    }
+    
+    if (this.hasLogicalNegation(text)) {
+      sections.push('✓ Logical negation: detected (absolute override → No Expletive)');
+    } else {
+      sections.push('✗ Logical negation: not found (would override → No Expletive)');
+    }
+    
+    if (/\b(vienne|parte|soit|ait|aient|fasse|arrive|prenne)\b/i.test(text)) {
+      sections.push('✓ Present subjunctive: detected (standard subjunctive construction)');
+    } else {
+      sections.push('✗ Present subjunctive: not found (indicative mood detected)');
+    }
+    
+    // Trigger-specific syntactic patterns
+    if (trigger.name === 'avant_de') {
+      if (this.hasMotionInfinitive(text) || this.hasActionInfinitive(text)) {
+        sections.push('✓ Motion/action infinitive: detected (strong anti-expletive 0%)');
+      } else {
+        sections.push('✗ Motion/action infinitive: not found (would be strong anti-expletive 0%)');
+      }
+    }
+  }
+
+  /**
+   * Add semantic factors to analysis sections
+   */
+  addSemanticFactors(sections, text, trigger, register) {
+    if (trigger.name === 'peur_que') {
+      if (this.hasUncertaintyMarkers(text)) {
+        sections.push('✓ Speaker uncertainty: detected (favors expletive 63.2%)');
+      } else {
+        sections.push('✗ Speaker uncertainty: not found (would favor expletive 63.2%)');
+      }
+      
+      if (this.hasDistantTemporal(text)) {
+        sections.push('✓ Distant temporal: detected (reduces expletive 23.1%)');
+      } else {
+        sections.push('✗ Distant temporal: not found (would reduce expletive 23.1%)');
+      }
+      
+      if (this.hasMedicalContext(text)) {
+        sections.push('✓ Medical context: detected (favors expletive 65%)');
+      } else {
+        sections.push('✗ Medical context: not found (would favor expletive 65%)');
+      }
+    } else if (trigger.name === 'avant_que') {
+      if (this.hasExplicitPrevention(text)) {
+        sections.push('✓ Prevention context: detected (strong expletive predictor 80%)');
+      } else {
+        sections.push('✗ Prevention context: not found (would strongly favor expletive 80%)');
+      }
+      
+      if (this.hasMotionContext(text)) {
+        sections.push('✓ Motion/travel context: detected (strong anti-expletive 20%)');
+      } else {
+        sections.push('✗ Motion/travel context: not found (would be strong anti-expletive 20%)');
+      }
+      
+      if (this.hasAdministrativeContext(text)) {
+        sections.push('✓ Administrative context: detected (favors expletive 72%)');
+      } else {
+        sections.push('✗ Administrative context: not found (would favor expletive 72%)');
+      }
+      
+      if (this.hasLegalContext(text)) {
+        sections.push('✓ Legal context: detected (strongly favors expletive 75%)');
+      } else {
+        sections.push('✗ Legal context: not found (would strongly favor expletive 75%)');
+      }
+      
+      if (this.hasProfessionalContext(text)) {
+        sections.push('✓ Professional context: detected (favors expletive 65%)');
+      } else {
+        sections.push('✗ Professional context: not found (would favor expletive 65%)');
+      }
+    } else if (trigger.name === 'avant_de') {
+      if (this.hasRoutineContext(text)) {
+        sections.push('✓ Routine context: detected (moderate expletive 28.6%)');
+      } else {
+        sections.push('✗ Routine context: not found (would be moderate expletive 28.6%)');
+      }
+      
+      if (this.hasEducationalContext(text)) {
+        sections.push('✓ Educational context: detected (reduces expletive 40%)');
+      } else {
+        sections.push('✗ Educational context: not found (would reduce expletive 40%)');
+      }
+    }
+    
+    // Academic context (applies to all triggers)
+    if (register === 'academic' || /\b(histoire|historique|développa|commerce|autochtones)\b/i.test(text)) {
+      sections.push('✓ Academic/historical context: detected (reduces expletive 30.2%)');
+    } else {
+      sections.push('✗ Academic/historical context: not found (would reduce expletive 30.2%)');
+    }
+  }
+
+  /**
+   * Add register factors to analysis sections
+   */
+  addRegisterFactors(sections, text, register) {
+    sections.push(`Detected register: ${register}`);
+    
+    if (register === 'literary') {
+      sections.push('✓ Literary register: detected (strongly favors expletive 77.3%)');
+    } else {
+      sections.push('✗ Literary register: not found (would strongly favor expletive 77.3%)');
+    }
+    
+    if (register === 'formal') {
+      sections.push('✓ Formal register: detected (favors expletive 65.8%)');
+    } else {
+      sections.push('✗ Formal register: not found (would favor expletive 65.8%)');
+    }
+    
+    if (register === 'academic') {
+      sections.push('✓ Academic register: detected (reduces expletive 30.2%)');
+    } else {
+      sections.push('✗ Academic register: not found (would reduce expletive 30.2%)');
+    }
+    
+    if (register === 'conversational') {
+      sections.push('✓ Conversational register: detected (neutral baseline)');
+    } else if (register === 'neutral') {
+      sections.push('• Neutral register: no specific markers detected');
+    }
+  }
+
+  /**
    * Build narrative-style linguistic reasoning explanation
    */
   buildValidatedReasoning(trigger, register, probability, mode, text, baseProbability) {
@@ -492,12 +629,12 @@ class UnifiedEmpiricalAnalyzer {
     const conflicts = this.detectConflicts(detectedFactors);
     const hasLogicalOverride = this.hasLogicalNegation(text);
     
-    // Narrative analysis
+    // Hybrid analysis: Detailed linguistic factors + narrative summary
     sections.push('🎯 LINGUISTIC ANALYSIS:');
+    sections.push('');
     
     // Special handling for logical negation override
     if (hasLogicalOverride) {
-      sections.push('');
       sections.push('🚨 LOGICAL NEGATION OVERRIDE:');
       const negationPatterns = this.detectLogicalNegationPatterns(text);
       negationPatterns.forEach(pattern => {
@@ -519,22 +656,36 @@ class UnifiedEmpiricalAnalyzer {
         sections.push('No other contextual factors detected');
         sections.push('Clear logical negation → No Expletive');
       }
-    } else if (detectedFactors.length === 0) {
-      sections.push(`Trigger "${trigger.name}" detected with neutral context`);
-      sections.push(`No strong predictive factors found → baseline ${(this.triggerRates[trigger.name] * 100).toFixed(1)}%`);
     } else {
-      sections.push('✅ DETECTED FACTORS:');
-      detectedFactors.forEach((factor, index) => {
-        sections.push(`${index + 1}. ${factor.description} → ${factor.effect}`);
-      });
+      // Detailed linguistic factor analysis
+      sections.push('🔍 SYNTACTIC ANALYSIS:');
+      this.addSyntacticFactors(sections, text, trigger);
+      sections.push('');
       
-      if (conflicts.length > 0) {
-        sections.push('');
-        sections.push('⚖️ COMPETING FORCES:');
-        conflicts.forEach(conflict => {
-          sections.push(`• ${conflict.description}`);
-        });
-        sections.push(`• Winner: ${conflicts[0].winner} → ${prediction}`);
+      sections.push('📊 SEMANTIC ANALYSIS:');
+      this.addSemanticFactors(sections, text, trigger, register);
+      sections.push('');
+      
+      sections.push('🗣️ REGISTER ANALYSIS:');
+      this.addRegisterFactors(sections, text, register);
+      sections.push('');
+      
+      // Narrative summary
+      sections.push('✅ NARRATIVE SUMMARY:');
+      if (detectedFactors.length === 0) {
+        sections.push(`Trigger "${trigger.name}" detected with neutral context`);
+        sections.push(`No strong predictive factors found → baseline ${(this.triggerRates[trigger.name] * 100).toFixed(1)}%`);
+      } else {
+        if (conflicts.length > 0) {
+          sections.push('⚖️ COMPETING FORCES:');
+          conflicts.forEach(conflict => {
+            sections.push(`• ${conflict.description}`);
+          });
+          sections.push(`• Winner: ${conflicts[0].winner} → ${prediction}`);
+        } else {
+          const dominantFactor = detectedFactors[0];
+          sections.push(`${dominantFactor.description} is the primary determining factor → ${prediction}`);
+        }
       }
     }
     
