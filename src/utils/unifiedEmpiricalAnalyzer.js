@@ -111,7 +111,9 @@ class UnifiedEmpiricalAnalyzer {
     // Step 3: Check for logical negation override (100% validated)
     const hasLogicalNegation = this.hasLogicalNegation(text);
     if (hasLogicalNegation) {
-      return this.buildResult('No Expletive', 0.95, 'Logical negation detected (validated override)', {
+      // Use enhanced explanation for logical negation override
+      const enhancedReasoning = this.buildValidatedReasoning(trigger, register, 0.05, mode, text, 0.05);
+      return this.buildResult('No Expletive', 0.95, enhancedReasoning, {
         trigger, register, override: 'logical-negation'
       });
     }
