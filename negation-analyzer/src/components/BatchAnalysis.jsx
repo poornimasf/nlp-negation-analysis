@@ -133,7 +133,7 @@ export const BatchAnalysis = ({
                       backgroundColor: index % 2 === 0 ? 'white' : '#f8f9fa',
                       borderBottom: '1px solid #dee2e6'
                     }}>
-                      <td style={{ padding: '12px', maxWidth: '200px' }}>
+                      <td style={{ padding: '12px', width: '40%', verticalAlign: 'top' }}>
                         {result.text && result.label.match(/trigger: "(.*?)"/i) ? (
                           <span dangerouslySetInnerHTML={{
                             __html: result.text.replace(
@@ -143,7 +143,7 @@ export const BatchAnalysis = ({
                           }} />
                         ) : result.text}
                       </td>
-                      <td style={{ padding: '12px' }}>
+                      <td style={{ padding: '12px', width: '60%', verticalAlign: 'top' }}>
                         <pre style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{result.label}</pre>
                       </td>
                     </tr>
