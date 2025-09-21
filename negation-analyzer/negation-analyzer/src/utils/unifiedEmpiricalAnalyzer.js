@@ -186,7 +186,15 @@ class UnifiedEmpiricalAnalyzer {
     const patterns = [
       /\b(?:pas|jamais|plus|rien|personne|aucun|nulle?)\b/i,
       /\b(?:refuse|interdit|empêche|évite)\b/i,
-      /\b(?:impossible|trop\s+tard|inutile)\b/i
+      /\b(?:impossible|trop\s+tard|inutile)\b/i,
+      // Corpus-derived patterns for non-expletive cases
+      /\ben trouve un autre\b/i, // search/finding context
+      /\bil y ait\b/i, // neutral existence  
+      /\bnous l'ayons\b/i, // achievement context
+      /\bon ait pu\b/i, // ability context
+      /\beût eu le temps\b/i, // temporal ability
+      /\bpuisses devenir\b/i, // potential/ability
+      /\belles l'entérinent\b/i // institutional process
     ];
     
     return patterns.some(pattern => pattern.test(text));
