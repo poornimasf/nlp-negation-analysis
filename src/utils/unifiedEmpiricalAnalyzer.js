@@ -163,7 +163,7 @@ class UnifiedEmpiricalAnalyzer {
    */
   detectRegister(text) {
     const patterns = {
-      literary: /\b(?:fallut|eût|eut|fût|fut|submergeât|contempla|irréparable|naguère|jadis|désormais|nonobstant|toutefois|lassé|pénates|communion|univers\s+musicaux|successifs|réintégrer|tardive|promettait|beau\s+monde|afin\s+de|trop\s+tardive|échappa|soupir|sursauter|ainsi)\b/i,
+      literary: /\b(?:fallut|eût|eut|fût|fut|submergeât|contempla|irréparable|naguère|jadis|désormais|nonobstant|toutefois|lassé|pénates|communion|univers\s+musicaux|successifs|réintégrer|tardive|promettait|beau\s+monde|afin\s+de|trop\s+tardive|échappa|soupir|sursauter|ainsi|ouvris|découvris|saisisse|parmi\s+ses\s+semblables|tiroir)\b/i,
       formal: /\b(?:il\s+convient|par\s+conséquent|en\s+conséquence|il\s+est\s+recommandé|il\s+est\s+conseillé|il\s+est\s+préférable|monsieur|madame|néanmoins|cependant|veuillez|nous\s+recommandons|sénateur|député|ministère|gouvernement|officiel|administration|autorités|institution|organisme|procédure|processus|impératif|règle|réglementation|utilisables|débute|se\s+retrouve|totalement|représentation|résumé|provenance|découverte)\b/i,
       academic: /\b(?:analyse|étude|recherche|théorie|concept|méthode|processus|système|données|résultats|conclusion|hypothèse|développa|autochtones|jargon|combinaison|historique|histoire|fondé|village|employés\s+de\s+la|commerce\s+entre)\b/i,
       conversational: /\b(?:bon|allez|ça|ouais|ben|alors|faut\s+qu'on|tu\s+vois|enfin\s+bref|salut|coucou|dis\s+donc|tu\s+sais\s+quoi)\b/i
