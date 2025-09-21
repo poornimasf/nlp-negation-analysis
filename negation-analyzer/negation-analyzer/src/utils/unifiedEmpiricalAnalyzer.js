@@ -109,7 +109,7 @@ class UnifiedEmpiricalAnalyzer {
     const register = this.detectRegister(text);
     
     // Step 3: Check for logical negation override (100% validated)
-    const hasLogicalNegation = this.hasLogicalNegation(text);
+    const hasLogicalNegation = this.hasLogicalNegation(text, trigger);
     if (hasLogicalNegation) {
       // Use enhanced explanation for logical negation override
       const enhancedReasoning = this.buildValidatedReasoning(trigger, register, 0.05, mode, text, 0.05);
@@ -180,9 +180,12 @@ class UnifiedEmpiricalAnalyzer {
   }
 
   /**
-   * Check for logical negation (validated 100% accuracy)
+   * Check for logical negation in the trigger clause only (validated 100% accuracy)
    */
-  hasLogicalNegation(text) {
+  hasLogicalNegation(text, trigger) {
+    // Extract the trigger clause to avoid false positives from other clauses
+    const triggerClause = this.extractTriggerClause(text, trigger);
+    
     const patterns = [
       /\b(?:pas|jamais|plus|rien|personne|aucun|nulle?)\b/i,
       /\b(?:refuse|interdit|empêche|évite)\b/i,
@@ -197,7 +200,26 @@ class UnifiedEmpiricalAnalyzer {
       /\belles l'entérinent\b/i // institutional process
     ];
     
-    return patterns.some(pattern => pattern.test(text));
+    return patterns.some(pattern => pattern.test(triggerClause));
+  }
+
+  /**
+   * Extract the clause containing the trigger to isolate analysis
+   */
+  extractTriggerClause(text, trigger) {
+    const triggerPatterns = {
+      'avant_que': /([^.!?]*avant\s+qu[e'][^.!?]*)/i,
+      'peur_que': /([^.!?]*peur\s+qu[e'][^.!?]*)/i,
+      'moins_plus': /([^.!?]*(?:moins|plus)[^.!?]*qu[e'][^.!?]*)/i,
+      'sen_faut_que': /([^.!?]*s'en\s+(?:faut|fallut)[^.!?]*qu[e'][^.!?]*)/i,
+      'avant_de': /([^.!?]*avant\s+de[^.!?]*)/i
+    };
+    
+    const pattern = triggerPatterns[trigger.name] || triggerPatterns[trigger];
+    const match = text.match(pattern);
+    
+    // Return the isolated clause or fallback to full text if extraction fails
+    return match ? match[1].trim() : text;
   }
 
   /**
@@ -554,10 +576,10 @@ class UnifiedEmpiricalAnalyzer {
       sections.push('✗ Past subjunctive: not found (would strongly favor expletive 83.3%)');
     }
     
-    if (this.hasLogicalNegation(text)) {
-      sections.push('✓ Logical negation: detected (absolute override → No Expletive)');
+    if (this.hasLogicalNegation(text, trigger)) {
+      sections.push('✓ Logical negation: detected in trigger clause (absolute override → No Expletive)');
     } else {
-      sections.push('✗ Logical negation: not found (would override → No Expletive)');
+      sections.push('✗ Logical negation: not found in trigger clause (would override → No Expletive)');
     }
     
     if (/\b(vienne|parte|soit|ait|aient|fasse|arrive|prenne)\b/i.test(text)) {
@@ -734,7 +756,7 @@ class UnifiedEmpiricalAnalyzer {
     // Detect all relevant factors
     const detectedFactors = this.getDetectedFactors(text, trigger, register);
     const conflicts = this.detectConflicts(detectedFactors);
-    const hasLogicalOverride = this.hasLogicalNegation(text);
+    const hasLogicalOverride = this.hasLogicalNegation(text, trigger);
     
     // Hybrid analysis: Detailed linguistic factors + narrative summary
     sections.push('🎯 LINGUISTIC ANALYSIS:');
@@ -849,11 +871,11 @@ class UnifiedEmpiricalAnalyzer {
       });
     }
     
-    if (this.hasLogicalNegation(text)) {
+    if (this.hasLogicalNegation(text, trigger)) {
       factors.push({
         type: 'override',
         name: 'logical_negation',
-        description: 'Logical negation detected',
+        description: 'Logical negation detected in trigger clause',
         effect: 'Absolute override → No Expletive',
         strength: 100,
         direction: 'anti-expletive'
