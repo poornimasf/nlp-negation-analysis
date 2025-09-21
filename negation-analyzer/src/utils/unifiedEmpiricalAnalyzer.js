@@ -163,7 +163,7 @@ class UnifiedEmpiricalAnalyzer {
    */
   detectRegister(text) {
     const patterns = {
-      literary: /\b(?:fallut|eût|eut|fût|fut|submergeât|contempla|irréparable|naguère|jadis|désormais|nonobstant|toutefois|lassé|pénates|communion|univers\s+musicaux|successifs|réintégrer|tardive|promettait|beau\s+monde|afin\s+de|trop\s+tardive)\b/i,
+      literary: /\b(?:fallut|eût|eut|fût|fut|submergeât|contempla|irréparable|naguère|jadis|désormais|nonobstant|toutefois|lassé|pénates|communion|univers\s+musicaux|successifs|réintégrer|tardive|promettait|beau\s+monde|afin\s+de|trop\s+tardive|échappa|soupir|sursauter|ainsi)\b/i,
       formal: /\b(?:il\s+convient|par\s+conséquent|en\s+conséquence|il\s+est\s+recommandé|il\s+est\s+conseillé|il\s+est\s+préférable|monsieur|madame|néanmoins|cependant|veuillez|nous\s+recommandons|sénateur|député|ministère|gouvernement|officiel|administration|autorités|institution|organisme|procédure|processus|impératif|règle|réglementation|utilisables|débute|se\s+retrouve|totalement|représentation|résumé|provenance|découverte)\b/i,
       academic: /\b(?:analyse|étude|recherche|théorie|concept|méthode|processus|système|données|résultats|conclusion|hypothèse|développa|autochtones|jargon|combinaison|historique|histoire|fondé|village|employés\s+de\s+la|commerce\s+entre)\b/i,
       conversational: /\b(?:bon|allez|ça|ouais|ben|alors|faut\s+qu'on|tu\s+vois|enfin\s+bref|salut|coucou|dis\s+donc|tu\s+sais\s+quoi)\b/i
@@ -451,16 +451,17 @@ class UnifiedEmpiricalAnalyzer {
   // Written discourse detection (written text generally favors expletive over speech)
   hasWrittenDiscourse(text) {
     // Indicators of written vs spoken discourse
-    return /\b(résumé|découverte|représentation|provenance|dès\s+que|toujours\s+pas|même\s+si|d'autant\s+plus|à\s+l'heure\s+actuelle|de\s+retour|pas\s+trop)\b/i.test(text) ||
+    return /\b(résumé|découverte|représentation|provenance|dès\s+que|toujours\s+pas|même\s+si|d'autant\s+plus|à\s+l'heure\s+actuelle|de\s+retour|pas\s+trop|échappa|soupir|ainsi|lui)\b/i.test(text) ||
            text.length > 100 || // Longer sentences tend to be written
-           /[.]{2,}|[!]{1,}[.]{1,}/.test(text); // Ellipsis and punctuation patterns
+           /[.]{2,}|[!]{1,}[.]{1,}/.test(text) || // Ellipsis and punctuation patterns
+           /\b(un\s+long|très\s+long|le\s+faisant)\b/i.test(text); // Literary narrative patterns
   }
 
   // Formal "ne" construction detection (90%+ correlation with expletive in corpus)
   hasFormalNeConstruction(text) {
     // Patterns that typically had expletive "ne" in original text
-    return /\b(avant qu'il ne|avant que cela ne|avant qu'elle ne|avant que le|peur qu'il ne|peur qu'elle ne|peur que cela ne|plus.*qu'il ne|moins.*qu'elle ne)\b/i.test(text) ||
-           /\b(soit trop tard|devienne|empire|se reproduise|frappe|abandonne|submerge)\b/i.test(text);
+    return /\b(avant qu'il ne|avant que cela ne|avant qu'elle ne|avant que le|avant qu'on|peur qu'il ne|peur qu'elle ne|peur que cela ne|plus.*qu'il ne|moins.*qu'elle ne)\b/i.test(text) ||
+           /\b(soit trop tard|devienne|empire|se reproduise|frappe|abandonne|submerge|toque à la porte)\b/i.test(text);
   }
 
   // Contemporary/modern context detection (modern French favors simpler constructions)
