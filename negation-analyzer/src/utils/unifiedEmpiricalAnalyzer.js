@@ -186,6 +186,12 @@ class UnifiedEmpiricalAnalyzer {
     // Extract the trigger clause to avoid false positives from other clauses
     const triggerClause = this.extractTriggerClause(text, trigger);
     
+    // Debug logging to see what clause is extracted
+    console.log('🔍 CLAUSE EXTRACTION DEBUG:');
+    console.log('Full text:', text);
+    console.log('Trigger:', trigger.name || trigger);
+    console.log('Extracted clause:', triggerClause);
+    
     const patterns = [
       /\b(?:pas|jamais|plus|rien|personne|aucun|nulle?)\b/i,
       /\b(?:refuse|interdit|empêche|évite)\b/i,
@@ -200,7 +206,16 @@ class UnifiedEmpiricalAnalyzer {
       /\belles l'entérinent\b/i // institutional process
     ];
     
-    return patterns.some(pattern => pattern.test(triggerClause));
+    const hasNegation = patterns.some(pattern => {
+      const match = pattern.test(triggerClause);
+      if (match) {
+        console.log('🚨 LOGICAL NEGATION FOUND:', pattern, 'in clause:', triggerClause);
+      }
+      return match;
+    });
+    
+    console.log('🎯 LOGICAL NEGATION RESULT:', hasNegation);
+    return hasNegation;
   }
 
   /**
