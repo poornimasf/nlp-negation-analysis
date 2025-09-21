@@ -111,24 +111,8 @@ const SimpleNegationAnalyzer = () => {
 
   // Format unified result for display
   const formatUnifiedResult = (analysis) => {
-    return [
-      '🔬 Unified September 2025 Empirical Analysis',
-      '================================',
-      '',
-      `Classification: ${analysis.prediction}`,
-      `Confidence: ${(analysis.confidence * 100).toFixed(1)}%`,
-      '',
-      `🎯 EMPIRICAL ANALYSIS:`,
-      `Trigger: ${analysis.trigger}`,
-      `Register: ${analysis.register}`,
-      `Probability: ${(analysis.probability * 100).toFixed(1)}%`,
-      '',
-      `📊 REASONING:`,
-      analysis.reasoning,
-      '',
-      `📈 CORPUS BASIS:`,
-      analysis.empiricalBasis
-    ].join('\n');
+    // Use the enhanced reasoning directly from the analyzer
+    return analysis.reasoning;
   };
 
   // Build surface form with "ne" placement

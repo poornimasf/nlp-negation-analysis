@@ -106,6 +106,7 @@ class UnifiedEmpiricalAnalyzer {
 
     // Step 4: Apply validated deep factors
     let probability = this.calculateValidatedProbability(trigger, register, text, mode);
+    const baseProbability = probability; // Store for paragraph mode comparison
     
     // Step 5: Apply paragraph mode context effects (if applicable)
     if (mode === 'paragraph') {
@@ -117,7 +118,7 @@ class UnifiedEmpiricalAnalyzer {
     const prediction = probability > 0.5 ? 'Expletive' : 'No Expletive';
     const confidence = Math.abs(probability - 0.5) * 2;
 
-    return this.buildResult(prediction, confidence, this.buildValidatedReasoning(trigger, register, probability, mode), {
+    return this.buildResult(prediction, confidence, this.buildValidatedReasoning(trigger, register, probability, mode, text, baseProbability), {
       trigger, register, probability, mode
     });
   }
@@ -339,24 +340,160 @@ class UnifiedEmpiricalAnalyzer {
   }
 
   /**
-   * Build validated reasoning explanation
+   * Build enhanced mode-specific reasoning explanation
    */
-  buildValidatedReasoning(trigger, register, probability, mode) {
-    const parts = [];
+  buildValidatedReasoning(trigger, register, probability, mode, text, baseProbability) {
+    const sections = [];
     
-    parts.push(`Trigger: ${trigger.name} (validated baseline)`);
+    // Header with mode
+    sections.push(`🔬 Unified September 2025 Empirical Analysis (${mode.toUpperCase()} MODE)`);
+    sections.push('================================');
+    sections.push('');
     
-    if (register !== 'neutral') {
-      parts.push(`Register: ${register} (${(this.registerEffects[register] * 100).toFixed(1)}% validated rate)`);
+    // Trigger Analysis
+    sections.push('🎯 TRIGGER ANALYSIS:');
+    sections.push(`✓ Detected: ${trigger.name} (baseline: ${(this.triggerRates[trigger.name] * 100).toFixed(1)}%)`);
+    if (!trigger.found) {
+      sections.push('✗ No clear trigger pattern found');
+    }
+    sections.push('');
+    
+    // Syntactic Factors
+    sections.push('🔍 SYNTACTIC FACTORS:');
+    if (this.hasPastSubjunctive(text)) {
+      sections.push('✓ Past subjunctive: detected (83.3% → Expletive)');
+    } else {
+      sections.push('✗ Past subjunctive: not found (would be 83.3% → Expletive)');
     }
     
+    if (this.hasLogicalNegation(text)) {
+      sections.push('✓ Logical negation: detected (overrides → No Expletive)');
+    } else {
+      sections.push('✗ Logical negation: not found (would override → No Expletive)');
+    }
+    
+    if (/\b(vienne|parte|soit|ait|fasse)\b/i.test(text)) {
+      sections.push('✓ Present subjunctive: detected (slight reduction)');
+    }
+    sections.push('');
+    
+    // Semantic Factors
+    sections.push('📊 SEMANTIC FACTORS:');
+    if (trigger.name === 'peur_que') {
+      if (this.hasUncertaintyMarkers(text)) {
+        sections.push('✓ Speaker uncertainty: detected (63.2% → Expletive)');
+      } else {
+        sections.push('✗ Speaker uncertainty: not found (would be 63.2% → Expletive)');
+      }
+      
+      if (this.hasEmphaticContext(text)) {
+        sections.push('✓ Emphatic context: detected (42.9%)');
+      } else {
+        sections.push('✗ Emphatic context: not found (would be 42.9%)');
+      }
+      
+      if (this.hasDistantTemporal(text)) {
+        sections.push('✓ Distant temporal: detected (23.1%)');
+      } else {
+        sections.push('✗ Distant temporal: not found (would be 23.1%)');
+      }
+    } else if (trigger.name === 'avant_que') {
+      if (this.hasExplicitPrevention(text)) {
+        sections.push('✓ Explicit prevention: detected (80% → Expletive)');
+      } else {
+        sections.push('✗ Explicit prevention: not found (would be 80% → Expletive)');
+      }
+      
+      if (this.hasUrgencyMarkers(text)) {
+        sections.push('✓ Urgency markers: detected (66.1% → Expletive)');
+      } else {
+        sections.push('✗ Urgency markers: not found (would be 66.1% → Expletive)');
+      }
+    } else if (trigger.name === 'avant_de') {
+      if (this.hasMotionInfinitive(text) || this.hasActionInfinitive(text)) {
+        sections.push('✓ Motion/action infinitive: detected (0% → No Expletive)');
+      } else {
+        sections.push('✗ Motion/action infinitive: not found (would be 0% → No Expletive)');
+      }
+    }
+    sections.push('');
+    
+    // Register Analysis
+    sections.push('🗣️ REGISTER ANALYSIS:');
+    sections.push(`Detected: ${register} ${register !== 'neutral' ? `(${(this.registerEffects[register] * 100).toFixed(1)}%)` : '(no adjustment)'}`);
+    if (register !== 'literary') {
+      sections.push('✗ Literary: not found (would be 77.3% → Expletive)');
+    }
+    if (register !== 'formal') {
+      sections.push('✗ Formal: not found (would be 65.8% → Expletive)');
+    }
+    if (register !== 'academic') {
+      sections.push('✗ Academic: not found (would be 30.2%)');
+    }
+    sections.push('');
+    
+    // Paragraph Mode Specific Sections
     if (mode === 'paragraph') {
-      parts.push('Paragraph context effects applied');
+      sections.push('📚 PARAGRAPH CONTEXT EFFECTS:');
+      let contextEffects = [];
+      
+      if (trigger.name === 'peur_que') {
+        if (this.hasFutureContext(text)) {
+          contextEffects.push('✓ Future context: detected (+10.4% validated boost)');
+        } else {
+          contextEffects.push('✗ Future context: not found (would be +10.4%)');
+        }
+        
+        if (this.hasDistantTemporal(text)) {
+          contextEffects.push('✓ Temporal urgency: detected (+25.3%)');
+        } else {
+          contextEffects.push('✗ Temporal urgency: not found (would be +25.3%)');
+        }
+      } else if (trigger.name === 'avant_que') {
+        if (this.hasProcessFocus(text)) {
+          contextEffects.push('✓ Process focus: detected (+41.7% validated boost)');
+        } else {
+          contextEffects.push('✗ Process focus: not found (would be +41.7%)');
+        }
+      } else if (trigger.name === 'avant_de') {
+        if (this.hasRoutineContext(text)) {
+          contextEffects.push('✓ Routine context: detected (+26.6%)');
+        } else {
+          contextEffects.push('✗ Routine context: not found (would be +26.6%)');
+        }
+      }
+      
+      if (contextEffects.length === 0) {
+        contextEffects.push('✗ No significant context effects detected');
+      }
+      
+      sections.push(...contextEffects);
+      sections.push('');
+      
+      // Mode Comparison
+      sections.push('🔄 MODE COMPARISON:');
+      sections.push(`Sentence: ${(baseProbability * 100).toFixed(1)}% → ${baseProbability > 0.5 ? 'Expletive' : 'No Expletive'}`);
+      sections.push(`Paragraph: ${(probability * 100).toFixed(1)}% → ${probability > 0.5 ? 'Expletive' : 'No Expletive'}`);
+      const contextEffect = (probability - baseProbability) * 100;
+      sections.push(`Context effect: ${contextEffect >= 0 ? '+' : ''}${contextEffect.toFixed(1)}% ${contextEffect > 0 ? '(paragraph discourse boost)' : '(no significant boost)'}`);
+      sections.push('');
     }
     
-    parts.push(`Final: ${(probability * 100).toFixed(1)}% empirical likelihood`);
+    // Final Calculation
+    sections.push('📈 FINAL CALCULATION:');
+    if (mode === 'paragraph' && baseProbability) {
+      sections.push(`Sentence base: ${(baseProbability * 100).toFixed(1)}%`);
+      const contextBoost = (probability - baseProbability) * 100;
+      sections.push(`+ Context effects: ${contextBoost >= 0 ? '+' : ''}${contextBoost.toFixed(1)}%`);
+      sections.push(`= Final: ${(probability * 100).toFixed(1)}%`);
+    } else {
+      const baseline = this.triggerRates[trigger.name] * 100;
+      const adjustment = (probability * 100) - baseline;
+      sections.push(`${baseline.toFixed(1)}% (baseline) ${adjustment >= 0 ? '+' : ''}${adjustment.toFixed(1)}% (adjustments) = ${(probability * 100).toFixed(1)}%`);
+    }
+    sections.push(`Result: ${(probability * 100).toFixed(1)}% ${probability > 0.5 ? '≥' : '<'} 50% → ${probability > 0.5 ? 'Expletive' : 'No Expletive'}`);
     
-    return parts.join(' | ');
+    return sections.join('\n');
   }
 
   /**
