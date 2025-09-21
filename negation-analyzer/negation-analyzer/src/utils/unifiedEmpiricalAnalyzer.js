@@ -171,15 +171,11 @@ class UnifiedEmpiricalAnalyzer {
 
     for (const [register, pattern] of Object.entries(patterns)) {
       if (pattern.test(text)) {
-        // Contemporary context overrides formal/literary detection
-        if (this.hasContemporaryContext(text) && (register === 'formal' || register === 'literary')) {
-          return 'neutral'; // Contemporary context neutralizes formal patterns
-        }
         return register;
       }
     }
     
-    // Default to neutral - written discourse doesn't automatically mean formal
+    // Default to neutral
     return 'neutral';
   }
 
@@ -209,9 +205,9 @@ class UnifiedEmpiricalAnalyzer {
     } else if (this.hasHistoricalContext(text)) {
       // Historical context should be treated as academic register
       probability = this.registerEffects['academic'] || probability; // 30.2%
-    } else if (this.hasContemporaryContext(text)) {
-      // Contemporary contexts favor simpler constructions (no expletive)
-      probability = Math.min(probability, 0.35); // 35% - modern French trend
+    } else if (this.hasWrittenDiscourse(text)) {
+      // Written discourse generally favors expletive (regardless of contemporary context)
+      probability = Math.max(probability, 0.60); // 60% - written French tends toward expletive
     }
 
     // Apply validated deep factors for specific triggers
@@ -649,11 +645,11 @@ class UnifiedEmpiricalAnalyzer {
       sections.push('✗ Academic/historical context: not found (would reduce expletive 30.2%)');
     }
     
-    // Contemporary context (applies to all triggers)
-    if (this.hasContemporaryContext(text)) {
-      sections.push('✓ Contemporary context: detected (reduces expletive 35%)');
+    // Written discourse context (applies to all triggers)
+    if (this.hasWrittenDiscourse(text)) {
+      sections.push('✓ Written discourse: detected (favors expletive 60%)');
     } else {
-      sections.push('✗ Contemporary context: not found (would reduce expletive 35%)');
+      sections.push('✗ Written discourse: not found (would favor expletive 60%)');
     }
   }
 
