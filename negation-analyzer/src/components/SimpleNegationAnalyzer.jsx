@@ -239,62 +239,22 @@ const SimpleNegationAnalyzer = () => {
 
           const analysis = await analyzer.analyzeNegationEnhanced(sentence, 'RULE_BASED', null, analysisMode.toLowerCase().replace('_mode', ''));
           
-          // NEW: Add dual-mode classifier analysis using pre-loaded training data
-          let dualModeAnalysis = null;
-          try {
-            console.log(`🔍 DUAL-MODE: Processing sentence ${index + 1}:`, sentence.substring(0, 50) + '...');
-            console.log(`🔍 DUAL-MODE: Full sentence text:`, sentence);
-            const enhancedResult = analyzeWithEnhancedFeatures(sentence, trainingDataToUse);
-            console.log(`🔍 DUAL-MODE: Raw enhanced result:`, enhancedResult);
-            // The enhancedResult IS the dual-mode analysis, not a container
-            dualModeAnalysis = enhancedResult.dualModeAnalysis || enhancedResult;
-            console.log(`🔍 DUAL-MODE: Extracted dualModeAnalysis:`, dualModeAnalysis);
-            
-            // Safety check for malformed dual-mode analysis - handle both formats
-            const hasValidData = dualModeAnalysis && 
-              (dualModeAnalysis.hasExpletive !== undefined || dualModeAnalysis.classification !== undefined) &&
-              dualModeAnalysis.confidence !== undefined;
-              
-            if (!hasValidData) {
-              console.warn(`⚠️ DUAL-MODE: Malformed analysis for sentence ${index + 1}, creating fallback:`, dualModeAnalysis);
-              dualModeAnalysis = {
-                hasExpletive: false,
-                confidence: 0.5,
-                mode: analysisMode === 'PARAGRAPH_MODE' ? 'paragraph' : 'sentence',
-                reasoning: 'No clear trigger detected - defaulting to no expletive',
-                features: {
-                  trigger_type: 'unknown',
-                  trigger_strength: 0.5,
-                  register: 'neutral',
-                  register_score: 1.0,
-                  semantic_field: 'neutral'
-                }
-              };
-            } else {
-              // Normalize format: convert classification to hasExpletive if needed
-              if (dualModeAnalysis.hasExpletive === undefined && dualModeAnalysis.classification !== undefined) {
-                dualModeAnalysis.hasExpletive = dualModeAnalysis.classification;
-              }
-            }
-            
-            console.log(`✅ DUAL-MODE: Analysis complete for sentence ${index + 1}:`, {
-              hasExpletive: dualModeAnalysis?.hasExpletive,
-              confidence: dualModeAnalysis?.confidence,
-              features: dualModeAnalysis?.features?.trigger_type
-            });
-            
-            // Override mode based on user selection and enhance with discourse factors
-            if (dualModeAnalysis) {
-              console.log('🔍 DUAL-MODE: Initial analysis:', {
-                hasExpletive: dualModeAnalysis.hasExpletive,
-                confidence: dualModeAnalysis.confidence,
-                mode: analysisMode
-              });
-              
-              if (analysisMode === 'SENTENCE_MODE') {
-                dualModeAnalysis.mode = 'sentence';
-                console.log('📝 SENTENCE MODE: Set mode to sentence');
-              } else if (analysisMode === 'PARAGRAPH_MODE') {
+          console.log(`✅ UNIFIED ANALYSIS: Sentence ${index + 1} complete:`, {
+            prediction: analysis.prediction,
+            confidence: `${(analysis.confidence * 100).toFixed(1)}%`,
+            trigger: analysis.trigger,
+            register: analysis.register
+          });
+
+          // Simplified result formatting
+          const formattedResult = this.formatUnifiedResult(analysis);
+          const displayClassification = analysis.prediction;
+          
+          // Build surface form if expletive predicted
+          let proposedSentence = null;
+          if (analysis.prediction === 'Expletive') {
+            proposedSentence = this.buildSurfaceForm(sentence, analysis);
+          }
                 dualModeAnalysis.mode = 'paragraph';
                 console.log('📚 PARAGRAPH MODE: Set mode to paragraph');
                 
@@ -617,6 +577,44 @@ const SimpleNegationAnalyzer = () => {
       setBatchProgress({ current: 0, total: 0 });
     }
   };
+
+  // Format unified result for display
+  formatUnifiedResult(analysis) {
+    return [
+      '🔬 Unified September 2025 Empirical Analysis',
+      '================================',
+      '',
+      `Classification: ${analysis.prediction}`,
+      `Confidence: ${(analysis.confidence * 100).toFixed(1)}%`,
+      '',
+      `🎯 EMPIRICAL ANALYSIS:`,
+      `Trigger: ${analysis.trigger}`,
+      `Register: ${analysis.register}`,
+      `Probability: ${(analysis.probability * 100).toFixed(1)}%`,
+      '',
+      `📊 REASONING:`,
+      analysis.reasoning,
+      '',
+      `📈 CORPUS BASIS:`,
+      analysis.empiricalBasis
+    ].join('\n');
+  }
+
+  // Build surface form with "ne" placement
+  buildSurfaceForm(sentence, analysis) {
+    // Simple "ne" insertion logic
+    const triggerPatterns = {
+      'peur_que': /(\b(?:peur\s+)qu[e'])\s*(\w+)/i,
+      'avant_que': /(\b(?:avant\s+)qu[e'])\s*(\w+)/i
+    };
+
+    const pattern = triggerPatterns[analysis.trigger];
+    if (pattern) {
+      return sentence.replace(pattern, '$1 $2 n\'$2');
+    }
+    
+    return sentence + ' (ne placement: manual review needed)';
+  }
 
   return (
     <div className="container">
