@@ -186,12 +186,6 @@ class UnifiedEmpiricalAnalyzer {
     // Extract the trigger clause to avoid false positives from other clauses
     const triggerClause = this.extractTriggerClause(text, trigger);
     
-    // Debug logging to see what clause is extracted
-    console.log('🔍 CLAUSE EXTRACTION DEBUG:');
-    console.log('Full text:', text);
-    console.log('Trigger:', trigger.name || trigger);
-    console.log('Extracted clause:', triggerClause);
-    
     const patterns = [
       /\b(?:pas|jamais|rien|personne|aucun|nulle?)\b/i,
       /\bplus\b(?!\s+de\b)/i, // "plus" but not "plus de" (more than)
@@ -207,16 +201,7 @@ class UnifiedEmpiricalAnalyzer {
       /\belles l'entérinent\b/i // institutional process
     ];
     
-    const hasNegation = patterns.some(pattern => {
-      const match = pattern.test(triggerClause);
-      if (match) {
-        console.log('🚨 LOGICAL NEGATION FOUND:', pattern, 'in clause:', triggerClause);
-      }
-      return match;
-    });
-    
-    console.log('🎯 LOGICAL NEGATION RESULT:', hasNegation);
-    return hasNegation;
+    return patterns.some(pattern => pattern.test(triggerClause));
   }
 
   /**
@@ -315,6 +300,8 @@ class UnifiedEmpiricalAnalyzer {
       } else if (trigger.name === 'avant_que') {
         if (this.hasExplicitPrevention(text)) {
           probability = factors.explicit_prevention; // 80%
+        } else if (this.hasTemporalAnticipation(text)) {
+          probability = Math.max(probability, 0.65); // 65% for temporal anticipation
         } else if (this.hasMotionContext(text)) {
           probability = Math.min(probability, factors.motion_context); // 20% - strong anti-expletive (prioritized)
         } else if (this.hasLegalContext(text)) {
@@ -388,6 +375,12 @@ class UnifiedEmpiricalAnalyzer {
 
   hasUncertaintyMarkers(text) {
     return /\b(peut-être|j'ai\s+l'impression|on\s+dirait|apparemment)\b/i.test(text);
+  }
+
+  // Temporal anticipation detection (for scheduled events)
+  hasTemporalAnticipation(text) {
+    return /\b(?:attendre|espérant|espérer|fixées?\s+sur|avant\s+qu.*commencent|masters?|programme|cours|session|début|démarrage|lancement)\b/i.test(text) ||
+           /\b(?:semaines?\s+avant|jours?\s+avant|mois\s+avant|temps\s+avant)\b/i.test(text);
   }
 
   hasDistantTemporal(text) {
@@ -677,6 +670,12 @@ class UnifiedEmpiricalAnalyzer {
         sections.push('✓ Prevention context: detected (strong expletive predictor 80%)');
       } else {
         sections.push('✗ Prevention context: not found (would strongly favor expletive 80%)');
+      }
+      
+      if (this.hasTemporalAnticipation(text)) {
+        sections.push('✓ Temporal anticipation: detected (favors expletive 65%)');
+      } else {
+        sections.push('✗ Temporal anticipation: not found (would favor expletive 65%)');
       }
       
       if (this.hasMotionContext(text)) {
