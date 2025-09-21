@@ -21,7 +21,7 @@ class UnifiedEmpiricalAnalyzer {
     this.registerEffects = {
       'literary': 0.773,      // 77.3% rate in peur_que contexts
       'formal': 0.658,        // 65.8% rate in sen_faut_que contexts
-      'academic': 0.302,      // 30.2% rate (reduces likelihood)
+      'academic': 0.500,      // 50% neutral (corpus shows balanced, not anti-expletive)
       'conversational': 0.200, // Estimated (no strong corpus evidence)
       'neutral': 0.500        // 50% baseline
     };
@@ -272,8 +272,8 @@ class UnifiedEmpiricalAnalyzer {
     if (register !== 'neutral') {
       probability = this.registerEffects[register] || probability;
     } else if (this.hasHistoricalContext(text)) {
-      // Historical context should be treated as academic register
-      probability = this.registerEffects['academic'] || probability; // 30.2%
+      // Historical context treated as neutral (corpus shows balanced examples)
+      probability = 0.500; // Neutral baseline
     }
     
     // Formal "ne" construction patterns (strongest predictor from corpus analysis)
@@ -720,9 +720,9 @@ class UnifiedEmpiricalAnalyzer {
     
     // Academic context (applies to all triggers)
     if (register === 'academic' || this.hasHistoricalContext(text)) {
-      sections.push('✓ Academic/historical context: detected (reduces expletive 30.2%)');
+      sections.push('✓ Academic/historical context: detected (neutral baseline 50%)');
     } else {
-      sections.push('✗ Academic/historical context: not found (would reduce expletive 30.2%)');
+      sections.push('✗ Academic/historical context: not found (neutral baseline when present)');
     }
     
     // Formal "ne" construction patterns (corpus-derived)
@@ -752,9 +752,9 @@ class UnifiedEmpiricalAnalyzer {
     }
     
     if (register === 'academic') {
-      sections.push('✓ Academic register: detected (reduces expletive 30.2%)');
+      sections.push('✓ Academic register: detected (neutral baseline 50%)');
     } else {
-      sections.push('✗ Academic register: not found (would reduce expletive 30.2%)');
+      sections.push('✗ Academic register: not found (neutral baseline when present)');
     }
     
     if (register === 'conversational') {
