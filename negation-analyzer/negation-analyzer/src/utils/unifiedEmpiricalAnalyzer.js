@@ -164,15 +164,20 @@ class UnifiedEmpiricalAnalyzer {
   detectRegister(text) {
     const patterns = {
       literary: /\b(?:fallut|eût|eut|fût|fut|submergeât|contempla|irréparable|naguère|jadis|désormais|nonobstant|toutefois|lassé|pénates|communion|univers\s+musicaux|successifs|réintégrer|tardive|promettait|beau\s+monde|afin\s+de|trop\s+tardive)\b/i,
-      formal: /\b(?:il\s+convient|par\s+conséquent|en\s+conséquence|il\s+est\s+recommandé|il\s+est\s+conseillé|il\s+est\s+préférable|monsieur|madame|néanmoins|cependant|veuillez|nous\s+recommandons|sénateur|député|ministère|gouvernement|officiel|administration|autorités|institution|organisme|procédure|processus|impératif|règle|réglementation|utilisables|débute|se\s+retrouve|totalement)\b/i,
+      formal: /\b(?:il\s+convient|par\s+conséquent|en\s+conséquence|il\s+est\s+recommandé|il\s+est\s+conseillé|il\s+est\s+préférable|monsieur|madame|néanmoins|cependant|veuillez|nous\s+recommandons|sénateur|député|ministère|gouvernement|officiel|administration|autorités|institution|organisme|procédure|processus|impératif|règle|réglementation|utilisables|débute|se\s+retrouve|totalement|représentation|résumé|provenance|découverte)\b/i,
       academic: /\b(?:analyse|étude|recherche|théorie|concept|méthode|processus|système|données|résultats|conclusion|hypothèse|développa|autochtones|jargon|combinaison|historique|histoire|fondé|village|employés\s+de\s+la|commerce\s+entre)\b/i,
-      conversational: /\b(?:bon|allez|ça|ouais|ben|alors|faut\s+qu'on|tu\s+vois|enfin\s+bref)\b/i
+      conversational: /\b(?:bon|allez|ça|ouais|ben|alors|faut\s+qu'on|tu\s+vois|enfin\s+bref|salut|coucou|dis\s+donc|tu\s+sais\s+quoi)\b/i
     };
 
     for (const [register, pattern] of Object.entries(patterns)) {
       if (pattern.test(text)) {
         return register;
       }
+    }
+    
+    // Default: if written discourse detected, lean toward formal; otherwise neutral
+    if (this.hasWrittenDiscourse(text)) {
+      return 'formal'; // Written text generally favors expletive
     }
     
     return 'neutral';
@@ -429,6 +434,14 @@ class UnifiedEmpiricalAnalyzer {
   // Process description context (formal process descriptions favor expletive)
   hasProcessContext(text) {
     return /\b(culture|production|fabrication|développement|croissance|maturation|utilisables|durer|jusqu'à|plusieurs\s+années)\b/i.test(text);
+  }
+
+  // Written discourse detection (written text generally favors expletive over speech)
+  hasWrittenDiscourse(text) {
+    // Indicators of written vs spoken discourse
+    return /\b(résumé|découverte|représentation|provenance|dès\s+que|toujours\s+pas|même\s+si|d'autant\s+plus|à\s+l'heure\s+actuelle|de\s+retour|pas\s+trop)\b/i.test(text) ||
+           text.length > 100 || // Longer sentences tend to be written
+           /[.]{2,}|[!]{1,}[.]{1,}/.test(text); // Ellipsis and punctuation patterns
   }
 
   // Literary vocabulary detection (expanded)
