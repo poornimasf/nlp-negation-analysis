@@ -393,7 +393,14 @@ class UnifiedEmpiricalAnalyzer {
 
   hasExplicitPrevention(text) {
     return /\b(empêcher|éviter|prévenir|interdire|bloquer|stopper|arrêter)\b/i.test(text) ||
-           /\b(explose|disparaisse|disparaissent|empire|se\s+vende|nous\s+dépasse|touche\s+l'adversaire|soit\s+connus|se\s+reproduise|se\s+penche|trop\s+tard)\b/i.test(text);
+           /\b(explose|disparaisse|disparaissent|empire|se\s+vende|nous\s+dépasse|touche\s+l'adversaire|soit\s+connus|se\s+reproduise|se\s+penche|trop\s+tard)\b/i.test(text) ||
+           // Medical/symptom prevention patterns
+           /\b(?:symptômes|problèmes|complications|dommages|effets).*(?:surviennent|arrivent|se\s+produisent|causent|provoquent)\b/i.test(text) ||
+           /\bavant\s+que.*(?:surviennent|arrivent|se\s+produisent|causent|provoquent|affectent)\b/i.test(text) ||
+           // Temporal prevention patterns  
+           /\bavant\s+que.*(?:soit\s+trop\s+tard|expire|se\s+termine|finisse)\b/i.test(text) ||
+           // Change/decision prevention
+           /\bavant\s+que.*(?:change|décide|parte|quitte|s'en\s+aille)\b/i.test(text);
   }
 
   hasUrgencyMarkers(text) {
