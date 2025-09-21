@@ -409,6 +409,67 @@ class UnifiedEmpiricalAnalyzer {
   }
 
   /**
+   * Detect specific logical negation patterns for detailed explanation
+   */
+  detectLogicalNegationPatterns(text) {
+    const patterns = [];
+    
+    // ne...pas patterns
+    const nePassMatches = text.match(/\b\w+\s+ne\s+\w+\s+pas\b/gi) || [];
+    nePassMatches.forEach(match => {
+      patterns.push({
+        text: match.trim(),
+        type: 'Logical negation (ne...pas)',
+        explanation: 'Functional negation expressing "not"'
+      });
+    });
+    
+    // ne...jamais patterns
+    const neJamaisMatches = text.match(/\b\w+\s+ne\s+\w+\s+jamais\b/gi) || [];
+    neJamaisMatches.forEach(match => {
+      patterns.push({
+        text: match.trim(),
+        type: 'Logical negation (ne...jamais)',
+        explanation: 'Functional negation expressing "never"'
+      });
+    });
+    
+    // ne...plus patterns
+    const nePlusMatches = text.match(/\b\w+\s+ne\s+\w+\s+plus\b/gi) || [];
+    nePlusMatches.forEach(match => {
+      patterns.push({
+        text: match.trim(),
+        type: 'Logical negation (ne...plus)',
+        explanation: 'Functional negation expressing "no longer"'
+      });
+    });
+    
+    // ne...rien patterns
+    const neRienMatches = text.match(/\b\w+\s+ne\s+\w+\s+rien\b/gi) || [];
+    neRienMatches.forEach(match => {
+      patterns.push({
+        text: match.trim(),
+        type: 'Logical negation (ne...rien)',
+        explanation: 'Functional negation expressing "nothing"'
+      });
+    });
+    
+    // Standalone negation words
+    if (/\b(pas|jamais|plus|rien|personne|aucun|nulle?)\b/i.test(text)) {
+      const standaloneMatches = text.match(/\b(pas|jamais|plus|rien|personne|aucun|nulle?)\b/gi) || [];
+      standaloneMatches.forEach(match => {
+        patterns.push({
+          text: match.trim(),
+          type: 'Negation marker',
+          explanation: 'Indicates logical negation context'
+        });
+      });
+    }
+    
+    return patterns;
+  }
+
+  /**
    * Build narrative-style linguistic reasoning explanation
    */
   buildValidatedReasoning(trigger, register, probability, mode, text, baseProbability) {
@@ -429,11 +490,36 @@ class UnifiedEmpiricalAnalyzer {
     // Detect all relevant factors
     const detectedFactors = this.getDetectedFactors(text, trigger, register);
     const conflicts = this.detectConflicts(detectedFactors);
+    const hasLogicalOverride = this.hasLogicalNegation(text);
     
     // Narrative analysis
     sections.push('🎯 LINGUISTIC ANALYSIS:');
     
-    if (detectedFactors.length === 0) {
+    // Special handling for logical negation override
+    if (hasLogicalOverride) {
+      sections.push('');
+      sections.push('🚨 LOGICAL NEGATION OVERRIDE:');
+      const negationPatterns = this.detectLogicalNegationPatterns(text);
+      negationPatterns.forEach(pattern => {
+        sections.push(`• "${pattern.text}" → ${pattern.type}`);
+      });
+      sections.push('');
+      
+      if (detectedFactors.length > 0) {
+        sections.push('✅ OTHER FACTORS DETECTED (overridden):');
+        detectedFactors.forEach((factor, index) => {
+          sections.push(`${index + 1}. ${factor.description} → ${factor.effect} [OVERRIDDEN]`);
+        });
+        sections.push('');
+        sections.push('⚖️ OVERRIDE LOGIC:');
+        sections.push('• Logical negation always takes precedence over contextual factors');
+        sections.push('• Functional "ne...pas/jamais/plus" negation ≠ expletive "ne"');
+        sections.push('• Result: No Expletive (100% certainty)');
+      } else {
+        sections.push('No other contextual factors detected');
+        sections.push('Clear logical negation → No Expletive');
+      }
+    } else if (detectedFactors.length === 0) {
       sections.push(`Trigger "${trigger.name}" detected with neutral context`);
       sections.push(`No strong predictive factors found → baseline ${(this.triggerRates[trigger.name] * 100).toFixed(1)}%`);
     } else {
