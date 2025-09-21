@@ -193,7 +193,8 @@ class UnifiedEmpiricalAnalyzer {
     console.log('Extracted clause:', triggerClause);
     
     const patterns = [
-      /\b(?:pas|jamais|plus|rien|personne|aucun|nulle?)\b/i,
+      /\b(?:pas|jamais|rien|personne|aucun|nulle?)\b/i,
+      /\bplus\b(?!\s+de\b)/i, // "plus" but not "plus de" (more than)
       /\b(?:refuse|interdit|empêche|évite)\b/i,
       /\b(?:impossible|trop\s+tard|inutile)\b/i,
       // Corpus-derived patterns for non-expletive cases
