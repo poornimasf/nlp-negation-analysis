@@ -116,8 +116,9 @@ class UnifiedEmpiricalAnalyzer {
     const hasStrongSenFautQueExpletive = trigger.name === 'sen_faut_que' && 
       (this.hasSenFautQueLiteraryContext(text) || this.hasSenFautQuePastSubjunctive(text));
     
-    // Check if peur_que has expletive trigger (most peur_que should be expletive by default)
-    const hasStrongPeurQueExpletive = trigger.name === 'peur_que';
+    // Check if peur_que has strong expletive patterns that should override logical negation
+    const hasStrongPeurQueExpletive = trigger.name === 'peur_que' && 
+      (this.hasPeurQueDialogueContext(text) || this.hasPeurQueEmotionalContext(text) || this.hasPeurQueNarrativeContext(text));
     
     if (hasLogicalNegation && !hasStrongSenFautQueExpletive && !hasStrongPeurQueExpletive) {
       // Use enhanced explanation for logical negation override
