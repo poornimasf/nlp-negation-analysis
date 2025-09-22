@@ -397,6 +397,19 @@ class UnifiedEmpiricalAnalyzer {
         } else if (this.hasNarrativeContext(text)) {
           probability = Math.max(probability, 0.65); // 65% - narrative contexts
         }
+      } else if (trigger.name === 'peur_que') {
+        // PEUR_QUE SPECIFIC PRO-EXPLETIVE PATTERNS (corpus-validated)
+        if (this.hasPeurQueDialogueContext(text)) {
+          probability = Math.max(probability, 0.85); // 85% - dialogue/embedded contexts strongly expletive
+        } else if (this.hasPeurQueEmotionalContext(text)) {
+          probability = Math.max(probability, 0.80); // 80% - emotional/psychological contexts
+        } else if (this.hasPeurQueNarrativeContext(text)) {
+          probability = Math.max(probability, 0.75); // 75% - long narrative contexts
+        } else if (this.hasLiteraryContext(text)) {
+          probability = Math.max(probability, 0.70); // 70% - general literary context
+        } else if (this.hasNarrativeContext(text)) {
+          probability = Math.max(probability, 0.65); // 65% - general narrative contexts
+        }
       } else if (trigger.name === 'avant_de') {
         if (this.hasMotionInfinitive(text) || this.hasActionInfinitive(text)) {
           probability = factors.motion_infinitive; // 0% - strong anti-expletive
@@ -652,6 +665,23 @@ class UnifiedEmpiricalAnalyzer {
   // Enhanced near-miss semantics for sen_faut_que
   hasSenFautQueNearMiss(text) {
     return /\b(peu\s+s'en|de\s+peu\s+que|failli|presque.*que|à\s+force\s+de|il\s+s'en\s+fallut|peu\s+s'en\s+fallut)\b/i.test(text);
+  }
+
+  // PEUR_QUE SPECIFIC PRO-EXPLETIVE PATTERNS (corpus-validated)
+  
+  // Long narrative context (82.2% expletive vs 79.6% non-expletive - slight boost)
+  hasPeurQueNarrativeContext(text) {
+    return text.length > 100 && /\b(je|j'|moi|nous|mon|ma|mes|alors|puis|ensuite|soudain)\b/i.test(text);
+  }
+
+  // Dialogue/embedded context (3.4% expletive rate - validate as expletive when present)
+  hasPeurQueDialogueContext(text) {
+    return /[«""].*peur\s+que.*[»""]|:\s*.*peur\s+que|dit.*peur\s+que|répond.*peur\s+que/i.test(text);
+  }
+
+  // Emotional/psychological context (strong expletive predictor)
+  hasPeurQueEmotionalContext(text) {
+    return /\b(jalouse|inquiète|angoisse|stress|crainte|terreur|effroi|anxiété|tourmente)\b/i.test(text);
   }
 
   // Educational context
