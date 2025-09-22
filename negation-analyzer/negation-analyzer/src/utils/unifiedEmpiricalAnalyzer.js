@@ -118,7 +118,7 @@ class UnifiedEmpiricalAnalyzer {
     
     // Check if peur_que has strong expletive patterns that should override logical negation
     const hasStrongPeurQueExpletive = trigger.name === 'peur_que' && 
-      (this.hasPeurQueDialogueContext(text) || this.hasPeurQueEmotionalContext(text) || this.hasPeurQueNarrativeContext(text));
+      (this.hasPeurQueSocialInterpersonal(text) || this.hasPeurQueAbstractHypothetical(text));
     
     if (hasLogicalNegation && !hasStrongSenFautQueExpletive && !hasStrongPeurQueExpletive) {
       // Use enhanced explanation for logical negation override
@@ -393,17 +393,21 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.max(probability, 0.65); // 65% - narrative contexts
         }
       } else if (trigger.name === 'peur_que') {
-        // PEUR_QUE SPECIFIC PRO-EXPLETIVE PATTERNS (corpus-validated)
-        if (this.hasPeurQueDialogueContext(text)) {
-          probability = Math.max(probability, 0.85); // 85% - dialogue/embedded contexts strongly expletive
-        } else if (this.hasPeurQueEmotionalContext(text)) {
-          probability = Math.max(probability, 0.80); // 80% - emotional/psychological contexts
-        } else if (this.hasPeurQueNarrativeContext(text)) {
-          probability = Math.max(probability, 0.75); // 75% - long narrative contexts
+        // PEUR_QUE DISCOURSE-LEVEL PATTERNS (validated September 2025)
+        // Anti-expletive patterns (informal/personal contexts)
+        if (this.hasPeurQueInformalRegister(text)) {
+          probability = Math.min(probability, 0.30); // 30% - informal register strongly anti-expletive (-9.0%)
+        } else if (this.hasPeurQuePersonalImmediate(text)) {
+          probability = Math.min(probability, 0.35); // 35% - personal/immediate contexts anti-expletive (-3.0%)
+        // Pro-expletive patterns (abstract/formal contexts)
+        } else if (this.hasPeurQueSocialInterpersonal(text)) {
+          probability = Math.max(probability, 0.75); // 75% - social/interpersonal concerns pro-expletive (+1.0%)
+        } else if (this.hasPeurQueAbstractHypothetical(text)) {
+          probability = Math.max(probability, 0.70); // 70% - abstract/hypothetical contexts pro-expletive (+1.2%)
         } else if (this.hasLiteraryContext(text)) {
-          probability = Math.max(probability, 0.70); // 70% - general literary context
+          probability = Math.max(probability, 0.65); // 65% - general literary context
         } else if (this.hasNarrativeContext(text)) {
-          probability = Math.max(probability, 0.65); // 65% - general narrative contexts
+          probability = Math.max(probability, 0.60); // 60% - general narrative contexts
         }
       } else if (trigger.name === 'avant_de') {
         if (this.hasMotionInfinitive(text) || this.hasActionInfinitive(text)) {
@@ -662,21 +666,26 @@ class UnifiedEmpiricalAnalyzer {
     return /\b(peu\s+s'en|de\s+peu\s+que|failli|presque.*que|à\s+force\s+de|il\s+s'en\s+fallut|peu\s+s'en\s+fallut)\b/i.test(text);
   }
 
-  // PEUR_QUE SPECIFIC PRO-EXPLETIVE PATTERNS (corpus-validated)
+  // PEUR_QUE DISCOURSE-LEVEL PATTERNS (corpus-validated September 2025)
   
-  // Long narrative context (82.2% expletive vs 79.6% non-expletive - slight boost)
-  hasPeurQueNarrativeContext(text) {
-    return text.length > 100 && /\b(je|j'|moi|nous|mon|ma|mes|alors|puis|ensuite|soudain)\b/i.test(text);
+  // Informal/conversational register (strong anti-expletive: -9.0% difference)
+  hasPeurQueInformalRegister(text) {
+    return /\b(ça|ca|ke|ki|tt|pr|ds|ms|ptit|pti|bon|ben|bah|ouais|nan|genre|truc|machin)\b/i.test(text);
   }
 
-  // Dialogue/embedded context (3.4% expletive rate - validate as expletive when present)
-  hasPeurQueDialogueContext(text) {
-    return /[«""].*peur\s+que.*[»""]|:\s*.*peur\s+que|dit.*peur\s+que|répond.*peur\s+que/i.test(text);
+  // Personal/immediate context (anti-expletive: -3.0% difference)
+  hasPeurQuePersonalImmediate(text) {
+    return /\b(j'ai|tu as|nous avons)\s+peur\s+que/i.test(text) || /\b(mon|ma|mes|notre|votre)\b.*peur\s+que/i.test(text);
   }
 
-  // Emotional/psychological context (strong expletive predictor)
-  hasPeurQueEmotionalContext(text) {
-    return /\b(jalouse|inquiète|angoisse|stress|crainte|terreur|effroi|anxiété|tourmente)\b/i.test(text);
+  // Abstract/hypothetical context (pro-expletive: +1.2% difference)
+  hasPeurQueAbstractHypothetical(text) {
+    return /\b(peut|pourrait|risque|chance|possibilité).*peur\s+que/i.test(text) || /\b(il|elle|on)\s+a\s+peur\s+que/i.test(text);
+  }
+
+  // Social/interpersonal concerns (pro-expletive: +1.0% difference)
+  hasPeurQueSocialInterpersonal(text) {
+    return /peur\s+que.*\b(pense|dise|croie|juge|critique|rejette|moque|décrédibilise|arrête)\b/i.test(text);
   }
 
   // Educational context
