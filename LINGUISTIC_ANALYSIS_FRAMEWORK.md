@@ -263,35 +263,50 @@ BREAKTHROUGH FINDING: Expletive "ne" functions as formal distancing device in pe
 Corpus Analysis: Deep discourse analysis of 1000 paragraph examples revealed register-driven patterns
 Critical Discovery: Personal/immediate vs Abstract/formal distinction drives expletive usage
 
-ANTI-EXPLETIVE PATTERNS (Informal/Personal Contexts):
-Pattern: /\b(ça|ca|ke|ki|tt|pr|ds|ms|ptit|pti|bon|ben|bah|ouais|nan|genre|truc|machin)\b/i
-Corpus Finding: -9.0% expletive rate (strongest anti-expletive predictor)
-Real Example: "j'ai peur que ça finisse mal" → No Expletive (informal register)
-Implementation: 30% threshold - informal register strongly anti-expletive
+REBALANCED IMPLEMENTATION (September 2025 - Lessons Learned):
+Initial Issue: Anti-expletive patterns too broad, matching 20% of expletive cases
+Solution: Priority reordering and restrictive conditions for anti-expletive patterns
+Result: Balanced approach prioritizing expletive detection while preserving anti-expletive precision
 
-Pattern: /\b(j'ai|tu as|nous avons)\s+peur\s+que/i || /\b(mon|ma|mes|notre|votre)\b.*peur\s+que/i
-Corpus Finding: -3.0% expletive rate (personal/immediate contexts)
-Real Example: "j'ai peur que tu partes" → No Expletive (direct personal investment)
-Implementation: 35% threshold - personal immediacy anti-expletive
-
-PRO-EXPLETIVE PATTERNS (Abstract/Formal Contexts):
+PRO-EXPLETIVE PATTERNS (Checked First - Priority Logic):
 Pattern: /peur\s+que.*\b(pense|dise|croie|juge|critique|rejette|moque|décrédibilise|arrête)\b/i
 Corpus Finding: +1.0% expletive rate (social/interpersonal concerns)
 Real Example: "peur qu'elle ne dise quelque chose" → Expletive (social distancing)
-Implementation: 75% threshold - social concerns pro-expletive
+Implementation: 80% threshold - social concerns strongly pro-expletive (strengthened from 75%)
 
 Pattern: /\b(peut|pourrait|risque|chance|possibilité).*peur\s+que/i || /\b(il|elle|on)\s+a\s+peur\s+que/i
 Corpus Finding: +1.2% expletive rate (abstract/hypothetical contexts)
 Real Example: "il a peur que le projet ne soit mal reçu" → Expletive (abstract reporting)
-Implementation: 70% threshold - abstract contexts pro-expletive
+Implementation: 75% threshold - abstract contexts strongly pro-expletive (strengthened from 70%)
+
+RESTRICTED ANTI-EXPLETIVE PATTERNS (Applied Only If No Pro-Expletive Signals):
+Pattern: /\b(ça|ca|ke|ki|tt|pr|ds|ms|ptit|pti|bon|ben|bah|ouais|nan|genre|truc|machin)\b/i
+Corpus Finding: -9.0% expletive rate but requires restriction to avoid false matches
+Restriction: Only applied if text.length < 150 (short informal contexts only)
+Implementation: 35% threshold - informal register anti-expletive (conservative)
+
+Pattern: /\b(j'ai|tu as|nous avons)\s+peur\s+que/i || /\b(mon|ma|mes|notre|votre)\b.*peur\s+que/i
+Corpus Finding: -3.0% expletive rate but conflicts with abstract contexts
+Restriction: Only applied if no abstract/hypothetical signals present
+Implementation: 40% threshold - personal immediacy anti-expletive (conservative)
+
+CRITICAL LESSONS LEARNED:
+1. Pattern Interference: Anti-expletive patterns can match expletive contexts (20% overlap)
+2. Priority Logic: Pro-expletive patterns must be checked first to avoid false blocking
+3. Restrictive Conditions: Anti-expletive patterns need additional constraints
+4. Threshold Strengthening: Pro-expletive patterns need higher confidence thresholds
+5. Conservative Anti-Expletive: Require strong evidence and no competing signals
 
 DISCOURSE FUNCTION ANALYSIS:
-Personal/Immediate: "j'ai peur que tu..." → Direct emotional investment → No expletive
-Abstract/Reported: "il a peur que..." → Formal distancing → Expletive
-Informal Register: "ça", "truc", "bah" → Conversational style → No expletive
-Formal Register: Academic/literary contexts → Distancing device → Expletive
+Personal/Immediate: "j'ai peur que tu..." → Direct emotional investment → No expletive (if no abstract signals)
+Abstract/Reported: "il a peur que..." → Formal distancing → Expletive (priority detection)
+Informal Register: "ça", "truc", "bah" → Conversational style → No expletive (if short text only)
+Social Concerns: "peur qu'elle dise" → Interpersonal distancing → Expletive (priority detection)
 
-ACCURACY IMPACT: Expected improvement from 46.6% to 70%+ through discourse understanding
+ACCURACY EVOLUTION:
+Initial: 46.6% overall (over-classification as expletive)
+After Discourse Patterns: 50.5% overall (over-classification as no-expletive)
+After Rebalancing: Target 70%+ overall (balanced pro/anti-expletive detection)
 ```
 Real Example: "peu s'en fallut qu'elle ne fit la faute irréparable de se précipiter sur le petit ange"
 ```
