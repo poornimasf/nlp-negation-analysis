@@ -189,14 +189,15 @@ class UnifiedEmpiricalAnalyzer {
       return false;
     }
     
-    // Clean text and extract the trigger clause to avoid false positives from other clauses
-    const cleanText = text.replace(/['']/g, "'").replace(/[""]/g, '"').replace(/\s+/g, ' ').trim();
-    const triggerClause = this.extractTriggerClause(cleanText, trigger);
-    
-    // Safety check for extracted clause
-    if (!triggerClause || typeof triggerClause !== 'string') {
-      return false;
-    }
+    try {
+      // Clean text and extract the trigger clause to avoid false positives from other clauses
+      const cleanText = text.replace(/['']/g, "'").replace(/[""]/g, '"').replace(/\s+/g, ' ').trim();
+      const triggerClause = this.extractTriggerClause(cleanText, trigger);
+      
+      // Safety check for extracted clause
+      if (!triggerClause || typeof triggerClause !== 'string') {
+        return false;
+      }
     
     // 1. True negation pairs (must be in the target clause only)
     const negationPairs = [
@@ -232,6 +233,11 @@ class UnifiedEmpiricalAnalyzer {
     ];
     
     return negationMarkers.some(pattern => pattern.test(triggerClause));
+    
+    } catch (error) {
+      console.warn('Error in hasLogicalNegation:', error);
+      return false;
+    }
   }
 
   /**
@@ -239,8 +245,12 @@ class UnifiedEmpiricalAnalyzer {
    */
   extractTriggerClause(text, trigger) {
     // Safety check
-    if (!text || !trigger) {
+    if (!text || typeof text !== 'string') {
       return text || '';
+    }
+    
+    if (!trigger) {
+      return text;
     }
     
     // First try: Look for the trigger and extract just the subordinate clause
@@ -253,58 +263,40 @@ class UnifiedEmpiricalAnalyzer {
     };
     
     // Get trigger name safely
-    const triggerName = trigger.name || trigger;
+    const triggerName = (trigger && trigger.name) ? trigger.name : trigger;
     
     // Try to extract just the subordinate clause after the trigger
     const extractPattern = triggerExtractionPatterns[triggerName];
     if (extractPattern) {
-      const match = text.match(extractPattern);
-      if (match && match[1] && match[1].trim()) {
-        const subordinateClause = match[1].trim();
-        // Return the trigger phrase + subordinate clause
-        const triggerPhrase = text.match(new RegExp(`\\b(?:(?:il\\s+)?s'en\\s+(?:est\\s+)?(?:faut|fallut|faudrait)|avant\\s+que?|peur\\s+que?|(?:moins|plus).*?que?|avant\\s+de)`, 'i'));
-        return triggerPhrase ? `${triggerPhrase[0]} ${subordinateClause}` : subordinateClause;
+      try {
+        const match = text.match(extractPattern);
+        if (match && match[1] && typeof match[1] === 'string') {
+          const subordinateClause = match[1].trim();
+          // Return the trigger phrase + subordinate clause
+          const triggerPhrase = text.match(new RegExp(`\\b(?:(?:il\\s+)?s'en\\s+(?:est\\s+)?(?:faut|fallut|faudrait)|avant\\s+que?|peur\\s+que?|(?:moins|plus).*?que?|avant\\s+de)`, 'i'));
+          if (triggerPhrase && triggerPhrase[0]) {
+            return `${triggerPhrase[0]} ${subordinateClause}`;
+          }
+          return subordinateClause;
+        }
+      } catch (e) {
+        console.warn('Error in trigger extraction:', e);
       }
     }
     
     // For sen_faut_que without "que" clause, return the whole phrase
     if (triggerName === 'sen_faut_que' && /\bs'en\s+(?:est\s+)?(?:faut|fallut|faudrait)/i.test(text)) {
-      const senFautMatch = text.match(/\b(?:il\s+)?s'en\s+(?:est\s+)?(?:faut|fallut|faudrait)[^.!?]*/i);
-      if (senFautMatch) {
-        return senFautMatch[0].trim();
+      try {
+        const senFautMatch = text.match(/\b(?:il\s+)?s'en\s+(?:est\s+)?(?:faut|fallut|faudrait)[^.!?]*/i);
+        if (senFautMatch && senFautMatch[0] && typeof senFautMatch[0] === 'string') {
+          return senFautMatch[0].trim();
+        }
+      } catch (e) {
+        console.warn('Error in sen_faut_que extraction:', e);
       }
     }
     
-    // Fallback: More precise clause extraction with punctuation boundaries
-    const triggerPatterns = {
-      'avant_que': /((?:^|[,.;])[^,.;]*avant\s+qu[e'][^,.;]*(?:[,.;]|$))/i,
-      'peur_que': /((?:^|[,.;])[^,.;]*peur\s+qu[e'][^,.;]*(?:[,.;]|$))/i,
-      'moins_plus': /((?:^|[,.;])[^,.;]*(?:moins|plus)[^,.;]*qu[e'][^,.;]*(?:[,.;]|$))/i,
-      'sen_faut_que': /((?:^|[,.;])[^,.;]*(?:il\s+)?s'en\s+(?:est\s+)?(?:faut|fallut|faudrait)[^,.;]*(?:[,.;]|$))/i,
-      'avant_de': /((?:^|[,.;])[^,.;]*avant\s+de[^,.;]*(?:[,.;]|$))/i
-    };
-    
-    const pattern = triggerPatterns[trigger.name] || triggerPatterns[trigger];
-    const match = text.match(pattern);
-    
-    if (match) {
-      // Clean up the extracted clause
-      let clause = match[1].trim();
-      // Remove leading punctuation
-      clause = clause.replace(/^[,.;]\s*/, '');
-      // Remove trailing punctuation  
-      clause = clause.replace(/\s*[,.;]$/, '');
-      return clause;
-    }
-    
-    // Final fallback: Return just a small window around the trigger
-    const triggerIndex = text.toLowerCase().indexOf(trigger.name.replace('_', ' '));
-    if (triggerIndex !== -1) {
-      const start = Math.max(0, triggerIndex - 20);
-      const end = Math.min(text.length, triggerIndex + 50);
-      return text.substring(start, end).trim();
-    }
-    
+    // Fallback: return original text
     return text;
   }
 
