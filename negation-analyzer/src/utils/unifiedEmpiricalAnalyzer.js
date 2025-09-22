@@ -337,13 +337,7 @@ class UnifiedEmpiricalAnalyzer {
         probability = 0.833; // 83.3% - strongest predictor regardless of trigger
       }
       // Apply trigger-specific strongest validated predictors
-      else if (trigger.name === 'peur_que') {
-        if (this.hasUncertaintyMarkers(text)) {
-          probability = Math.max(probability, factors.speaker_uncertainty); // 63.2%
-        } else if (this.hasDistantTemporal(text)) {
-          probability = Math.min(probability, factors.distant_temporal); // 23.1%
-        }
-      } else if (trigger.name === 'avant_que') {
+      else if (trigger.name === 'avant_que') {
         // CONSERVATIVE ANTI-EXPLETIVE PATTERNS (only 100% validated patterns)
         if (this.hasReportageContext(text)) {
           probability = Math.min(probability, 0.25); // 25% - reporté/annoncé contexts
