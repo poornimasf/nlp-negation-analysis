@@ -318,15 +318,15 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.min(probability, factors.distant_temporal); // 23.1%
         }
       } else if (trigger.name === 'avant_que') {
-        // CORPUS-VALIDATED ANTI-EXPLETIVE PATTERNS (checked first)
+        // CORPUS-VALIDATED ANTI-EXPLETIVE PATTERNS (checked first with strong thresholds)
         if (this.hasTemporalSequenceContext(text)) {
-          probability = Math.min(probability, 0.20); // 20% - commencer/s'écouleront contexts
+          probability = Math.min(probability, 0.15); // 15% - commencer/s'écouleront contexts (stronger)
         } else if (this.hasReportageContext(text)) {
-          probability = Math.min(probability, 0.25); // 25% - reporté/annoncé contexts
+          probability = Math.min(probability, 0.20); // 20% - reporté/annoncé contexts (stronger)
         } else if (this.hasTechnicalErrorContext(text)) {
-          probability = Math.min(probability, 0.25); // 25% - ordinateur/bug contexts
+          probability = Math.min(probability, 0.20); // 20% - ordinateur/bug contexts (stronger)
         } else if (this.hasInformalDiscourseContext(text)) {
-          probability = Math.min(probability, 0.30); // 30% - bah contexts
+          probability = Math.min(probability, 0.25); // 25% - bah contexts (stronger)
         // EXISTING ANTI-EXPLETIVE PATTERNS (require multiple signals)
         } else if (this.hasMotionContext(text) && this.hasConversationalContext(text)) {
           probability = Math.min(probability, 0.25); // 25% - only if BOTH motion AND conversational
@@ -587,22 +587,22 @@ class UnifiedEmpiricalAnalyzer {
   
   // Temporal sequence contexts (validated: commencer/s'écouleront → hasExpletive: false)
   hasTemporalSequenceContext(text) {
-    return /\bcommencer.*avant\b/i.test(text) || /\bs'écouleront.*avant\b/i.test(text);
+    return /\b(commencer|commence|commencent|s'écouleront|s'écoulera)\b/i.test(text);
   }
 
   // Reportage/factual contexts (validated: reporté/annoncé → hasExpletive: false)
   hasReportageContext(text) {
-    return /\b(reporté|annoncé)\b/i.test(text);
+    return /\b(reporté|reportée|annoncé|annoncée|lancement.*soit)\b/i.test(text);
   }
 
   // Technical error contexts (validated: ordinateur/bug → hasExpletive: false)
   hasTechnicalErrorContext(text) {
-    return /\b(ordinateur|bug)\b/i.test(text);
+    return /\b(ordinateur|bug|crash|système.*crash)\b/i.test(text);
   }
 
   // Informal discourse marker (validated: bah → hasExpletive: false)
   hasInformalDiscourseContext(text) {
-    return /\bbah\b/i.test(text);
+    return /\b(bah|bon\s+bah)\b/i.test(text);
   }
 
   // Educational context
