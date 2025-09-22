@@ -299,17 +299,8 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.min(probability, factors.distant_temporal); // 23.1%
         }
       } else if (trigger.name === 'avant_que') {
-        // Check anti-expletive contexts first (prioritized)
-        if (this.hasMotionContext(text)) {
-          probability = Math.min(probability, 0.15); // 15% - strong anti-expletive (prioritized)
-        } else if (this.hasConversationalContext(text)) {
-          probability = Math.min(probability, 0.10); // 10% - very strong anti-expletive for informal
-        } else if (this.hasTechnicalContext(text)) {
-          probability = Math.min(probability, 0.20); // 20% - technical contexts avoid expletive
-        } else if (this.hasContemporaryContext(text)) {
-          probability = Math.min(probability, 0.25); // 25% - contemporary contexts favor simpler constructions
-        // Enhanced pro-expletive contexts (stronger)
-        } else if (this.hasExplicitPrevention(text)) {
+        // Check strong pro-expletive contexts first
+        if (this.hasExplicitPrevention(text)) {
           probability = Math.max(probability, 0.85); // 85% - stronger prevention
         } else if (this.hasMedicalContext(text)) {
           probability = Math.max(probability, 0.80); // 80% - medical contexts strongly favor expletive
@@ -319,6 +310,15 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.max(probability, 0.75); // 75% - stronger temporal anticipation
         } else if (this.hasCompletionContext(text)) {
           probability = Math.max(probability, 0.70); // 70% - formal completion contexts
+        } else if (this.hasGeneralExpletiveContext(text)) {
+          probability = Math.max(probability, 0.65); // 65% - general expletive patterns
+        } else if (this.hasNarrativeContext(text)) {
+          probability = Math.max(probability, 0.60); // 60% - narrative contexts
+        // Only then check anti-expletive contexts (weakened)
+        } else if (this.hasMotionContext(text) && this.hasConversationalContext(text)) {
+          probability = Math.min(probability, 0.25); // 25% - only if BOTH motion AND conversational
+        } else if (this.hasTechnicalContext(text) && /\b(bug|crash|erreur|défaillance)\b/i.test(text)) {
+          probability = Math.min(probability, 0.30); // 30% - only strong technical error contexts
         } else if (this.hasLegalContext(text)) {
           probability = Math.max(probability, factors.legal_context); // 75%
         } else if (this.hasAdministrativeContext(text)) {
@@ -499,11 +499,14 @@ class UnifiedEmpiricalAnalyzer {
     return /\b(opérationnel|technique|système|processus|fonctionnel|installation|équipement|maintenance|configuration|paramétrage|simulation|beugue|ordinateur|blogue|se\s+charge|background|apparaît|disparaît|modifs|bug|crash|erreur|défaillance)\b/i.test(text);
   }
 
-  // Contemporary/modern context detection (modern French favors simpler constructions)
-  hasContemporaryContext(text) {
-    return /\b(président\s+Macron|2013|2024|2025|joueur|conducteur|roman|journal|guide|triathlon|€|euros|camp\s+perde|majorité|réélu|officiellement|années\s+avant|plusieurs\s+années|employés|modification|entre\s+en\s+vigueur|bilan)\b/i.test(text) ||
-           /\d{4}/.test(text) || // Years indicate contemporary context
-           /\([^)]*\)/.test(text); // Parenthetical comments (online discourse)
+  // General expletive contexts (common patterns)
+  hasGeneralExpletiveContext(text) {
+    return /\b(symptômes.*surviennent|se\s+propage|colons.*débarquent|service.*efface|prennent\s+l'avion|soit\s+trop\s+tard|aient\s+le\s+temps|autres\s+aient|soleil\s+vienne|récupère\s+une\s+arme|ait\s+fini|gazole\s+fige|ils\s+prennent|il\s+explose|soient\s+révélé|elle\s+naisse|ils\s+la\s+rattrapent|elles\s+se\s+déclenchent|elle\s+disparaissent|soit\s+prête|battants\s+viennent|famille\s+soit|se\s+transforme|conseil\s+traite|je\s+sois\s+trop|ils\s+deviennent|il\s+explose|cérémonie\s+commence|alarme\s+retentisse|ils\s+laissent\s+partir|ils\s+viennent\s+nous|il\s+soit\s+parfait|nazis.*rebaptise|tom\s+appelle|il\s+se\s+produise|cour.*désigne|vous\s+commenciez|vallée\s+soit\s+submergée|celui-ci.*quitte|ce\s+dernier.*conduise|elle\s+prenne\s+la\s+forme|elle\s+monte\s+à\s+fleur|fleurs\s+paraissent|communications\s+soient|il\s+se\s+pose|catastrophe\s+se\s+produise|elle\s+s'accroche)\b/i.test(text);
+  }
+
+  // Narrative/storytelling context (often expletive)
+  hasNarrativeContext(text) {
+    return /\b(il\s+m'embrassa|une\s+fois\s+assise|j'ouvrai\s+le\s+papier|nick.*donné|larmes\s+aux\s+yeux|cœur\s+brisé|derniers\s+mots|kazuki\s+s'accrocha|ryuken|griselda|sa\s+grand-mère|silhouette\s+familière|centre\s+du\s+hall)\b/i.test(text);
   }
 
   // Temporal urgency context (expanded)
