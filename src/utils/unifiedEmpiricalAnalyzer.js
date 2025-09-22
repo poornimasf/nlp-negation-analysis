@@ -318,26 +318,8 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.min(probability, factors.distant_temporal); // 23.1%
         }
       } else if (trigger.name === 'avant_que') {
-        // FIRST: Check for strong anti-expletive patterns (prevent overclassification)
-        if (this.hasNeutralProcessContext(text)) {
-          probability = Math.min(probability, 0.20); // 20% - neutral processes don't license expletive
-        } else if (this.hasTemporalRoutineContext(text)) {
-          probability = Math.min(probability, 0.25); // 25% - temporal/routine contexts
-        } else if (this.hasTropTardCliché(text)) {
-          probability = Math.min(probability, 0.30); // 30% - "trop tard" without prevention
-        } else if (this.hasNCliticWithoutLicensing(text)) {
-          probability = Math.min(probability, 0.25); // 25% - n'y/n'en without proper licensing
-        } else if (this.hasFormalWithoutPrevention(text)) {
-          probability = Math.min(probability, 0.35); // 35% - formal register alone insufficient
-        } else if (this.hasNewsReportageContext(text)) {
-          probability = Math.min(probability, 0.30); // 30% - factual/news contexts
-        // THEN: Check motion/technical anti-expletive (only if BOTH present)
-        } else if (this.hasMotionContext(text) && this.hasConversationalContext(text)) {
-          probability = Math.min(probability, 0.25); // 25% - only if BOTH motion AND conversational
-        } else if (this.hasTechnicalContext(text) && /\b(bug|crash|erreur|défaillance)\b/i.test(text)) {
-          probability = Math.min(probability, 0.30); // 30% - only strong technical error contexts
-        // FINALLY: Check pro-expletive contexts (require strong evidence)
-        } else if (this.hasExplicitPrevention(text)) {
+        // Check strong pro-expletive contexts first
+        if (this.hasExplicitPrevention(text)) {
           probability = Math.max(probability, 0.85); // 85% - stronger prevention
         } else if (this.hasMedicalContext(text)) {
           probability = Math.max(probability, 0.80); // 80% - medical contexts strongly favor expletive
@@ -351,6 +333,11 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.max(probability, 0.65); // 65% - general expletive patterns
         } else if (this.hasNarrativeContext(text)) {
           probability = Math.max(probability, 0.60); // 60% - narrative contexts
+        // Only then check anti-expletive contexts (weakened)
+        } else if (this.hasMotionContext(text) && this.hasConversationalContext(text)) {
+          probability = Math.min(probability, 0.25); // 25% - only if BOTH motion AND conversational
+        } else if (this.hasTechnicalContext(text) && /\b(bug|crash|erreur|défaillance)\b/i.test(text)) {
+          probability = Math.min(probability, 0.30); // 30% - only strong technical error contexts
         } else if (this.hasLegalContext(text)) {
           probability = Math.max(probability, factors.legal_context); // 75%
         } else if (this.hasAdministrativeContext(text)) {
@@ -585,42 +572,6 @@ class UnifiedEmpiricalAnalyzer {
   // Formal completion/achievement context
   hasCompletionContext(text) {
     return /\b(inscrive\s+le.*but|daigne\s+se\s+relever|tout.*accompli|réalisé|parfaitement|objectif.*se\s+réalise|programme.*rétablissement|niveaux\s+permettant)\b/i.test(text);
-  }
-
-  // ANTI-EXPLETIVE PATTERNS (Fix systematic overclassification)
-  
-  // Neutral/descriptive process contexts (weak expletive licensing)
-  hasNeutralProcessContext(text) {
-    return /\b(fruits\s+soient\s+utilisables|saveur\s+commence|vallée\s+soit\s+submergée|ils\s+commencent|fleurs\s+paraissent|joueur\s+tire|s'écouleront\s+avant|durer.*avant|attendre.*avant|finisse\s+par\s+me\s+recevoir|lancement\s+soit\s+reporté|drapeau\s+rouge\s+soit\s+sorti)\b/i.test(text);
-  }
-
-  // Temporal/routine contexts (not preventive)
-  hasTemporalRoutineContext(text) {
-    return /\b(attendre|finir|commencer|durer|s'écouler|timeline|routine|processus|étapes|phases|séquence|chronologie|planning)\b/i.test(text) ||
-           /\b(prennent\s+l'avion|lancement\s+soit|drapeau.*sorti|vallée.*submergée)\b/i.test(text);
-  }
-
-  // "Trop tard" cliché without prevention context
-  hasTropTardCliché(text) {
-    return /\bavant\s+qu'il\s+soit\s+trop\s+tard\b/i.test(text) && 
-           !/\b(peur|crainte|empêcher|éviter|prévenir|danger|risque)\b/i.test(text);
-  }
-
-  // N-clitic patterns without proper licensing
-  hasNCliticWithoutLicensing(text) {
-    return /\bn'(?:y|en)\s+\w+/i.test(text) && 
-           !/\b(peur|crainte|empêcher|éviter|de\s+peur|de\s+crainte)\b/i.test(text);
-  }
-
-  // Formal register without prevention context
-  hasFormalWithoutPrevention(text) {
-    return /\b(eût|pût|fût|vînt|conseil\s+traite|respectable\s+dame|hazard\s+eût)\b/i.test(text) &&
-           !/\b(empêcher|éviter|prévenir|peur|crainte|danger|protection)\b/i.test(text);
-  }
-
-  // News/reportage context (factual, not preventive)
-  hasNewsReportageContext(text) {
-    return /\b(reporté|annoncé|déclaré|confirmé|révélé|publié|diffusé|communiqué|officiel|presse|média|journal|actualité)\b/i.test(text);
   }
 
   // Educational context
