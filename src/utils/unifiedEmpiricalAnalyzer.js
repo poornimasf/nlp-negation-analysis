@@ -184,9 +184,19 @@ class UnifiedEmpiricalAnalyzer {
    * Check for logical negation in the trigger clause only (validated 100% accuracy)
    */
   hasLogicalNegation(text, trigger) {
+    // Safety checks
+    if (!text || typeof text !== 'string') {
+      return false;
+    }
+    
     // Clean text and extract the trigger clause to avoid false positives from other clauses
     const cleanText = text.replace(/['']/g, "'").replace(/[""]/g, '"').replace(/\s+/g, ' ').trim();
     const triggerClause = this.extractTriggerClause(cleanText, trigger);
+    
+    // Safety check for extracted clause
+    if (!triggerClause || typeof triggerClause !== 'string') {
+      return false;
+    }
     
     // 1. True negation pairs (must be in the target clause only)
     const negationPairs = [
@@ -228,24 +238,40 @@ class UnifiedEmpiricalAnalyzer {
    * Extract the clause containing the trigger to isolate analysis
    */
   extractTriggerClause(text, trigger) {
+    // Safety check
+    if (!text || !trigger) {
+      return text || '';
+    }
+    
     // First try: Look for the trigger and extract just the subordinate clause
     const triggerExtractionPatterns = {
       'avant_que': /\bavant\s+que?\s+([^.!?]*?)(?:\s*\.|$)/i,
       'peur_que': /\bpeur\s+que?\s+([^.!?]*?)(?:\s*\.|$)/i,
       'moins_plus': /\b(?:moins|plus).*?que?\s+([^.!?]*?)(?:\s*\.|$)/i,
-      'sen_faut_que': /\bs'en\s+(?:faut|fallut).*?que?\s+([^.!?]*?)(?:\s*\.|$)/i,
+      'sen_faut_que': /\b(?:il\s+)?s'en\s+(?:est\s+)?(?:faut|fallut|faudrait).*?(?:que?\s+([^.!?]*?))?(?:\s*\.|$)/i,
       'avant_de': /\bavant\s+de\s+([^.!?]*?)(?:\s*\.|$)/i
     };
     
+    // Get trigger name safely
+    const triggerName = trigger.name || trigger;
+    
     // Try to extract just the subordinate clause after the trigger
-    const extractPattern = triggerExtractionPatterns[trigger.name] || triggerExtractionPatterns[trigger];
+    const extractPattern = triggerExtractionPatterns[triggerName];
     if (extractPattern) {
       const match = text.match(extractPattern);
-      if (match && match[1]) {
+      if (match && match[1] && match[1].trim()) {
         const subordinateClause = match[1].trim();
         // Return the trigger phrase + subordinate clause
-        const triggerPhrase = text.match(new RegExp(`\\b(?:avant\\s+que?|peur\\s+que?|(?:moins|plus).*?que?|s'en\\s+(?:faut|fallut).*?que?|avant\\s+de)`, 'i'));
+        const triggerPhrase = text.match(new RegExp(`\\b(?:(?:il\\s+)?s'en\\s+(?:est\\s+)?(?:faut|fallut|faudrait)|avant\\s+que?|peur\\s+que?|(?:moins|plus).*?que?|avant\\s+de)`, 'i'));
         return triggerPhrase ? `${triggerPhrase[0]} ${subordinateClause}` : subordinateClause;
+      }
+    }
+    
+    // For sen_faut_que without "que" clause, return the whole phrase
+    if (triggerName === 'sen_faut_que' && /\bs'en\s+(?:est\s+)?(?:faut|fallut|faudrait)/i.test(text)) {
+      const senFautMatch = text.match(/\b(?:il\s+)?s'en\s+(?:est\s+)?(?:faut|fallut|faudrait)[^.!?]*/i);
+      if (senFautMatch) {
+        return senFautMatch[0].trim();
       }
     }
     
@@ -254,7 +280,7 @@ class UnifiedEmpiricalAnalyzer {
       'avant_que': /((?:^|[,.;])[^,.;]*avant\s+qu[e'][^,.;]*(?:[,.;]|$))/i,
       'peur_que': /((?:^|[,.;])[^,.;]*peur\s+qu[e'][^,.;]*(?:[,.;]|$))/i,
       'moins_plus': /((?:^|[,.;])[^,.;]*(?:moins|plus)[^,.;]*qu[e'][^,.;]*(?:[,.;]|$))/i,
-      'sen_faut_que': /((?:^|[,.;])[^,.;]*s'en\s+(?:faut|fallut)[^,.;]*qu[e'][^,.;]*(?:[,.;]|$))/i,
+      'sen_faut_que': /((?:^|[,.;])[^,.;]*(?:il\s+)?s'en\s+(?:est\s+)?(?:faut|fallut|faudrait)[^,.;]*(?:[,.;]|$))/i,
       'avant_de': /((?:^|[,.;])[^,.;]*avant\s+de[^,.;]*(?:[,.;]|$))/i
     };
     
