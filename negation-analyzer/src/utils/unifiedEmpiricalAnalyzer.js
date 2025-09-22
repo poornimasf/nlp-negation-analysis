@@ -318,8 +318,22 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.min(probability, factors.distant_temporal); // 23.1%
         }
       } else if (trigger.name === 'avant_que') {
-        // Check strong pro-expletive contexts first
-        if (this.hasExplicitPrevention(text)) {
+        // CORPUS-VALIDATED ANTI-EXPLETIVE PATTERNS (checked first)
+        if (this.hasTemporalSequenceContext(text)) {
+          probability = Math.min(probability, 0.20); // 20% - commencer/s'écouleront contexts
+        } else if (this.hasReportageContext(text)) {
+          probability = Math.min(probability, 0.25); // 25% - reporté/annoncé contexts
+        } else if (this.hasTechnicalErrorContext(text)) {
+          probability = Math.min(probability, 0.25); // 25% - ordinateur/bug contexts
+        } else if (this.hasInformalDiscourseContext(text)) {
+          probability = Math.min(probability, 0.30); // 30% - bah contexts
+        // EXISTING ANTI-EXPLETIVE PATTERNS (require multiple signals)
+        } else if (this.hasMotionContext(text) && this.hasConversationalContext(text)) {
+          probability = Math.min(probability, 0.25); // 25% - only if BOTH motion AND conversational
+        } else if (this.hasTechnicalContext(text) && /\b(bug|crash|erreur|défaillance)\b/i.test(text)) {
+          probability = Math.min(probability, 0.30); // 30% - only strong technical error contexts
+        // PRO-EXPLETIVE PATTERNS (require strong evidence)
+        } else if (this.hasExplicitPrevention(text)) {
           probability = Math.max(probability, 0.85); // 85% - stronger prevention
         } else if (this.hasMedicalContext(text)) {
           probability = Math.max(probability, 0.80); // 80% - medical contexts strongly favor expletive
@@ -333,11 +347,6 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.max(probability, 0.65); // 65% - general expletive patterns
         } else if (this.hasNarrativeContext(text)) {
           probability = Math.max(probability, 0.60); // 60% - narrative contexts
-        // Only then check anti-expletive contexts (weakened)
-        } else if (this.hasMotionContext(text) && this.hasConversationalContext(text)) {
-          probability = Math.min(probability, 0.25); // 25% - only if BOTH motion AND conversational
-        } else if (this.hasTechnicalContext(text) && /\b(bug|crash|erreur|défaillance)\b/i.test(text)) {
-          probability = Math.min(probability, 0.30); // 30% - only strong technical error contexts
         } else if (this.hasLegalContext(text)) {
           probability = Math.max(probability, factors.legal_context); // 75%
         } else if (this.hasAdministrativeContext(text)) {
@@ -572,6 +581,28 @@ class UnifiedEmpiricalAnalyzer {
   // Formal completion/achievement context
   hasCompletionContext(text) {
     return /\b(inscrive\s+le.*but|daigne\s+se\s+relever|tout.*accompli|réalisé|parfaitement|objectif.*se\s+réalise|programme.*rétablissement|niveaux\s+permettant)\b/i.test(text);
+  }
+
+  // CORPUS-VALIDATED ANTI-EXPLETIVE PATTERNS (September 2025)
+  
+  // Temporal sequence contexts (validated: commencer/s'écouleront → hasExpletive: false)
+  hasTemporalSequenceContext(text) {
+    return /\bcommencer.*avant\b/i.test(text) || /\bs'écouleront.*avant\b/i.test(text);
+  }
+
+  // Reportage/factual contexts (validated: reporté/annoncé → hasExpletive: false)
+  hasReportageContext(text) {
+    return /\b(reporté|annoncé)\b/i.test(text);
+  }
+
+  // Technical error contexts (validated: ordinateur/bug → hasExpletive: false)
+  hasTechnicalErrorContext(text) {
+    return /\b(ordinateur|bug)\b/i.test(text);
+  }
+
+  // Informal discourse marker (validated: bah → hasExpletive: false)
+  hasInformalDiscourseContext(text) {
+    return /\bbah\b/i.test(text);
   }
 
   // Educational context
