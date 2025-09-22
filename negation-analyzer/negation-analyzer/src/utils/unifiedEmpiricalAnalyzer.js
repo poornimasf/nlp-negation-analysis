@@ -394,20 +394,20 @@ class UnifiedEmpiricalAnalyzer {
         }
       } else if (trigger.name === 'peur_que') {
         // PEUR_QUE DISCOURSE-LEVEL PATTERNS (validated September 2025)
-        // Anti-expletive patterns (informal/personal contexts)
-        if (this.hasPeurQueInformalRegister(text)) {
-          probability = Math.min(probability, 0.30); // 30% - informal register strongly anti-expletive (-9.0%)
-        } else if (this.hasPeurQuePersonalImmediate(text)) {
-          probability = Math.min(probability, 0.35); // 35% - personal/immediate contexts anti-expletive (-3.0%)
-        // Pro-expletive patterns (abstract/formal contexts)
-        } else if (this.hasPeurQueSocialInterpersonal(text)) {
-          probability = Math.max(probability, 0.75); // 75% - social/interpersonal concerns pro-expletive (+1.0%)
+        // Pro-expletive patterns (abstract/formal contexts) - CHECK FIRST
+        if (this.hasPeurQueSocialInterpersonal(text)) {
+          probability = Math.max(probability, 0.80); // 80% - social/interpersonal concerns pro-expletive (+1.0%)
         } else if (this.hasPeurQueAbstractHypothetical(text)) {
-          probability = Math.max(probability, 0.70); // 70% - abstract/hypothetical contexts pro-expletive (+1.2%)
+          probability = Math.max(probability, 0.75); // 75% - abstract/hypothetical contexts pro-expletive (+1.2%)
         } else if (this.hasLiteraryContext(text)) {
-          probability = Math.max(probability, 0.65); // 65% - general literary context
+          probability = Math.max(probability, 0.70); // 70% - general literary context
         } else if (this.hasNarrativeContext(text)) {
-          probability = Math.max(probability, 0.60); // 60% - general narrative contexts
+          probability = Math.max(probability, 0.65); // 65% - general narrative contexts
+        // Anti-expletive patterns (informal/personal contexts) - ONLY if no pro-expletive signals
+        } else if (this.hasPeurQueInformalRegister(text) && text.length < 150) {
+          probability = Math.min(probability, 0.35); // 35% - informal register + short sentences only
+        } else if (this.hasPeurQuePersonalImmediate(text) && !this.hasPeurQueAbstractHypothetical(text)) {
+          probability = Math.min(probability, 0.40); // 40% - personal/immediate only if not abstract
         }
       } else if (trigger.name === 'avant_de') {
         if (this.hasMotionInfinitive(text) || this.hasActionInfinitive(text)) {
