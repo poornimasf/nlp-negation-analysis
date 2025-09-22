@@ -376,6 +376,19 @@ class UnifiedEmpiricalAnalyzer {
         } else if (this.hasProcessContext(text)) {
           probability = Math.max(probability, 0.65); // 65% - formal process descriptions
         }
+      } else if (trigger.name === 'sen_faut_que') {
+        // SEN_FAUT_QUE SPECIFIC PRO-EXPLETIVE PATTERNS (corpus-validated)
+        if (this.hasSenFautQueLiteraryContext(text)) {
+          probability = Math.max(probability, 0.85); // 85% - literary/archaic verbs (+31.6% corpus difference)
+        } else if (this.hasSenFautQuePastSubjunctive(text)) {
+          probability = Math.max(probability, 0.80); // 80% - past subjunctive forms (+10.4% corpus difference)
+        } else if (this.hasSenFautQueNearMiss(text)) {
+          probability = Math.max(probability, 0.75); // 75% - enhanced near-miss semantics
+        } else if (this.hasLiteraryContext(text)) {
+          probability = Math.max(probability, 0.70); // 70% - general literary context
+        } else if (this.hasNarrativeContext(text)) {
+          probability = Math.max(probability, 0.65); // 65% - narrative contexts
+        }
       } else if (trigger.name === 'avant_de') {
         if (this.hasMotionInfinitive(text) || this.hasActionInfinitive(text)) {
           probability = factors.motion_infinitive; // 0% - strong anti-expletive
@@ -614,6 +627,23 @@ class UnifiedEmpiricalAnalyzer {
   // Informal discourse marker (validated: bah → hasExpletive: false)
   hasInformalDiscourseContext(text) {
     return /\b(bah|bon\s+bah)\b/i.test(text);
+  }
+
+  // SEN_FAUT_QUE SPECIFIC PRO-EXPLETIVE PATTERNS (corpus-validated)
+  
+  // Literary/archaic verbs (58.2% expletive vs 26.6% non-expletive = +31.6% difference)
+  hasSenFautQueLiteraryContext(text) {
+    return /\b(fallut|fût|prissent|vînt|fusse|eût|eussent|submergeât)\b/i.test(text);
+  }
+
+  // Past subjunctive forms (16.0% expletive vs 5.6% non-expletive = +10.4% difference)  
+  hasSenFautQuePastSubjunctive(text) {
+    return /\b(submergeât|prissent|vînt|fusse|fût|eût|eussent)\b/i.test(text);
+  }
+
+  // Enhanced near-miss semantics for sen_faut_que
+  hasSenFautQueNearMiss(text) {
+    return /\b(peu\s+s'en|de\s+peu\s+que|failli|presque.*que|à\s+force\s+de)\b/i.test(text);
   }
 
   // Educational context
