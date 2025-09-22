@@ -116,9 +116,8 @@ class UnifiedEmpiricalAnalyzer {
     const hasStrongSenFautQueExpletive = trigger.name === 'sen_faut_que' && 
       (this.hasSenFautQueLiteraryContext(text) || this.hasSenFautQuePastSubjunctive(text));
     
-    // Check if peur_que has strong expletive patterns that should override logical negation
-    const hasStrongPeurQueExpletive = trigger.name === 'peur_que' && 
-      (this.hasPeurQueSocialInterpersonal(text) || this.hasPeurQueAbstractHypothetical(text));
+    // Check if peur_que should override logical negation (simplified: most peur_que contexts are expletive)
+    const hasStrongPeurQueExpletive = trigger.name === 'peur_que';
     
     if (hasLogicalNegation && !hasStrongSenFautQueExpletive && !hasStrongPeurQueExpletive) {
       // Use enhanced explanation for logical negation override
@@ -393,21 +392,13 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.max(probability, 0.65); // 65% - narrative contexts
         }
       } else if (trigger.name === 'peur_que') {
-        // PEUR_QUE DISCOURSE-LEVEL PATTERNS (validated September 2025)
-        // Pro-expletive patterns (abstract/formal contexts) - CHECK FIRST
-        if (this.hasPeurQueSocialInterpersonal(text)) {
-          probability = Math.max(probability, 0.80); // 80% - social/interpersonal concerns pro-expletive (+1.0%)
-        } else if (this.hasPeurQueAbstractHypothetical(text)) {
-          probability = Math.max(probability, 0.75); // 75% - abstract/hypothetical contexts pro-expletive (+1.2%)
-        } else if (this.hasLiteraryContext(text)) {
-          probability = Math.max(probability, 0.70); // 70% - general literary context
-        } else if (this.hasNarrativeContext(text)) {
-          probability = Math.max(probability, 0.65); // 65% - general narrative contexts
-        // Anti-expletive patterns (informal/personal contexts) - ONLY if no pro-expletive signals
-        } else if (this.hasPeurQueInformalRegister(text) && text.length < 150) {
-          probability = Math.min(probability, 0.35); // 35% - informal register + short sentences only
-        } else if (this.hasPeurQuePersonalImmediate(text) && !this.hasPeurQueAbstractHypothetical(text)) {
-          probability = Math.min(probability, 0.40); // 40% - personal/immediate only if not abstract
+        // PEUR_QUE SIMPLIFIED APPROACH: Default to expletive with selective anti-expletive override
+        // Most peur_que contexts are expletive - only override for clear anti-expletive cases
+        probability = Math.max(probability, 0.75); // 75% - default expletive for peur_que
+        
+        // Only apply anti-expletive in very specific cases
+        if (this.hasPeurQueInformalRegister(text) && text.length < 100 && /\b(ça|ca)\b/i.test(text)) {
+          probability = Math.min(probability, 0.40); // 40% - very short informal with "ça" only
         }
       } else if (trigger.name === 'avant_de') {
         if (this.hasMotionInfinitive(text) || this.hasActionInfinitive(text)) {
