@@ -184,25 +184,44 @@ class UnifiedEmpiricalAnalyzer {
    * Check for logical negation in the trigger clause only (validated 100% accuracy)
    */
   hasLogicalNegation(text, trigger) {
-    // Extract the trigger clause to avoid false positives from other clauses
-    const triggerClause = this.extractTriggerClause(text, trigger);
+    // Clean text and extract the trigger clause to avoid false positives from other clauses
+    const cleanText = text.replace(/['']/g, "'").replace(/[""]/g, '"').replace(/\s+/g, ' ').trim();
+    const triggerClause = this.extractTriggerClause(cleanText, trigger);
     
-    const patterns = [
-      /\b(?:pas|jamais|rien|personne|aucun|nulle?)\b/i,
-      /\bplus\b(?!\s+de\b)/i, // "plus" but not "plus de" (more than)
-      /\b(?:refuse|interdit|empêche|évite)\b/i,
-      /\b(?:impossible|inutile)\b/i, // Removed "trop tard" - it's temporal, not logical negation
-      // Corpus-derived patterns for non-expletive cases
-      /\ben trouve un autre\b/i, // search/finding context
-      /\bil y ait\b/i, // neutral existence  
-      /\bnous l'ayons\b/i, // achievement context
-      /\bon ait pu\b/i, // ability context
-      /\beût eu le temps\b/i, // temporal ability
-      /\bpuisses devenir\b/i, // potential/ability
-      /\belles l'entérinent\b/i // institutional process
+    // 1. True negation pairs (must be in the target clause only)
+    const negationPairs = [
+      /\b(?:ne\s+)?pas\b/i,
+      /\b(?:ne\s+)?jamais\b/i,
+      /\b(?:ne\s+)?rien\b/i,
+      /\b(?:ne\s+)?personne\b/i,
+      /\b(?:ne\s+)?aucun[e]?\b/i,
+      /\b(?:ne\s+)?guère\b/i,
+      /\b(?:ne\s+)?point\b/i
     ];
     
-    return patterns.some(pattern => pattern.test(triggerClause));
+    for (const pattern of negationPairs) {
+      if (pattern.test(triggerClause)) {
+        return true;
+      }
+    }
+    
+    // 2. "Plus" negation - exclude comparative uses
+    if (/\bplus\b/i.test(triggerClause)) {
+      // Exclude comparative/quantifier uses
+      if (!/\bplus\s+(?:de|que|d')\b/i.test(triggerClause) && 
+          !/\b(?:bien|beaucoup|encore|même|tout|si|très)\s+plus\b/i.test(triggerClause) &&
+          !/\bplus\s+qu'à\b/i.test(triggerClause)) { // "on a plus qu'à attendre"
+        return true;
+      }
+    }
+    
+    // 3. Negation verbs and impossibility (within clause only)
+    const negationMarkers = [
+      /\b(?:refuse|interdit|empêche|évite|nie|rejette|conteste)\b/i,
+      /\b(?:impossible|inutile|vain|futile)\b/i
+    ];
+    
+    return negationMarkers.some(pattern => pattern.test(triggerClause));
   }
 
   /**
