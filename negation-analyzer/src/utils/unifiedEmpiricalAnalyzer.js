@@ -336,15 +336,13 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.min(probability, factors.distant_temporal); // 23.1%
         }
       } else if (trigger.name === 'avant_que') {
-        // CORPUS-VALIDATED ANTI-EXPLETIVE PATTERNS (checked first with strong thresholds)
-        if (this.hasTemporalSequenceContext(text)) {
-          probability = Math.min(probability, 0.15); // 15% - commencer/s'écouleront contexts (stronger)
-        } else if (this.hasReportageContext(text)) {
-          probability = Math.min(probability, 0.20); // 20% - reporté/annoncé contexts (stronger)
+        // CONSERVATIVE ANTI-EXPLETIVE PATTERNS (only 100% validated patterns)
+        if (this.hasReportageContext(text)) {
+          probability = Math.min(probability, 0.25); // 25% - reporté/annoncé contexts
         } else if (this.hasTechnicalErrorContext(text)) {
-          probability = Math.min(probability, 0.20); // 20% - ordinateur/bug contexts (stronger)
+          probability = Math.min(probability, 0.25); // 25% - ordinateur/bug contexts
         } else if (this.hasInformalDiscourseContext(text)) {
-          probability = Math.min(probability, 0.25); // 25% - bah contexts (stronger)
+          probability = Math.min(probability, 0.30); // 30% - bah contexts
         // EXISTING ANTI-EXPLETIVE PATTERNS (require multiple signals)
         } else if (this.hasMotionContext(text) && this.hasConversationalContext(text)) {
           probability = Math.min(probability, 0.25); // 25% - only if BOTH motion AND conversational
@@ -601,21 +599,16 @@ class UnifiedEmpiricalAnalyzer {
     return /\b(inscrive\s+le.*but|daigne\s+se\s+relever|tout.*accompli|réalisé|parfaitement|objectif.*se\s+réalise|programme.*rétablissement|niveaux\s+permettant)\b/i.test(text);
   }
 
-  // CORPUS-VALIDATED ANTI-EXPLETIVE PATTERNS (September 2025)
+  // CORPUS-VALIDATED ANTI-EXPLETIVE PATTERNS (September 2025) - CONSERVATIVE
   
-  // Temporal sequence contexts (validated: commencer/s'écouleront → hasExpletive: false)
-  hasTemporalSequenceContext(text) {
-    return /\b(commencer|commence|commencent|s'écouleront|s'écoulera)\b/i.test(text);
-  }
-
-  // Reportage/factual contexts (validated: reporté/annoncé → hasExpletive: false)
+  // Only keep patterns with 100% anti-expletive corpus validation
   hasReportageContext(text) {
-    return /\b(reporté|reportée|annoncé|annoncée|lancement.*soit)\b/i.test(text);
+    return /\b(reporté|reportée|annoncé|annoncée)\b/i.test(text);
   }
 
   // Technical error contexts (validated: ordinateur/bug → hasExpletive: false)
   hasTechnicalErrorContext(text) {
-    return /\b(ordinateur|bug|crash|système.*crash)\b/i.test(text);
+    return /\b(ordinateur|bug)\b/i.test(text);
   }
 
   // Informal discourse marker (validated: bah → hasExpletive: false)
