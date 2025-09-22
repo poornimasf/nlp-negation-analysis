@@ -109,9 +109,14 @@ class UnifiedEmpiricalAnalyzer {
     // Step 2: Analyze register
     const register = this.detectRegister(text);
     
-    // Step 3: Check for logical negation override (100% validated)
+    // Step 3: Check for logical negation override (100% validated) - EXCEPT for strong sen_faut_que expletive patterns
     const hasLogicalNegation = this.hasLogicalNegation(text, trigger);
-    if (hasLogicalNegation) {
+    
+    // Check if sen_faut_que has strong expletive patterns that should override logical negation
+    const hasStrongSenFautQueExpletive = trigger.name === 'sen_faut_que' && 
+      (this.hasSenFautQueLiteraryContext(text) || this.hasSenFautQuePastSubjunctive(text));
+    
+    if (hasLogicalNegation && !hasStrongSenFautQueExpletive) {
       // Use enhanced explanation for logical negation override
       const enhancedReasoning = this.buildValidatedReasoning(trigger, register, 0.05, mode, text, 0.05);
       return this.buildResult('No Expletive', 0.95, enhancedReasoning, {
