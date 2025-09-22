@@ -304,6 +304,12 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.max(probability, 0.65); // 65% for temporal anticipation
         } else if (this.hasMotionContext(text)) {
           probability = Math.min(probability, factors.motion_context); // 20% - strong anti-expletive (prioritized)
+        } else if (this.hasConversationalContext(text)) {
+          probability = Math.min(probability, 0.15); // 15% - informal/conversational contexts
+        } else if (this.hasContemporaryContext(text)) {
+          probability = Math.min(probability, 0.25); // 25% - contemporary contexts favor simpler constructions
+        } else if (this.hasTechnicalContext(text)) {
+          probability = Math.min(probability, 0.30); // 30% - technical contexts avoid expletive
         } else if (this.hasLegalContext(text)) {
           probability = Math.max(probability, factors.legal_context); // 75%
         } else if (this.hasAdministrativeContext(text)) {
@@ -471,7 +477,24 @@ class UnifiedEmpiricalAnalyzer {
 
   // Motion/travel context detection (works for all triggers)
   hasMotionContext(text) {
-    return /\b(prendre\s+l'avion|prennent\s+l'avion|partir|voyager|départ|voyage|aller|venir|sortir|entrer|se\s+rendre|se\s+déplacer|transport|avion|train|voiture|aillent|aille|ailles|allions|alliez|vienne|viennes|viennent|venions|veniez)\b/i.test(text);
+    return /\b(prendre\s+l'avion|prennent\s+l'avion|partir|voyager|départ|voyage|aller|venir|sortir|entrer|se\s+rendre|se\s+déplacer|transport|avion|train|voiture|aillent|aille|ailles|allions|alliez|vienne|viennes|viennent|venions|veniez|rentrons|torde\s+le\s+coup|humer\s+l'atmosphère)\b/i.test(text);
+  }
+
+  // Enhanced conversational/informal context detection
+  hasConversationalContext(text) {
+    return /\b(allez|rentrons|chez\s+nous|cette\s+zik|vraument|très\s+belle|coup\s+douce|msn|vous\s+allez\s+aimer|lol|x\)|bah|désolé|grâce\s+à|histoire\s+de|ça\s+dérape|je\s+viens\s+de)\b/i.test(text);
+  }
+
+  // Technical/procedural context (reduces expletive likelihood)
+  hasTechnicalContext(text) {
+    return /\b(opérationnel|technique|système|processus|fonctionnel|installation|équipement|maintenance|configuration|paramétrage|simulation|beugue|ordinateur|blogue|se\s+charge|background|apparaît|disparaît|modifs)\b/i.test(text);
+  }
+
+  // Contemporary/modern context detection (modern French favors simpler constructions)
+  hasContemporaryContext(text) {
+    return /\b(président\s+Macron|2013|2024|2025|joueur|conducteur|roman|journal|guide|triathlon|€|euros|camp\s+perde|majorité|réélu|officiellement|années\s+avant|plusieurs\s+années|employés|modification|entre\s+en\s+vigueur|bilan)\b/i.test(text) ||
+           /\d{4}/.test(text) || // Years indicate contemporary context
+           /\([^)]*\)/.test(text); // Parenthetical comments (online discourse)
   }
 
   // Temporal urgency context (expanded)
@@ -508,11 +531,6 @@ class UnifiedEmpiricalAnalyzer {
     return /\b(fondé|village\s+d'|développa|autochtones|jargon\s+chinook|commerce\s+entre|employés\s+de\s+la|HBC|Astoria|Thompson|Astor)\b/i.test(text);
   }
 
-  // Technical/operational context (reduces expletive likelihood)
-  hasTechnicalContext(text) {
-    return /\b(opérationnel|technique|système|processus|fonctionnel|installation|équipement|maintenance|configuration|paramétrage)\b/i.test(text);
-  }
-
   // Procedural/regulatory context (formal contexts that favor expletive)
   hasProceduralContext(text) {
     return /\b(procédure|règle|réglementation|impératif|débute|processus|étapes|instructions|directives|protocole)\b/i.test(text);
@@ -537,14 +555,6 @@ class UnifiedEmpiricalAnalyzer {
     // Patterns that typically had expletive "ne" in original text
     return /\b(avant qu'il ne|avant que cela ne|avant qu'elle ne|avant que le|avant qu'on|peur qu'il ne|peur qu'elle ne|peur que cela ne|plus.*qu'il ne|moins.*qu'elle ne)\b/i.test(text) ||
            /\b(soit trop tard|devienne|empire|se reproduise|frappe|abandonne|submerge|toque à la porte)\b/i.test(text);
-  }
-
-  // Contemporary/modern context detection (modern French favors simpler constructions)
-  hasContemporaryContext(text) {
-    return /\b(président\s+Macron|2013|2024|2025|joueur|conducteur|roman|journal|guide|triathlon|€|euros|camp\s+perde|majorité|réélu|officiellement|années\s+avant|plusieurs\s+années|employés|modification|entre\s+en\s+vigueur|bilan|Madagascar|réunion|SE|lol|x\)|désolé|bah\s+oui|grâce\s+à|histoire\s+de|ça\s+dérape|je\s+viens\s+de|depuis\s+2012|Kaidou|Shanks|Marineford|anime|manga|fan|Nadeshiko|Tadase)\b/i.test(text) ||
-           /\d{4}/.test(text) || // Years indicate contemporary context
-           /\([^)]*\)/.test(text) || // Parenthetical comments (online discourse)
-           /x\)|lol|bah|désolé/.test(text); // Internet/informal markers
   }
 
   // Literary vocabulary detection (expanded)
