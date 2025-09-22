@@ -298,18 +298,19 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.min(probability, factors.distant_temporal); // 23.1%
         }
       } else if (trigger.name === 'avant_que') {
-        if (this.hasExplicitPrevention(text)) {
+        // Check anti-expletive contexts first (prioritized)
+        if (this.hasMotionContext(text)) {
+          probability = Math.min(probability, 0.15); // 15% - strong anti-expletive (prioritized)
+        } else if (this.hasConversationalContext(text)) {
+          probability = Math.min(probability, 0.10); // 10% - very strong anti-expletive for informal
+        } else if (this.hasTechnicalContext(text)) {
+          probability = Math.min(probability, 0.20); // 20% - technical contexts avoid expletive
+        } else if (this.hasContemporaryContext(text)) {
+          probability = Math.min(probability, 0.25); // 25% - contemporary contexts favor simpler constructions
+        } else if (this.hasExplicitPrevention(text)) {
           probability = factors.explicit_prevention; // 80%
         } else if (this.hasTemporalAnticipation(text)) {
           probability = Math.max(probability, 0.65); // 65% for temporal anticipation
-        } else if (this.hasMotionContext(text)) {
-          probability = Math.min(probability, factors.motion_context); // 20% - strong anti-expletive (prioritized)
-        } else if (this.hasConversationalContext(text)) {
-          probability = Math.min(probability, 0.15); // 15% - informal/conversational contexts
-        } else if (this.hasContemporaryContext(text)) {
-          probability = Math.min(probability, 0.25); // 25% - contemporary contexts favor simpler constructions
-        } else if (this.hasTechnicalContext(text)) {
-          probability = Math.min(probability, 0.30); // 30% - technical contexts avoid expletive
         } else if (this.hasLegalContext(text)) {
           probability = Math.max(probability, factors.legal_context); // 75%
         } else if (this.hasAdministrativeContext(text)) {
@@ -477,17 +478,17 @@ class UnifiedEmpiricalAnalyzer {
 
   // Motion/travel context detection (works for all triggers)
   hasMotionContext(text) {
-    return /\b(prendre\s+l'avion|prennent\s+l'avion|partir|voyager|départ|voyage|aller|venir|sortir|entrer|se\s+rendre|se\s+déplacer|transport|avion|train|voiture|aillent|aille|ailles|allions|alliez|vienne|viennes|viennent|venions|veniez|rentrons|torde\s+le\s+coup|humer\s+l'atmosphère)\b/i.test(text);
+    return /\b(prendre\s+l'avion|prennent\s+l'avion|partir|voyager|départ|voyage|aller|venir|sortir|entrer|se\s+rendre|se\s+déplacer|transport|avion|train|voiture|aillent|aille|ailles|allions|alliez|vienne|viennes|viennent|venions|veniez|rentrons|torde\s+le\s+coup|nous\s+torde|humer\s+l'atmosphère)\b/i.test(text);
   }
 
   // Enhanced conversational/informal context detection
   hasConversationalContext(text) {
-    return /\b(allez|rentrons|chez\s+nous|cette\s+zik|vraument|très\s+belle|coup\s+douce|msn|vous\s+allez\s+aimer|lol|x\)|bah|désolé|grâce\s+à|histoire\s+de|ça\s+dérape|je\s+viens\s+de)\b/i.test(text);
+    return /\b(allez|rentrons|chez\s+nous|cette\s+zik|vraument|très\s+belle|coup\s+douce|msn|vous\s+allez\s+aimer|lol|x\)|bah|désolé|grâce\s+à|histoire\s+de|ça\s+dérape|je\s+viens\s+de|on\s+nous|nous\s+torde)\b/i.test(text);
   }
 
   // Technical/procedural context (reduces expletive likelihood)
   hasTechnicalContext(text) {
-    return /\b(opérationnel|technique|système|processus|fonctionnel|installation|équipement|maintenance|configuration|paramétrage|simulation|beugue|ordinateur|blogue|se\s+charge|background|apparaît|disparaît|modifs)\b/i.test(text);
+    return /\b(opérationnel|technique|système|processus|fonctionnel|installation|équipement|maintenance|configuration|paramétrage|simulation|beugue|ordinateur|blogue|se\s+charge|background|apparaît|disparaît|modifs|bug|crash|erreur|défaillance)\b/i.test(text);
   }
 
   // Contemporary/modern context detection (modern French favors simpler constructions)
