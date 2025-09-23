@@ -473,15 +473,54 @@ class UnifiedEmpiricalAnalyzer {
     const hasNegationMarkers = /\b(?:pas|plus|jamais|rien|personne|aucun)\b/i.test(text);
     const hasCompletionVerbs = /\b(?:finisse|termine|achève|complète|arrive|survienne|se\s+produise|devienne|tombe|frappe)\b/i.test(text);
     
-    // Apply subtle adjustments (training data shows 2-5% differences)
+    // PEUR_QUE SPECIFIC ADJUSTMENTS (corpus-based)
+    if (trigger.name === 'peur_que') {
+      // Gender-specific patterns (corpus shows different expletive rates)
+      if (/peur\s+qu'elle\b/i.test(text)) {
+        probability *= 1.10; // +10% (corpus: 60.2% expletive rate)
+      } else if (/peur\s+qu'il\b/i.test(text)) {
+        probability *= 1.04; // +4% (corpus: 54.1% expletive rate)
+      }
+      
+      // Complex subjunctive and change state verbs (more common in expletive=true)
+      const hasComplexSubjunctive = /\b(?:devienne|survienne|se\s+produise|disparaisse)\b/i.test(text);
+      const hasChangeStateVerbs = /\b(?:devienne|se\s+transforme|change|évolue)\b/i.test(text);
+      
+      if (hasComplexSubjunctive) {
+        probability *= 1.05; // +5% (corpus: 4.2% vs 1.8%)
+      }
+      if (hasChangeStateVerbs) {
+        probability *= 1.03; // +3% (corpus: 7.2% vs 4.0%)
+      }
+      
+      // Stronger negation penalty for peur_que (corpus: 48.6% vs 41.4%)
+      if (hasNegationMarkers) {
+        probability *= 0.90; // -10% instead of -7% for peur_que
+      } else {
+        // Apply standard negation adjustment for other triggers
+        if (hasNegationMarkers) {
+          probability *= 0.93; // -7% for negation markers (less expletive)
+        }
+      }
+      
+      // Stronger informal penalty for peur_que (corpus: 20.6% vs 15.6%)
+      const hasInformalMarkers = /\b(?:bon|ben|alors|du\s+coup|genre|quoi)\b/i.test(text);
+      if (hasInformalMarkers) {
+        probability *= 0.92; // -8% for informal markers in peur_que
+      }
+    } else {
+      // Apply standard adjustments for non-peur_que triggers
+      if (hasNegationMarkers) {
+        probability *= 0.93; // -7% for negation markers (less expletive)
+      }
+    }
+    
+    // Apply universal adjustments (all triggers except peur_que negation handled above)
     if (hasFirstPersonMarkers && !hasThirdPersonMarkers) {
       probability *= 0.95; // -5% for first person (slightly less expletive)
     }
     if (hasThirdPersonMarkers && !hasFirstPersonMarkers) {
       probability *= 1.05; // +5% for third person (slightly more expletive)
-    }
-    if (hasNegationMarkers) {
-      probability *= 0.93; // -7% for negation markers (less expletive)
     }
     if (hasCompletionVerbs) {
       probability *= 1.08; // +8% for completion verbs (more expletive)
