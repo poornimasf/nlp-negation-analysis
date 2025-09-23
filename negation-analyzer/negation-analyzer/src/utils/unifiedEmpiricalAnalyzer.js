@@ -184,7 +184,7 @@ class UnifiedEmpiricalAnalyzer {
    */
   detectRegister(text) {
     // Check conversational first (highest priority for personal narratives)
-    if (/\b(?:je\s+me|j'ai|j'utilise|ça|bon|ben|alors|tu\s+vois|enfin\s+bref|salut|dis\s+donc|tu\s+sais|totalement\s+au\s+jeu|me\s+prendre\s+au|aujourd'hui\s+j'|combien\s+de\s+temps|plusieurs\s+employés\s+ont|pas\s+la\s+peine|maintenant\s+je\s+me\s+demande|finalement\s+aujourd'hui)\b/i.test(text)) {
+    if (/\b(?:je\s+me|j'ai|j'utilise|je\s+suis\s+plongée|je\s+dois|ça|bon|ben|alors|tu\s+vois|enfin\s+bref|salut|dis\s+donc|tu\s+sais|totalement\s+au\s+jeu|me\s+prendre\s+au|aujourd'hui\s+j'|combien\s+de\s+temps|plusieurs\s+employés\s+ont|pas\s+la\s+peine|maintenant\s+je\s+me\s+demande|finalement\s+aujourd'hui|à\s+ce\s+stade)\b/i.test(text)) {
       return 'conversational';
     }
     
@@ -935,6 +935,12 @@ class UnifiedEmpiricalAnalyzer {
         sections.push('✓ Prevention context: detected (strong expletive predictor 80%)');
       } else {
         sections.push('✗ Prevention context: not found (would strongly favor expletive 80%)');
+      }
+      
+      if (this.hasMedicalContext(text)) {
+        sections.push('✓ Medical context: detected (strongly favors expletive 80%)');
+      } else {
+        sections.push('✗ Medical context: not found (would strongly favor expletive 80%)');
       }
       
       if (this.hasTemporalAnticipation(text)) {
