@@ -335,7 +335,7 @@ class UnifiedEmpiricalAnalyzer {
     let probability = this.triggerRates[trigger.name] || 0.5;
     
     // STRONG CONVERSATIONAL OVERRIDE - personal narratives should not be expletive
-    const hasStrongPersonalMarkers = /\b(?:je\s+suis\s+plongée|aujourd'hui\s+j'|finalement\s+aujourd'hui|j'ai\s+fait|mais\s+ça\s+n'a\s+duré|\*\w+\*|maintenant\s+je\s+me\s+demande|parfois,?\s+cela\s+prend|combien\s+de\s+temps|pas\s+la\s+peine)\b/i.test(text);
+    const hasStrongPersonalMarkers = /\b(?:je\s+suis\s+plongée|aujourd'hui\s+j'|finalement\s+aujourd'hui|j'ai\s+fait|mais\s+ça\s+n'a\s+duré|\*\w+\*|maintenant\s+je\s+me\s+demande|parfois,?\s+cela\s+prend|combien\s+de\s+temps|pas\s+la\s+peine|et\s+on\s+a\s+plus\s+qu'à|lol|xD|voila\s+mon\s+petit|je\s+me\s+suis\s+sentie|alors,?\s+si\s+par\s+hasard|fellation|coquine|_+|hana\s*:|jack\s+récupéra|elle\s+ne\s+savait\s+pas|mais\s+les\s+spectateurs|en\s+attendant|toujours\s+pas\s+de\s+miracle|pas\s+trop\s+épais)\b/i.test(text);
     
     if (hasStrongPersonalMarkers || register === 'conversational') {
       // Personal narratives: cap at 40% maximum (anti-expletive bias)
@@ -363,7 +363,7 @@ class UnifiedEmpiricalAnalyzer {
       const factors = this.deepFactors[trigger.name];
       
       // Personal narrative detection for pattern overrides
-      const hasStrongPersonalMarkers = /\b(?:je\s+suis\s+plongée|aujourd'hui\s+j'|finalement\s+aujourd'hui|j'ai\s+fait|mais\s+ça\s+n'a\s+duré|\*\w+\*|maintenant\s+je\s+me\s+demande|parfois,?\s+cela\s+prend|combien\s+de\s+temps|pas\s+la\s+peine)\b/i.test(text);
+      const hasStrongPersonalMarkers = /\b(?:je\s+suis\s+plongée|aujourd'hui\s+j'|finalement\s+aujourd'hui|j'ai\s+fait|mais\s+ça\s+n'a\s+duré|\*\w+\*|maintenant\s+je\s+me\s+demande|parfois,?\s+cela\s+prend|combien\s+de\s+temps|pas\s+la\s+peine|et\s+on\s+a\s+plus\s+qu'à|lol|xD|voila\s+mon\s+petit|je\s+me\s+suis\s+sentie|alors,?\s+si\s+par\s+hasard|fellation|coquine|_+|hana\s*:|jack\s+récupéra|elle\s+ne\s+savait\s+pas|mais\s+les\s+spectateurs|en\s+attendant|toujours\s+pas\s+de\s+miracle|pas\s+trop\s+épais)\b/i.test(text);
       
       // Check for past subjunctive first (strongest predictor across all triggers)
       if (this.hasPastSubjunctive(text)) {
