@@ -16,8 +16,6 @@ function App() {
       <footer className="app-footer">
         <div className="footer-content">
           <span className="deployment-info">Deployment: {deploymentNumber}</span>
-          <span className="separator">•</span>
-          <span className="framework-info">Training Data-Based Rebalancing Framework</span>
         </div>
       </footer>
     </div>

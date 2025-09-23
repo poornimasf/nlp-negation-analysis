@@ -337,26 +337,6 @@ class UnifiedEmpiricalAnalyzer {
       probability = Math.min(probability, 0.47);
     }
     
-    // Subtle pattern adjustments based on training data analysis
-    const hasFirstPersonMarkers = /\b(?:je\s|j'|mon\s|ma\s|mes\s|moi\b)/i.test(text);
-    const hasThirdPersonMarkers = /\b(?:il\s|elle\s|ils\s|elles\s|son\s|sa\s|ses\s|leur\s)/i.test(text);
-    const hasNegationMarkers = /\b(?:pas|plus|jamais|rien|personne|aucun)\b/i.test(text);
-    const hasCompletionVerbs = /\b(?:finisse|termine|achève|complète|arrive|survienne|se\s+produise|devienne|tombe|frappe)\b/i.test(text);
-    
-    // Apply subtle adjustments (training data shows 2-5% differences)
-    if (hasFirstPersonMarkers && !hasThirdPersonMarkers) {
-      probability *= 0.95; // -5% for first person (slightly less expletive)
-    }
-    if (hasThirdPersonMarkers && !hasFirstPersonMarkers) {
-      probability *= 1.05; // +5% for third person (slightly more expletive)
-    }
-    if (hasNegationMarkers) {
-      probability *= 0.93; // -7% for negation markers (less expletive)
-    }
-    if (hasCompletionVerbs) {
-      probability *= 1.08; // +8% for completion verbs (more expletive)
-    }
-    
     // Apply validated register effects (with historical context override)
     if (register !== 'neutral' && !hasStrongPersonalMarkers) {
       // Only apply register effects if no strong conversational markers present
@@ -485,6 +465,26 @@ class UnifiedEmpiricalAnalyzer {
           probability = factors.literary_markers; // 74.4%
         }
       }
+    }
+
+    // Apply subtle pattern adjustments at the end (training data analysis)
+    const hasFirstPersonMarkers = /\b(?:je\s|j'|mon\s|ma\s|mes\s|moi\b)/i.test(text);
+    const hasThirdPersonMarkers = /\b(?:il\s|elle\s|ils\s|elles\s|son\s|sa\s|ses\s|leur\s)/i.test(text);
+    const hasNegationMarkers = /\b(?:pas|plus|jamais|rien|personne|aucun)\b/i.test(text);
+    const hasCompletionVerbs = /\b(?:finisse|termine|achève|complète|arrive|survienne|se\s+produise|devienne|tombe|frappe)\b/i.test(text);
+    
+    // Apply subtle adjustments (training data shows 2-5% differences)
+    if (hasFirstPersonMarkers && !hasThirdPersonMarkers) {
+      probability *= 0.95; // -5% for first person (slightly less expletive)
+    }
+    if (hasThirdPersonMarkers && !hasFirstPersonMarkers) {
+      probability *= 1.05; // +5% for third person (slightly more expletive)
+    }
+    if (hasNegationMarkers) {
+      probability *= 0.93; // -7% for negation markers (less expletive)
+    }
+    if (hasCompletionVerbs) {
+      probability *= 1.08; // +8% for completion verbs (more expletive)
     }
 
     return probability;
