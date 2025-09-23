@@ -1086,7 +1086,7 @@ class UnifiedEmpiricalAnalyzer {
       sections.push('• Both "avant qu\'ils aillent" and "avant qu\'ils n\'aillent" are correct');
       sections.push('• Choice depends on speaker preference and register');
       sections.push('• Expletive "ne" represents stylistic variation, not grammatical requirement');
-      return sections.join('\\n');
+      return sections.join('\n');
     } else {
       prediction = probability > 0.5 ? 'Expletive' : 'No Expletive';
       confidence = Math.abs(probability - 0.5) * 2;
