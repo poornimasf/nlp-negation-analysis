@@ -493,9 +493,9 @@ class UnifiedEmpiricalAnalyzer {
         probability *= 1.03; // +3% (corpus: 7.2% vs 4.0%)
       }
       
-      // Stronger negation penalty for peur_que (corpus: 48.6% vs 41.4%)
+      // Stronger negation penalty for peur_que (corpus: 46.0% expletive rate)
       if (hasNegationMarkers) {
-        probability *= 0.90; // -10% instead of -7% for peur_que
+        probability *= 0.96; // -4% (corpus-aligned: 50% - 46% = 4%)
       } else {
         // Apply standard negation adjustment for other triggers
         if (hasNegationMarkers) {
@@ -503,10 +503,10 @@ class UnifiedEmpiricalAnalyzer {
         }
       }
       
-      // Stronger informal penalty for peur_que (corpus: 20.6% vs 15.6%)
+      // Stronger informal penalty for peur_que (corpus: 43.1% expletive rate)
       const hasInformalMarkers = /\b(?:bon|ben|alors|du\s+coup|genre|quoi)\b/i.test(text);
       if (hasInformalMarkers) {
-        probability *= 0.92; // -8% for informal markers in peur_que
+        probability *= 0.93; // -7% (corpus-aligned: 50% - 43.1% = 6.9%)
       }
     } else {
       // Apply standard adjustments for non-peur_que triggers
