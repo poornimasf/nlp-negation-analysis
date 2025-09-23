@@ -1452,9 +1452,8 @@ class UnifiedEmpiricalAnalyzer {
     
     if (conflicts.length > 0) {
       const conflict = conflicts[0];
-      // Fix: Map winner direction to correct prediction
-      const correctPrediction = conflict.winnerDirection === 'anti-expletive' ? 'No Expletive' : 'Expletive';
-      return `⚖️ COMPETING FORCES:\n• ${conflict.description}\n• Winner: ${conflict.winner.toLowerCase()} → ${correctPrediction}`;
+      // Use actual calculated prediction, not factor-based prediction
+      return `⚖️ COMPETING FORCES:\n• ${conflict.description}\n• Winner: ${conflict.winner.toLowerCase()} → ${prediction}`;
     }
     
     const dominantFactor = factors[0];
@@ -1462,9 +1461,8 @@ class UnifiedEmpiricalAnalyzer {
       return `${dominantFactor.description} provides absolute determination → ${prediction}`;
     }
     
-    // Fix: Map factor direction to correct prediction
-    const correctPrediction = dominantFactor.direction === 'anti-expletive' ? 'No Expletive' : 'Expletive';
-    return `${dominantFactor.description} is the primary determining factor → ${correctPrediction}`;
+    // Use actual calculated prediction, not factor-based prediction
+    return `${dominantFactor.description} is the primary determining factor → ${prediction}`;
   }
 
   /**
