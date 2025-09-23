@@ -614,9 +614,15 @@ class UnifiedEmpiricalAnalyzer {
     return /\b(il\s+m'embrassa|une\s+fois\s+assise|j'ouvrai\s+le\s+papier|nick.*donné|larmes\s+aux\s+yeux|cœur\s+brisé|derniers\s+mots|kazuki\s+s'accrocha|ryuken|griselda|sa\s+grand-mère|silhouette\s+familière|centre\s+du\s+hall)\b/i.test(text);
   }
 
-  // Temporal urgency context (expanded)
+  // Temporal urgency context (more restrictive - exclude conversational contexts)
   hasTemporalUrgency(text) {
-    return /\b(urgent|vite|rapidement|immédiatement|tout\s+de\s+suite|en\s+urgence|d'urgence|pressé|trop\s+tard|à\s+temps|dans\s+les\s+délais|échéance|limite|deadline)\b/i.test(text);
+    // Don't trigger on conversational/parliamentary contexts
+    if (/\b(?:il\s+faut\s+qu'on|M\.\s+\w+\s*:|merci|président|qu'on\s+prévienne|qu'on\s+évite)\b/i.test(text)) {
+      return false;
+    }
+    
+    // Only trigger on clear urgency contexts
+    return /\b(?:urgent|d'urgence|en\s+urgence|immédiatement|tout\s+de\s+suite|rapidement\s+avant|vite\s+avant|trop\s+tard|échéance\s+avant|deadline\s+avant)\b/i.test(text);
   }
 
   // Professional/business context (modern business, not historical)
