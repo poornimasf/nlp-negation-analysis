@@ -334,8 +334,16 @@ class UnifiedEmpiricalAnalyzer {
     // Start with baseline rate
     let probability = this.triggerRates[trigger.name] || 0.5;
     
+    // STRONG CONVERSATIONAL OVERRIDE - personal narratives should not be expletive
+    const hasStrongPersonalMarkers = /\b(?:je\s+suis\s+plongée|aujourd'hui\s+j'|finalement\s+aujourd'hui|j'ai\s+fait|mais\s+ça\s+n'a\s+duré|\*\w+\*|maintenant\s+je\s+me\s+demande|parfois,?\s+cela\s+prend|combien\s+de\s+temps|pas\s+la\s+peine)\b/i.test(text);
+    
+    if (hasStrongPersonalMarkers || register === 'conversational') {
+      // Personal narratives: cap at 40% maximum (anti-expletive bias)
+      probability = Math.min(probability, 0.40);
+    }
+    
     // Apply validated register effects (with historical context override)
-    if (register !== 'neutral') {
+    if (register !== 'neutral' && !hasStrongPersonalMarkers) {
       // Only apply register effects if no strong conversational markers present
       if (register !== 'conversational' || !(/\b(?:finalement\s+aujourd'hui|j'ai\s+fait|\*\w+\*)\b/i.test(text))) {
         probability = this.registerEffects[register] || probability;
@@ -346,13 +354,16 @@ class UnifiedEmpiricalAnalyzer {
     }
     
     // Formal "ne" construction patterns (strongest predictor from corpus analysis) - but not for conversational text
-    if (this.hasFormalNeConstruction(text) && register !== 'conversational') {
+    if (this.hasFormalNeConstruction(text) && register !== 'conversational' && !hasStrongPersonalMarkers) {
       probability = Math.max(probability, 0.90); // 90% - formal "ne" constructions strongly favor expletive
     }
 
     // Apply validated deep factors for specific triggers
     if (trigger.found && this.deepFactors[trigger.name]) {
       const factors = this.deepFactors[trigger.name];
+      
+      // Personal narrative detection for pattern overrides
+      const hasStrongPersonalMarkers = /\b(?:je\s+suis\s+plongée|aujourd'hui\s+j'|finalement\s+aujourd'hui|j'ai\s+fait|mais\s+ça\s+n'a\s+duré|\*\w+\*|maintenant\s+je\s+me\s+demande|parfois,?\s+cela\s+prend|combien\s+de\s+temps|pas\s+la\s+peine)\b/i.test(text);
       
       // Check for past subjunctive first (strongest predictor across all triggers)
       if (this.hasPastSubjunctive(text)) {
@@ -372,18 +383,18 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.min(probability, 0.25); // 25% - only if BOTH motion AND conversational
         } else if (this.hasTechnicalContext(text) && /\b(bug|crash|erreur|défaillance)\b/i.test(text)) {
           probability = Math.min(probability, 0.30); // 30% - only strong technical error contexts
-        // PRO-EXPLETIVE PATTERNS (require strong evidence)
-        } else if (this.hasExplicitPrevention(text)) {
+        // PRO-EXPLETIVE PATTERNS (require strong evidence) - but not for personal narratives
+        } else if (this.hasExplicitPrevention(text) && !hasStrongPersonalMarkers) {
           probability = Math.max(probability, 0.85); // 85% - stronger prevention
-        } else if (this.hasMedicalContext(text)) {
+        } else if (this.hasMedicalContext(text) && !hasStrongPersonalMarkers) {
           probability = Math.max(probability, 0.80); // 80% - medical contexts strongly favor expletive
-        } else if (this.hasLiteraryContext(text)) {
+        } else if (this.hasLiteraryContext(text) && !hasStrongPersonalMarkers) {
           probability = Math.max(probability, 0.85); // 85% - classical French strongly expletive
-        } else if (this.hasTemporalAnticipation(text)) {
+        } else if (this.hasTemporalAnticipation(text) && !hasStrongPersonalMarkers) {
           probability = Math.max(probability, 0.75); // 75% - stronger temporal anticipation
-        } else if (this.hasCompletionContext(text)) {
+        } else if (this.hasCompletionContext(text) && !hasStrongPersonalMarkers) {
           probability = Math.max(probability, 0.70); // 70% - formal completion contexts
-        } else if (this.hasGeneralExpletiveContext(text)) {
+        } else if (this.hasGeneralExpletiveContext(text) && !hasStrongPersonalMarkers) {
           probability = Math.max(probability, 0.65); // 65% - general expletive patterns
         } else if (this.hasNarrativeContext(text)) {
           probability = Math.max(probability, 0.60); // 60% - narrative contexts
