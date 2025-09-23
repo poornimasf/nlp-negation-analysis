@@ -143,15 +143,9 @@ class UnifiedEmpiricalAnalyzer {
     // Step 6: Clamp and determine prediction
     probability = Math.max(0.05, Math.min(0.95, probability));
     
-    // Handle genuine optionality cases (50% baseline)
-    let prediction, confidence;
-    if (Math.abs(probability - 0.5) < 0.02) { // 48-52% range
-      prediction = 'Both forms equally acceptable';
-      confidence = 0.0; // No preference
-    } else {
-      prediction = probability > 0.5 ? 'Expletive' : 'No Expletive';
-      confidence = Math.abs(probability - 0.5) * 2;
-    }
+    // Clear binary classification - predict presence/absence of original expletive "ne"
+    const prediction = probability > 0.5 ? 'Expletive' : 'No Expletive';
+    const confidence = Math.abs(probability - 0.5) * 2;
 
     return this.buildResult(prediction, confidence, this.buildValidatedReasoning(trigger, register, probability, mode, text, baseProbability), {
       trigger, register, probability, mode
@@ -1084,27 +1078,12 @@ class UnifiedEmpiricalAnalyzer {
     sections.push('================================');
     sections.push('');
     
-    // Classification and confidence - handle optionality
-    let prediction, confidence;
-    if (Math.abs(probability - 0.5) < 0.02) { // 48-52% range
-      prediction = 'Both forms equally acceptable';
-      confidence = 0.0;
-      sections.push(`Classification: ${prediction}`);
-      sections.push(`Confidence: 0.0% (genuine optionality)`);
-      sections.push('');
-      sections.push('💡 OPTIONALITY ANALYSIS:');
-      sections.push('• No strong linguistic evidence for either form');
-      sections.push('• Both "avant qu\'ils aillent" and "avant qu\'ils n\'aillent" are correct');
-      sections.push('• Choice depends on speaker preference and register');
-      sections.push('• Expletive "ne" represents stylistic variation, not grammatical requirement');
-      return sections.join('\n');
-    } else {
-      prediction = probability > 0.5 ? 'Expletive' : 'No Expletive';
-      confidence = Math.abs(probability - 0.5) * 2;
-      sections.push(`Classification: ${prediction}`);
-      sections.push(`Confidence: ${(confidence * 100).toFixed(1)}%`);
-      sections.push('');
-    }
+    // Classification and confidence - predict original expletive "ne" presence
+    const prediction = probability > 0.5 ? 'Expletive' : 'No Expletive';
+    const confidence = Math.abs(probability - 0.5) * 2;
+    sections.push(`Classification: ${prediction}`);
+    sections.push(`Confidence: ${(confidence * 100).toFixed(1)}%`);
+    sections.push('');
     
     // Detect all relevant factors
     const detectedFactors = this.getDetectedFactors(text, trigger, register);
