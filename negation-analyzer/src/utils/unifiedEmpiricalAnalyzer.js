@@ -518,6 +518,11 @@ class UnifiedEmpiricalAnalyzer {
   }
 
   hasUrgencyMarkers(text) {
+    // Don't trigger on conversational/parliamentary contexts
+    if (/\b(?:il\s+faut\s+qu'on|M\.\s+\w+\s*:|merci|président|qu'on\s+prévienne|qu'on\s+évite)\b/i.test(text)) {
+      return false;
+    }
+    
     return /\b(vite|urgent|dépêche|rapidement|trop\s+tard)\b/i.test(text);
   }
 
