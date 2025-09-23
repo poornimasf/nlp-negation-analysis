@@ -328,16 +328,23 @@ class UnifiedEmpiricalAnalyzer {
     // Start with baseline rate
     let probability = this.triggerRates[trigger.name] || 0.5;
     
-    // STRONG CONVERSATIONAL OVERRIDE - personal narratives should not be expletive
-    const hasStrongPersonalMarkers = /\b(?:je\s+suis\s+plongée|aujourd'hui\s+j'|finalement\s+aujourd'hui|j'ai\s+fait|mais\s+ça\s+n'a\s+duré|\*\w+\*|maintenant\s+je\s+me\s+demande|parfois,?\s+cela\s+prend|combien\s+de\s+temps|pas\s+la\s+peine|et\s+on\s+a\s+plus\s+qu'à|lol|xD|voila\s+mon\s+petit|je\s+me\s+suis\s+sentie|alors,?\s+si\s+par\s+hasard|fellation|coquine|_+|hana\s*:|jack\s+récupéra|elle\s+ne\s+savait\s+pas|mais\s+les\s+spectateurs|en\s+attendant|toujours\s+pas\s+de\s+miracle|pas\s+trop\s+épais)\b/i.test(text);
+    // SELECTIVE CONVERSATIONAL OVERRIDE - only for truly informal contexts
+    const hasStrongInformalMarkers = /\b(?:lol|xD|fellation|coquine|_+|\*\w+\*|mais\s+ça\s+n'a\s+duré|jack\s+récupéra|pas\s+trop\s+épais)\b/i.test(text);
     
-    if (hasStrongPersonalMarkers || register === 'conversational') {
-      // Personal narratives: cap at 40% maximum (anti-expletive bias)
+    // Personal narratives with formal/technical content should still allow expletive patterns
+    const hasPersonalButFormalContent = /\b(?:je\s+suis\s+plongée|aujourd'hui\s+j'|finalement\s+aujourd'hui|j'ai\s+fait|maintenant\s+je\s+me\s+demande|parfois,?\s+cela\s+prend|combien\s+de\s+temps|pas\s+la\s+peine|et\s+on\s+a\s+plus\s+qu'à|voila\s+mon\s+petit|je\s+me\s+suis\s+sentie|alors,?\s+si\s+par\s+hasard|hana\s*:|elle\s+ne\s+savait\s+pas|mais\s+les\s+spectateurs|en\s+attendant|toujours\s+pas\s+de\s+miracle)\b/i.test(text) && 
+                                        /\b(?:médecin|symptômes|RECA|licence|TrustScore|drapeau\s+rouge|communications|technique|système|administratif|officiel|tribunal|patrimoine)\b/i.test(text);
+    
+    if (hasStrongInformalMarkers) {
+      // Only truly informal contexts: cap at 40% maximum (anti-expletive bias)
       probability = Math.min(probability, 0.40);
+    } else if (hasPersonalButFormalContent) {
+      // Personal narratives with formal content: allow normal processing but slight reduction
+      probability = Math.min(probability, 0.75);
     }
     
     // Apply validated register effects (with historical context override)
-    if (register !== 'neutral' && !hasStrongPersonalMarkers) {
+    if (register !== 'neutral' && !hasStrongInformalMarkers && !hasPersonalButFormalContent) {
       // Only apply register effects if no strong conversational markers present
       if (register !== 'conversational' || !(/\b(?:finalement\s+aujourd'hui|j'ai\s+fait|\*\w+\*)\b/i.test(text))) {
         probability = this.registerEffects[register] || probability;
@@ -348,7 +355,7 @@ class UnifiedEmpiricalAnalyzer {
     }
     
     // Formal "ne" construction patterns (strongest predictor from corpus analysis) - but not for conversational text
-    if (this.hasFormalNeConstruction(text) && register !== 'conversational' && !hasStrongPersonalMarkers) {
+    if (this.hasFormalNeConstruction(text) && register !== 'conversational' && !hasStrongInformalMarkers) {
       probability = Math.max(probability, 0.90); // 90% - formal "ne" constructions strongly favor expletive
     }
 
@@ -356,8 +363,11 @@ class UnifiedEmpiricalAnalyzer {
     if (trigger.found && this.deepFactors[trigger.name]) {
       const factors = this.deepFactors[trigger.name];
       
-      // Personal narrative detection for pattern overrides
-      const hasStrongPersonalMarkers = /\b(?:je\s+suis\s+plongée|aujourd'hui\s+j'|finalement\s+aujourd'hui|j'ai\s+fait|mais\s+ça\s+n'a\s+duré|\*\w+\*|maintenant\s+je\s+me\s+demande|parfois,?\s+cela\s+prend|combien\s+de\s+temps|pas\s+la\s+peine|et\s+on\s+a\s+plus\s+qu'à|lol|xD|voila\s+mon\s+petit|je\s+me\s+suis\s+sentie|alors,?\s+si\s+par\s+hasard|fellation|coquine|_+|hana\s*:|jack\s+récupéra|elle\s+ne\s+savait\s+pas|mais\s+les\s+spectateurs|en\s+attendant|toujours\s+pas\s+de\s+miracle|pas\s+trop\s+épais)\b/i.test(text);
+      // Personal narrative detection for pattern overrides (more selective)
+      const hasStrongInformalMarkers = /\b(?:lol|xD|fellation|coquine|_+|\*\w+\*|mais\s+ça\s+n'a\s+duré|jack\s+récupéra|pas\s+trop\s+épais)\b/i.test(text);
+      
+      const hasPersonalButFormalContent = /\b(?:je\s+suis\s+plongée|aujourd'hui\s+j'|finalement\s+aujourd'hui|j'ai\s+fait|maintenant\s+je\s+me\s+demande|parfois,?\s+cela\s+prend|combien\s+de\s+temps|pas\s+la\s+peine|et\s+on\s+a\s+plus\s+qu'à|voila\s+mon\s+petit|je\s+me\s+suis\s+sentie|alors,?\s+si\s+par\s+hasard|hana\s*:|elle\s+ne\s+savait\s+pas|mais\s+les\s+spectateurs|en\s+attendant|toujours\s+pas\s+de\s+miracle)\b/i.test(text) && 
+                                        /\b(?:médecin|symptômes|RECA|licence|TrustScore|drapeau\s+rouge|communications|technique|système|administratif|officiel|tribunal|patrimoine)\b/i.test(text);
       
       // Check for past subjunctive first (strongest predictor across all triggers)
       if (this.hasPastSubjunctive(text)) {
@@ -377,18 +387,18 @@ class UnifiedEmpiricalAnalyzer {
           probability = Math.min(probability, 0.25); // 25% - only if BOTH motion AND conversational
         } else if (this.hasTechnicalContext(text) && /\b(bug|crash|erreur|défaillance)\b/i.test(text)) {
           probability = Math.min(probability, 0.30); // 30% - only strong technical error contexts
-        // PRO-EXPLETIVE PATTERNS (require strong evidence) - but not for personal narratives
-        } else if (this.hasExplicitPrevention(text) && !hasStrongPersonalMarkers) {
+        // PRO-EXPLETIVE PATTERNS (require strong evidence) - only blocked by truly informal contexts
+        } else if (this.hasExplicitPrevention(text) && !hasStrongInformalMarkers) {
           probability = Math.max(probability, 0.85); // 85% - stronger prevention
-        } else if (this.hasMedicalContext(text) && !hasStrongPersonalMarkers) {
+        } else if (this.hasMedicalContext(text) && !hasStrongInformalMarkers) {
           probability = Math.max(probability, 0.80); // 80% - medical contexts strongly favor expletive
-        } else if (this.hasLiteraryContext(text) && !hasStrongPersonalMarkers) {
+        } else if (this.hasLiteraryContext(text) && !hasStrongInformalMarkers) {
           probability = Math.max(probability, 0.85); // 85% - classical French strongly expletive
-        } else if (this.hasTemporalAnticipation(text) && !hasStrongPersonalMarkers) {
+        } else if (this.hasTemporalAnticipation(text) && !hasStrongInformalMarkers) {
           probability = Math.max(probability, 0.75); // 75% - stronger temporal anticipation
-        } else if (this.hasCompletionContext(text) && !hasStrongPersonalMarkers) {
+        } else if (this.hasCompletionContext(text) && !hasStrongInformalMarkers) {
           probability = Math.max(probability, 0.70); // 70% - formal completion contexts
-        } else if (this.hasGeneralExpletiveContext(text) && !hasStrongPersonalMarkers) {
+        } else if (this.hasGeneralExpletiveContext(text) && !hasStrongInformalMarkers) {
           probability = Math.max(probability, 0.65); // 65% - general expletive patterns
         } else if (this.hasNarrativeContext(text)) {
           probability = Math.max(probability, 0.60); // 60% - narrative contexts
