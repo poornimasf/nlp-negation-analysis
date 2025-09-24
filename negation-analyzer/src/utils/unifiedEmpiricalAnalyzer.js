@@ -674,8 +674,13 @@ class UnifiedEmpiricalAnalyzer {
       return false;
     }
     
+    // Don't trigger on long complex sentences (likely conversational/narrative)
+    if (text.length > 200) {
+      return false;
+    }
+    
     // Only trigger on clear institutional/official contexts
-    return /\b(?:ministère|sénateur|député|gouvernement|autorités\s+chargées|institution|organisme\s+officiel|procédure\s+administrative|réglementation\s+officielle|bureau\s+des|service\s+public|LPRPDE|modification\s+à\s+la\s+loi)\b/i.test(text);
+    return /\b(?:ministère|sénateur|député|gouvernement|institution|organisme\s+officiel|procédure\s+administrative|réglementation\s+officielle|bureau\s+des|service\s+public)\b/i.test(text);
   }
 
   // Motion/travel context detection (physical movement only, not metaphorical)
