@@ -494,24 +494,38 @@ class UnifiedEmpiricalAnalyzer {
         probability *= 1.03; // +3% (corpus: 7.2% vs 4.0%)
       }
       
-      // ENHANCED PEUR_QUE PATTERNS (from full dataset analysis)
+      // ENHANCED PEUR_QUE PATTERNS (from full dataset analysis) - STRENGTHENED
       
-      // Abstract/hypothetical fears (47 true vs 0 false in sample)
-      const hasAbstractFears = /\b(?:projet|idée|politique|société|système|concept|utopie)\b/i.test(text);
+      // Abstract/hypothetical fears (47 true vs 0 false in sample) - BOOSTED
+      const hasAbstractFears = /\b(?:projet|idée|politique|société|système|concept|utopie|devienne.*utopie)\b/i.test(text);
       if (hasAbstractFears) {
-        probability *= 1.20; // +20% for abstract contexts
+        probability *= 1.30; // Increased from +20% to +30% for abstract contexts
       }
       
-      // Concrete immediate concerns (stronger no-expletive signal)
-      const hasConcreteFears = /\b(?:soit\s+trop\s+tard|aille|fasse\s+mal|marche\s+pas|fonctionne\s+pas)\b/i.test(text);
+      // Concrete immediate concerns (stronger no-expletive signal) - STRENGTHENED
+      const hasConcreteFears = /\b(?:soit\s+trop\s+tard|aille|fasse\s+mal|marche\s+pas|fonctionne\s+pas|soit.*pratique|soit.*glissant)\b/i.test(text);
       if (hasConcreteFears) {
-        probability *= 0.75; // -25% for concrete immediate concerns
+        probability *= 0.70; // Strengthened from -25% to -30% for concrete immediate concerns
       }
       
-      // High emotional intensity verbs (12 true vs 0 false in sample)
-      const hasHighEmotionalIntensity = /\b(?:abandonne|frappe|dévore|trompe|trahisse|détruise|tue|meure|souffre)\b/i.test(text);
+      // High emotional intensity verbs (12 true vs 0 false in sample) - BOOSTED
+      const hasHighEmotionalIntensity = /\b(?:abandonne|frappe|dévore|trompe|trahisse|détruise|tue|meure|souffre|frappe.*aussi)\b/i.test(text);
       if (hasHighEmotionalIntensity) {
-        probability *= 1.15; // +15% for high emotional intensity
+        probability *= 1.25; // Increased from +15% to +25% for high emotional intensity
+      }
+      
+      // ADDITIONAL PEUR_QUE PATTERNS (from corpus deep dive)
+      
+      // Third person narrative fears (stronger expletive signal)
+      const hasThirdPersonNarrative = /\b(?:il.*peur|elle.*peur|ils.*peur|Rachel.*peur|tous.*peur)\b/i.test(text);
+      if (hasThirdPersonNarrative) {
+        probability *= 1.15; // +15% for third person narrative fears
+      }
+      
+      // Hypothetical/conditional fears (stronger expletive signal)
+      const hasHypotheticalFears = /\b(?:si.*peur|au cas où.*peur|peut-être.*peur|risque.*peur)\b/i.test(text);
+      if (hasHypotheticalFears) {
+        probability *= 1.12; // +12% for hypothetical fears
       }
       
       // Stronger negation penalty for peur_que (214 true vs 255 false)
@@ -543,22 +557,22 @@ class UnifiedEmpiricalAnalyzer {
 
     // EVIDENCE-BASED IMPROVEMENTS (from full 3000 example analysis)
     
-    // STRONG RARE PATTERNS (high confidence, low frequency)
+    // STRONG RARE PATTERNS (high confidence, low frequency) - STRENGTHENED
     if (trigger.name === 'avant_que') {
-      // "Trop tard" pattern: 23 true vs 1 false (96% expletive rate)
+      // "Trop tard" pattern: 23 true vs 1 false (96% expletive rate) - BOOSTED
       if (/\btrop\s+tard\b/i.test(text)) {
-        probability = Math.max(probability, 0.85); // Strong expletive signal
+        probability = Math.max(probability, 0.90); // Increased from 85% to 90%
       }
     }
     
     if (trigger.name === 'sen_faut_que') {
-      // "Peu s'en fallut que" pattern: 56 true vs 0 false (100% expletive)
+      // "Peu s'en fallut que" pattern: 56 true vs 0 false (100% expletive) - BOOSTED
       if (/\bpeu\s+s'en\s+fallut\s+que\b/i.test(text)) {
-        probability = Math.max(probability, 0.90); // Very strong expletive signal
+        probability = Math.max(probability, 0.95); // Increased from 90% to 95%
       }
       // "Il s'en est fallu" pattern: 0 true vs 266 false (100% no-expletive)
       if (/\bil\s+s'en\s+est\s+fallu\b/i.test(text)) {
-        probability = Math.min(probability, 0.25); // Very strong no-expletive signal
+        probability = Math.min(probability, 0.25); // Keep strong no-expletive signal
       }
     }
     
@@ -592,7 +606,7 @@ class UnifiedEmpiricalAnalyzer {
       probability *= 1.08; // +8% for completion verbs (more expletive)
     }
 
-    // NEUTRAL CONTEXT ADJUSTMENT - reduce baseline bias for long neutral sentences
+    // NEUTRAL CONTEXT ADJUSTMENT - reduce baseline bias for long neutral sentences (REDUCED PENALTY)
     const hasAnyStrongSignal = this.hasExplicitPrevention(text) || 
                               this.hasMedicalContext(text) || 
                               this.hasLiteraryContext(text) || 
@@ -601,9 +615,9 @@ class UnifiedEmpiricalAnalyzer {
                               this.hasFormalNeConstruction(text) ||
                               hasStrongPersonalMarkers;
     
-    // For long neutral sentences without strong signals, reduce baseline bias
+    // For long neutral sentences without strong signals, reduce baseline bias (LESS AGGRESSIVE)
     if (!hasAnyStrongSignal && text.length > 200 && register === 'neutral') {
-      probability *= 0.85; // -15% for long neutral sentences (reduces baseline bias)
+      probability *= 0.95; // Reduced from -15% to -5% to allow more expletive detection
     }
 
     return probability;
