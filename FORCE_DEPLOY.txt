@@ -1,0 +1,5 @@
+FORCE DEPLOYMENT TRIGGER
+Timestamp: 2025-09-23T19:10:51.986-06:00
+Commit: cfd6519c (corpus-based system)
+Issue: Amplify serving stale version (188c799b)
+Expected: 77-85% accuracy with corpus-based improvements
