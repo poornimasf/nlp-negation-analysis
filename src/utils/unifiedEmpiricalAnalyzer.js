@@ -763,6 +763,177 @@ class UnifiedEmpiricalAnalyzer {
   hasCompletionContext(text) {
     return /\b(inscrive\s+le.*but|daigne\s+se\s+relever|tout.*accompli|réalisé|parfaitement|objectif.*se\s+réalise|programme.*rétablissement|niveaux\s+permettant)\b/i.test(text);
   }
+
+  // Additional missing methods
+  hasLegalContext(text) {
+    return /\b(tribunal|cour|juge|avocat|procès|jugement|verdict|loi|règlement|code|article|décret|ordonnance|jurisprudence|plainte|accusation|défense)\b/i.test(text);
+  }
+
+  hasAdministrativeContext(text) {
+    if (/\b(?:je\s+me|j'ai|aujourd'hui\s+j'|maintenant\s+je|finalement|plusieurs\s+employés)\b/i.test(text)) {
+      return false;
+    }
+    return /\b(?:ministère|sénateur|député|gouvernement|autorités\s+chargées|institution|organisme\s+officiel|procédure\s+administrative|réglementation\s+officielle|bureau\s+des|service\s+public|LPRPDE|modification\s+à\s+la\s+loi)\b/i.test(text);
+  }
+
+  hasUrgencyMarkers(text) {
+    if (/\b(?:il\s+faut\s+qu'on|M\.\s+\w+\s*:|merci|président|qu'on\s+prévienne|qu'on\s+évite)\b/i.test(text)) {
+      return false;
+    }
+    return /\b(vite|urgent|dépêche|rapidement|trop\s+tard)\b/i.test(text);
+  }
+
+  hasProceduralContext(text) {
+    return /\b(procédure|règle|réglementation|impératif|débute|processus|étapes|instructions|directives|protocole)\b/i.test(text);
+  }
+
+  hasProcessContext(text) {
+    return /\b(culture|production|fabrication|développement|croissance|maturation|utilisables|durer|jusqu'à|plusieurs\s+années)\b/i.test(text);
+  }
+
+  hasPastSubjunctive(text) {
+    return /\b(vînt|vint|partît|partit|fût|fut|eût|eut|fît|fit|pût|put|allât|allat|vînt|vinssent|fussent|eussent)\b/i.test(text);
+  }
+
+  hasLogicalNegation(text, trigger) {
+    if (!text || typeof text !== "string") return false;
+    try {
+      const normalizedText = text.replace(/['']/g, "'").replace(/[""]/g, '"').replace(/\s+/g, " ").trim();
+      const triggerClause = this.extractTriggerClause(normalizedText, trigger);
+      if (!triggerClause || typeof triggerClause !== "string") return false;
+      
+      const negationPatterns = [
+        /\b(?:ne\s+)?pas\b/i,
+        /\b(?:ne\s+)?jamais\b/i,
+        /\b(?:ne\s+)?rien\b/i,
+        /\b(?:ne\s+)?personne\b/i,
+        /\b(?:ne\s+)?aucun[e]?\b/i,
+        /\b(?:ne\s+)?guère\b/i,
+        /\b(?:ne\s+)?point\b/i
+      ];
+      
+      for (const pattern of negationPatterns) {
+        if (pattern.test(triggerClause)) return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.warn('Error in hasLogicalNegation:', error);
+      return false;
+    }
+  }
+
+  extractTriggerClause(text, trigger) {
+    if (!text || typeof text !== "string") return text || "";
+    if (!trigger) return text;
+    
+    const triggerName = trigger && trigger.name ? trigger.name : trigger;
+    const patterns = {
+      'avant_que': /\bavant\s+que?\s+([^.!?]*?)(?:\s*\.|$)/i,
+      'peur_que': /\bpeur\s+que?\s+([^.!?]*?)(?:\s*\.|$)/i,
+      'moins_plus': /\b(?:moins|plus).*?que?\s+([^.!?]*?)(?:\s*\.|$)/i,
+      'sen_faut_que': /\b(?:il\s+)?s'en\s+(?:est\s+)?(?:faut|fallut|faudrait).*?(?:que?\s+([^.!?]*?))?(?:\s*\.|$)/i,
+      'avant_de': /\bavant\s+de\s+([^.!?]*?)(?:\s*\.|$)/i
+    };
+    
+    const pattern = patterns[triggerName];
+    if (pattern) {
+      try {
+        const match = text.match(pattern);
+        if (match && match[1] && typeof match[1] === "string") {
+          const clause = match[1].trim();
+          const fullMatch = text.match(new RegExp("\\b(?:(?:il\\s+)?s'en\\s+(?:est\\s+)?(?:faut|fallut|faudrait)|avant\\s+que?|peur\\s+que?|(?:moins|plus).*?que?|avant\\s+de)", "i"));
+          return fullMatch && fullMatch[0] ? `${fullMatch[0]} ${clause}` : clause;
+        }
+      } catch (error) {
+        console.warn('Error in trigger extraction:', error);
+      }
+    }
+    
+    return text;
+  }
+
+  // Peur que specific methods
+  hasPeurQueSubjunctiveVerbs(text) {
+    return /peur\s+que.*\b(soit|ait|fasse|puisse|veuille|doive|sache|aille|devienne|reste|parte|meure|naisse|abandonne|frappe|dévore|reproduise|utilise|favorise|jette|sente|mette)\b/i.test(text);
+  }
+
+  hasPeurQueConcreteFutureEvents(text) {
+    return /peur\s+que.*\b(se sauve|transforme|se déroule|lâche|arrive|se réalise|vienne|refassent|parvienne|vibre|gâche|se balade|capte|proclame|trompe)\b/i.test(text);
+  }
+
+  hasPeurQueNegativeOutcomes(text) {
+    return /peur\s+que.*\b(réaction|indépendance|récitation|briser|craintes|moins bien|mal|problème|échec|erreur)\b/i.test(text);
+  }
+
+  hasPeurQueConcreteEntities(text) {
+    return /peur\s+que.*\b(Terre-Neuve|chat|téléphone|enfant|plan|élection|machine|ordinateur|système|projet|travail)\b/i.test(text);
+  }
+
+  hasPeurQueSocialInterpersonal(text) {
+    return /peur\s+que.*\b(pense|dise|croie|juge|critique|rejette|moque|décrédibilise|arrête)\b/i.test(text);
+  }
+
+  hasPeurQueAbstractHypothetical(text) {
+    return /\b(peut|pourrait|risque|chance|possibilité).*peur\s+que/i.test(text) ||
+           /\b(il|elle|on)\s+a\s+peur\s+que/i.test(text);
+  }
+
+  hasPeurQueGeneralActions(text) {
+    return /peur\s+que.*\b(prenne|donne|mette|sorte|entre|monte|descende|ouvre|ferme|coupe|fasse)\b/i.test(text);
+  }
+
+  hasPeurQueTemporalProcess(text) {
+    return /peur\s+que.*\b(finisse|commence|continue|dure|tarde|se termine|reprenne|meure)\b/i.test(text);
+  }
+
+  hasPeurQueInformalRegister(text) {
+    return /\b(ça|ca|ke|ki|tt|pr|ds|ms|ptit|pti|bon|ben|bah|ouais|nan|genre|truc|machin)\b/i.test(text);
+  }
+
+  hasPeurQuePersonalImmediate(text) {
+    return /\b(j'ai|tu as|nous avons)\s+peur\s+que/i.test(text) ||
+           /\b(mon|ma|mes|notre|votre)\b.*peur\s+que/i.test(text);
+  }
+
+  // Sen faut que methods
+  hasSenFautQueLiteraryContext(text) {
+    return /\b(fallut|fût|prissent|vînt|fusse|eût|eussent|submergeât|précipitèrent|vinssent|chassé|courût|rendissent|perdît|advînt|devînt|trouvât|remît|frappât|tombât|rattrape|échouât|bouclât|repartisse|devînt|désespérât|aperçut|convertit)\b/i.test(text);
+  }
+
+  hasSenFautQuePastSubjunctive(text) {
+    return /\b(submergeât|prissent|vînt|fusse|fût|eût|eussent|précipitèrent|vinssent|courût|rendissent|perdît|advînt|devînt|trouvât|remît|frappât|tombât|échouât|repartisse|désespérât|convertit)\b/i.test(text);
+  }
+
+  hasSenFautQueNearMiss(text) {
+    return /\b(peu\s+s'en|de\s+peu\s+que|failli|presque.*que|à\s+force\s+de|il\s+s'en\s+fallut|peu\s+s'en\s+fallut)\b/i.test(text);
+  }
+
+  // Motion methods
+  hasMotionInfinitive(text) {
+    return /avant\s+de\s+(partir|aller|venir|sortir|entrer)/i.test(text);
+  }
+
+  hasActionInfinitive(text) {
+    return /avant\s+de\s+(faire|dire|prendre|mettre|donner)/i.test(text);
+  }
+
+  // Additional context methods
+  hasDistantTemporal(text) {
+    return /\b(un\s+jour|plus\s+tard|éventuellement|à\s+l'avenir)\b/i.test(text);
+  }
+
+  hasFutureContext(text) {
+    return /\b(va|aller|futur|demain|bientôt|prochainement)\b/i.test(text);
+  }
+
+  hasProcessFocus(text) {
+    return /\b(commencer|débuter|entamer|entreprendre|inscrire|enregistrer|procéder|effectuer)\b/i.test(text);
+  }
+
+  hasRoutineContext(text) {
+    return /\b(habitude|routine|coutume|tradition)\b/i.test(text);
+  }
 }
 
 export default UnifiedEmpiricalAnalyzer;
