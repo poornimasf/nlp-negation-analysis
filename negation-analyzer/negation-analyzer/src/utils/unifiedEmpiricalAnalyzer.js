@@ -187,8 +187,8 @@ class UnifiedEmpiricalAnalyzer {
       return 'literary';
     }
     
-    // Formal register (official/administrative - more restrictive)
-    if (/\b(?:il\s+convient|par\s+conséquent|monsieur|madame|ministère|gouvernement|administration|autorités|institution|LPRPDE|modification\s+à\s+la|tribunal|pneumologue\s+et\s+chercheur|Inserm)\b/i.test(text) && !/\b(?:je\s+me|j'ai|aujourd'hui|maintenant)\b/i.test(text)) {
+    // Formal register (official/administrative - more restrictive, exclude long sentences)
+    if (/\b(?:il\s+convient|par\s+conséquent|monsieur|madame|ministère|gouvernement|tribunal|pneumologue\s+et\s+chercheur|Inserm)\b/i.test(text) && !/\b(?:je\s+me|j'ai|aujourd'hui|maintenant)\b/i.test(text) && text.length < 200) {
       return 'formal';
     }
     
