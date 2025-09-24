@@ -714,6 +714,106 @@ class UnifiedEmpiricalAnalyzer {
   hasHistoricalContext(text) {
     return /\b(fondé|village\s+d'|développa|autochtones|jargon\s+chinook|commerce\s+entre|employés\s+de\s+la|HBC|Astoria|Thompson|Astor)\b/i.test(text);
   }
+
+  // All missing methods from working version
+  hasReportageContext(text) {
+    return /\b(reporté|reportée|annoncé|annoncée)\b/i.test(text);
+  }
+
+  hasTechnicalErrorContext(text) {
+    return /\b(ordinateur|bug)\b/i.test(text);
+  }
+
+  hasInformalDiscourseContext(text) {
+    return /\b(bah|bon\s+bah)\b/i.test(text);
+  }
+
+  hasLegalContext(text) {
+    return /\b(tribunal|cour|juge|avocat|procès|jugement|verdict|loi|règlement|code|article|décret|ordonnance|jurisprudence|plainte|accusation|défense)\b/i.test(text);
+  }
+
+  hasMedicalContext(text) {
+    return /\b(médecin|docteur|hôpital|clinique|patient|maladie|traitement|diagnostic|consultation|opération|chirurgie|médicament|ordonnance|symptôme|examen|médecin\s+interne|finisse\s+par\s+me\s+recevoir|se\s+déclare|thérapies\s+ciblées|pneumologue|chercheur|Inserm)\b/i.test(text);
+  }
+
+  hasLiteraryContext(text) {
+    return /\b(fallut|eût|eut|fût|fut|submergeât|naguère|jadis|désormais|nonobstant|toutefois|afin\s+de|ainsi|parmi\s+ses\s+semblables|galamment|daigne\s+se\s+relever|Guerre\s+Sainte)\b/i.test(text);
+  }
+
+  hasProfessionalContext(text) {
+    if (/\b(autochtones|jargon\s+chinook|village\s+d'|fondé|développa)\b/i.test(text)) {
+      return false;
+    }
+    return /\b(entreprise|société|compagnie|bureau|cabinet|firme|organisation|équipe|personnel|employé|directeur|manager|chef|responsable|collègue|réunion|rendez-vous|contrat|projet)\b/i.test(text);
+  }
+
+  hasProceduralContext(text) {
+    return /\b(procédure|règle|réglementation|impératif|débute|processus|étapes|instructions|directives|protocole)\b/i.test(text);
+  }
+
+  hasProcessContext(text) {
+    return /\b(culture|production|fabrication|développement|croissance|maturation|utilisables|durer|jusqu'à|plusieurs\s+années)\b/i.test(text);
+  }
+
+  hasCompletionContext(text) {
+    return /\b(inscrive\s+le.*but|daigne\s+se\s+relever|tout.*accompli|réalisé|parfaitement|objectif.*se\s+réalise|programme.*rétablissement|niveaux\s+permettant)\b/i.test(text);
+  }
+
+  // Peur que specific methods
+  hasPeurQueSubjunctiveVerbs(text) {
+    return /peur\s+que.*\b(soit|ait|fasse|puisse|veuille|doive|sache|aille|devienne|reste|parte|meure|naisse|abandonne|frappe|dévore|reproduise|utilise|favorise|jette|sente|mette)\b/i.test(text);
+  }
+
+  hasPeurQueConcreteFutureEvents(text) {
+    return /peur\s+que.*\b(se sauve|transforme|se déroule|lâche|arrive|se réalise|vienne|refassent|parvienne|vibre|gâche|se balade|capte|proclame|trompe)\b/i.test(text);
+  }
+
+  hasPeurQueNegativeOutcomes(text) {
+    return /peur\s+que.*\b(réaction|indépendance|récitation|briser|craintes|moins bien|mal|problème|échec|erreur)\b/i.test(text);
+  }
+
+  hasPeurQueConcreteEntities(text) {
+    return /peur\s+que.*\b(Terre-Neuve|chat|téléphone|enfant|plan|élection|machine|ordinateur|système|projet|travail)\b/i.test(text);
+  }
+
+  hasPeurQueSocialInterpersonal(text) {
+    return /peur\s+que.*\b(pense|dise|croie|juge|critique|rejette|moque|décrédibilise|arrête)\b/i.test(text);
+  }
+
+  hasPeurQueAbstractHypothetical(text) {
+    return /\b(peut|pourrait|risque|chance|possibilité).*peur\s+que/i.test(text) ||
+           /\b(il|elle|on)\s+a\s+peur\s+que/i.test(text);
+  }
+
+  hasPeurQueGeneralActions(text) {
+    return /peur\s+que.*\b(prenne|donne|mette|sorte|entre|monte|descende|ouvre|ferme|coupe|fasse)\b/i.test(text);
+  }
+
+  hasPeurQueTemporalProcess(text) {
+    return /peur\s+que.*\b(finisse|commence|continue|dure|tarde|se termine|reprenne|meure)\b/i.test(text);
+  }
+
+  hasPeurQueInformalRegister(text) {
+    return /\b(ça|ca|ke|ki|tt|pr|ds|ms|ptit|pti|bon|ben|bah|ouais|nan|genre|truc|machin)\b/i.test(text);
+  }
+
+  hasPeurQuePersonalImmediate(text) {
+    return /\b(j'ai|tu as|nous avons)\s+peur\s+que/i.test(text) ||
+           /\b(mon|ma|mes|notre|votre)\b.*peur\s+que/i.test(text);
+  }
+
+  // Sen faut que methods
+  hasSenFautQueLiteraryContext(text) {
+    return /\b(fallut|fût|prissent|vînt|fusse|eût|eussent|submergeât|précipitèrent|vinssent|chassé|courût|rendissent|perdît|advînt|devînt|trouvât|remît|frappât|tombât|rattrape|échouât|bouclât|repartisse|devînt|désespérât|aperçut|convertit)\b/i.test(text);
+  }
+
+  hasSenFautQuePastSubjunctive(text) {
+    return /\b(submergeât|prissent|vînt|fusse|fût|eût|eussent|précipitèrent|vinssent|courût|rendissent|perdît|advînt|devînt|trouvât|remît|frappât|tombât|échouât|repartisse|désespérât|convertit)\b/i.test(text);
+  }
+
+  hasSenFautQueNearMiss(text) {
+    return /\b(peu\s+s'en|de\s+peu\s+que|failli|presque.*que|à\s+force\s+de|il\s+s'en\s+fallut|peu\s+s'en\s+fallut)\b/i.test(text);
+  }
 }
 
 export default UnifiedEmpiricalAnalyzer;
