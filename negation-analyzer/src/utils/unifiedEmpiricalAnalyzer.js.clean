@@ -1142,7 +1142,7 @@ class UnifiedEmpiricalAnalyzer {
     const sections = [];
     
     // Header with mode
-    sections.push(`Result (${mode.charAt(0).toUpperCase() + mode.slice(1)} Mode)`);
+    sections.push(`🔬 Unified September 2025 Empirical Analysis (${mode.toUpperCase()} MODE)`);
     sections.push('================================');
     sections.push('');
     
@@ -1225,6 +1225,7 @@ class UnifiedEmpiricalAnalyzer {
       const contextEffect = (probability - baseProbability) * 100;
       if (Math.abs(contextEffect) > 1) {
         sections.push(`Paragraph context ${contextEffect > 0 ? 'reinforces' : 'weakens'} sentence-level factors`);
+        sections.push(`Context effect: ${contextEffect > 0 ? '+' : ''}${contextEffect.toFixed(1)}% → ${prediction}`);
       } else {
         sections.push('No significant discourse-level effects detected');
       }
