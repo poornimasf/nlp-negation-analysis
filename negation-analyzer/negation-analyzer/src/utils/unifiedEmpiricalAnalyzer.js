@@ -494,25 +494,40 @@ class UnifiedEmpiricalAnalyzer {
         probability *= 1.03; // +3% (corpus: 7.2% vs 4.0%)
       }
       
-      // Stronger negation penalty for peur_que (corpus: 48.6% vs 41.4%)
-      if (hasNegationMarkers) {
-        probability *= 0.90; // -10% instead of -7% for peur_que
-      } else {
-        // Apply standard negation adjustment for other triggers
-        if (hasNegationMarkers) {
-          probability *= 0.93; // -7% for negation markers (less expletive)
-        }
+      // ENHANCED PEUR_QUE PATTERNS (from full dataset analysis)
+      
+      // Abstract/hypothetical fears (47 true vs 0 false in sample)
+      const hasAbstractFears = /\b(?:projet|idée|politique|société|système|concept|utopie)\b/i.test(text);
+      if (hasAbstractFears) {
+        probability *= 1.20; // +20% for abstract contexts
       }
       
-      // Stronger informal penalty for peur_que (corpus: 20.6% vs 15.6%)
+      // Concrete immediate concerns (stronger no-expletive signal)
+      const hasConcreteFears = /\b(?:soit\s+trop\s+tard|aille|fasse\s+mal|marche\s+pas|fonctionne\s+pas)\b/i.test(text);
+      if (hasConcreteFears) {
+        probability *= 0.75; // -25% for concrete immediate concerns
+      }
+      
+      // High emotional intensity verbs (12 true vs 0 false in sample)
+      const hasHighEmotionalIntensity = /\b(?:abandonne|frappe|dévore|trompe|trahisse|détruise|tue|meure|souffre)\b/i.test(text);
+      if (hasHighEmotionalIntensity) {
+        probability *= 1.15; // +15% for high emotional intensity
+      }
+      
+      // Stronger negation penalty for peur_que (214 true vs 255 false)
+      if (hasNegationMarkers) {
+        probability *= 0.80; // -20% instead of standard -15% for peur_que
+      }
+      
+      // Stronger informal penalty for peur_que
       const hasInformalMarkers = /\b(?:bon|ben|alors|du\s+coup|genre|quoi)\b/i.test(text);
       if (hasInformalMarkers) {
-        probability *= 0.92; // -8% for informal markers in peur_que
+        probability *= 0.85; // -15% for informal markers in peur_que
       }
     } else {
       // Apply standard adjustments for non-peur_que triggers
       if (hasNegationMarkers) {
-        probability *= 0.93; // -7% for negation markers (less expletive)
+        probability *= 0.85; // -15% for negation markers (strengthened from -7%)
       }
     }
     
