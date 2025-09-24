@@ -528,6 +528,38 @@ class UnifiedEmpiricalAnalyzer {
         probability *= 1.12; // +12% for hypothetical fears
       }
       
+      // COMPREHENSIVE DISCOURSE AND PRAGMATIC PATTERNS (peur_que specific)
+      
+      // Informal discourse markers (-15%): 31 true vs 53 false (63% no-expletive bias)
+      const hasInformalDiscourse = /\b(?:bon|ben|du\s+coup|genre|quoi)\b/i.test(text);
+      if (hasInformalDiscourse) {
+        probability *= 0.85; // -15% for informal discourse
+      }
+      
+      // Topic shift markers (-20%): 13 true vs 27 false (68% no-expletive bias)
+      const hasTopicShifts = /\b(?:à\s+propos|au\s+fait|d'ailleurs|sinon|par\s+contre)\b/i.test(text);
+      if (hasTopicShifts) {
+        probability *= 0.80; // -20% for topic shifts
+      }
+      
+      // Hedging/mitigation markers (-10%): 48 true vs 62 false (56% no-expletive bias)
+      const hasHedging = /\b(?:un\s+peu|assez|plutôt|relativement|quelque\s+peu)\b/i.test(text);
+      if (hasHedging) {
+        probability *= 0.90; // -10% for hedging
+      }
+      
+      // Focus/emphasis markers (-12%): 47 true vs 67 false (59% no-expletive bias)
+      const hasFocusEmphasis = /\b(?:c'est.*qui|c'est.*que|seulement|uniquement)\b/i.test(text);
+      if (hasFocusEmphasis) {
+        probability *= 0.88; // -12% for focus/emphasis
+      }
+      
+      // Scalar quantifiers (+12%): 42 true vs 28 false (60% expletive bias)
+      const hasScalarQuantifiers = /\b(?:tous|certains|quelques|plusieurs)\b/i.test(text);
+      if (hasScalarQuantifiers) {
+        probability *= 1.12; // +12% for scalar quantifiers (abstract/general statements)
+      }
+
       // Stronger negation penalty for peur_que (214 true vs 255 false)
       if (hasNegationMarkers) {
         probability *= 0.80; // -20% instead of standard -15% for peur_que
