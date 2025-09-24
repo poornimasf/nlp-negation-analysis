@@ -469,7 +469,8 @@ class UnifiedEmpiricalAnalyzer {
 
     // Apply subtle pattern adjustments at the end (training data analysis)
     const hasFirstPersonMarkers = /\b(?:je\s|j'|mon\s|ma\s|mes\s|moi\b)/i.test(text);
-    const hasThirdPersonMarkers = /\b(?:il\s|elle\s|ils\s|elles\s|son\s|sa\s|ses\s|leur\s)/i.test(text);
+    const hasThirdPersonMarkers = /\b(?:elle\s|ils\s|elles\s|son\s|sa\s|ses\s|leur\s)\b/i.test(text) || 
+                                  (/\bil\s/i.test(text) && !/\b(?:qu'il\s+y\s+a|il\s+faut|il\s+convient|il\s+s'agit|il\s+existe|il\s+arrive|il\s+suffit)\b/i.test(text));
     const hasNegationMarkers = /\b(?:pas|plus|jamais|rien|personne|aucun)\b/i.test(text);
     const hasCompletionVerbs = /\b(?:finisse|termine|achève|complète|arrive|survienne|se\s+produise|devienne|tombe|frappe)\b/i.test(text);
     
