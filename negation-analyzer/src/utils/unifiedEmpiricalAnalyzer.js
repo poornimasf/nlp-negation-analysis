@@ -1142,7 +1142,7 @@ class UnifiedEmpiricalAnalyzer {
     const sections = [];
     
     // Header with mode
-    sections.push(`🔬 Unified September 2025 Empirical Analysis (${mode.toUpperCase()} MODE)`);
+    sections.push(`Result (${mode.charAt(0).toUpperCase() + mode.slice(1)} Mode)`);
     sections.push('================================');
     sections.push('');
     
