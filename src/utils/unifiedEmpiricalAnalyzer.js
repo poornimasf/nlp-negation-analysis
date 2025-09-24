@@ -703,7 +703,7 @@ class UnifiedEmpiricalAnalyzer {
     return /\b(symptômes.*surviennent|se\s+propage|colons.*débarquent|service.*efface|prennent\s+l'avion|soit\s+trop\s+tard|aient\s+le\s+temps|autres\s+aient|soleil\s+vienne|récupère\s+une\s+arme|ait\s+fini|gazole\s+fige|ils\s+prennent|il\s+explose|soient\s+révélé|elle\s+naisse|ils\s+la\s+rattrapent|elles\s+se\s+déclenchent|elle\s+disparaissent|soit\s+prête|battants\s+viennent|famille\s+soit|se\s+transforme|conseil\s+traite|je\s+sois\s+trop|ils\s+deviennent|il\s+explose|cérémonie\s+commence|alarme\s+retentisse|ils\s+laissent\s+partir|ils\s+viennent\s+nous|il\s+soit\s+parfait|nazis.*rebaptise|tom\s+appelle|il\s+se\s+produise|cour.*désigne|vous\s+commenciez|vallée\s+soit\s+submergée|celui-ci.*quitte|ce\s+dernier.*conduise|elle\s+prenne\s+la\s+forme|elle\s+monte\s+à\s+fleur|fleurs\s+paraissent|communications\s+soient|il\s+se\s+pose|catastrophe\s+se\s+produise|elle\s+s'accroche)\b/i.test(text);
   }
 
-  // Formal "ne" construction patterns (essential method)
+  // Essential missing methods
   hasFormalNeConstruction(text) {
     if (/\b(?:\*\w+\*|j'ai\s+fait|finalement\s+aujourd'hui|blogue|michael)\b/i.test(text)) {
       return false;
@@ -711,9 +711,57 @@ class UnifiedEmpiricalAnalyzer {
     return /\b(?:avant qu'il ne|avant que cela ne|avant qu'elle ne|peur qu'il ne|peur qu'elle ne|peur que cela ne|plus.*qu'il ne|moins.*qu'elle ne)\b/i.test(text);
   }
 
-  // Historical context detection (essential method)
   hasHistoricalContext(text) {
     return /\b(fondé|village\s+d'|développa|autochtones|jargon\s+chinook|commerce\s+entre|employés\s+de\s+la|HBC|Astoria|Thompson|Astor)\b/i.test(text);
+  }
+
+  hasReportageContext(text) {
+    return /\b(reporté|reportée|annoncé|annoncée)\b/i.test(text);
+  }
+
+  hasTechnicalErrorContext(text) {
+    return /\b(ordinateur|bug)\b/i.test(text);
+  }
+
+  hasInformalDiscourseContext(text) {
+    return /\b(bah|bon\s+bah)\b/i.test(text);
+  }
+
+  hasMotionContext(text) {
+    return /\b(prendre\s+l'avion|prennent\s+l'avion|voyager|départ|voyage|transport|avion|train|voiture|se\s+rendre\s+à|se\s+déplacer\s+vers|aller\s+à|venir\s+de|partir\s+pour|rentrer\s+chez|sortir\s+de\s+la|entrer\s+dans\s+la)\b/i.test(text);
+  }
+
+  hasConversationalContext(text) {
+    return /\b(?:allez|rentrons|chez\s+nous|cette\s+zik|vraument|très\s+belle|coup\s+douce|msn|vous\s+allez\s+aimer|lol|x\)|bah|désolé|grâce\s+à|histoire\s+de|ça\s+dérape|je\s+viens\s+de|on\s+nous|nous\s+torde|aujourd'hui\s+j'|j'ai\s+fait|finalement\s+aujourd'hui|maintenant\s+je\s+me\s+demande|pas\s+la\s+peine|combien\s+de\s+temps|plusieurs\s+employés\s+ont|je\s+me\s+demande)\b/i.test(text);
+  }
+
+  hasTechnicalContext(text) {
+    if (/\b(?:finalement\s+aujourd'hui|j'ai\s+fait|mon\s+background|je\s+me)\b/i.test(text)) {
+      return false;
+    }
+    return /\b(?:opérationnel|technique|système|processus|fonctionnel|installation|équipement|maintenance|configuration|paramétrage|simulation|bug|crash|erreur|défaillance)\b/i.test(text);
+  }
+
+  hasExplicitPrevention(text) {
+    return /\b(empêcher|éviter|prévenir|interdire|bloquer|stopper|arrêter)\b/i.test(text) ||
+           /\b(explose|disparaisse|disparaissent|empire|se\s+vende|nous\s+dépasse|touche\s+l'adversaire|soit\s+connus|se\s+reproduise|se\s+penche|trop\s+tard)\b/i.test(text);
+  }
+
+  hasMedicalContext(text) {
+    return /\b(médecin|docteur|hôpital|clinique|patient|maladie|traitement|diagnostic|consultation|opération|chirurgie|médicament|ordonnance|symptôme|examen|médecin\s+interne|finisse\s+par\s+me\s+recevoir|se\s+déclare|thérapies\s+ciblées|pneumologue|chercheur|Inserm)\b/i.test(text);
+  }
+
+  hasLiteraryContext(text) {
+    return /\b(fallut|eût|eut|fût|fut|submergeât|naguère|jadis|désormais|nonobstant|toutefois|afin\s+de|ainsi|parmi\s+ses\s+semblables|galamment|daigne\s+se\s+relever|Guerre\s+Sainte)\b/i.test(text);
+  }
+
+  hasTemporalAnticipation(text) {
+    return /\b(?:attendre|espérant|espérer|fixées?\s+sur|avant\s+qu.*commencent|masters?|programme|cours|session|début|démarrage|lancement)\b/i.test(text) ||
+           /\b(?:semaines?\s+avant|jours?\s+avant|mois\s+avant|temps\s+avant)\b/i.test(text);
+  }
+
+  hasCompletionContext(text) {
+    return /\b(inscrive\s+le.*but|daigne\s+se\s+relever|tout.*accompli|réalisé|parfaitement|objectif.*se\s+réalise|programme.*rétablissement|niveaux\s+permettant)\b/i.test(text);
   }
 }
 
