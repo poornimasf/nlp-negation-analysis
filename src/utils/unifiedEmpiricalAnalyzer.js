@@ -526,6 +526,20 @@ class UnifiedEmpiricalAnalyzer {
       probability *= 1.08; // +8% for completion verbs (more expletive)
     }
 
+    // NEUTRAL CONTEXT ADJUSTMENT - reduce baseline bias for long neutral sentences
+    const hasAnyStrongSignal = this.hasExplicitPrevention(text) || 
+                              this.hasMedicalContext(text) || 
+                              this.hasLiteraryContext(text) || 
+                              this.hasTemporalAnticipation(text) ||
+                              this.hasCompletionContext(text) ||
+                              this.hasFormalNeConstruction(text) ||
+                              hasStrongPersonalMarkers;
+    
+    // For long neutral sentences without strong signals, reduce baseline bias
+    if (!hasAnyStrongSignal && text.length > 200 && register === 'neutral') {
+      probability *= 0.85; // -15% for long neutral sentences (reduces baseline bias)
+    }
+
     return probability;
   }
 
