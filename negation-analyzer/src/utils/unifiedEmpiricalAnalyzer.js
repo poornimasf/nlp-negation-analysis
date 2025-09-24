@@ -628,6 +628,37 @@ class UnifiedEmpiricalAnalyzer {
       if (hasLiteraryMarkers) {
         probability *= 1.25; // +25% for literary contexts
       }
+      
+      // CONSTRUCTION-BASED PATTERNS (sen_faut_que specific - very strong signals)
+      
+      // Classical "peu s'en fallut" construction: 198 true vs 43 false (82% expletive bias)
+      if (/\bpeu\s+s'en\s+fallut\s+que\b/i.test(text)) {
+        probability = Math.max(probability, 0.85); // Strong expletive signal (override other patterns)
+      }
+      
+      // Modern "il s'en est fallu" construction: 107 true vs 266 false (71% no-expletive bias)
+      if (/\bil\s+s'en\s+est\s+fallu\b/i.test(text)) {
+        probability = Math.min(probability, 0.30); // Strong no-expletive signal (override other patterns)
+      }
+      
+      // Modern "s'en est fallu" construction: 151 true vs 296 false (66% no-expletive bias)
+      if (/\bs'en\s+est\s+fallu\b/i.test(text) && !/\bil\s+s'en\s+est\s+fallu\b/i.test(text)) {
+        probability *= 0.75; // -25% for modern construction (avoid double-counting with "il s'en est fallu")
+      }
+      
+      // TEMPORAL/REGISTER PATTERNS (moderate signals)
+      
+      // Past tense narrative contexts: 191 true vs 131 false (59% expletive bias)
+      const hasPastNarrative = /\b(?:avait|était|fut|eut|fit|vint|prit)\b/i.test(text);
+      if (hasPastNarrative) {
+        probability *= 1.15; // +15% for past tense narrative
+      }
+      
+      // Formal discourse markers: 27 true vs 18 false (60% expletive bias)
+      const hasFormalDiscourse = /\b(?:en\s+effet|par\s+conséquent|ainsi|dès\s+lors|par\s+ailleurs)\b/i.test(text);
+      if (hasFormalDiscourse) {
+        probability *= 1.12; // +12% for formal discourse
+      }
     }
 
     // Apply universal adjustments (all triggers except peur_que negation handled above)
