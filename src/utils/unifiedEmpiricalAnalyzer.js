@@ -516,10 +516,50 @@ class UnifiedEmpiricalAnalyzer {
       }
     }
     
-    // Apply universal adjustments (all triggers except peur_que negation handled above)
-    if (hasFirstPersonMarkers && !hasThirdPersonMarkers) {
-      probability *= 0.95; // -5% for first person (slightly less expletive)
+    // EVIDENCE-BASED IMPROVEMENTS (from full 3000 example analysis)
+    
+    // STRONG RARE PATTERNS (high confidence, low frequency)
+    if (trigger.name === 'avant_que') {
+      // "Trop tard" pattern: 23 true vs 1 false (96% expletive rate)
+      if (/\btrop\s+tard\b/i.test(text)) {
+        probability = Math.max(probability, 0.85); // Strong expletive signal
+      }
     }
+    
+    if (trigger.name === 'sen_faut_que') {
+      // "Peu s'en fallut que" pattern: 56 true vs 0 false (100% expletive)
+      if (/\bpeu\s+s'en\s+fallut\s+que\b/i.test(text)) {
+        probability = Math.max(probability, 0.90); // Very strong expletive signal
+      }
+      // "Il s'en est fallu" pattern: 0 true vs 266 false (100% no-expletive)
+      if (/\bil\s+s'en\s+est\s+fallu\b/i.test(text)) {
+        probability = Math.min(probability, 0.25); // Very strong no-expletive signal
+      }
+    }
+    
+    // MODERATE CONSISTENT PATTERNS (strengthen existing adjustments)
+    
+    // Personal markers: consistent 54-57% no-expletive bias across triggers
+    if (hasFirstPersonMarkers && !hasThirdPersonMarkers) {
+      probability *= 0.88; // Strengthen from -5% to -12%
+    }
+    
+    // Negation markers: consistent 54% no-expletive bias across all triggers
+    if (trigger.name !== 'peur_que') { // peur_que handled separately above
+      if (hasNegationMarkers) {
+        probability *= 0.85; // Strengthen from -7% to -15%
+      }
+    }
+    
+    // Literary/archaic for sen_faut_que: 289 true vs 131 false (69% expletive)
+    if (trigger.name === 'sen_faut_que') {
+      const hasLiteraryMarkers = /\b(fallut|fût|eût|submergeât|prissent|vînt|courût|perdît|tombât|naguère|jadis|désormais)\b/i.test(text);
+      if (hasLiteraryMarkers) {
+        probability *= 1.25; // +25% for literary contexts
+      }
+    }
+
+    // Apply universal adjustments (all triggers except peur_que negation handled above)
     if (hasThirdPersonMarkers && !hasFirstPersonMarkers) {
       probability *= 1.05; // +5% for third person (slightly more expletive)
     }
