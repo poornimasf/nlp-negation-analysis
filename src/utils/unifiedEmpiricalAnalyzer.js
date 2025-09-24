@@ -740,10 +740,6 @@ class UnifiedEmpiricalAnalyzer {
   }
 
 
-  // Enhanced temporal anticipation (financial, business, formal timing)
-  hasTemporalAnticipation(text) {
-    return /\b(résultats\s+financiers|se\s+fassent\s+sentir|plusieurs\s+(?:mois|années|décennies)|s'écouleront|objectif.*se\s+réalise|programme\s+de\s+rétablissement|autosuffisance|dix\s+jours\s+avant|phase\s+de\s+remise)\b/i.test(text);
-  }
 
   // Literary/classical French context (enhanced)
   hasLiteraryContext(text) {
