@@ -1222,13 +1222,7 @@ class UnifiedEmpiricalAnalyzer {
     if (mode === 'paragraph' && baseProbability !== probability) {
       sections.push('');
       sections.push('📚 DISCOURSE CONTEXT:');
-      const contextEffect = (probability - baseProbability) * 100;
-      if (Math.abs(contextEffect) > 1) {
-        sections.push(`Paragraph context ${contextEffect > 0 ? 'reinforces' : 'weakens'} sentence-level factors`);
-        sections.push(`Context effect: ${contextEffect > 0 ? '+' : ''}${contextEffect.toFixed(1)}% → ${prediction}`);
-      } else {
-        sections.push('No significant discourse-level effects detected');
-      }
+      // Paragraph mode effects removed - using corpus-based analysis only
     }
     
     // Final reasoning
