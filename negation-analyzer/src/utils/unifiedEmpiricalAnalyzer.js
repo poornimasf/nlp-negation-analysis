@@ -738,11 +738,6 @@ class UnifiedEmpiricalAnalyzer {
     return /\b(médecin|docteur|hôpital|clinique|patient|maladie|traitement|diagnostic|consultation|opération|chirurgie|médicament|ordonnance|symptôme|examen|médecin\s+interne|finisse\s+par\s+me\s+recevoir|se\s+déclare|thérapies\s+ciblées|pneumologue|chercheur|Inserm)\b/i.test(text);
   }
 
-  // Enhanced prevention context (stronger patterns)
-  hasExplicitPrevention(text) {
-    return /\b(empêcher|éviter|prévenir|protection|sécurité|danger|risque|problème|morsures\s+deviennent|engagement\s+soit\s+pris|trop\s+tard|avant\s+qu'il\s+soit\s+trop\s+tard|patrimoine\s+mondial|organisations\s+consultatives|plans\s+de\s+principe)\b/i.test(text) ||
-           /\b(pour\s+que.*(?:pas|jamais|rien))\b/i.test(text);
-  }
 
   // Enhanced temporal anticipation (financial, business, formal timing)
   hasTemporalAnticipation(text) {
