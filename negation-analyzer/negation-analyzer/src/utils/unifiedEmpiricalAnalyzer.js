@@ -531,37 +531,14 @@ class UnifiedEmpiricalAnalyzer {
       }
     }
     
-    // SYSTEMATIC ERROR CORRECTIONS (address over-indexing patterns)
+    // CORPUS-VALIDATED CORRECTION (only patterns supported by data)
     
-    // 1. Proper nouns/named entities correction (~95% of errors)
-    const hasProperNouns = /\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b/g.test(text) && 
-                          /\b(?:[A-Z][a-z]+\s+){2,}|(?:John|Jacob|Astor|Michael|Organisation|Gouvernement)\b/i.test(text);
-    if (hasProperNouns) {
-      probability *= 0.80; // -20% for sentences with multiple proper nouns
-    }
-    
-    // 2. Numbers and time indicators correction
-    const hasNumbersOrTime = /\b(?:\d+[a-z]*\s*(?:minute|heure|jour|an|année|livre|chapitre)|11e|3\s+livres|\d+:\d+)\b/i.test(text);
-    if (hasNumbersOrTime) {
-      probability *= 0.85; // -15% for sentences with numbers/time indicators
-    }
-    
-    // 3. Quoted material correction
+    // Quoted material correction (validated across triggers)
+    // AVANT_QUE: 56 true vs 82 false (59% no-expletive bias)
+    // PEUR_QUE: 74 true vs 90 false (55% no-expletive bias)
     const hasQuotedMaterial = /["«»""]/.test(text);
     if (hasQuotedMaterial) {
       probability *= 0.75; // -25% for sentences with quoted material
-    }
-    
-    // 4. Religious/institutional references correction
-    const hasReligiousInstitutional = /\b(?:Dieu|Église|catholique|Fatima|gouvernement|autorités|institution|organisation\s+terroriste)\b/i.test(text);
-    if (hasReligiousInstitutional) {
-      probability *= 0.85; // -15% for religious/institutional references
-    }
-    
-    // 5. Formatting markers correction
-    const hasFormattingMarkers = /^[\s]*[•*–-]/.test(text);
-    if (hasFormattingMarkers) {
-      probability *= 0.70; // -30% for lines starting with formatting markers
     }
 
     // EVIDENCE-BASED IMPROVEMENTS (from full 3000 example analysis)
