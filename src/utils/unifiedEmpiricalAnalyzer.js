@@ -160,7 +160,7 @@ class UnifiedEmpiricalAnalyzer {
       'peur_que': /\b(?:peur\s+(?:que|qu['']))\b/i,
       'avant_que': /\b(?:avant\s+(?:que|qu['']))\b/i,
       'avant_de': /\b(?:avant\s+de?)\b/i,
-      'sen_faut_que': /\b(?:(?:peu\s+)?s['']en\s+(?:est\s+|était\s+)?(?:faut|fallut|fallu|fallait))\b/i,
+      'sen_faut_que': /\b(?:(?:peu\s+)?s['']en\s+(?:est\s+|était\s+|sera\s+|serait\s+|fut\s+|eût\s+)?(?:faut|fallut|fallu|fallait))\b/i,
       'moins_plus': /\b(?:plus|moins)\s+.*\s+(?:que|qu[''])\b/i
     };
 
@@ -279,7 +279,7 @@ class UnifiedEmpiricalAnalyzer {
       'avant_que': /\bavant\s+que?\s+([^.!?]*?)(?:\s*\.|$)/i,
       'peur_que': /\bpeur\s+que?\s+([^.!?]*?)(?:\s*\.|$)/i,
       'moins_plus': /\b(?:moins|plus).*?que?\s+([^.!?]*?)(?:\s*\.|$)/i,
-      'sen_faut_que': /\b(?:il\s+)?s'en\s+(?:est\s+|était\s+)?(?:faut|fallut|fallu|fallait|faudrait).*?(?:que?\s+([^.!?]*?))?(?:\s*\.|$)/i,
+      'sen_faut_que': /\b(?:il\s+)?s'en\s+(?:est\s+|était\s+|sera\s+|serait\s+|fut\s+|eût\s+)?(?:faut|fallut|fallu|fallait|faudrait).*?(?:que?\s+([^.!?]*?))?(?:\s*\.|$)/i,
       'avant_de': /\bavant\s+de\s+([^.!?]*?)(?:\s*\.|$)/i
     };
     
@@ -306,9 +306,9 @@ class UnifiedEmpiricalAnalyzer {
     }
     
     // For sen_faut_que without "que" clause, return the whole phrase
-    if (triggerName === 'sen_faut_que' && /\bs'en\s+(?:est\s+|était\s+)?(?:faut|fallut|fallu|fallait|faudrait)/i.test(text)) {
+    if (triggerName === 'sen_faut_que' && /\bs'en\s+(?:est\s+|était\s+|sera\s+|serait\s+|fut\s+|eût\s+)?(?:faut|fallut|fallu|fallait|faudrait)/i.test(text)) {
       try {
-        const senFautMatch = text.match(/\b(?:il\s+)?s'en\s+(?:est\s+|était\s+)?(?:faut|fallut|fallu|fallait|faudrait)[^.!?]*/i);
+        const senFautMatch = text.match(/\b(?:il\s+)?s'en\s+(?:est\s+|était\s+|sera\s+|serait\s+|fut\s+|eût\s+)?(?:faut|fallut|fallu|fallait|faudrait)[^.!?]*/i);
         if (senFautMatch && senFautMatch[0] && typeof senFautMatch[0] === 'string') {
           return senFautMatch[0].trim();
         }
