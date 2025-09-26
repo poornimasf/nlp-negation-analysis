@@ -5,8 +5,6 @@
 
 This document presents empirical analysis of the September 2025 French expletive "ne" classification training dataset and its implementation in the production negation analyzer system. Based on systematic examination of 10,000 balanced training examples across 5 trigger types (5,000 sentence mode + 5,000 paragraph mode), we establish corpus-driven patterns for French expletive "ne" usage in authentic linguistic contexts. The analysis incorporates the latest dual-mode classifier implementation, enhanced rule-based patterns, and comprehensive discourse analysis to provide a complete framework for French expletive negation prediction.
 
-## Executive Summary
-
 **Key Empirical Findings:**
 - **10,000 total examples**: Perfect 50/50 balance across expletive/non-expletive classifications
 - **Register dominance**: 2.43x correlation (strongest predictor) - formal/literary contexts strongly favor expletive
@@ -597,6 +595,22 @@ const SUBJUNCTIVE_PATTERNS = {
 ### 6.3 Discourse Mode Analysis Implementation
 
 **Mode Detection and Enhancement:**
+```javascript
+// Auto-mode detection based on text length
+const mode = text.length > 200 ? 'paragraph' : 'sentence';
+
+// Discourse marker analysis for paragraph mode
+if (mode === 'paragraph') {
+  // Coherence markers: 362.6% average increase
+  const coherenceMarkers = /\b(cependant|néanmoins|par\s+conséquent|ainsi|donc|en\s+effet)\b/gi;
+  
+  // Context depth markers: 424.2% average increase  
+  const contextMarkers = /\b(parce\s+que|c'est-à-dire|par\s+exemple|étant\s+donné)\b/gi;
+  
+  // Register-specific discourse enhancement
+  const assertiveStance = /\b(certainement|évidemment|sans\s+aucun\s+doute)\b/gi; // 2.00x correlation
+  const literaryDiscourse = /\b(contempla|irréparable|naguère|jadis|désormais)\b/gi; // 2.53x correlation
+}
 ```
 
 ### 5.5 Production System Performance Metrics
