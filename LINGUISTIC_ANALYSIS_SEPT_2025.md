@@ -1,7 +1,5 @@
-# Linguistic Analysis Framework - September 2025 Golden Dataset
+# French Expletive Negation
 ## Comprehensive Implementation and Corpus Analysis
-
-## Abstract
 
 This document presents empirical analysis of the September 2025 French expletive "ne" classification training dataset and its implementation in the production negation analyzer system. Based on systematic examination of 10,000 balanced training examples across 5 trigger types (5,000 sentence mode + 5,000 paragraph mode), we establish corpus-driven patterns for French expletive "ne" usage in authentic linguistic contexts. The analysis incorporates the latest dual-mode classifier implementation, enhanced rule-based patterns, and comprehensive discourse analysis to provide a complete framework for French expletive negation prediction.
 
