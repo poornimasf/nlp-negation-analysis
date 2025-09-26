@@ -597,25 +597,9 @@ const SUBJUNCTIVE_PATTERNS = {
 ### 6.3 Discourse Mode Analysis Implementation
 
 **Mode Detection and Enhancement:**
-```javascript
-// Auto-mode detection based on text length
-const mode = text.length > 200 ? 'paragraph' : 'sentence';
-
-// Discourse marker analysis for paragraph mode
-if (mode === 'paragraph') {
-  // Coherence markers: 362.6% average increase
-  const coherenceMarkers = /\b(cependant|néanmoins|par\s+conséquent|ainsi|donc|en\s+effet)\b/gi;
-  
-  // Context depth markers: 424.2% average increase  
-  const contextMarkers = /\b(parce\s+que|c'est-à-dire|par\s+exemple|étant\s+donné)\b/gi;
-  
-  // Register-specific discourse enhancement
-  const assertiveStance = /\b(certainement|évidemment|sans\s+aucun\s+doute)\b/gi; // 2.00x correlation
-  const literaryDiscourse = /\b(contempla|irréparable|naguère|jadis|désormais)\b/gi; // 2.53x correlation
-}
 ```
 
-### 6.4 Production System Performance Metrics
+### 5.5 Production System Performance Metrics
 
 **Empirical Validation Results (ACTUAL PERFORMANCE DATA):**
 - **Overall corpus-patterns accuracy**: 62.50% (sentence mode) / 62.67% (paragraph mode)
@@ -653,51 +637,24 @@ if (mode === 'paragraph') {
 - **Mode selection**: Data-driven evidence for trigger-specific mode preferences
 - **Balanced performance**: 62.5% average accuracy across diverse linguistic contexts
 
-## 5. Empirical Linguistic Hierarchy - Comprehensive Framework
+## 6. Conclusions and Future Directions
 
-### 5.1 Predictive Power Ranking (Data-Driven + Implementation Validated)
+### 6.1 Major Empirical Discoveries
 
-1. **Register** (2.43x correlation): Formal/literary contexts strongly favor expletive
-   - **Implementation**: REGISTER_PATTERNS with 200+ lexical markers
-   - **Production impact**: Primary decision factor in dual-mode classifier
-   - **Accuracy**: 91.2% register classification accuracy
+**Paradigm Shifts in French Expletive "Ne" Understanding:**
 
-2. **Discourse Mode** (Paragraph +3.5%): Enhanced context provides discourse-expletive correlation
-   - **Implementation**: Auto-detection based on text length (>200 chars = paragraph)
-   - **Production impact**: 362.6% more coherence markers analyzed
-   - **Accuracy**: 100% mode classification accuracy
+1. **Register Dominance Over Syntax**: Traditional focus on subjunctive mood overturned by empirical evidence showing register (formal/literary) as 2.43x stronger predictor than syntactic features.
 
-3. **Trigger type**: sen_faut_que (74.4%) > peur_que (66.7%) > avant_que (42.1%) > avant_de (42.9%) > moins_plus (20.0%)
-   - **Implementation**: Empirically-weighted trigger strengths in classifier
-   - **Production impact**: Base probability adjustment per trigger
-   - **Accuracy**: 98.5% trigger detection accuracy
+2. **Subjunctive Paradox**: Counter-intuitive finding that non-expletive examples show MORE subjunctive usage (27.6% vs 15.6%), challenging fundamental assumptions in French grammar pedagogy.
 
-4. **Semantic field**: Moderate correlation with emotional contexts (1.04x)
-   - **Implementation**: Pattern-based semantic field classification
-   - **Production impact**: Secondary adjustment factor
-   - **Accuracy**: 87.3% semantic field classification
+3. **Discourse Mode Enhancement**: Paragraph-level analysis provides 362.6% more linguistic context, enabling pragmatic awareness and modest but measurable improvement (+0.17%) in classification accuracy.
 
-5. **Syntactic complexity**: Inverse correlation (subjunctive paradox: 0.57x)
-   - **Implementation**: 50+ subjunctive verb patterns with negative weight
-   - **Production impact**: Counter-intuitive reduction in expletive probability
-   - **Accuracy**: 94.7% subjunctive detection accuracy
+4. **Trigger Hierarchy Validation**: Empirically established hierarchy (sen_faut_que 67.82% > peur_que 60.78% > avant_que 61.88%) provides reliable baseline probabilities for classification systems.
 
-### 5.2 Key Empirical Insights - Implementation Validated
+### 6.2 Production System Achievements
 
-**Register Dominance (Production Confirmed):**
-- Formal/literary register is 2.43x more likely to use expletive
-- sen_faut_que shows 40% literary register (strongest predictor)
-- Cross-trigger consistency in register effects
-- **Implementation**: Primary decision branch in classifier algorithm
-
-**Discourse Mode Effects (Production Integrated):**
-- Paragraph mode provides 362.6% more coherence markers
-- 3.5% discourse-expletive correlation advantage in paragraph contexts
-- Enhanced pragmatic awareness (certainty, uncertainty, evaluation markers)
-- **Implementation**: Automatic mode detection and discourse marker analysis
-
-**Subjunctive Paradox (Production Validated):**
-- Non-expletive examples show MORE subjunctive usage (27.6% vs 15.6%)
+**Implementation Success Metrics (ACTUAL RESULTS):**
+- **62.67% accuracy** on balanced corpus (paragraph mode)
 - Traditional grammar assumptions overturned by corpus evidence
 - Syntactic licensing ≠ expletive requirement
 - **Implementation**: Negative weight (-0.12) applied when subjunctive detected
@@ -791,84 +748,4 @@ if (mode === 'paragraph') {
 - **avant_que**: Stable performance across both modes (61-62% accuracy)
 - **Corpus patterns**: Consistently outperform pure LLM approaches across all triggers
 
-### 7.3 Linguistic Theoretical Implications
-
-**For French Grammar Theory:**
-- **Expletive "ne" is primarily sociolinguistic** rather than syntactic phenomenon
-- **Register and discourse context** more predictive than traditional grammatical features
-- **Subjunctive licensing** does not correlate with expletive usage as traditionally assumed
-- **Corpus-driven analysis** reveals patterns invisible to introspective grammatical analysis
-
-**For Computational Linguistics:**
-- **Empirical feature weighting** outperforms rule-based grammatical approaches
-- **Discourse mode analysis** provides significant enhancement for pragmatic phenomena
-- **Balanced corpus design** essential for discovering counter-intuitive patterns
-- **Multi-modal training data** (sentence + paragraph) captures full linguistic complexity
-
-### 7.4 Practical Applications
-
-**Educational Technology:**
-- **French language learning systems** can prioritize register awareness over syntactic rules
-- **Writing assistance tools** can provide context-appropriate expletive "ne" suggestions
-- **Grammar checkers** can incorporate empirical probabilities rather than binary rules
-
-**Natural Language Processing:**
-- **French text generation** can use empirical trigger strengths for authentic output
-- **Style transfer systems** can manipulate register to control expletive usage
-- **Corpus analysis tools** can apply discourse mode enhancement for pragmatic phenomena
-
-### 7.5 Future Research Directions
-
-**Corpus Expansion:**
-- **Regional variation analysis**: Quebec French, African French, Belgian French expletive patterns
-- **Diachronic analysis**: Historical evolution of expletive "ne" usage patterns
-- **Genre-specific studies**: Academic, journalistic, literary, conversational register differences
-- **Spoken corpus integration**: Phonetic realization and prosodic patterns
-
-**Computational Enhancement:**
-- **Neural network integration**: Deep learning models trained on empirical features
-- **Cross-linguistic analysis**: Expletive phenomena in other Romance languages
-- **Multimodal analysis**: Integration of prosodic, gestural, and contextual information
-- **Real-time adaptation**: Dynamic learning from user corrections and preferences
-
-**Theoretical Development:**
-- **Sociolinguistic modeling**: Formal models of register-expletive correlation
-- **Pragmatic theory**: Integration of discourse mode effects into grammatical theory
-- **Cognitive linguistics**: Processing implications of subjunctive paradox
-- **Corpus methodology**: Best practices for balanced multilingual corpus design
-
-### 7.6 Methodological Contributions
-
-**Corpus Design Innovation:**
-- **Perfect balance methodology**: 50/50 expletive/non-expletive across all conditions
-- **Dual-mode architecture**: Sentence + paragraph analysis for complete linguistic context
-- **Empirical validation framework**: Production system accuracy metrics on independent test sets
-- **Scalable annotation**: Efficient methods for large-scale linguistic corpus development
-
-**Implementation Best Practices:**
-- **Hierarchical feature weighting**: Register > Trigger > Semantic > Syntactic priority
-- **Empirical threshold calibration**: Data-driven confidence intervals for classification
-- **Discourse-aware processing**: Automatic mode detection and context enhancement
-- **Performance optimization**: Linear scalability with comprehensive pattern coverage
-
-### 7.7 Impact Assessment
-
-**Academic Impact:**
-- **Paradigm shift** in French expletive "ne" theoretical understanding
-- **Methodological innovation** in corpus-driven grammatical analysis
-- **Empirical validation** of computational linguistic approaches
-- **Cross-disciplinary integration** of sociolinguistics and natural language processing
-
-**Practical Impact:**
-- **Production-ready system** with 91.2% accuracy on real-world data
-- **Educational applications** for French language learning and teaching
-- **Commercial viability** for grammar checking and writing assistance tools
-- **Open-source contribution** to French computational linguistics resources
-
-**Future Sustainability:**
-- **Modular architecture** enabling easy extension to new triggers and patterns
-- **Empirical foundation** providing stable basis for future enhancements
-- **Comprehensive documentation** facilitating replication and adaptation
-- **Community engagement** through open corpus and implementation sharing
-
-This comprehensive analysis establishes the September 2025 French Expletive "Ne" Classification Framework as a significant contribution to both theoretical linguistics and practical natural language processing, with validated empirical findings, production-ready implementation, and clear directions for future development.
+This comprehensive analysis establishes the September 2025 French Expletive "Ne" Classification Framework as a significant contribution to both theoretical linguistics and practical natural language processing, with validated empirical findings and production-ready implementation.
